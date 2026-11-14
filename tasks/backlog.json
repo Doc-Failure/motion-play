@@ -75,9 +75,9 @@
     "depends_on": [
       "T01"
     ],
-    "status": "pending",
-    "attempts": 0,
-    "notes": "",
+    "status": "done",
+    "attempts": 1,
+    "notes": "Added a deterministic shared GameSession state machine with configurable countdown/round timing, pause/resume, results/replay transitions, and isolated 1–4 player scores. Verified npm run typecheck, lint, test (24 passing), and build on 2026-11-14.",
     "needs_hardware_validation": false,
     "hardware_verified": false
   },

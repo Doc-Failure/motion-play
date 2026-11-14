@@ -139,3 +139,23 @@ mocked media streams. Physical webcam motion feel, background flicker rejection,
 lighting changes, processing latency, framing, and browser compatibility have
 not been physically tested. T06 remains marked `needs_hardware_validation: true`
 and `hardware_verified: false`; no physical webcam validation is claimed.
+
+## T07 — done (2026-11-14)
+
+- Added a deterministic, framework-independent `GameSession` boundary with
+  explicit idle, countdown, playing, paused, and results states. A monotonic
+  shared clock drives configurable countdown and round durations without
+  coupling game logic to camera or media APIs.
+- Added isolated score storage for each of 1–4 players. Score changes are
+  accepted only during active gameplay, support penalties, reject unknown
+  players and invalid values, and reset cleanly for replay.
+- Added automated coverage for exact timing boundaries, pause/resume during
+  countdown and gameplay, score isolation, inactive-state score rejection,
+  replay/reset behavior, immutable prior snapshots, invalid transitions, and
+  monotonic timestamp enforcement.
+- Automated evidence: `npm run typecheck`, `npm run lint`, `npm run test`
+  (6 files, 24 tests passed), and `npm run build` all exited successfully.
+
+Outstanding risk: T07 is a logic-only session layer and is not yet wired to a
+playable minigame; that integration belongs to T08. No webcam behavior was
+changed or physically validated, and no hardware validation is claimed.
