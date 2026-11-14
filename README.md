@@ -1,4 +1,31 @@
-# Motion Play — autonomous Codex starter kit
+# Motion Play
+
+A client-only motion-controlled party game, built with React, TypeScript, Vite,
+and Phaser. Gameplay and camera features are being delivered incrementally from
+the ordered backlog in `tasks/backlog.json`.
+
+## Local development
+
+Requires Node.js 20 or newer.
+
+```bash
+npm install
+npm run dev
+```
+
+## Checks
+
+```bash
+npm run typecheck
+npm run lint
+npm run test
+npm run build
+```
+
+The current automated tests use a browser-like DOM and mock the Phaser lifecycle;
+they do not perform or claim physical camera validation.
+
+## Autonomous runner
 
 Files: `SPEC.md` product/game/style requirements; `AGENTS.md` agent rules; `tasks/backlog.json` prioritized tasks; `BOOTSTRAP_PROMPT.md` initial guidance; `scripts/ralph.sh` bounded iterative runner.
 

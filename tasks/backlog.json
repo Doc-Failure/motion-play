@@ -3,9 +3,9 @@
     "id": "T01",
     "title": "Scaffold Vite React TypeScript Phaser app, scripts for typecheck lint test build, basic tests",
     "depends_on": [],
-    "status": "pending",
-    "attempts": 0,
-    "notes": "",
+    "status": "done",
+    "attempts": 1,
+    "notes": "Scaffolded client-only Vite/React/TypeScript/Phaser app with pinned dependencies, lifecycle-safe Phaser host, ESLint and Vitest setup. Verified npm run typecheck, lint, test (2 passing), and build on 2026-11-14.",
     "needs_hardware_validation": false,
     "hardware_verified": false
   },

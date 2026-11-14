@@ -1,0 +1,72 @@
+:root {
+  color: #17212b;
+  background: #fff8df;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+.app-shell {
+  width: min(100% - 2rem, 64rem);
+  margin: 0 auto;
+  padding: 3rem 0;
+}
+
+.welcome {
+  text-align: center;
+}
+
+.eyebrow {
+  margin-bottom: 0.25rem;
+  color: #a53636;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+h1 {
+  margin: 0;
+  color: #173f5f;
+  font-size: clamp(3rem, 10vw, 6rem);
+  line-height: 1;
+}
+
+.intro {
+  font-size: 1.125rem;
+}
+
+.game-card {
+  margin-top: 2rem;
+}
+
+.game-card h2 {
+  margin-bottom: 0.5rem;
+}
+
+.game-canvas {
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  border: 5px solid #17212b;
+  border-radius: 1rem;
+  background: #2d6a8a;
+}
+
+.game-canvas canvas {
+  display: block;
+}
