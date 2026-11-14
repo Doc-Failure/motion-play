@@ -1,10 +1,12 @@
 import { GameSession, type GameSessionSnapshot } from '../../game/GameSession'
 import type { MotionInputEvent } from '../../input/MotionProcessor'
+import type { PlayerCount, PlayerId } from '../../input/PlayerZoneMapper'
 
 export type BubbleTargetKind = 'bubble' | 'bomb'
 
 export interface BubbleTarget {
   id: number
+  playerId: PlayerId
   kind: BubbleTargetKind
   x: number
   y: number
@@ -13,10 +15,11 @@ export interface BubbleTarget {
 
 export interface BubbleBattleSnapshot extends GameSessionSnapshot {
   targets: BubbleTarget[]
-  lastResult: 'bubble' | 'bomb' | null
+  lastResults: Record<PlayerId, 'bubble' | 'bomb' | null>
 }
 
 export interface BubbleBattleOptions {
+  playerCount?: PlayerCount
   countdownMs?: number
   roundDurationMs?: number
   spawnIntervalMs?: number
@@ -31,20 +34,22 @@ export class BubbleBattleModel {
   private readonly session: GameSession
   private readonly spawnIntervalMs: number
   private readonly random: () => number
+  private readonly playerIds: PlayerId[]
   private targets: BubbleTarget[] = []
   private nextTargetId = 1
   private nextSpawnAt: number | null = null
   private lastUpdateAt: number | null = null
-  private lastResult: BubbleBattleSnapshot['lastResult'] = null
+  private lastResults = emptyResults()
 
   constructor(options: BubbleBattleOptions = {}) {
     this.session = new GameSession({
-      playerCount: 1,
+      playerCount: options.playerCount ?? 1,
       countdownMs: options.countdownMs,
       roundDurationMs: options.roundDurationMs,
     })
     this.spawnIntervalMs = options.spawnIntervalMs ?? 850
     this.random = options.random ?? Math.random
+    this.playerIds = Array.from({ length: options.playerCount ?? 1 }, (_, index) => (index + 1) as PlayerId)
   }
 
   start(timestamp: number): BubbleBattleSnapshot {
@@ -52,7 +57,7 @@ export class BubbleBattleModel {
     this.nextTargetId = 1
     this.nextSpawnAt = null
     this.lastUpdateAt = timestamp
-    this.lastResult = null
+    this.lastResults = emptyResults()
     this.session.start(timestamp)
     return this.update(timestamp)
   }
@@ -66,8 +71,10 @@ export class BubbleBattleModel {
       this.targets = this.targets
         .map((target) => ({ ...target, y: target.y - elapsed * (target.kind === 'bomb' ? 0.000045 : 0.000065) }))
         .filter((target) => target.y + target.radius >= 0)
-      while (this.nextSpawnAt <= timestamp && this.targets.length < 7) {
-        this.targets.push(this.createTarget())
+      while (this.nextSpawnAt <= timestamp) {
+        for (const playerId of this.playerIds) {
+          if (this.targets.filter((target) => target.playerId === playerId).length < 7) this.targets.push(this.createTarget(playerId))
+        }
         this.nextSpawnAt += this.spawnIntervalMs
       }
     } else if (snapshot.phase === 'results') {
@@ -80,14 +87,14 @@ export class BubbleBattleModel {
   handleInput(event: MotionInputEvent): BubbleBattleSnapshot {
     const timestamp = Math.max(event.timestamp, this.lastUpdateAt ?? event.timestamp)
     this.update(timestamp)
-    if (event.playerId !== 1 || event.kind !== 'MOTION_HIT' || event.confidence < 0.2 || this.session.getSnapshot().phase !== 'playing') {
+    if (!this.playerIds.includes(event.playerId) || event.kind !== 'MOTION_HIT' || event.confidence < 0.2 || this.session.getSnapshot().phase !== 'playing') {
       return this.snapshot(timestamp)
     }
-    const target = [...this.targets].reverse().find((candidate) => Math.hypot(event.x - candidate.x, event.y - candidate.y) <= candidate.radius)
+    const target = [...this.targets].reverse().find((candidate) => candidate.playerId === event.playerId && Math.hypot(event.x - candidate.x, event.y - candidate.y) <= candidate.radius)
     if (!target) return this.snapshot(timestamp)
     this.targets = this.targets.filter((candidate) => candidate.id !== target.id)
-    this.lastResult = target.kind
-    this.session.awardScore(1, target.kind === 'bubble' ? BUBBLE_POINTS : BOMB_PENALTY)
+    this.lastResults[event.playerId] = target.kind
+    this.session.awardScore(event.playerId, target.kind === 'bubble' ? BUBBLE_POINTS : BOMB_PENALTY)
     return this.snapshot(timestamp)
   }
 
@@ -96,11 +103,12 @@ export class BubbleBattleModel {
     this.targets = targets.map((target) => ({ ...target }))
   }
 
-  private createTarget(): BubbleTarget {
+  private createTarget(playerId: PlayerId): BubbleTarget {
     const kind: BubbleTargetKind = this.random() < 0.2 ? 'bomb' : 'bubble'
     const radius = kind === 'bomb' ? 0.065 : 0.075 + this.random() * 0.035
     return {
       id: this.nextTargetId++,
+      playerId,
       kind,
       x: radius + this.random() * (1 - radius * 2),
       y: 1 + radius,
@@ -109,6 +117,10 @@ export class BubbleBattleModel {
   }
 
   private snapshot(timestamp: number): BubbleBattleSnapshot {
-    return { ...this.session.getSnapshot(timestamp), targets: this.targets.map((target) => ({ ...target })), lastResult: this.lastResult }
+    return { ...this.session.getSnapshot(timestamp), targets: this.targets.map((target) => ({ ...target })), lastResults: { ...this.lastResults } }
   }
+}
+
+function emptyResults(): Record<PlayerId, 'bubble' | 'bomb' | null> {
+  return { 1: null, 2: null, 3: null, 4: null }
 }

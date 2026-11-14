@@ -17,7 +17,7 @@ describe('catalog data', () => {
     expect(new Set(catalogGames.map((game) => game.slug))).toHaveLength(32)
     expect(new Set(catalogGames.map((game) => game.title))).toHaveLength(32)
     expect(new Set(catalogGames.map((game) => game.category))).toEqual(new Set(catalogCategories))
-    expect(catalogGames.filter((game) => game.available).map((game) => [game.slug, game.players])).toEqual([['bubble-battle', [1]]])
+    expect(catalogGames.filter((game) => game.available).map((game) => [game.slug, game.players])).toEqual([['bubble-battle', [1, 2]]])
     expect(catalogGames.slice(1).every((game) => game.available === false && game.players.join() === '1,2,3,4')).toBe(true)
   })
 })
@@ -51,14 +51,14 @@ describe('App navigation', () => {
     expect(screen.queryByRole('link', { name: 'View Paint Splash details' })).not.toBeInTheDocument()
   })
 
-  it('shows validated one-player Bubble Battle details and a setup route', () => {
+  it('shows validated one- and two-player Bubble Battle details and a setup route', () => {
     visit('#/games/bubble-battle')
     render(<App />)
     expect(screen.getByRole('heading', { level: 1, name: 'Bubble Battle' })).toBeVisible()
     expect(screen.getByText('Pop floating bubbles and keep clear of the bombs.')).toBeVisible()
     const facts = screen.getByText('How you move').parentElement
     expect(facts && within(facts).getByRole('definition')).toHaveTextContent('MOTION HIT')
-    expect(screen.getByText('Playable • 1 player')).toBeVisible()
+    expect(screen.getByText('Playable • 1–2 players')).toBeVisible()
     expect(screen.getByRole('link', { name: 'Set up & play' })).toHaveAttribute('href', '#/camera')
     expect(screen.getByText(/choose a camera or no-camera demo/i)).toBeVisible()
     expect(screen.getByRole('link', { name: /all games/i })).toHaveAttribute('href', '#/catalog')

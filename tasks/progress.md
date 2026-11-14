@@ -189,3 +189,30 @@ noise behavior, latency, framing, and browser compatibility were not physically
 tested. T08 remains `needs_hardware_validation: true` and
 `hardware_verified: false`; no physical webcam validation is claimed. Two-player
 Bubble Battle is intentionally deferred to T09.
+
+## T09 — done (2026-11-14)
+
+- Extended Bubble Battle to one or two players while preserving the input
+  boundary: the game consumes only player-local normalized `MOTION_HIT` events
+  and remains independent of camera and media APIs.
+- Added player-owned targets, isolated hit detection, scores, bomb penalties,
+  and feedback. Each player receives targets in an independent side-by-side
+  viewport while both share the same countdown and round clock.
+- Added competitive results that identify a winner or tie, show both final
+  scores, and reset both players' targets, feedback, timing, and scores on
+  replay. Mouse/touch fallback is scoped to the selected player's viewport.
+- Enabled one- and two-player setup and catalog availability while continuing
+  to gate three- and four-player Bubble Battle for the later milestone.
+- Added automated model coverage for cross-player target and score isolation,
+  independent spawning, penalties, results timing, and replay reset, plus UI
+  coverage for launching and rendering both player viewports.
+- Automated evidence: `npm run typecheck`, `npm run lint`, `npm run test`
+  (7 files, 34 tests passed), `npm run build`, and `git diff --check` all exited
+  successfully.
+
+Outstanding risk: automated coverage uses deterministic normalized events,
+generated frames, mocked media streams, and DOM rendering. Physical two-person
+camera framing, occlusion, lighting/background noise behavior, hit feel, input
+latency, and browser compatibility were not tested. T09 remains
+`needs_hardware_validation: true` and `hardware_verified: false`; no physical
+webcam validation is claimed.

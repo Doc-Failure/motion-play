@@ -101,9 +101,9 @@
     "depends_on": [
       "T08"
     ],
-    "status": "pending",
-    "attempts": 0,
-    "notes": "",
+    "status": "done",
+    "attempts": 1,
+    "notes": "Enabled validated one- and two-player Bubble Battle with player-scoped targets and generic motion events, independent side-by-side viewports, isolated scores/penalties/feedback, shared timing, competitive winner/tie results, and replay reset. Verified npm run typecheck, lint, test (7 files, 34 tests passed), build, and git diff --check on 2026-11-14. Physical two-player webcam framing, occlusion, motion feel, latency, and browser behavior remain unverified and require hardware validation.",
     "needs_hardware_validation": true,
     "hardware_verified": false
   },

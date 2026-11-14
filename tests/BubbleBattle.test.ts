@@ -25,21 +25,21 @@ describe('BubbleBattleModel', () => {
     const model = new BubbleBattleModel({ countdownMs: 0, roundDurationMs: 10_000 })
     model.start(0)
     model.setTargets([
-      { id: 1, kind: 'bubble', x: 0.25, y: 0.3, radius: 0.1 },
-      { id: 2, kind: 'bomb', x: 0.75, y: 0.7, radius: 0.1 },
+      { id: 1, playerId: 1, kind: 'bubble', x: 0.25, y: 0.3, radius: 0.1 },
+      { id: 2, playerId: 1, kind: 'bomb', x: 0.75, y: 0.7, radius: 0.1 },
     ])
     expect(model.handleInput(hit(0.25, 0.3, 10)).scores[0].score).toBe(10)
     expect(model.handleInput(hit(0.25, 0.3, 20)).scores[0].score).toBe(10)
     const bomb = model.handleInput(hit(0.75, 0.7, 30))
     expect(bomb.scores[0].score).toBe(-5)
     expect(bomb.targets).toHaveLength(0)
-    expect(bomb.lastResult).toBe('bomb')
+    expect(bomb.lastResults[1]).toBe('bomb')
   })
 
   it('ignores misses, low-confidence events, other players, and hits outside play', () => {
     const model = new BubbleBattleModel({ countdownMs: 100, roundDurationMs: 100 })
     model.start(0)
-    model.setTargets([{ id: 1, kind: 'bubble', x: 0.5, y: 0.5, radius: 0.1 }])
+    model.setTargets([{ id: 1, playerId: 1, kind: 'bubble', x: 0.5, y: 0.5, radius: 0.1 }])
     expect(model.handleInput(hit(0.5, 0.5, 50)).scores[0].score).toBe(0)
     model.update(100)
     expect(model.handleInput(hit(0.5, 0.5, 110, 0.1)).scores[0].score).toBe(0)
@@ -59,8 +59,32 @@ describe('BubbleBattleModel', () => {
   it('accepts an asynchronously delivered hit after the render clock advances', () => {
     const model = new BubbleBattleModel({ countdownMs: 0 })
     model.start(100)
-    model.setTargets([{ id: 1, kind: 'bubble', x: 0.5, y: 0.5, radius: 0.1 }])
+    model.setTargets([{ id: 1, playerId: 1, kind: 'bubble', x: 0.5, y: 0.5, radius: 0.1 }])
     model.update(200)
     expect(model.handleInput(hit(0.5, 0.5, 190)).scores[0].score).toBe(10)
+  })
+
+  it('keeps two-player targets, scores, penalties, and feedback isolated', () => {
+    const model = new BubbleBattleModel({ playerCount: 2, countdownMs: 0, roundDurationMs: 100 })
+    model.start(0)
+    model.setTargets([
+      { id: 1, playerId: 1, kind: 'bubble', x: 0.5, y: 0.5, radius: 0.1 },
+      { id: 2, playerId: 2, kind: 'bomb', x: 0.5, y: 0.5, radius: 0.1 },
+    ])
+    expect(model.handleInput(hit(0.5, 0.5, 10)).scores.map(({ score }) => score)).toEqual([10, 0])
+    const playerTwo = model.handleInput({ ...hit(0.5, 0.5, 20), playerId: 2 as const })
+    expect(playerTwo.scores.map(({ score }) => score)).toEqual([10, -15])
+    expect(playerTwo.lastResults).toMatchObject({ 1: 'bubble', 2: 'bomb' })
+    expect(playerTwo.targets).toHaveLength(0)
+  })
+
+  it('spawns an independent target in each viewport and resets both scores for replay', () => {
+    const model = new BubbleBattleModel({ playerCount: 2, countdownMs: 0, roundDurationMs: 50, random: () => 0.5 })
+    const start = model.start(0)
+    expect(start.targets.map(({ playerId }) => playerId)).toEqual([1, 2])
+    model.setTargets([{ id: 3, playerId: 2, kind: 'bubble', x: 0.5, y: 0.5, radius: 0.1 }])
+    expect(model.handleInput({ ...hit(0.5, 0.5, 10), playerId: 2 as const }).scores.map(({ score }) => score)).toEqual([0, 10])
+    expect(model.update(50).phase).toBe('results')
+    expect(model.start(100).scores.map(({ score }) => score)).toEqual([0, 0])
   })
 })

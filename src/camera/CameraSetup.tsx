@@ -154,7 +154,7 @@ export function CameraSetup({ source: providedSource }: { source?: CameraControl
     setCalibration(`Calibration ready — background noise ${Math.round(noise)} / 255.`)
   }
 
-  return <>{playing && <BubbleBattle inputEvents={motion?.events ?? []} onExit={() => setPlaying(false)} />}<section className="camera-page" aria-labelledby="camera-title" hidden={playing}>
+  return <>{playing && (playerCount === 1 || playerCount === 2) && <BubbleBattle playerCount={playerCount} inputEvents={motion?.events ?? []} onExit={() => setPlaying(false)} />}<section className="camera-page" aria-labelledby="camera-title" hidden={playing}>
     <a className="back-link" href="#/">← Home</a>
     <div className="camera-heading"><p className="eyebrow">Camera setup</p><h1 id="camera-title">Let’s see your moves</h1><p>Your camera stays on this device. Motion Play never uploads or records its picture.</p></div>
     <div className="camera-layout">
@@ -184,8 +184,8 @@ export function CameraSetup({ source: providedSource }: { source?: CameraControl
           <button className="text-button" type="button" onClick={simulate}>Use demo mode</button>
         </div>
         <p className="camera-note"><strong>When you leave this screen, the camera turns off.</strong> A real webcam still needs a person to check framing, lighting, and browser behavior.</p>
-        <button className="crayon-button crayon-button--primary" type="button" disabled={(status !== 'ready' && status !== 'simulation') || playerCount !== 1} onClick={() => setPlaying(true)}>Play Bubble Battle</button>
-        {playerCount !== 1 && <p className="camera-note">Bubble Battle is validated for one player. Two-player play unlocks in the next milestone.</p>}
+        <button className="crayon-button crayon-button--primary" type="button" disabled={(status !== 'ready' && status !== 'simulation') || playerCount > 2} onClick={() => setPlaying(true)}>Play Bubble Battle</button>
+        {playerCount > 2 && <p className="camera-note">Bubble Battle is currently validated for one or two players. Three- and four-player play comes later.</p>}
       </div>
     </div>
     <section className="motion-calibration" aria-labelledby="motion-title">
