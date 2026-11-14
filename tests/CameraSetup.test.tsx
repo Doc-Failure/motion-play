@@ -52,4 +52,15 @@ describe('CameraSetup', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Camera disconnected')
     expect(screen.getByRole('button', { name: 'Start camera' })).toBeEnabled()
   })
+
+  it('configures one to four camera zones separately from game viewports', () => {
+    render(<CameraSetup source={controller()} />)
+    expect(screen.getByRole('button', { name: '1 player' })).toHaveAttribute('aria-pressed', 'true')
+    fireEvent.click(screen.getByRole('button', { name: '4 players' }))
+    expect(screen.getAllByText(/Player [1-4] camera zone/)).toHaveLength(4)
+    expect(screen.getByLabelText('4 player game viewport layout').children).toHaveLength(4)
+    expect(screen.getByTestId('camera-zone-4')).toHaveStyle({ left: '75%', width: '25%' })
+    fireEvent.change(screen.getByLabelText('Player 1 Left'), { target: { value: '10' } })
+    expect(screen.getByTestId('camera-zone-1')).toHaveStyle({ left: '10%', width: '25%' })
+  })
 })

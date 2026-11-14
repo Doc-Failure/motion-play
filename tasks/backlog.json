@@ -51,9 +51,9 @@
     "depends_on": [
       "T04"
     ],
-    "status": "pending",
-    "attempts": 0,
-    "notes": "",
+    "status": "done",
+    "attempts": 1,
+    "notes": "Added 1–4 player selection, independently configurable normalized camera zones, separate specified game viewport layouts, consistent mirrored camera-to-player coordinate mapping, accessible zone overlays/controls, and synthetic coordinate/UI tests. Verified npm run typecheck, lint, test (15 passing), and build on 2026-11-14. Physical multi-person framing and webcam behavior remain unverified and require hardware validation.",
     "needs_hardware_validation": true,
     "hardware_verified": false
   },

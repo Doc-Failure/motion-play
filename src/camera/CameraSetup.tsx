@@ -1,5 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { CameraSource, cameraFailure, type CameraDevice, type CameraFailure } from './CameraSource'
+import {
+  constrainCameraZone,
+  defaultCameraZones,
+  playerViewports,
+  type PlayerCameraZone,
+  type PlayerCount,
+} from '../input/PlayerZoneMapper'
 
 export interface CameraController {
   listDevices(): Promise<CameraDevice[]>
@@ -24,6 +31,19 @@ export function CameraSetup({ source: providedSource }: { source?: CameraControl
   const [selected, setSelected] = useState('')
   const [status, setStatus] = useState<'idle' | 'requesting' | 'ready' | 'simulation'>('idle')
   const [failure, setFailure] = useState<CameraFailure | null>(null)
+  const [playerCount, setPlayerCount] = useState<PlayerCount>(1)
+  const [zones, setZones] = useState<PlayerCameraZone[]>(() => defaultCameraZones(1))
+
+  const choosePlayerCount = (count: PlayerCount) => {
+    setPlayerCount(count)
+    setZones(defaultCameraZones(count))
+  }
+
+  const updateZone = (playerId: number, field: 'x' | 'y' | 'width' | 'height', value: number) => {
+    setZones((current) => current.map((zone) => zone.playerId === playerId
+      ? constrainCameraZone({ ...zone, [field]: value })
+      : zone))
+  }
 
   const refreshDevices = useCallback(async () => {
     try {
@@ -83,6 +103,12 @@ export function CameraSetup({ source: providedSource }: { source?: CameraControl
         <video ref={videoRef} muted playsInline aria-label="Mirrored camera preview" />
         {status !== 'ready' && <div className="camera-placeholder"><span aria-hidden="true">✦</span><strong>{status === 'simulation' ? 'Demo mode ready' : 'Camera preview'}</strong><small>{status === 'simulation' ? 'No camera is being used.' : 'Your picture will appear here after you choose Start camera.'}</small></div>}
         {status === 'ready' && <span className="camera-live"><i aria-hidden="true" /> Camera on</span>}
+        <div className="camera-zones" aria-label="Player camera zones">{zones.map((zone) => <div
+          className={`camera-zone camera-zone--${zone.playerId}`}
+          data-testid={`camera-zone-${zone.playerId}`}
+          key={zone.playerId}
+          style={{ left: `${zone.x * 100}%`, top: `${zone.y * 100}%`, width: `${zone.width * 100}%`, height: `${zone.height * 100}%` }}
+        ><span>Player {zone.playerId}</span></div>)}</div>
       </div>
       <div className="camera-controls">
         <h2>Choose your camera</h2>
@@ -99,5 +125,15 @@ export function CameraSetup({ source: providedSource }: { source?: CameraControl
         <p className="camera-note"><strong>When you leave this screen, the camera turns off.</strong> A real webcam still needs a person to check framing, lighting, and browser behavior.</p>
       </div>
     </div>
+    <section className="zone-setup" aria-labelledby="zone-title">
+      <div className="zone-setup__heading"><div><p className="eyebrow">Player spaces</p><h2 id="zone-title">Give everyone a camera zone</h2></div><p>Camera zones describe where people stand. Game viewports are laid out separately.</p></div>
+      <fieldset className="player-count"><legend>Number of players</legend>{([1, 2, 3, 4] as const).map((count) => <button type="button" aria-pressed={playerCount === count} onClick={() => choosePlayerCount(count)} key={count}>{count}<small>{count === 1 ? 'player' : 'players'}</small></button>)}</fieldset>
+      <div className="zone-workspace">
+        <div className="zone-editors">{zones.map((zone) => <fieldset className={`zone-editor zone-editor--${zone.playerId}`} key={zone.playerId}><legend>Player {zone.playerId} camera zone</legend>{([
+          ['x', 'Left'], ['y', 'Top'], ['width', 'Width'], ['height', 'Height'],
+        ] as const).map(([field, label]) => <label key={field}>{label}<span>{Math.round(zone[field] * 100)}%</span><input aria-label={`Player ${zone.playerId} ${label}`} type="range" min="0" max="100" step="1" value={Math.round(zone[field] * 100)} onChange={(event) => updateZone(zone.playerId, field, Number(event.target.value) / 100)} /></label>)}</fieldset>)}</div>
+        <div className="viewport-card"><h3>Game viewport layout</h3><p>{playerCount === 1 ? 'One full-screen view' : playerCount === 2 ? 'Two side-by-side views' : 'A 2 × 2 grid'} — independent from the camera zones.</p><div className={`viewport-map viewport-map--${playerCount}`} aria-label={`${playerCount} player game viewport layout`}>{playerViewports(playerCount).map((viewport) => <div key={viewport.playerId} style={{ left: `${viewport.x * 100}%`, top: `${viewport.y * 100}%`, width: `${viewport.width * 100}%`, height: `${viewport.height * 100}%` }}>P{viewport.playerId}</div>)}</div></div>
+      </div>
+    </section>
   </section>
 }

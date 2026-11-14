@@ -89,3 +89,27 @@ prompts, camera labels, framing, lighting, disconnection behavior, and browser
 compatibility have not been physically verified. T04 remains marked
 `needs_hardware_validation: true` and `hardware_verified: false`; no physical
 webcam validation is claimed.
+
+## T05 — done (2026-11-14)
+
+- Added typed normalized camera-zone and game-viewport models for all supported
+  player counts. Default camera regions are side-by-side for 1–4 people, while
+  game viewports remain independently defined as fullscreen, side-by-side, or a
+  2 × 2 grid with the fourth tile unused for three players.
+- Added mirrored raw-camera to player-local coordinate mapping with explicit
+  out-of-zone rejection, stable boundary handling, and constrained adjustable
+  zones that remain inside the normalized frame.
+- Extended camera setup with accessible 1–4 player selection, color-and-label
+  zone overlays, per-player left/top/width/height controls, and a separate game
+  viewport preview. Changing player count restores sensible default regions.
+- Added unit and component coverage for every layout, mirrored coordinates,
+  edges, custom subregions, invalid edit constraints, four-player controls, and
+  separation between camera zones and viewport tiles.
+- Automated evidence: `npm run typecheck`, `npm run lint`, `npm run test`
+  (4 files, 15 tests passed), and `npm run build` all exited successfully.
+
+Outstanding risk: automated tests use geometry and mocked camera controllers.
+Real multi-person framing, mirroring feel, occlusion, wide-angle coverage, and
+zone usability have not been physically verified. T05 remains marked
+`needs_hardware_validation: true` and `hardware_verified: false`; no physical
+webcam validation is claimed.
