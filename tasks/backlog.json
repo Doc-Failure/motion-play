@@ -27,9 +27,9 @@
     "depends_on": [
       "T02"
     ],
-    "status": "pending",
-    "attempts": 0,
-    "notes": "",
+    "status": "done",
+    "attempts": 1,
+    "notes": "Added the exact ordered 32-game catalog, responsive searchable/filterable browse UI, hash-based home/catalog/detail navigation, procedural local artwork, and honest Coming soon/disabled-start states for every unvalidated game. Verified npm run typecheck, lint, test (5 passing), and build on 2026-11-14.",
     "needs_hardware_validation": false,
     "hardware_verified": false
   },

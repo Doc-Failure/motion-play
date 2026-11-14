@@ -41,3 +41,27 @@ Outstanding risk: responsive behavior is covered structurally through CSS media
 queries but does not yet have browser screenshot tests; Playwright is scheduled
 for T10. T02 does not use a webcam, so no physical hardware validation was
 performed or claimed.
+
+## T03 — done (2026-11-14)
+
+- Added the exact ordered set of all 32 games from the specification as typed,
+  centralized catalog data, including rules, mechanic category, input kind,
+  difficulty, mode, and 1–4-player support.
+- Added responsive catalog browsing with text search and category, difficulty,
+  player-count, and availability controls. Availability is intentionally fixed
+  to `Coming soon` because no minigame has passed its later implementation and
+  validation task.
+- Added hash-based navigation from the homepage to the catalog and to a detail
+  view for every game. Detail views include procedural local artwork, rules,
+  mode, difficulty, supported players, and a disabled start control with an
+  explicit validation explanation.
+- Added automated checks for the exact catalog order and uniqueness, honest
+  availability, all 32 detail links, filtering, detail metadata, disabled start
+  behavior, and decorative-art accessibility.
+- Automated evidence: `npm run typecheck`, `npm run lint`, `npm run test`
+  (1 file, 5 tests passed), and `npm run build` all exited successfully.
+
+Outstanding risk: responsive catalog behavior is covered through CSS and DOM
+tests but not browser screenshots; Playwright remains scheduled for T10. T03
+does not use a webcam, so no physical hardware validation was performed or
+claimed.
