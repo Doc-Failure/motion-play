@@ -113,3 +113,29 @@ Real multi-person framing, mirroring feel, occlusion, wide-angle coverage, and
 zone usability have not been physically verified. T05 remains marked
 `needs_hardware_validation: true` and `hardware_verified: false`; no physical
 webcam validation is claimed.
+
+## T06 — done (2026-11-14)
+
+- Added a browser-native, low-resolution `MotionProcessor` boundary that accepts
+  RGBA frames and camera zones, then applies frame differencing, temporal
+  smoothing, neighborhood denoising, a sensitivity-controlled threshold, and an
+  ambient-noise floor estimated during recalibration.
+- Added player-local `MOTION_HIT` events containing normalized coordinates,
+  confidence, and timestamps. Motion is summarized independently for every
+  configured camera zone, with per-player debounce and no raw camera access in
+  game code.
+- Added a deterministic synthetic frame simulator that runs through the same
+  processor as webcam frames, plus live per-player motion meters, sensitivity
+  and recalibration controls, and an optional pixel-mask debug overlay showing
+  zones, threshold, processing FPS, and current hit count.
+- Added automated coverage for denoising, thresholds, calibration, player-zone
+  isolation, normalized coordinates, debounce, repeatable simulation, and the
+  calibration/debug UI.
+- Automated evidence: `npm run typecheck`, `npm run lint`, `npm run test`
+  (5 files, 19 tests passed), and `npm run build` all exited successfully.
+
+Outstanding risk: all motion behavior was validated with generated frames and
+mocked media streams. Physical webcam motion feel, background flicker rejection,
+lighting changes, processing latency, framing, and browser compatibility have
+not been physically tested. T06 remains marked `needs_hardware_validation: true`
+and `hardware_verified: false`; no physical webcam validation is claimed.

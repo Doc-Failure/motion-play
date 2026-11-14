@@ -63,9 +63,9 @@
     "depends_on": [
       "T05"
     ],
-    "status": "pending",
-    "attempts": 0,
-    "notes": "",
+    "status": "done",
+    "attempts": 1,
+    "notes": "Implemented low-resolution frame differencing with denoising, temporal smoothing, sensitivity/noise calibration, per-zone normalized MOTION_HIT events and debounce; added a deterministic synthetic simulator, live player motion meters, optional mask/zone/threshold/FPS/hit debug overlay, and calibration controls. Verified npm run typecheck, lint, test (19 passing), and build on 2026-11-14. Physical webcam motion feel, lighting/noise behavior, latency, and browser compatibility remain unverified and require hardware validation.",
     "needs_hardware_validation": true,
     "hardware_verified": false
   },

@@ -63,4 +63,21 @@ describe('CameraSetup', () => {
     fireEvent.change(screen.getByLabelText('Player 1 Left'), { target: { value: '10' } })
     expect(screen.getByTestId('camera-zone-1')).toHaveStyle({ left: '10%', width: '25%' })
   })
+
+  it('offers sensitivity, calibration, deterministic demo motion, and mask debugging', () => {
+    const context = { createImageData: (width: number, height: number) => ({ data: new Uint8ClampedArray(width * height * 4) }), putImageData: vi.fn(), strokeRect: vi.fn(), lineWidth: 1, strokeStyle: '' }
+    const getContext = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(context as unknown as CanvasRenderingContext2D)
+    const { container } = render(<CameraSetup source={controller()} />)
+    expect(screen.getByLabelText('Motion sensitivity')).toHaveValue('55')
+    fireEvent.change(screen.getByLabelText('Motion sensitivity'), { target: { value: '70' } })
+    expect(screen.getByText('70%')).toBeVisible()
+    fireEvent.click(screen.getByRole('button', { name: 'Recalibrate background' }))
+    expect(screen.getByRole('status')).toHaveTextContent('Keep still')
+    fireEvent.click(screen.getByRole('button', { name: 'Use demo mode' }))
+    fireEvent.click(screen.getByLabelText('Show mask debug overlay'))
+    expect(container.querySelector('canvas[aria-label="Motion mask debug overlay"]')).toBeInTheDocument()
+    expect(screen.getByText('Threshold')).toBeVisible()
+    expect(screen.getByLabelText('Player 1 motion level')).toBeInTheDocument()
+    getContext.mockRestore()
+  })
 })
