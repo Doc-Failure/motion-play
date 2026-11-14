@@ -1,0 +1,314 @@
+[
+  {
+    "id": "T01",
+    "title": "Scaffold Vite React TypeScript Phaser app, scripts for typecheck lint test build, basic tests",
+    "depends_on": [],
+    "status": "pending",
+    "attempts": 0,
+    "notes": "",
+    "needs_hardware_validation": false,
+    "hardware_verified": false
+  },
+  {
+    "id": "T02",
+    "title": "Implement original crayon design system and homepage responsive layout",
+    "depends_on": [
+      "T01"
+    ],
+    "status": "pending",
+    "attempts": 0,
+    "notes": "",
+    "needs_hardware_validation": false,
+    "hardware_verified": false
+  },
+  {
+    "id": "T03",
+    "title": "Add all 32 catalog entries and browse/details/coming-soon navigation",
+    "depends_on": [
+      "T02"
+    ],
+    "status": "pending",
+    "attempts": 0,
+    "notes": "",
+    "needs_hardware_validation": false,
+    "hardware_verified": false
+  },
+  {
+    "id": "T04",
+    "title": "Camera permissions, device selection, mirrored preview, lifecycle and error states",
+    "depends_on": [
+      "T01"
+    ],
+    "status": "pending",
+    "attempts": 0,
+    "notes": "",
+    "needs_hardware_validation": true,
+    "hardware_verified": false
+  },
+  {
+    "id": "T05",
+    "title": "Player count 1\u20134; separate configurable camera zones and viewport mapping with coordinate tests",
+    "depends_on": [
+      "T04"
+    ],
+    "status": "pending",
+    "attempts": 0,
+    "notes": "",
+    "needs_hardware_validation": true,
+    "hardware_verified": false
+  },
+  {
+    "id": "T06",
+    "title": "Frame-differencing motion input, synthetic simulator, mask debug overlay and calibration UI",
+    "depends_on": [
+      "T05"
+    ],
+    "status": "pending",
+    "attempts": 0,
+    "notes": "",
+    "needs_hardware_validation": true,
+    "hardware_verified": false
+  },
+  {
+    "id": "T07",
+    "title": "Game session timing, score isolation, state machine and tests",
+    "depends_on": [
+      "T01"
+    ],
+    "status": "pending",
+    "attempts": 0,
+    "notes": "",
+    "needs_hardware_validation": false,
+    "hardware_verified": false
+  },
+  {
+    "id": "T08",
+    "title": "Implement Bubble Battle fully for one player via generic motion input with tests",
+    "depends_on": [
+      "T03",
+      "T06",
+      "T07"
+    ],
+    "status": "pending",
+    "attempts": 0,
+    "notes": "",
+    "needs_hardware_validation": true,
+    "hardware_verified": false
+  },
+  {
+    "id": "T09",
+    "title": "Enable tested two-player Bubble Battle independent viewports, score, results/replay",
+    "depends_on": [
+      "T08"
+    ],
+    "status": "pending",
+    "attempts": 0,
+    "notes": "",
+    "needs_hardware_validation": true,
+    "hardware_verified": false
+  },
+  {
+    "id": "T10",
+    "title": "Implement browser end-to-end tests with mocked media streams and deterministic motion fixtures",
+    "depends_on": [
+      "T09"
+    ],
+    "status": "pending",
+    "attempts": 0,
+    "notes": "",
+    "needs_hardware_validation": false,
+    "hardware_verified": false
+  },
+  {
+    "id": "T11",
+    "title": "Extend viewport and calibrated camera regions to three and four players with independent scores",
+    "depends_on": [
+      "T10"
+    ],
+    "status": "pending",
+    "attempts": 0,
+    "notes": "",
+    "needs_hardware_validation": true,
+    "hardware_verified": false
+  },
+  {
+    "id": "T12",
+    "title": "Implement hover/dwell camera menus with keyboard and mouse fallback",
+    "depends_on": [
+      "T10"
+    ],
+    "status": "pending",
+    "attempts": 0,
+    "notes": "",
+    "needs_hardware_validation": false,
+    "hardware_verified": false
+  },
+  {
+    "id": "T13",
+    "title": "Practice tutorial, onboarding and pause/reconnect/visibility recovery",
+    "depends_on": [
+      "T12"
+    ],
+    "status": "pending",
+    "attempts": 0,
+    "notes": "",
+    "needs_hardware_validation": false,
+    "hardware_verified": false
+  },
+  {
+    "id": "T14",
+    "title": "Implement and test Window Wipe minigame using brush input; only mark playable when demonstrated via simulation",
+    "depends_on": [
+      "T13"
+    ],
+    "status": "pending",
+    "attempts": 0,
+    "notes": "",
+    "needs_hardware_validation": false,
+    "hardware_verified": false
+  },
+  {
+    "id": "T15",
+    "title": "Implement and test Whack-a-Mole minigame using hit input; only mark playable when demonstrated via simulation",
+    "depends_on": [
+      "T14"
+    ],
+    "status": "pending",
+    "attempts": 0,
+    "notes": "",
+    "needs_hardware_validation": false,
+    "hardware_verified": false
+  },
+  {
+    "id": "T16",
+    "title": "Implement and test Balloon Panic minigame using hit input; only mark playable when demonstrated via simulation",
+    "depends_on": [
+      "T15"
+    ],
+    "status": "pending",
+    "attempts": 0,
+    "notes": "",
+    "needs_hardware_validation": false,
+    "hardware_verified": false
+  },
+  {
+    "id": "T17",
+    "title": "Implement and test Gold Rush minigame using hit input; only mark playable when demonstrated via simulation",
+    "depends_on": [
+      "T16"
+    ],
+    "status": "pending",
+    "attempts": 0,
+    "notes": "",
+    "needs_hardware_validation": false,
+    "hardware_verified": false
+  },
+  {
+    "id": "T18",
+    "title": "Implement and test Paint Splash minigame using brush input; only mark playable when demonstrated via simulation",
+    "depends_on": [
+      "T17"
+    ],
+    "status": "pending",
+    "attempts": 0,
+    "notes": "",
+    "needs_hardware_validation": false,
+    "hardware_verified": false
+  },
+  {
+    "id": "T19",
+    "title": "Implement and test Simon Says minigame using hit input; only mark playable when demonstrated via simulation",
+    "depends_on": [
+      "T18"
+    ],
+    "status": "pending",
+    "attempts": 0,
+    "notes": "",
+    "needs_hardware_validation": false,
+    "hardware_verified": false
+  },
+  {
+    "id": "T20",
+    "title": "Implement and test Fruit Catcher minigame using hand input; only mark playable when demonstrated via simulation",
+    "depends_on": [
+      "T19"
+    ],
+    "status": "pending",
+    "attempts": 0,
+    "notes": "",
+    "needs_hardware_validation": false,
+    "hardware_verified": false
+  },
+  {
+    "id": "T21",
+    "title": "Implement and test Air Pong minigame using hand input; only mark playable when demonstrated via simulation",
+    "depends_on": [
+      "T20"
+    ],
+    "status": "pending",
+    "attempts": 0,
+    "notes": "",
+    "needs_hardware_validation": false,
+    "hardware_verified": false
+  },
+  {
+    "id": "T22",
+    "title": "Implement and test Goalkeeper minigame using pose input; only mark playable when demonstrated via simulation",
+    "depends_on": [
+      "T21"
+    ],
+    "status": "pending",
+    "attempts": 0,
+    "notes": "",
+    "needs_hardware_validation": false,
+    "hardware_verified": false
+  },
+  {
+    "id": "T23",
+    "title": "Tournament mode (3/5 rounds), result aggregation, cooperative scoring where appropriate",
+    "depends_on": [
+      "T22"
+    ],
+    "status": "pending",
+    "attempts": 0,
+    "notes": "",
+    "needs_hardware_validation": false,
+    "hardware_verified": false
+  },
+  {
+    "id": "T24",
+    "title": "Optional PWA offline asset caching, settings/achievements local storage and accessibility pass",
+    "depends_on": [
+      "T23"
+    ],
+    "status": "pending",
+    "attempts": 0,
+    "notes": "",
+    "needs_hardware_validation": false,
+    "hardware_verified": false
+  },
+  {
+    "id": "T25",
+    "title": "Expand remaining 22 catalog games individually with tests; this is a planning gate: split into small backlog tasks before implementation",
+    "depends_on": [
+      "T24"
+    ],
+    "status": "pending",
+    "attempts": 0,
+    "notes": "",
+    "needs_hardware_validation": false,
+    "hardware_verified": false
+  },
+  {
+    "id": "T26",
+    "title": "Final cross-browser, performance, privacy, packaging and release checklist (no deployment)",
+    "depends_on": [
+      "T25"
+    ],
+    "status": "pending",
+    "attempts": 0,
+    "notes": "",
+    "needs_hardware_validation": true,
+    "hardware_verified": false
+  }
+]

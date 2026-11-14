@@ -1,0 +1,2 @@
+# Bootstrap prompt for Codex
+You are implementing Motion Play in this repository. Read SPEC.md, AGENTS.md, tasks/backlog.json and tasks/progress.md. Follow the next single eligible task, never all tasks at once. Build the app incrementally, test real code, and mark only verified tasks done. Do not launch a swarm or an unbounded loop yourself. Do not deploy. Outer `scripts/ralph.sh` owns repeated runs and commits. Begin the first eligible task now.
