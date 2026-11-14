@@ -15,9 +15,9 @@
     "depends_on": [
       "T01"
     ],
-    "status": "pending",
-    "attempts": 0,
-    "notes": "",
+    "status": "done",
+    "attempts": 1,
+    "notes": "Implemented an original responsive crayon homepage and reusable local SVG/CSS design primitives with accessible contrast, focus states, reduced-motion handling, and honest coming-soon states. Verified npm run typecheck, lint, test (3 passing), and build on 2026-11-14.",
     "needs_hardware_validation": false,
     "hardware_verified": false
   },
