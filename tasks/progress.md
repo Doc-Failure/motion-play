@@ -65,3 +65,27 @@ Outstanding risk: responsive catalog behavior is covered through CSS and DOM
 tests but not browser screenshots; Playwright remains scheduled for T10. T03
 does not use a webcam, so no physical hardware validation was performed or
 claimed.
+
+## T04 — done (2026-11-14)
+
+- Added a browser-native `CameraSource` boundary under `src/camera` that owns a
+  single video stream, requests constrained video without audio, supports an
+  exact selected device, reports video inputs, listens for track disconnection,
+  and releases every track on restart or teardown.
+- Added a responsive, accessible camera setup route reached from Quick Play.
+  Permission is requested only after pressing Start camera; the flow includes
+  named device selection, a CSS-mirrored preview, privacy and lifecycle copy,
+  retry guidance for denied/missing/busy/unsupported failures, disconnect
+  recovery, and a no-hardware demo mode.
+- Added synthetic unit and component coverage for permission gating, exact
+  device constraints, audio exclusion, camera enumeration, stream replacement
+  and cleanup, mirrored-ready presentation, actionable failure states, demo
+  mode, and track-end recovery.
+- Automated evidence: `npm run typecheck`, `npm run lint`, `npm run test`
+  (3 files, 10 tests passed), and `npm run build` all exited successfully.
+
+Outstanding risk: tests use mocked media devices and streams. Real permission
+prompts, camera labels, framing, lighting, disconnection behavior, and browser
+compatibility have not been physically verified. T04 remains marked
+`needs_hardware_validation: true` and `hardware_verified: false`; no physical
+webcam validation is claimed.

@@ -39,9 +39,9 @@
     "depends_on": [
       "T01"
     ],
-    "status": "pending",
-    "attempts": 0,
-    "notes": "",
+    "status": "done",
+    "attempts": 1,
+    "notes": "Added an isolated browser-native CameraSource and responsive setup flow with interaction-gated permission, device selection/restart, mirrored preview, track-end disconnect recovery, actionable permission/missing/busy/unsupported errors, simulation mode, and stream cleanup on navigation. Verified npm run typecheck, lint, test (10 passing), and build on 2026-11-14. Physical webcam behavior remains unverified and requires hardware validation.",
     "needs_hardware_validation": true,
     "hardware_verified": false
   },

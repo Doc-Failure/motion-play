@@ -31,7 +31,8 @@ describe('App navigation', () => {
     expect(screen.getByText('No accounts. No uploads. Just local play.')).toBeVisible()
     expect(screen.getByRole('link', { name: 'Choose a game' })).toHaveAttribute('href', '#/catalog')
     expect(screen.getByRole('link', { name: /game catalog/i })).toHaveAttribute('href', '#/catalog')
-    expect(screen.getAllByText('Coming soon')).toHaveLength(3)
+    expect(screen.getByRole('link', { name: /quick play/i })).toHaveAttribute('href', '#/camera')
+    expect(screen.getAllByText('Coming soon')).toHaveLength(2)
   })
 
   it('browses all 32 coming-soon games and filters without changing availability', () => {

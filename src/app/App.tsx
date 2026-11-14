@@ -3,11 +3,13 @@ import { CrayonBurst } from '../design/CrayonBurst'
 import { ScribbleIcon, type ScribbleIconName } from '../design/ScribbleIcon'
 import { catalogCategories, catalogGames, getGameBySlug, type CatalogCategory, type Difficulty } from './catalog'
 import { GameArt } from './GameArt'
+import { CameraSetup } from '../camera/CameraSetup'
 
-type Route = { page: 'home' } | { page: 'catalog' } | { page: 'detail'; slug: string }
+type Route = { page: 'home' } | { page: 'catalog' } | { page: 'camera' } | { page: 'detail'; slug: string }
 const routeFromHash = (): Route => {
   const hash = window.location.hash.replace(/^#\/?/, '')
   if (hash === 'catalog') return { page: 'catalog' }
+  if (hash === 'camera') return { page: 'camera' }
   if (hash.startsWith('games/')) return { page: 'detail', slug: hash.slice(6) }
   return { page: 'home' }
 }
@@ -18,7 +20,7 @@ function AppHeader() {
 
 function Home() {
   const actions: Array<{ title: string; description: string; icon: ScribbleIconName; tone: string; href?: string; featured?: boolean }> = [
-    { title: 'Quick Play', description: 'Jump into a surprise game made for your group.', icon: 'play', tone: 'coral', featured: true },
+    { title: 'Quick Play', description: 'Set up your camera or try the no-camera demo.', icon: 'play', tone: 'coral', href: '#/camera', featured: true },
     { title: 'Game Catalog', description: 'Peek at every game in the toy box.', icon: 'cards', tone: 'blue', href: '#/catalog' },
     { title: 'Tournament', description: 'Play a set of games and chase the top score.', icon: 'trophy', tone: 'yellow' },
     { title: 'Settings', description: 'Tune sound, motion, and accessibility.', icon: 'gear', tone: 'green' },
@@ -57,5 +59,5 @@ function GameDetail({ slug }: { slug: string }) {
 export function App() {
   const [route, setRoute] = useState(routeFromHash)
   useEffect(() => { const navigate = () => setRoute(routeFromHash()); window.addEventListener('hashchange', navigate); return () => window.removeEventListener('hashchange', navigate) }, [])
-  return <main className="home-shell"><AppHeader />{route.page === 'home' ? <Home /> : route.page === 'catalog' ? <Catalog /> : <GameDetail slug={route.slug} />}<footer className="home-footer"><p><span aria-hidden="true">★</span> Made for 1–4 local players <span aria-hidden="true">★</span></p></footer></main>
+  return <main className="home-shell"><AppHeader />{route.page === 'home' ? <Home /> : route.page === 'catalog' ? <Catalog /> : route.page === 'camera' ? <CameraSetup /> : <GameDetail slug={route.slug} />}<footer className="home-footer"><p><span aria-hidden="true">★</span> Made for 1–4 local players <span aria-hidden="true">★</span></p></footer></main>
 }
