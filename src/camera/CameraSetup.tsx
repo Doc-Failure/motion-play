@@ -10,6 +10,7 @@ import {
 import { MotionProcessor, type MotionFrame, type MotionResult } from '../input/MotionProcessor'
 import { SyntheticMotionSimulator } from '../input/SyntheticMotionSimulator'
 import { MotionDebugOverlay } from '../input/MotionDebugOverlay'
+import { BubbleBattle } from '../minigames/bubble-battle/BubbleBattle'
 
 export interface CameraController {
   listDevices(): Promise<CameraDevice[]>
@@ -45,6 +46,7 @@ export function CameraSetup({ source: providedSource }: { source?: CameraControl
   const [motion, setMotion] = useState<MotionResult | null>(null)
   const [fps, setFps] = useState(0)
   const [calibration, setCalibration] = useState('Move naturally to test each player zone.')
+  const [playing, setPlaying] = useState(false)
 
   const choosePlayerCount = (count: PlayerCount) => {
     setPlayerCount(count)
@@ -152,7 +154,7 @@ export function CameraSetup({ source: providedSource }: { source?: CameraControl
     setCalibration(`Calibration ready — background noise ${Math.round(noise)} / 255.`)
   }
 
-  return <section className="camera-page" aria-labelledby="camera-title">
+  return <>{playing && <BubbleBattle inputEvents={motion?.events ?? []} onExit={() => setPlaying(false)} />}<section className="camera-page" aria-labelledby="camera-title" hidden={playing}>
     <a className="back-link" href="#/">← Home</a>
     <div className="camera-heading"><p className="eyebrow">Camera setup</p><h1 id="camera-title">Let’s see your moves</h1><p>Your camera stays on this device. Motion Play never uploads or records its picture.</p></div>
     <div className="camera-layout">
@@ -182,6 +184,8 @@ export function CameraSetup({ source: providedSource }: { source?: CameraControl
           <button className="text-button" type="button" onClick={simulate}>Use demo mode</button>
         </div>
         <p className="camera-note"><strong>When you leave this screen, the camera turns off.</strong> A real webcam still needs a person to check framing, lighting, and browser behavior.</p>
+        <button className="crayon-button crayon-button--primary" type="button" disabled={(status !== 'ready' && status !== 'simulation') || playerCount !== 1} onClick={() => setPlaying(true)}>Play Bubble Battle</button>
+        {playerCount !== 1 && <p className="camera-note">Bubble Battle is validated for one player. Two-player play unlocks in the next milestone.</p>}
       </div>
     </div>
     <section className="motion-calibration" aria-labelledby="motion-title">
@@ -205,5 +209,5 @@ export function CameraSetup({ source: providedSource }: { source?: CameraControl
         <div className="viewport-card"><h3>Game viewport layout</h3><p>{playerCount === 1 ? 'One full-screen view' : playerCount === 2 ? 'Two side-by-side views' : 'A 2 × 2 grid'} — independent from the camera zones.</p><div className={`viewport-map viewport-map--${playerCount}`} aria-label={`${playerCount} player game viewport layout`}>{playerViewports(playerCount).map((viewport) => <div key={viewport.playerId} style={{ left: `${viewport.x * 100}%`, top: `${viewport.y * 100}%`, width: `${viewport.width * 100}%`, height: `${viewport.height * 100}%` }}>P{viewport.playerId}</div>)}</div></div>
       </div>
     </section>
-  </section>
+  </section></>
 }

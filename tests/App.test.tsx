@@ -17,7 +17,8 @@ describe('catalog data', () => {
     expect(new Set(catalogGames.map((game) => game.slug))).toHaveLength(32)
     expect(new Set(catalogGames.map((game) => game.title))).toHaveLength(32)
     expect(new Set(catalogGames.map((game) => game.category))).toEqual(new Set(catalogCategories))
-    expect(catalogGames.every((game) => game.available === false && game.players.join() === '1,2,3,4')).toBe(true)
+    expect(catalogGames.filter((game) => game.available).map((game) => [game.slug, game.players])).toEqual([['bubble-battle', [1]]])
+    expect(catalogGames.slice(1).every((game) => game.available === false && game.players.join() === '1,2,3,4')).toBe(true)
   })
 })
 
@@ -35,12 +36,13 @@ describe('App navigation', () => {
     expect(screen.getAllByText('Coming soon')).toHaveLength(2)
   })
 
-  it('browses all 32 coming-soon games and filters without changing availability', () => {
+  it('browses one validated game and 31 honest coming-soon games', () => {
     visit('#/catalog')
     render(<App />)
     expect(screen.getByRole('heading', { level: 1, name: 'Game Catalog' })).toBeVisible()
     expect(screen.getAllByRole('link', { name: /view .+ details/i })).toHaveLength(32)
-    expect(screen.getAllByText('Coming soon')).toHaveLength(33)
+    expect(screen.getByText('Play now')).toBeVisible()
+    expect(screen.getAllByText('Coming soon')).toHaveLength(32)
     expect(screen.getByLabelText('Availability')).toBeDisabled()
     fireEvent.change(screen.getByLabelText('Category'), { target: { value: 'Clean & Create' } })
     expect(screen.getAllByRole('link', { name: /view .+ details/i })).toHaveLength(6)
@@ -49,16 +51,24 @@ describe('App navigation', () => {
     expect(screen.queryByRole('link', { name: 'View Paint Splash details' })).not.toBeInTheDocument()
   })
 
-  it('shows honest details and prevents starting an unvalidated game', () => {
+  it('shows validated one-player Bubble Battle details and a setup route', () => {
     visit('#/games/bubble-battle')
     render(<App />)
     expect(screen.getByRole('heading', { level: 1, name: 'Bubble Battle' })).toBeVisible()
     expect(screen.getByText('Pop floating bubbles and keep clear of the bombs.')).toBeVisible()
     const facts = screen.getByText('How you move').parentElement
     expect(facts && within(facts).getByRole('definition')).toHaveTextContent('MOTION HIT')
+    expect(screen.getByText('Playable • 1 player')).toBeVisible()
+    expect(screen.getByRole('link', { name: 'Set up & play' })).toHaveAttribute('href', '#/camera')
+    expect(screen.getByText(/choose a camera or no-camera demo/i)).toBeVisible()
+    expect(screen.getByRole('link', { name: /all games/i })).toHaveAttribute('href', '#/catalog')
+  })
+
+  it('continues to prevent starting an unvalidated game', () => {
+    visit('#/games/whack-a-mole')
+    render(<App />)
     expect(screen.getByRole('button', { name: 'Start game' })).toBeDisabled()
     expect(screen.getByText(/unlock only after its controls and scoring are validated/i)).toBeVisible()
-    expect(screen.getByRole('link', { name: /all games/i })).toHaveAttribute('href', '#/catalog')
   })
 
   it('keeps decorative artwork out of the accessibility tree', () => {

@@ -159,3 +159,33 @@ and `hardware_verified: false`; no physical webcam validation is claimed.
 Outstanding risk: T07 is a logic-only session layer and is not yet wired to a
 playable minigame; that integration belongs to T08. No webcam behavior was
 changed or physically validated, and no hardware validation is claimed.
+
+## T08 — done (2026-11-14)
+
+- Added a deterministic, camera-independent Bubble Battle model that consumes
+  only normalized `MOTION_HIT` events. It uses the shared `GameSession` for the
+  three-second countdown, 60-second round, isolated one-player score, results,
+  and replay lifecycle.
+- Implemented floating bubble and bomb targets, overlap hit detection, +10
+  bubble scoring, −15 bomb penalties, target consumption, confidence gating,
+  and safe handling of asynchronously delivered motion-event timestamps.
+- Added a responsive crayon play surface with clear score/time/rules/status,
+  results and replay controls, plus mouse/touch input translated into the same
+  generic motion event shape. No minigame code reads camera pixels or media APIs.
+- Connected the game to the existing camera calibration and deterministic demo
+  flow while retaining the live capture element during gameplay. The catalog
+  now truthfully exposes Bubble Battle for one player only; all other games and
+  multiplayer Bubble Battle remain unavailable.
+- Added model coverage for timing, deterministic spawning, scoring, penalties,
+  misses, confidence/player rejection, consumed targets, results cleanup, and
+  delayed event delivery. Added UI coverage for catalog availability and launch
+  from simulated motion setup.
+- Automated evidence: `npm run typecheck`, `npm run lint`, `npm run test`
+  (7 files, 31 tests passed), and `npm run build` all exited successfully.
+
+Outstanding risk: automated coverage uses deterministic events, generated
+frames, and mocked media streams. Real webcam hit feel, lighting/background
+noise behavior, latency, framing, and browser compatibility were not physically
+tested. T08 remains `needs_hardware_validation: true` and
+`hardware_verified: false`; no physical webcam validation is claimed. Two-player
+Bubble Battle is intentionally deferred to T09.

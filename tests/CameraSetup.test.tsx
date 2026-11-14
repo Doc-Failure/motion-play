@@ -15,6 +15,15 @@ function controller(overrides: Partial<CameraController> = {}): CameraController
 }
 
 describe('CameraSetup', () => {
+  it('launches one-player Bubble Battle from generic simulated motion input', () => {
+    render(<CameraSetup source={controller()} />)
+    expect(screen.getByRole('button', { name: 'Play Bubble Battle' })).toBeDisabled()
+    fireEvent.click(screen.getByRole('button', { name: 'Use demo mode' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Play Bubble Battle' }))
+    expect(screen.getByRole('heading', { name: 'Bubble Battle' })).toBeVisible()
+    expect(screen.getByLabelText('Bubble Battle play area')).toBeVisible()
+    expect(screen.getByText(/move over bubbles for \+10/i)).toBeVisible()
+  })
   it('does not request permission until interaction, selects a device, and mirrors the preview', async () => {
     const source = controller()
     const { container } = render(<CameraSetup source={source} />)

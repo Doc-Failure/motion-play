@@ -89,9 +89,9 @@
       "T06",
       "T07"
     ],
-    "status": "pending",
-    "attempts": 0,
-    "notes": "",
+    "status": "done",
+    "attempts": 1,
+    "notes": "Implemented a complete one-player Bubble Battle round consuming generic normalized MOTION_HIT events, with countdown/round/results/replay, deterministic floating targets, bubble scoring, bomb penalties, pointer fallback, camera/demo setup integration, and honest one-player catalog availability. Verified npm run typecheck, lint, test (7 files, 31 tests passed), and build on 2026-11-14. Physical webcam motion feel remains unverified and requires hardware validation.",
     "needs_hardware_validation": true,
     "hardware_verified": false
   },

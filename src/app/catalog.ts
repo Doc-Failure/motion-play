@@ -3,12 +3,12 @@ export const catalogCategories = ['Hit & Destroy', 'Catch & Collect', 'Move & Su
 export type CatalogCategory = (typeof catalogCategories)[number]
 export type InputKind = 'MOTION_HIT' | 'MOTION_BRUSH' | 'HAND_POSITION' | 'HAND_SWIPE' | 'BODY_MOVE' | 'FREEZE' | 'MIXED'
 export type Difficulty = 'Easy' | 'Normal' | 'Hard'
-export type CatalogGame = { id: number; slug: string; title: string; rules: string; category: CatalogCategory; input: InputKind; difficulty: Difficulty; mode: 'Competitive' | 'Cooperative' | 'Solo score chase'; players: readonly number[]; available: false; colors: readonly [string, string] }
+export type CatalogGame = { id: number; slug: string; title: string; rules: string; category: CatalogCategory; input: InputKind; difficulty: Difficulty; mode: 'Competitive' | 'Cooperative' | 'Solo score chase'; players: readonly number[]; available: boolean; colors: readonly [string, string] }
 
-const game = (id: number, slug: string, title: string, rules: string, category: CatalogCategory, input: InputKind, difficulty: Difficulty, mode: CatalogGame['mode'], colors: readonly [string, string]): CatalogGame => ({ id, slug, title, rules, category, input, difficulty, mode, players: [1, 2, 3, 4], available: false, colors })
+const game = (id: number, slug: string, title: string, rules: string, category: CatalogCategory, input: InputKind, difficulty: Difficulty, mode: CatalogGame['mode'], colors: readonly [string, string], available = false): CatalogGame => ({ id, slug, title, rules, category, input, difficulty, mode, players: available ? [1] : [1, 2, 3, 4], available, colors })
 
 export const catalogGames: readonly CatalogGame[] = [
-  game(1, 'bubble-battle', 'Bubble Battle', 'Pop floating bubbles and keep clear of the bombs.', 'Hit & Destroy', 'MOTION_HIT', 'Easy', 'Competitive', ['#66c7df', '#ee654f']),
+  game(1, 'bubble-battle', 'Bubble Battle', 'Pop floating bubbles and keep clear of the bombs.', 'Hit & Destroy', 'MOTION_HIT', 'Easy', 'Solo score chase', ['#66c7df', '#ee654f'], true),
   game(2, 'whack-a-mole', 'Whack-a-Mole', 'Strike each mole before it ducks back underground.', 'Hit & Destroy', 'MOTION_HIT', 'Easy', 'Competitive', ['#72b779', '#9b6b43']),
   game(3, 'meteor-smash', 'Meteor Smash', 'Smash meteors before they crash into your base.', 'Hit & Destroy', 'MOTION_HIT', 'Normal', 'Competitive', ['#7557a8', '#f28c46']),
   game(4, 'fruit-slash', 'Fruit Slash', 'Swipe the fruit, but do not slice the bombs.', 'Hit & Destroy', 'HAND_SWIPE', 'Normal', 'Competitive', ['#ee654f', '#72b779']),
