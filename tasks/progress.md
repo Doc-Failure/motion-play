@@ -579,3 +579,33 @@ not physical hand landmark tracking. Real webcam hand accuracy, confidence,
 latency, lighting tolerance, reach, and multiplayer occlusion were not tested.
 T20 records `needs_hardware_validation: true` and `hardware_verified: false`;
 no physical webcam validation was performed or claimed.
+
+## T21 — done (attempt 1, 2026-11-15)
+
+- Added a deterministic, camera-independent Air Pong model that consumes only
+  normalized `HAND_POSITION` events. Each player controls a vertical paddle on
+  an independent board while a timed ball bounces between the paddle and far
+  wall.
+- Implemented 10-point returns, five-point miss penalties, rally counts,
+  confidence and input-kind gates, synchronized round timing, isolated 1–4
+  player state and scores, results/replay, and mouse/pointer fallback.
+- Preserved the input boundary: Air Pong has no camera or media-library
+  dependency. Camera and deterministic simulator events are adapted to generic
+  hand-position events in setup code.
+- Added practice instructions, setup selection, direct catalog routing, and a
+  responsive crayon-style play surface with color, labels, and semantic status
+  content. Air Pong is catalog-playable only after the simulation passed.
+- Added three model tests for paddle control, returns, misses, input gates, and
+  multiplayer isolation. Added a rendered component simulation that advances
+  the real countdown and ball physics, supplies a `HAND_POSITION` event, and
+  verifies the visible paddle position, score increase, and rally count.
+- Automated evidence: `npm run typecheck`, `npm run lint`, `npm run test` (20
+  files, 83 tests), `npm run build`, and `git diff --check` all exited
+  successfully on 2026-11-15.
+
+Outstanding risk: simulation and pointer input validate the game/input-event
+boundary, not physical hand landmark tracking. Real webcam hand accuracy,
+confidence, latency, lighting tolerance, reach, and multiplayer occlusion were
+not tested. T21 records `needs_hardware_validation: true` and
+`hardware_verified: false`; no physical webcam validation was performed or
+claimed.

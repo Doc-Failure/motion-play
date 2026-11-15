@@ -269,10 +269,10 @@
     "depends_on": [
       "T20"
     ],
-    "status": "pending",
-    "attempts": 0,
-    "notes": "",
-    "needs_hardware_validation": false,
+    "status": "done",
+    "attempts": 1,
+    "notes": "Implemented deterministic Air Pong for 1-4 players using generic HAND_POSITION events, isolated paddles/balls/scores, rally rewards and miss penalties, pointer fallback, practice/catalog/setup routing, and model plus rendered component simulation coverage. Verified typecheck, lint, 83 unit/component tests, build, and git diff --check on 2026-11-15. Physical webcam hand tracking was not validated.",
+    "needs_hardware_validation": true,
     "hardware_verified": false
   },
   {

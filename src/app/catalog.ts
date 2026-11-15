@@ -34,7 +34,7 @@ export const catalogGames: readonly CatalogGame[] = [
   game(24, 'pizza-maker', 'Pizza Maker', 'Choose ingredients to copy each tasty pizza order.', 'Clean & Create', 'MOTION_HIT', 'Normal', 'Cooperative', ['#ee654f', '#f5c847']),
   game(25, 'graffiti-race', 'Graffiti Race', 'Paint quickly to reveal the hidden mural.', 'Clean & Create', 'MOTION_BRUSH', 'Normal', 'Competitive', ['#7557a8', '#72b779']),
   game(26, 'tower-builder', 'Tower Builder', 'Guide each block into place without toppling the tower.', 'Clean & Create', 'HAND_POSITION', 'Hard', 'Cooperative', ['#f28c46', '#4c9ed9']),
-  game(27, 'air-pong', 'Air Pong', 'Move your hand to return the ball with your paddle.', 'Skill & Precision', 'HAND_POSITION', 'Normal', 'Competitive', ['#4c9ed9', '#ee654f']),
+  game(27, 'air-pong', 'Air Pong', 'Move your hand to return the ball with your paddle.', 'Skill & Precision', 'HAND_POSITION', 'Normal', 'Competitive', ['#4c9ed9', '#ee654f'], true),
   game(28, 'goalkeeper', 'Goalkeeper', 'Block as many shots as you can with your body.', 'Skill & Precision', 'BODY_MOVE', 'Normal', 'Solo score chase', ['#72b779', '#f5c847']),
   game(29, 'basketball-blitz', 'Basketball Blitz', 'Swipe upward to sink as many baskets as possible.', 'Skill & Precision', 'HAND_SWIPE', 'Hard', 'Solo score chase', ['#f28c46', '#7557a8']),
   game(30, 'simon-says', 'Simon Says', 'Repeat the growing sequence of target touches.', 'Skill & Precision', 'MOTION_HIT', 'Normal', 'Competitive', ['#f5c847', '#4c9ed9'], true),
