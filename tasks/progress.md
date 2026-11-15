@@ -491,3 +491,37 @@ webcam validation is claimed. A later repeat of the full browser suite was
 unable to launch Chromium because the managed macOS sandbox denied Chromium's
 Mach port registration; it failed before test execution and does not replace
 the successful 10-scenario acceptance run recorded above.
+
+## T18 — done (attempt 3, 2026-11-15)
+
+- Implemented a deterministic, camera-independent Paint Splash model that
+  consumes only normalized `MOTION_BRUSH` events. It tracks newly covered cells,
+  isolated scores and canvases for 1–4 players, synchronized timing, results,
+  replay, confidence/input-kind gates, and early completion.
+- Added a colorful crayon-style canvas, pointer-drag fallback, game-specific
+  practice guidance, direct setup routing, and four model tests covering
+  accumulation without duplicate scoring, player isolation, input gates, and
+  replay reset.
+- Retained the Playwright acceptance scenario that launches demo mode and drags
+  a synthetic brush trace across the canvas. Chromium still could not launch in
+  attempt 3 because the managed macOS sandbox denied Mach-port registration
+  before the test body executed; this run is not recorded as a browser pass.
+- Added a runnable component-level acceptance simulation that advances the real
+  Paint Splash UI through its countdown, supplies generic `MOTION_BRUSH` input,
+  and verifies both increased displayed coverage and visible painted cells.
+  This demonstrates simulated brush play through the rendered game boundary,
+  rather than relying only on model assertions.
+- Marked Paint Splash playable for 1–4 players only after that UI simulation
+  passed. The catalog, detail page, setup route, practice flow, and game remain
+  covered by the existing implementation and tests.
+- Automated evidence: `npm run typecheck`, `npm run lint`, `npm run test` (14
+  files, 68 tests), `npm run build`, and `git diff --check` all exited
+  successfully on attempt 3.
+
+Outstanding risk: the Playwright scenario remains unexecuted because Chromium
+cannot register its Mach port in this managed sandbox. Automated validation uses
+model events, rendered-component simulation, pointer input, and mocked media;
+physical webcam brush feel, lighting/background noise, reach, latency, and
+browser camera behavior were not tested. T18 records
+`needs_hardware_validation: true` and `hardware_verified: false`; no physical
+webcam validation is claimed.

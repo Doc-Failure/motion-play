@@ -17,7 +17,7 @@ describe('catalog data', () => {
     expect(new Set(catalogGames.map((game) => game.slug))).toHaveLength(32)
     expect(new Set(catalogGames.map((game) => game.title))).toHaveLength(32)
     expect(new Set(catalogGames.map((game) => game.category))).toEqual(new Set(catalogCategories))
-    expect(catalogGames.filter((game) => game.available).map((game) => [game.slug, game.players])).toEqual([['bubble-battle', [1, 2, 3, 4]], ['whack-a-mole', [1, 2, 3, 4]], ['balloon-panic', [1, 2, 3, 4]], ['gold-rush', [1, 2, 3, 4]], ['window-wipe', [1, 2, 3, 4]]])
+    expect(catalogGames.filter((game) => game.available).map((game) => [game.slug, game.players])).toEqual([['bubble-battle', [1, 2, 3, 4]], ['whack-a-mole', [1, 2, 3, 4]], ['balloon-panic', [1, 2, 3, 4]], ['gold-rush', [1, 2, 3, 4]], ['window-wipe', [1, 2, 3, 4]], ['paint-splash', [1, 2, 3, 4]]])
     expect(catalogGames.filter((game) => !game.available).every((game) => game.players.join() === '1,2,3,4')).toBe(true)
   })
 })
@@ -41,8 +41,8 @@ describe('App navigation', () => {
     render(<App />)
     expect(screen.getByRole('heading', { level: 1, name: 'Game Catalog' })).toBeVisible()
     expect(screen.getAllByRole('link', { name: /view .+ details/i })).toHaveLength(32)
-    expect(screen.getAllByText('Play now')).toHaveLength(5)
-    expect(screen.getAllByText('Coming soon')).toHaveLength(28)
+    expect(screen.getAllByText('Play now')).toHaveLength(6)
+    expect(screen.getAllByText('Coming soon')).toHaveLength(27)
     expect(screen.getByLabelText('Availability')).toBeDisabled()
     fireEvent.change(screen.getByLabelText('Category'), { target: { value: 'Clean & Create' } })
     expect(screen.getAllByRole('link', { name: /view .+ details/i })).toHaveLength(6)
@@ -69,6 +69,13 @@ describe('App navigation', () => {
     render(<App />)
     expect(screen.getByText('Playable • 1–4 players')).toBeVisible()
     expect(screen.getByRole('link', { name: 'Set up & play' })).toHaveAttribute('href', '#/camera/gold-rush')
+  })
+
+  it('offers Paint Splash after its simulated play acceptance passes', () => {
+    visit('#/games/paint-splash')
+    render(<App />)
+    expect(screen.getByText('Playable • 1–4 players')).toBeVisible()
+    expect(screen.getByRole('link', { name: 'Set up & play' })).toHaveAttribute('href', '#/camera/paint-splash')
   })
 
   it('continues to prevent starting an unvalidated game', () => {

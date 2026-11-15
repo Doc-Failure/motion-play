@@ -68,6 +68,14 @@ a { color: inherit; }
 .gold-item--coin { color: #7a4b00; background: #ffd83d; box-shadow: inset 0 0 0 5px #f6ac1b, 3px 4px 0 rgba(73,45,16,.25); }
 .gold-item--hazard { color: #fff8df; background: #5a514c; border-radius: 43% 57% 48% 52%; transform: rotate(12deg); }
 @media (max-width: 700px) { .gold-boards--2, .gold-boards--3, .gold-boards--4 { grid-template-columns: 1fr; grid-template-rows: none; } .gold-board { min-height: 20rem; } }
+.paint-game { position: relative; z-index: 1; width: min(100% - 2rem, 75rem); min-height: 100vh; margin: 0 auto; padding: 1rem 0 5rem; color: #34263a; }
+.paint-game h1 { margin: 0; font-size: clamp(2.5rem, 6vw, 4.5rem); letter-spacing: -.06em; }
+.paint-callout { width: fit-content; margin: .5rem auto 1rem; padding: .45rem 1rem; border: 3px solid #5d3566; border-radius: 48% 52% 45% 55%; background: #ffe0ef; font-weight: 850; transform: rotate(-.5deg); }
+.paint-boards { display: grid; gap: 1rem; }.paint-boards--2, .paint-boards--3, .paint-boards--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.paint-player { min-width: 0; }.paint-player h2 { margin: 0; padding: .3rem; border: 3px solid #34263a; background: #f5c847; text-align: center; }
+.paint-board { position: relative; display: grid; grid-template: repeat(8, 1fr) / repeat(12, 1fr); aspect-ratio: 3 / 2; overflow: hidden; border: 5px solid #34263a; border-radius: 1.2rem .7rem 1rem .8rem; background: repeating-linear-gradient(4deg, #fffdf4 0 11px, #f3eadb 12px 13px); box-shadow: 6px 7px 0 #34263a; touch-action: none; }
+.paint-board > span { opacity: 0; transform: scale(.25) rotate(-8deg); transition: opacity .12s ease, transform .12s ease; }.paint-board > span.is-painted { opacity: .9; transform: scale(1.18) rotate(3deg); border-radius: 42% 58% 47% 53%; box-shadow: inset 0 0 0 2px rgb(255 255 255 / .18); }.paint-pink { background: #e45b9d; }.paint-yellow { background: #f5c847; }.paint-blue { background: #4c9ed9; }.paint-green { background: #72b779; }
+@media (max-width: 700px) { .paint-boards--2, .paint-boards--3, .paint-boards--4 { grid-template-columns: 1fr; } }
 .browse-label, .details-link { color: #134f78; font-weight: 900; }
 .action-card[href]:hover { box-shadow: 2px 3px 0 var(--ink); transform: translate(2px, 2px) rotate(-.3deg); }
 .action-card[href]:focus-visible, .details-link:focus-visible, .back-link:focus-visible { outline: 4px solid var(--coral); outline-offset: 4px; }

@@ -233,10 +233,10 @@
     "depends_on": [
       "T17"
     ],
-    "status": "pending",
-    "attempts": 0,
-    "notes": "",
-    "needs_hardware_validation": false,
+    "status": "done",
+    "attempts": 3,
+    "notes": "Implemented deterministic Paint Splash for 1-4 players using generic MOTION_BRUSH events, isolated canvases/scores, pointer fallback, practice/catalog/setup routing, and model plus UI simulation coverage. Attempt 3 added and ran a component-level simulation demonstrating that brush input increases visible paint and coverage; typecheck, lint, 68 unit/component tests, build, and git diff --check passed on 2026-11-15. The retained Playwright scenario could not launch because the managed macOS sandbox denied Chromium Mach-port registration before test execution. Physical webcam play remains unverified.",
+    "needs_hardware_validation": true,
     "hardware_verified": false
   },
   {

@@ -119,6 +119,24 @@ test('launches Gold Rush and collects a falling coin', async ({ page }) => {
   await expect.poll(async () => Number(await score.textContent())).toBeGreaterThan(before)
 })
 
+test('launches Paint Splash and accumulates simulated brush coverage', async ({ page }) => {
+  await openApp(page, '#/camera/paint-splash')
+  await page.getByRole('button', { name: 'Use demo mode' }).click()
+  await page.getByRole('button', { name: 'Play Paint Splash' }).click()
+  await page.getByRole('button', { name: 'Start round now' }).click()
+  await expect(page.locator('.game-curtain')).toHaveCount(0, { timeout: 5_000 })
+  const board = page.getByLabel('Player 1 Paint Splash play area')
+  const coverage = page.locator('.bubble-game__header dl > div').filter({ hasText: 'Player 1' }).locator('dd')
+  const box = await board.boundingBox()
+  expect(box).not.toBeNull()
+  await page.mouse.move(box!.x + box!.width * .2, box!.y + box!.height * .25)
+  await page.mouse.down()
+  await page.mouse.move(box!.x + box!.width * .8, box!.y + box!.height * .75, { steps: 8 })
+  await page.mouse.up()
+  await expect(coverage).not.toHaveText('0%')
+  await expect(board.locator('.is-painted').first()).toBeVisible()
+})
+
 test('deterministic synthetic frames drive calibration motion and debug output', async ({ page }) => {
   await openCamera(page)
   await page.getByRole('button', { name: 'Use demo mode' }).click()
