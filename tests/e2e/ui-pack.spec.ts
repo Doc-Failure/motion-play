@@ -8,8 +8,8 @@ test('supplied UI artwork loads on home and catalog without changing camera setu
     await page.locator('.reference-home img').evaluateAll(async images => {
       await Promise.all(images.map(image => (image as HTMLImageElement).decode()))
     })
-    await expect(page.locator('.action-icon .ui-pack-icon')).toHaveCount(3)
-    await expect(page.locator('.home-callouts .ui-pack-icon')).toHaveCount(2)
+    await expect(page.locator('.action-icon .ui-pack-icon')).toHaveCount(2)
+    await expect(page.locator('.home-callouts .ui-pack-icon')).toHaveCount(0)
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
     await page.screenshot({path:test.info().outputPath(`home-pack-${viewport.width}.png`),fullPage:true})
   }

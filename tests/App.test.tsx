@@ -30,6 +30,8 @@ describe('App navigation', () => {
     render(<App />)
     expect(screen.getByRole('heading', {name: 'Motion Play!'})).toBeVisible()
     expect(screen.queryByRole('link', {name: 'Settings'})).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', {name: /Tournament/})).not.toBeInTheDocument()
+    expect(screen.getByRole('link', {name:/Quick Play/})).toHaveAttribute('href','#/quick-play')
     fireEvent.click(screen.getByRole('link', {name: /game catalog/i}))
     await waitFor(() => expect(screen.getByRole('heading', {name: 'The toy box'})).toBeVisible())
     expect(screen.getByRole('link', {name: 'Play Bubble Battle'})).toHaveAttribute('href', '#/camera/bubble-battle')

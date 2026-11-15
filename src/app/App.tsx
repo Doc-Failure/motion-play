@@ -1,22 +1,22 @@
+import { pickQuickPlayGame } from './quickPlay'
 import { PackIcon, type PackIconName } from '../design/PackIcon'
 import { GameDoodle } from '../design/GameDoodle'
 import { gameAudio } from '../audio/GameAudio'
 import { useEffect, useState } from 'react'
 import { GeneratedHomeScene } from '../design/GeneratedHomeScene'
-import { ScribbleIcon } from '../design/ScribbleIcon'
 import { catalogGames, getGameBySlug } from './catalog'
 import { GameArt } from './GameArt'
 import { CameraSetup, type PlayableGame } from '../camera/CameraSetup'
 import { loadSettings, saveSettings, unlockAchievement } from './localPreferences'
 import { syncOfflineCaching } from './offlineCache'
 
-type Route = { page: 'home' } | { page: 'catalog' } | { page: 'settings' } | { page: 'camera'; game?: PlayableGame; tournament?: boolean } | { page: 'detail'; slug: string }
+type Route = { page: 'home' } | { page: 'catalog' } | { page: 'settings' } | { page: 'camera'; game?: PlayableGame; autoPlay?: boolean } | { page: 'detail'; slug: string }
 const routeFromHash = (): Route => {
   const hash = window.location.hash.replace(/^#\/?/, '')
   if (hash === 'catalog') return { page: 'catalog' }
   if (hash === 'settings') return { page: 'settings' }
   if (hash === 'camera') return { page: 'camera' }
-  if (hash === 'tournament') return { page: 'camera', tournament: true }
+  if (hash === 'quick-play') return { page: 'camera', game: pickQuickPlayGame(), autoPlay: true }
   if (hash === 'camera/fish-frenzy') return { page: 'camera', game: 'fish-frenzy' }
   if (hash === 'camera/plate-spinner') return { page: 'camera', game: 'plate-spinner' }
   if (hash === 'camera/pizza-maker') return { page: 'camera', game: 'pizza-maker' }
@@ -48,15 +48,14 @@ function AppHeader() {
 
 function Home() {
   const actions: Array<{ title: string; description: string; icon: PackIconName; tone: string; href?: string; featured?: boolean }> = [
-    { title: 'Quick Play', description: 'Jump in with your camera or try demo mode.', icon: 'play', tone: 'yellow', href: '#/camera', featured: true },
-    { title: 'Tournament', description: 'Play a set of games and chase the top score.', icon: 'trophy', tone: 'purple', href: '#/tournament' },
+    { title: 'Quick Play', description: 'Start a random game.', icon: 'play', tone: 'yellow', href: '#/quick-play', featured: true },
     { title: 'Game Catalog', description: 'Peek at every game in the toy box.', icon: 'cards', tone: 'blue', href: '#/catalog' },
   ]
   return <div className="reference-home"><GeneratedHomeScene /><section className="hero" id="top" aria-labelledby="app-title"><div className="hero-copy"><h1 id="app-title" aria-label="Motion Play!"><span className="title-red">M</span><span className="title-orange">o</span><span className="title-green">t</span><span className="title-blue">i</span><span className="title-blue-dark">o</span><span className="title-pink">n</span> <span className="title-purple">Play!</span></h1><p className="intro">Camera Party Games for 1–4 Players</p></div></section>
     <section className="play-menu" id="play-menu" aria-labelledby="play-menu-title"><div className="section-heading"><p className="eyebrow">Pick your path</p><h2 id="play-menu-title">How do you want to play?</h2></div><div className="action-grid">{actions.map((action) => {
       const content = <><div className="action-icon" aria-hidden="true"><PackIcon name={action.icon} /></div><div><h3>{action.title}</h3><span className="sr-only">{action.description}</span>{!action.href && <span className="coming-soon">Coming soon</span>}</div></>
       return action.href ? <a className={`action-card action-card--${action.tone}`} href={action.href} key={action.title}>{content}</a> : <article className={`action-card action-card--${action.tone}${action.featured ? ' action-card--featured' : ''}`} key={action.title}>{action.featured && <span className="sticker">Start here!</span>}{content}</article>
-    })}</div><div className="home-callouts"><p><PackIcon name="camera" /><span>Use your camera<br />to play with your body!</span></p><p><PackIcon name="players" /><span>1–4 Players</span></p></div><p className="privacy-note"><ScribbleIcon name="home" /> No accounts. No uploads. Just local play.</p></section></div>
+    })}</div></section></div>
 }
 
 function Catalog() {
@@ -81,9 +80,8 @@ export function App() {
   }, [settings])
   useEffect(() => {
     if (route.page === 'catalog') unlockAchievement('catalog-explorer')
-    if (route.page === 'camera' && route.tournament) unlockAchievement('tournament-ready')
     document.title = `${route.page === 'home' ? '' : `${route.page === 'detail' ? getGameBySlug(route.slug)?.title ?? 'Game' : route.page[0].toUpperCase() + route.page.slice(1)} · `}Motion Play`
     document.getElementById('main-content')?.focus({ preventScroll: true })
   }, [route])
-  return <><a className="skip-link" href="#main-content">Skip to main content</a><main onPointerDown={gameAudio.unlock} onKeyDown={gameAudio.unlock} className="home-shell" id="main-content" tabIndex={-1}>{route.page !== 'home' && <AppHeader />}{route.page === 'home' ? <Home /> : route.page === 'catalog' ? <Catalog /> : route.page === 'settings' ? <Catalog /> : route.page === 'camera' ? null : <GameDetail slug={route.slug} />}<div hidden={route.page !== 'camera'}><CameraSetup active={route.page === 'camera'} initialGame={route.page === 'camera' ? route.game : undefined} tournament={route.page === 'camera' && route.tournament} /></div>{route.page !== 'home' && <footer className="home-footer"><p><span aria-hidden="true">★</span> Made for 1–4 local players <span aria-hidden="true">★</span></p></footer>}</main></>
+  return <><a className="skip-link" href="#main-content">Skip to main content</a><main onPointerDown={gameAudio.unlock} onKeyDown={gameAudio.unlock} className="home-shell" id="main-content" tabIndex={-1}>{route.page !== 'home' && <AppHeader />}{route.page === 'home' ? <Home /> : route.page === 'catalog' ? <Catalog /> : route.page === 'settings' ? <Catalog /> : route.page === 'camera' ? null : <GameDetail slug={route.slug} />}<div hidden={route.page !== 'camera'}><CameraSetup active={route.page === 'camera'} initialGame={route.page === 'camera' ? route.game : undefined} autoPlay={route.page === 'camera' && route.autoPlay} /></div>{route.page !== 'home' && <footer className="home-footer"><p><span aria-hidden="true">★</span> Made for 1–4 local players <span aria-hidden="true">★</span></p></footer>}</main></>
 }

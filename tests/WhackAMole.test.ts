@@ -4,6 +4,20 @@ import { WhackAMoleModel } from '../src/minigames/whack-a-mole/WhackAMoleModel'
 const hit = (x: number, y: number, timestamp: number, playerId: 1 | 2 = 1) => ({ playerId, kind: 'MOTION_HIT' as const, x, y, confidence: 1, timestamp })
 
 describe('WhackAMoleModel', () => {
+  it('freezes targets, spawn timing, scores and round time throughout a long pause', () => {
+    const model = new WhackAMoleModel({ countdownMs: 0, visibleMs: 500, random: () => .5 })
+    model.start(0)
+    const paused = model.pause(100)
+    expect(model.hit(hit(.5, .5, 5_000)).scores[0].score).toBe(0)
+    expect(model.update(10_000).moles).toEqual(paused.moles)
+    expect(model.update(10_000).roundRemainingMs).toBe(paused.roundRemainingMs)
+    const resumed = model.resume(10_100)
+    expect(resumed.moles[0]).toMatchObject({ appearedAt: 10_000, expiresAt: 10_500 })
+    expect(model.update(10_499).moles).toHaveLength(1)
+    expect(model.update(10_500).moles).toHaveLength(0)
+    expect(model.update(10_850).moles).toHaveLength(1)
+  })
+
   it('spawns deterministic timed moles and expires them', () => {
     const model = new WhackAMoleModel({ countdownMs: 0, visibleMs: 500, random: () => .5 })
     expect(model.start(0).moles[0]).toMatchObject({ playerId: 1, hole: 4 })

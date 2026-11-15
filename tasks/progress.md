@@ -1544,3 +1544,73 @@ video; no physical hardware result is claimed. No deployment or commit.
   recovery acceptance. No claim that recovery is uniformly covered for all games.
 - No physical webcam, lighting, latency, occlusion or motion-feel validation;
   no deployment, external upload, dependency change or commit.
+
+## 2026-11-16 — User-supplied UI pack integration
+
+Imported the 18 reusable elements from Downloads/motion-play-ui-pack.zip as local
+WebP assets, preserving alpha. Source PNGs total 34,917,741 bytes; web derivatives
+1,953,748 bytes. Asset manifest records source names, output sizes and archive SHA-256.
+Used the supplied paper, panels, scene artwork, action icons, camera/player callouts,
+garden border, doodle accents and results trophy. Settings artwork is retained without
+adding a settings screen. Full-page/typography PNGs guide styling; production text is
+HTML, and camera-first/direct-start behavior is preserved.
+
+Checks for this integration: typecheck, lint and production build passed; 21 focused
+App/CameraSetup tests passed. Three targeted Chromium scenarios passed for artwork
+loading and desktop/mobile screenshots, compact catalog/direct Play, and centered
+no-scroll camera setup. After screenshot review, corrected garden scaling and hid
+mobile child decorations; the final artwork/browser scenario passed again. These
+are targeted checks, not a claim of a full final-source browser suite or real-webcam
+verification. No external upload or deployment was performed.
+
+## 2026-11-16 — Two-choice home and random Quick Play
+
+Kept only Quick Play and Game Catalog on Home; removed tournament navigation and
+extra callouts. Retained the supplied crayon scene and artwork. Quick Play now samples
+uniformly from available games supporting all 1–4 player counts, starts the camera if
+needed and enters the selected game automatically. Existing player count/stream are
+retained; exiting does not auto-launch again. Catalog selection still opens the lobby.
+
+Verified the requested ZIP again: typography contains only PNG reference sheets and
+a README, with no WOFF/WOFF2/TTF/OTF font. The exact-font request requires the actual
+font file; no substitute font was misrepresented as coming from the archive.
+
+Validation: 26 focused tests passed for random selection, automatic launch, Fish Frenzy
+camera startup, exit behavior and navigation. Typecheck, lint and production build
+passed. Four Chromium scenarios passed for the two-option home/random game, asset
+loading/responsiveness, catalog/direct start, and centered camera setup. Reviewed the
+new two-choice Home screenshot. No physical-camera result or deployment is claimed.
+
+
+## T25K-regression — browser sweep and older-game recovery (2026-11-16)
+
+- Read SPEC.md and AGENTS.md; inspected the application routes, shared camera
+  lifecycle, normalized input adapter, game clocks and browser acceptance tests.
+- Connected Window Wipe and Whack-a-Mole to the shared camera pause/reconnect
+  signal. Disconnect and denied retries freeze the round; recovery enables an
+  explicit Resume without starting over. Countdown loss is covered by component
+  tests, and active-round loss by synthetic browser tests.
+- Fixed Whack-a-Mole targets expiring during a pause: targets remain visible,
+  input cannot score, and target lifetimes/spawn schedules shift by paused time.
+  Added a deterministic long-pause model regression and shared setup cases.
+- The original 36-scenario browser sweep passed. Five camera-play scenarios,
+  including the two added recovery cases, also passed on the recovery build.
+- Preserved concurrent homepage/Quick Play work and read the updated scope in
+  SPEC.md. The combined source passed 342 tests across 51 files, typecheck, lint
+  and production build. Recorded source/test hashes for the final browser gate.
+- Chromium intermittently failed before test execution with macOS
+  MachPortRendezvousServer permission denial (1100); single-worker retries can
+  launch successfully. These launch errors are not application test failures.
+- Reviewed the centered synthetic-camera lobby and 390px catalog screenshots.
+  Added T25K-recovery to track the eight older games still missing shared camera
+  recovery, plus remaining tab/manual-pause work. Browser suite completion does
+  not establish uniform recovery coverage, Safari support or physical tracking.
+- No deployment, external upload, dependency change, commit, or physical webcam
+  validation was performed. Final combined-build browser result follows below.
+
+- Final combined-build acceptance: **all 39 Chromium scenarios passed** with
+  one worker (5.2 minutes), including the concurrent Quick Play test. Runtime
+  source and test hashes remained unchanged through acceptance; only reference
+  documentation changed. The earlier 38-scenario single-worker run also passed.
+  Final whitespace and backlog JSON/unique-ID checks passed. T25K-regression is
+  complete; T25K-recovery remains pending for the explicitly listed coverage gaps.

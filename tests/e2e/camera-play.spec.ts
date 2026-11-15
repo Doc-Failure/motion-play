@@ -1,5 +1,52 @@
 import { expect, openApp, test } from './fixtures'
 
+for (const [slug, title] of [['window-wipe', 'Window Wipe'], ['whack-a-mole', 'Whack-a-Mole']]) {
+  test(`${title} freezes camera recovery without losing the round`, async ({page, installMockCamera}) => {
+    await page.clock.install({time:new Date('2030-01-01T00:00:00Z')})
+    await page.clock.pauseAt(new Date('2030-01-01T00:01:00Z'))
+    await installMockCamera({person:true})
+    await openApp(page, `#/camera/${slug}`)
+    await page.getByRole('button', {name:`Play ${title}`, exact:true}).click()
+    await page.clock.runFor(3500)
+    const video = page.getByLabel('Mirrored live camera during gameplay')
+    await video.evaluate(element => {
+      const track = ((element as HTMLVideoElement).srcObject as MediaStream).getVideoTracks()[0]
+      navigator.mediaDevices.getUserMedia = async () => {
+        throw new DOMException('Permission denied during reconnect', 'NotAllowedError')
+      }
+      track.stop()
+      track.dispatchEvent(new Event('ended'))
+    })
+    const dialog = page.getByRole('dialog')
+    await expect(dialog).toContainText('The camera disconnected')
+    const clock = page.locator('.bubble-game__header dl > div').last().locator('dd')
+    const time = await clock.textContent()
+    const targets = await page.locator('.mole').count()
+    if (slug === 'whack-a-mole') expect(targets).toBeGreaterThan(0)
+    await page.getByRole('button', {name:'Reconnect camera'}).click()
+    await expect(dialog).toContainText('Camera permission is blocked')
+    await page.clock.runFor(10000)
+    await expect(clock).toHaveText(time!)
+    expect(await page.locator('.mole').count()).toBe(targets)
+    await expect(page.getByRole('button', {name:'Resume round'})).toBeDisabled()
+    await page.evaluate(() => {
+      navigator.mediaDevices.getUserMedia = async () =>
+        (window as typeof window & {__cameraFixture:HTMLCanvasElement}).__cameraFixture.captureStream(20)
+    })
+    await page.getByRole('button', {name:'Reconnect camera'}).click()
+    await page.evaluate(() => {
+      (window as typeof window & {__cameraFixture:HTMLCanvasElement}).__cameraFixture.getContext('2d')!.fillRect(0,0,1,1)
+    })
+    await page.clock.runFor(100)
+    await expect(page.getByRole('button', {name:'Resume round'})).toBeEnabled()
+    await expect(clock).toHaveText(time!)
+    await page.getByRole('button', {name:'Resume round'}).click()
+    await expect(dialog).toHaveCount(0)
+    await page.clock.runFor(1000)
+    await expect(clock).not.toHaveText(time!)
+  })
+}
+
 test('camera disconnect and failed reconnect keep the round frozen until recovery', async ({page,installMockCamera}) => {
   await page.clock.install({time:new Date('2030-01-01T00:00:00Z')})
   await page.clock.pauseAt(new Date('2030-01-01T00:01:00Z'))

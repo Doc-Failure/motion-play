@@ -13,8 +13,8 @@ A joyful, original, browser-based motion-controlled party game inspired by the *
 - Design: **childlike hand-colored crayon and marker drawings**, intentionally uneven bold outlines, imperfect fills crossing borders, paper textures, sticker collages, scribbly stars/arrows, springy interactions; maintain strong text contrast/readability. Original artwork, SVG/Canvas procedural illustrations; local fonts/assets (respect licenses), no hotlinked images.
 
 ## Product navigation
-Title / Home -> Catalog -> Centered Camera Lobby (player count only) -> Play -> automatic 3-2-1 -> Gameplay -> Results -> Replay / Catalog. Quick Play and Tournament enter the same camera lobby directly. No practice or start-confirmation screen.
-Home: Quick Play, Game Catalog, Tournament. Main catalog is a compact grid of playable games, with original game drawings on the same crayon sticker panels as the homepage. Each tile goes directly to that game’s camera lobby. Quick Play picks among implemented compatible games. Tournament rotates 3 or 5 implemented games and aggregates points. Cooperative mode shares a goal; competitive/free-for-all has independent scores. 2v2 only when four players and a game supports it. Avoid promising co-op/teams for incompatible games.
+Title / Home -> Catalog -> Centered Camera Lobby (player count only) -> Play -> automatic 3-2-1 -> Gameplay -> Results -> Replay / Catalog. Quick Play chooses a random compatible game and starts it as soon as the camera is ready. No practice or start-confirmation screen.
+Home: Quick Play and Game Catalog. Tournament is deferred. Main catalog is a compact grid of playable games, with original game drawings on the same crayon sticker panels as the homepage. Each tile goes directly to that game’s camera lobby. Quick Play picks among implemented compatible games. The planned tournament mode rotates 3 or 5 implemented games and aggregates points. Cooperative mode shares a goal; competitive/free-for-all has independent scores. 2v2 only when four players and a game supports it. Avoid promising co-op/teams for incompatible games.
 
 ## Camera, calibration and recovery
 - User selects a `videoinput` device and starts a permission request only on interaction. Offer actionable permission-denied and camera-missing states; allow simulation demo mode without hardware.
@@ -123,3 +123,10 @@ Game selection uses compact illustrated crayon stickers matching the homepage pa
 without numbered placeholder art or oversized card descriptions. Play starts the game
 countdown immediately: no practice screen, confirmation dialog or second start button.
 Tournament rounds also advance directly into their countdown.
+
+## Current scope (2026-11-16)
+Home offers only Quick Play and Game Catalog. Tournament and extra home callouts are
+deferred. Quick Play randomly selects an available game supporting all retained
+player counts and launches its countdown once the camera is ready. It needs no
+additional Play/confirmation click. Returning from a game does not auto-relaunch it.
+The UI pack contains typography PNG references only, not an installable font file.

@@ -8,8 +8,9 @@ No art is generated, redrawn or uploaded during conversion; transparency is reta
 Usage:
 - Paper, clouds, rainbow, children and title cloud: homepage and menu scenery.
 - Colored panels: home actions and compact game catalog stickers.
-- Play, catalog, trophy: home action icons; play also appears in the camera lobby.
-- Camera and players callouts: homepage guidance, paired with accessible HTML text.
+- Play and catalog: the two active home actions; play also appears in the camera lobby.
+- Trophy: results decoration; tournament entry points are deferred.
+- Camera and players callouts: retained for future guidance; extra home callouts are deferred.
 - Garden border and doodle accents: menu decoration.
 - Trophy: round/tournament result decoration.
 - Settings icon: retained with the pack for future use; no settings screen is added.

@@ -607,3 +607,12 @@ body { background: #fffdf8 url('./assets/home/paper-background.webp') repeat; ba
 }
 
 @media (max-width: 650px) { .generated-home-scene .generated-child { display: none; } }
+/* The current home has exactly two choices. */
+.reference-home .action-grid { grid-template-columns: repeat(2,minmax(0,1fr)); width: min(100%,48rem); margin: 0 auto; padding-inline: 0; gap: 1rem; }
+.reference-home .action-card { min-height: 12rem; }
+.reference-home .play-menu { padding-bottom: 10rem; }
+@media (max-width: 600px) {
+  .reference-home .action-grid { grid-template-columns: 1fr; width: min(100%,22rem); gap: .6rem; }
+  .reference-home .action-card { min-height: 10rem; }
+  .reference-home .play-menu { padding-bottom: 6rem; }
+}

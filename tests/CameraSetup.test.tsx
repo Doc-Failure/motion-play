@@ -6,6 +6,28 @@ function controller(): CameraController {
   return { listDevices: vi.fn().mockResolvedValue([]), start: vi.fn().mockResolvedValue({} as MediaStream), stop: vi.fn() }
 }
 describe('simple camera flow', () => {
+  it.each([
+    ['window-wipe', 'Window Wipe'], ['whack-a-mole', 'Whack-a-Mole'],
+  ] as const)('keeps %s paused through denial and requires resume after recovery', async (game, title) => {
+    const source = controller()
+    vi.mocked(source.start)
+      .mockResolvedValueOnce({} as MediaStream)
+      .mockRejectedValueOnce(new DOMException('denied', 'NotAllowedError'))
+      .mockResolvedValueOnce({} as MediaStream)
+    render(<CameraSetup source={source} initialGame={game} />)
+    await waitFor(() => expect(screen.getByRole('button', { name: `Play ${title}` })).toBeEnabled())
+    fireEvent.click(screen.getByRole('button', { name: `Play ${title}` }))
+    act(() => vi.mocked(source.start).mock.calls[0][1]!())
+    expect(screen.getByRole('dialog')).toHaveTextContent('The camera disconnected')
+    expect(screen.getByRole('button', { name: 'Resume round' })).toBeDisabled()
+    fireEvent.click(screen.getByRole('button', { name: 'Reconnect camera' }))
+    await waitFor(() => expect(screen.getByRole('dialog')).toHaveTextContent('Camera permission is blocked'))
+    expect(screen.getByRole('button', { name: 'Resume round' })).toBeDisabled()
+    fireEvent.click(screen.getByRole('button', { name: 'Reconnect camera' }))
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Resume round' })).toBeEnabled())
+    fireEvent.click(screen.getByRole('button', { name: 'Resume round' }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
   it('keeps the round paused after a failed camera reconnect and allows another retry', async () => {
     const source = controller()
     vi.mocked(source.start)
@@ -163,4 +185,21 @@ describe('simple camera flow', () => {
     await waitFor(() => expect(screen.getByRole('heading', {name: 'Bubble Battle'})).toBeVisible())
     expect(screen.queryByRole('button',{name:'Start round now'})).not.toBeInTheDocument()
   })
+})
+
+it('auto-starts Quick Play once and stays in setup after exit', async () => {
+  const source = controller()
+  render(<CameraSetup source={source} initialGame="star-collector" autoPlay />)
+  await waitFor(() => expect(screen.getByLabelText('Player 1 Star Collector play area')).toBeVisible())
+  expect(screen.queryByRole('button',{name:'Start round now'})).not.toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button',{name:'Exit game'}))
+  await waitFor(() => expect(screen.getByRole('button',{name:'Play Star Collector'})).toBeVisible())
+  expect(source.start).toHaveBeenCalledTimes(1)
+})
+
+it('requests the camera for Quick Play even when Fish Frenzy is randomly chosen', async () => {
+  const source = controller()
+  render(<CameraSetup source={source} initialGame="fish-frenzy" autoPlay />)
+  await waitFor(() => expect(screen.getByRole('group',{name:'Player 1 Fish Frenzy play area'})).toBeVisible())
+  expect(source.start).toHaveBeenCalledTimes(1)
 })
