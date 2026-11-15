@@ -116,3 +116,6 @@ html:has(.camera-lobby:not([hidden])), body:has(.camera-lobby:not([hidden])) { o
   .camera-lobby__players button { width: 36px; height: 40px; }
   .camera-lobby__play { font-size: .85rem; min-height: 40px; padding: .45rem .7rem; }
 }
+.camera-lobby__play { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; }
+.camera-lobby__play .ui-pack-icon { flex: 0 0 auto; width: 1.5rem; height: 1.5rem; }
+@media (max-height: 500px) { .camera-play .battle-results::before { display: none; } }

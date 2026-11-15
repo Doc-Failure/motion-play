@@ -1,8 +1,9 @@
+import { PackIcon, type PackIconName } from '../design/PackIcon'
 import { GameDoodle } from '../design/GameDoodle'
 import { gameAudio } from '../audio/GameAudio'
 import { useEffect, useState } from 'react'
 import { GeneratedHomeScene } from '../design/GeneratedHomeScene'
-import { ScribbleIcon, type ScribbleIconName } from '../design/ScribbleIcon'
+import { ScribbleIcon } from '../design/ScribbleIcon'
 import { catalogGames, getGameBySlug } from './catalog'
 import { GameArt } from './GameArt'
 import { CameraSetup, type PlayableGame } from '../camera/CameraSetup'
@@ -46,16 +47,16 @@ function AppHeader() {
 }
 
 function Home() {
-  const actions: Array<{ title: string; description: string; icon: ScribbleIconName; tone: string; href?: string; featured?: boolean }> = [
+  const actions: Array<{ title: string; description: string; icon: PackIconName; tone: string; href?: string; featured?: boolean }> = [
     { title: 'Quick Play', description: 'Jump in with your camera or try demo mode.', icon: 'play', tone: 'yellow', href: '#/camera', featured: true },
     { title: 'Tournament', description: 'Play a set of games and chase the top score.', icon: 'trophy', tone: 'purple', href: '#/tournament' },
     { title: 'Game Catalog', description: 'Peek at every game in the toy box.', icon: 'cards', tone: 'blue', href: '#/catalog' },
   ]
   return <div className="reference-home"><GeneratedHomeScene /><section className="hero" id="top" aria-labelledby="app-title"><div className="hero-copy"><h1 id="app-title" aria-label="Motion Play!"><span className="title-red">M</span><span className="title-orange">o</span><span className="title-green">t</span><span className="title-blue">i</span><span className="title-blue-dark">o</span><span className="title-pink">n</span> <span className="title-purple">Play!</span></h1><p className="intro">Camera Party Games for 1–4 Players</p></div></section>
     <section className="play-menu" id="play-menu" aria-labelledby="play-menu-title"><div className="section-heading"><p className="eyebrow">Pick your path</p><h2 id="play-menu-title">How do you want to play?</h2></div><div className="action-grid">{actions.map((action) => {
-      const content = <><div className="action-icon" aria-hidden="true"><ScribbleIcon name={action.icon} /></div><div><h3>{action.title}</h3><span className="sr-only">{action.description}</span>{!action.href && <span className="coming-soon">Coming soon</span>}</div></>
+      const content = <><div className="action-icon" aria-hidden="true"><PackIcon name={action.icon} /></div><div><h3>{action.title}</h3><span className="sr-only">{action.description}</span>{!action.href && <span className="coming-soon">Coming soon</span>}</div></>
       return action.href ? <a className={`action-card action-card--${action.tone}`} href={action.href} key={action.title}>{content}</a> : <article className={`action-card action-card--${action.tone}${action.featured ? ' action-card--featured' : ''}`} key={action.title}>{action.featured && <span className="sticker">Start here!</span>}{content}</article>
-    })}</div><div className="home-callouts"><p><span className="camera-doodle" aria-hidden="true">◉</span> Use your camera<br />to play with your body!</p><p><span className="players-doodle" aria-hidden="true">●●●●</span> 1–4 Players</p></div><p className="privacy-note"><ScribbleIcon name="home" /> No accounts. No uploads. Just local play.</p></section></div>
+    })}</div><div className="home-callouts"><p><PackIcon name="camera" /><span>Use your camera<br />to play with your body!</span></p><p><PackIcon name="players" /><span>1–4 Players</span></p></div><p className="privacy-note"><ScribbleIcon name="home" /> No accounts. No uploads. Just local play.</p></section></div>
 }
 
 function Catalog() {

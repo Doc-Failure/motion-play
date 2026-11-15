@@ -1,3 +1,4 @@
+import { PackIcon } from '../design/PackIcon'
 import { containCameraFrame } from '../game/cameraGeometry'
 import { InputFeedbackContext } from '../game/InputFeedbackContext'
 import { FishFrenzy } from '../minigames/fish-frenzy/FishFrenzy'
@@ -242,9 +243,9 @@ export function CameraSetup({ source: providedSource, initialGame = 'bubble-batt
       {failure && <div className="camera-lobby__error" role="alert"><strong>{failureCopy[failure].title}</strong><p>{failureCopy[failure].help}</p></div>}
       <div className="camera-lobby__actions">
         <fieldset className="camera-lobby__players"><legend>Players</legend>{([1,2,3,4] as const).map(count => <button type="button" aria-label={`${count} ${count === 1 ? 'player' : 'players'}`} aria-pressed={playerCount === count} onClick={() => choosePlayerCount(count)} key={count}>{count}</button>)}</fieldset>
-        <button className="camera-lobby__play" type="button" disabled={status === 'requesting'} onClick={() => {if(status === 'ready' || status === 'simulation') beginGame(); else void start(true)}}>{status === 'requesting' ? 'Opening camera…' : status === 'ready' || status === 'simulation' ? `Play ${selectedTitle}` : 'Activate camera & play'}</button>
-        {selectedGame === 'fish-frenzy' && <button className="camera-lobby__fallback" type="button" disabled={status === 'requesting'} onClick={() => { source.stop(); streamRef.current = null; if (videoRef.current) videoRef.current.srcObject = null; setMotion(null); setFailure(null); setStatus('simulation'); beginGame() }}>Play without camera</button>}
-        {selectedGame === 'fish-frenzy' && status === 'simulation' && <button className="camera-lobby__fallback" type="button" onClick={() => void start()}>Use camera instead</button>}
+        <button className="camera-lobby__play" type="button" disabled={status === 'requesting'} onClick={() => {if(status === 'ready' || status === 'simulation') beginGame(); else void start(true)}}><PackIcon name="play" />{status === 'requesting' ? 'Opening camera…' : status === 'ready' || status === 'simulation' ? `Play ${selectedTitle}` : 'Activate camera & play'}</button>
+        {(status === 'idle' || status === 'requesting') && <button className="camera-lobby__fallback" type="button" disabled={status === 'requesting'} onClick={() => { source.stop(); streamRef.current = null; if (videoRef.current) videoRef.current.srcObject = null; setMotion(null); setFailure(null); setStatus('simulation'); beginGame() }}>Play without camera</button>}
+        {status === 'simulation' && <button className="camera-lobby__fallback" type="button" onClick={() => void start()}>Use camera instead</button>}
       </div>
       <p className="sr-only">Camera pictures stay on this device. Your camera stays active between games until you close this tab.</p>
     </div>

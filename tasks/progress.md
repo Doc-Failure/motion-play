@@ -1509,3 +1509,38 @@ video; no physical hardware result is claimed. No deployment or commit.
 - Reviewed synthetic-person setup/gameplay and current narrow catalog/Fish Frenzy
   screenshots. No physical webcam, lighting, latency, occlusion, speaker or
   motion-feel validation is claimed. No deployment, upload, dependency or commit.
+
+## T25K-regression — baseline completion and camera-free recovery (2026-11-15)
+
+- Read SPEC.md/AGENTS.md and inspected current routes, camera lifecycle, shared
+  setup, game integration and browser fixtures. Preserved concurrent artwork,
+  icon and stylesheet updates throughout this invocation.
+- The baseline full Chromium suite executed and passed **all 34 scenarios**,
+  including previously outstanding disconnect/failed retry/frozen timer/recovery
+  and Graffiti Race checks, all 21 playable games at one/four players, mirrored
+  synthetic camera input, results/replay and sound scheduling.
+- Found that only Fish Frenzy exposed camera-free play after permission failure.
+  The shared lobby now offers it for every game when the camera is unavailable.
+  Demo mode and player count persist across game selection; camera activation
+  remains available afterward. Added component and browser regressions for denied
+  permission, four-player demo and changing games without a repeated request.
+- The loaded baseline unit run failed two timing-sensitive simulations (333/335
+  passed). Five view tests previously sampled the real clock before rendering
+  while manually supplying animation timestamps. Fixed their performance clock
+  to make countdown/input timing deterministic; focused checks then passed.
+  A new fallback assertion initially used the wrong region role and was corrected
+  to assert all four labeled play areas.
+- Final checks: **336 tests across 50 files passed**, typecheck, lint, production
+  build and git diff --check passed. Reviewed baseline narrow catalog and
+  four-player synthetic-camera screenshots. An intermediate test run encountered
+  an incomplete concurrent artwork import; the subsequent complete build passed.
+- Final rebuilt browser suite includes 36 scenarios (the new fallback scenario
+  and concurrent UI-pack acceptance). Full rerun and single-worker retry were
+  blocked before browser execution by macOS MachPortRendezvousServer permission
+  denial (1100). The 34-scenario baseline pass is valid; the final-source full
+  browser gate remains pending in T25K-regression.
+- Inspection also found older games without shared external camera-pause props;
+  their recovery behavior needs a separate follow-up beyond the Bubble Battle
+  recovery acceptance. No claim that recovery is uniformly covered for all games.
+- No physical webcam, lighting, latency, occlusion or motion-feel validation;
+  no deployment, external upload, dependency change or commit.

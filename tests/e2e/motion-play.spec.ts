@@ -49,6 +49,22 @@ test('permission failure offers a clear retry without settings',async ({page,ins
   await expect(page.getByRole('slider')).toHaveCount(0)
 })
 
+test('permission denial still allows camera-free multiplayer and changing games', async ({page,installMockCamera}) => {
+  await installMockCamera({denied:true})
+  await openApp(page)
+  await expect(page.getByRole('alert')).toContainText('Camera permission is blocked')
+  await page.getByRole('button',{name:'4 players',exact:true}).click()
+  await page.getByRole('button',{name:'Play without camera',exact:true}).click()
+  await expect(page.getByLabel('Player 4 Bubble Battle play area')).toBeVisible()
+  await expect(page.getByRole('dialog')).toHaveCount(0)
+  await page.getByRole('button',{name:'Exit game',exact:true}).click()
+  await page.getByRole('link',{name:'Back to games'}).click()
+  await page.getByRole('link',{name:'Play Window Wipe',exact:true}).click()
+  await page.getByRole('button',{name:'Play Window Wipe',exact:true}).click()
+  await expect(page.getByLabel('Player 4 Window Wipe play area')).toBeVisible()
+  expect(await page.evaluate(() => (window as typeof window & {__mockMediaState:{requests:number}}).__mockMediaState.requests)).toBe(1)
+})
+
 test('Piñata Party supports four players, keyboard and pointer hits, and pause', async ({ page, installMockCamera }) => {
   await page.clock.install()
   await installMockCamera()

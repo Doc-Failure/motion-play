@@ -1,0 +1,132 @@
+{
+  "sourceArchive": "motion-play-ui-pack.zip",
+  "assets": [
+    {
+      "source": "settings-icon.png",
+      "web": "settings-icon.webp",
+      "width": 256,
+      "bytes": 19052,
+      "sourceBytes": 1077824
+    },
+    {
+      "source": "players-callout.png",
+      "web": "players-callout.webp",
+      "width": 440,
+      "bytes": 49838,
+      "sourceBytes": 2029277
+    },
+    {
+      "source": "trophy-icon.png",
+      "web": "trophy-icon.webp",
+      "width": 256,
+      "bytes": 25440,
+      "sourceBytes": 1557965
+    },
+    {
+      "source": "settings-panel.png",
+      "web": "settings-panel.webp",
+      "width": 768,
+      "bytes": 185448,
+      "sourceBytes": 3133191
+    },
+    {
+      "source": "quick-play-panel.png",
+      "web": "quick-play-panel.webp",
+      "width": 768,
+      "bytes": 164624,
+      "sourceBytes": 2603248
+    },
+    {
+      "source": "play-icon.png",
+      "web": "play-icon.webp",
+      "width": 256,
+      "bytes": 19150,
+      "sourceBytes": 1145474
+    },
+    {
+      "source": "catalog-panel.png",
+      "web": "catalog-panel.webp",
+      "width": 768,
+      "bytes": 209682,
+      "sourceBytes": 2675819
+    },
+    {
+      "source": "left-child.png",
+      "web": "left-child.webp",
+      "width": 480,
+      "bytes": 125088,
+      "sourceBytes": 1950777
+    },
+    {
+      "source": "paper-background.png",
+      "web": "paper-background.webp",
+      "width": 1024,
+      "bytes": 112738,
+      "sourceBytes": 2354678
+    },
+    {
+      "source": "camera-callout.png",
+      "web": "camera-callout.webp",
+      "width": 384,
+      "bytes": 35988,
+      "sourceBytes": 1282367
+    },
+    {
+      "source": "rainbow.png",
+      "web": "rainbow.webp",
+      "width": 640,
+      "bytes": 110890,
+      "sourceBytes": 2318285
+    },
+    {
+      "source": "right-child.png",
+      "web": "right-child.webp",
+      "width": 480,
+      "bytes": 82686,
+      "sourceBytes": 1475464
+    },
+    {
+      "source": "tournament-panel.png",
+      "web": "tournament-panel.webp",
+      "width": 768,
+      "bytes": 200524,
+      "sourceBytes": 2813699
+    },
+    {
+      "source": "title-cloud.png",
+      "web": "title-cloud.webp",
+      "width": 1024,
+      "bytes": 100962,
+      "sourceBytes": 2157358
+    },
+    {
+      "source": "sun-clouds.png",
+      "web": "sun-clouds.webp",
+      "width": 768,
+      "bytes": 95750,
+      "sourceBytes": 2264077
+    },
+    {
+      "source": "catalog-icon.png",
+      "web": "catalog-icon.webp",
+      "width": 256,
+      "bytes": 17164,
+      "sourceBytes": 1204018
+    },
+    {
+      "source": "doodle-accents.png",
+      "web": "doodle-accents.webp",
+      "width": 640,
+      "bytes": 161502,
+      "sourceBytes": 1543064
+    },
+    {
+      "source": "garden-border.png",
+      "web": "garden-border.webp",
+      "width": 1600,
+      "bytes": 237222,
+      "sourceBytes": 1331156
+    }
+  ],
+  "sourceSha256": "98464a921a1b00f92a662231d682bc76f49bcf30b4b2143d0d44eeb64f6e19c7"
+}

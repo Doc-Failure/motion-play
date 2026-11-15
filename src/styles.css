@@ -586,3 +586,24 @@ body { background: #fffdf8 url('./assets/home/paper-background.webp') repeat; ba
 @media (max-width: 1050px) { .catalog-picker .catalog-grid { grid-template-columns: repeat(4,minmax(0,1fr)); } }
 @media (max-width: 650px) { .catalog-picker .catalog-grid { grid-template-columns: repeat(3,minmax(0,1fr)); gap: .4rem; } .catalog-picker .game-card { min-height: 8rem; padding: .75rem .35rem; } .game-doodle { width: 3.5rem; height: 3.5rem; } }
 @media (max-width: 380px) { .catalog-picker .catalog-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+/* Reusable artwork supplied in motion-play-ui-pack.zip. Text stays semantic HTML. */
+.ui-pack-icon { display: block; width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+.reference-home .action-icon { width: 7rem; height: 5rem; }
+.reference-home .home-callouts p { display: flex; align-items: center; justify-content: center; gap: .5rem; padding: .4rem .8rem; border: 0; border-radius: 0; background: transparent; }
+.reference-home .home-callouts .ui-pack-icon--camera { width: 5rem; height: 4rem; }
+.reference-home .home-callouts .ui-pack-icon--players { width: 7rem; height: 4.5rem; }
+.generated-garden { height: clamp(7rem,15vw,13rem); opacity: 1; clip-path: none; background: url('./assets/home/garden-border.webp') center bottom / auto 100% repeat-x; }
+.catalog-picker::after { content: ''; position: absolute; z-index: -1; right: -2rem; bottom: -2rem; left: -2rem; height: 6rem; background: url('./assets/home/garden-border.webp') center bottom / auto 100% repeat-x; opacity: .65; pointer-events: none; }
+.catalog-picker .catalog-heading > div { position: relative; }
+.catalog-picker .catalog-heading > div::after { content: ''; position: absolute; left: 17rem; top: 0; width: 6rem; height: 4rem; background: url('./assets/home/doodle-accents.webp') center / contain no-repeat; pointer-events: none; }
+.battle-results:has(.battle-results__scores)::before, .tournament-results::before { content: ''; display: block; width: 4rem; height: 3.5rem; margin: 0 auto .2rem; background: url('./assets/home/trophy-icon.webp') center / contain no-repeat; pointer-events: none; }
+@media (max-width: 650px) {
+  .reference-home .action-icon { width: 5rem; height: 3.5rem; }
+  .reference-home .home-callouts { flex-wrap: wrap; gap: .5rem; }
+  .reference-home .home-callouts p { font-size: .9rem; padding: .25rem; }
+  .reference-home .home-callouts .ui-pack-icon--camera { width: 3.5rem; height: 3rem; }
+  .reference-home .home-callouts .ui-pack-icon--players { width: 5rem; height: 3rem; }
+  .catalog-picker .catalog-heading > div::after { left: auto; right: 0; width: 3rem; height: 2rem; }
+}
+
+@media (max-width: 650px) { .generated-home-scene .generated-child { display: none; } }
