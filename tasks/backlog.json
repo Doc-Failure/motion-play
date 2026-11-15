@@ -420,10 +420,12 @@
   {
     "id": "T25J",
     "title": "Implement and test Plate Spinner using generic MOTION_HIT input",
-    "depends_on": ["T25I"],
-    "status": "pending",
-    "attempts": 0,
-    "notes": "Acceptance: deterministic 1-4 player plate-decay model, rescue/drop/scoring/isolation tests, rendered simulation, practice/setup/catalog routing, pointer fallback, and honest availability gating.",
+    "depends_on": [
+      "T25I"
+    ],
+    "status": "done",
+    "attempts": 1,
+    "notes": "Implemented deterministic competitive 1\u20134 player Plate Spinner consuming normalized MOTION_HIT events only. Three decaying plates per player award +10 for wobble rescues, cost 5 on drops, and return after 1500ms. Added chronological decay, isolated scores, stale-capture protection and pause-safe timing; integrated local crayon SVG art, spin meters/text cues, pointer/keyboard fallbacks, catalog/setup/practice, countdown/results/replay, shared feedback and tab/camera recovery. Added 20 model/component cases plus catalog navigation and Chromium acceptance; mirrored synthetic motion covers all player counts. On 2026-11-15, 303 unit/component tests across 47 files, typecheck, lint, build, all 18 Chromium scenarios and diff checks passed. After final timing cleanup and narrow-label wrapping, repeated unit tests/build/lint and the affected Chromium scenario with label containment/winner assertions; all passed. Inspected desktop/narrow screenshots. One targeted Chromium launch was denied by macOS MachPortRendezvousServer (1100); the subsequent retry passed. Physical webcam behavior and motion feel remain unverified; hardware_verified stays false. No deployment or commit.",
     "needs_hardware_validation": true,
     "hardware_verified": false
   },

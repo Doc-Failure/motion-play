@@ -1251,3 +1251,35 @@ or commit was performed; existing unrelated working-tree work was retained.
 - Camera/browser fixtures were synthetic. Physical webcam behavior, lighting,
   framing, latency, occlusion and motion feel remain unverified; hardware_verified
   remains false. No deployment, external upload or commit.
+
+
+## T25J — Plate Spinner (2026-11-15)
+
+- Read SPEC.md and AGENTS.md and inspected the application, motion adapter,
+  shared session lifecycle, existing games, styling and tests.
+- Implemented deterministic competitive 1–4 player Plate Spinner receiving only
+  normalized MOTION_HIT events. Three plates per player decay over 6/7/8 seconds.
+  Rescue a plate at 65% spin or below for +10; drops cost 5 and replacements
+  arrive after 1500ms. Full-speed taps earn nothing. Per-plate rescue gating,
+  isolated scores, stale-capture protection and pause-adjusted deadlines prevent
+  repeat awards. Drops process chronologically across skipped render ticks.
+- Integrated catalog availability, direct setup, practice, original local SVG
+  artwork, numbered spin meters and wobble text, pointer/native keyboard controls,
+  shared audiovisual feedback, countdown, competitive/tied results, replay,
+  manual/tab/camera pause, reconnect and focus restoration. No new dependencies;
+  camera/media libraries remain outside the model and view.
+- Added 20 model/component cases plus catalog navigation and Chromium acceptance.
+  Coverage includes mirrored synthetic MotionProcessor input for all player
+  counts, rescue/drop/replacement boundaries, invalid/delayed captures, isolation,
+  render cadence, short/zero rounds, snapshot ownership, pause/recovery,
+  StrictMode, fallbacks, results, ties and replay.
+- Verification passed: 303 unit/component tests across 47 files, typecheck, lint,
+  production build, all 18 Chromium scenarios and git diff --check. After final
+  timing cleanup and screenshot-driven narrow-label wrapping, repeated unit
+  tests/build/lint and the affected Chromium scenario; label containment and
+  winner assertions passed. Reviewed desktop/narrow screenshots. One targeted
+  browser launch failed before execution with macOS MachPortRendezvousServer
+  permission denial (1100); the subsequent retry passed.
+- Camera fixtures were synthetic. Physical webcam tracking, framing, lighting,
+  latency, occlusion and motion feel remain unverified; hardware_verified stays
+  false. No deployment, external upload or commit.

@@ -14,7 +14,7 @@ async function clickMovingTarget(page: Page, target: Locator) {
 test('simple game selection and persistent camera across games', async ({ page, installMockCamera }) => {
   await installMockCamera()
   await openApp(page, '#/catalog')
-  await expect(page.locator('.game-card')).toHaveCount(19)
+  await expect(page.locator('.game-card')).toHaveCount(20)
   await expect(page.getByRole('combobox')).toHaveCount(0)
   await page.getByRole('link', {name: 'Play Bubble Battle'}).click()
   await expect(page.getByText('● Camera on', {exact:true})).toBeVisible()
