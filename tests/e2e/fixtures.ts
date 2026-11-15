@@ -5,18 +5,27 @@ import { resolve } from 'node:path'
 /* eslint-disable react-hooks/rules-of-hooks -- Playwright names its fixture callback `use`; it is not a React hook. */
 
 type MediaFixture = {
-  installMockCamera: (options?: { denied?: boolean }) => Promise<void>
+  installMockCamera: (options?: { denied?: boolean; person?: boolean }) => Promise<void>
 }
 
-const installCamera = ({ denied }: { denied?: boolean }) => {
+const installCamera = ({ denied, person }: { denied?: boolean; person?: boolean }) => {
   const state = { requests: 0, stoppedTracks: 0 }
   Object.defineProperty(window, '__mockMediaState', { configurable: true, value: state })
   const canvas = document.createElement('canvas')
-  canvas.width = 64
-  canvas.height = 36
+  canvas.width = person ? 320 : 64
+  canvas.height = person ? 240 : 36
   const context = canvas.getContext('2d')
   context!.fillStyle = '#f36f5b'
   context!.fillRect(0, 0, canvas.width, canvas.height)
+  if (person && context) {
+    context.fillStyle = '#607b83'; context.fillRect(0,0,320,240)
+    context.fillStyle = '#ddb48a'; context.beginPath(); context.arc(160,63,26,0,Math.PI*2); context.fill()
+    context.fillStyle = '#395db6'; context.fillRect(130,92,60,110)
+    context.strokeStyle = '#ddb48a'; context.lineWidth = 15
+    context.beginPath(); context.moveTo(135,105); context.lineTo(75,65); context.moveTo(185,105); context.lineTo(245,65); context.stroke()
+    context.fillStyle = '#26313f'; context.fillRect(132,200,22,40); context.fillRect(168,200,22,40)
+  }
+  Object.assign(window, {__cameraFixture:canvas})
   const stream = canvas.captureStream(20)
   const track = stream.getVideoTracks()[0]
   const stop = track.stop.bind(track)
@@ -61,5 +70,5 @@ export async function openApp(page: Page, hash = '#/camera') {
 
 export async function openCamera(page: Page) {
   await openApp(page)
-  await expect(page.getByRole('heading', { name: 'Let’s see your moves' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Bubble Battle', exact: true })).toBeVisible()
 }

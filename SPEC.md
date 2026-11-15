@@ -1,20 +1,20 @@
 # Motion Play — Product Specification v1.0
 
 ## Vision
-A joyful, original, browser-based motion-controlled party game inspired by the *interaction genre* of EyeToy, not its assets or branding. One shared webcam, 1–4 local players, no backend, no accounts, no uploads. Players play independent splitscreen challenges in synchronized rounds. Family-friendly, easy to understand, playable on a Mac desktop browser. No copyrighted third-party game artwork/audio.
+A joyful, original, browser-based motion-controlled party game inspired by the *interaction genre* of EyeToy, not its assets or branding. One shared webcam, 1–4 local players, no backend, no accounts, no uploads. Players share one mirrored live-camera playfield, with side-by-side player lanes and synchronized rounds. Family-friendly, easy to understand, playable on a Mac desktop browser. No copyrighted third-party game artwork/audio.
 
 ## Non-negotiables
 - Client-only React + TypeScript + Vite; Phaser for gameplay. Static hosting and optional installable PWA. No Electron or runtime server/API. `localhost` for development; production HTTPS for camera permissions.
-- Support 1, 2, 3, 4 players. Game viewport: 1 fullscreen; 2 side-by-side; 3/4 in a 2×2 grid (three players: fourth tile unused or decorative). Do not equate viewport rectangles with physical camera slices.
+- Support 1, 2, 3, 4 players. Gameplay uses one uncropped mirrored camera image. Transparent player lanes overlay each normalized camera input region, including three/four players standing side by side. Objects and motion must occupy identical screen coordinates; never move a person’s targets into a separate grid.
 - One camera video stream; configurable **camera input regions** mapped independently to each player's game viewport. Default left/right camera regions for 2 people, four adjustable regions for 3–4, allowing side-by-side physical arrangement. Mirroring and coordinate normalization must be consistent.
 - Per-player score, interaction state, cooldowns; shared clock and round lifecycle. No networked multiplayer.
-- Local processing only; never send camera images/landmarks to a server. No analytics/tracking by default. Release camera tracks when leaving gameplay/setup; explain camera permission.
+- Local processing only; never send camera images/landmarks to a server. No analytics/tracking by default. Keep the camera stream active across in-app navigation once activated; release tracks when the app closes; explain camera permission.
 - 32 game catalog entries, with only validated games playable; others clearly marked 'Coming soon' until implemented. Working MVP before expanding.
 - Design: **childlike hand-colored crayon and marker drawings**, intentionally uneven bold outlines, imperfect fills crossing borders, paper textures, sticker collages, scribbly stars/arrows, springy interactions; maintain strong text contrast/readability. Original artwork, SVG/Canvas procedural illustrations; local fonts/assets (respect licenses), no hotlinked images.
 
 ## Product navigation
-Title / Home -> Player Count (1–4) -> Camera Selection & Calibration -> Catalog -> Game Detail (one-line rules, demo, mode, difficulty, start) -> Practice (optional 5–10s) -> 3-2-1 -> Gameplay -> Results -> Replay / Next Game / Catalog.
-Home: Quick Play, Game Catalog, Tournament, Settings. Main catalog is a searchable/filterable illustrated grid with game art, title, tiny rules, mechanics category, availability, difficulty and 1–4 player support. Quick Play picks among implemented compatible games. Tournament rotates 3 or 5 implemented games and aggregates points. Cooperative mode shares a goal; competitive/free-for-all has independent scores. 2v2 only when four players and a game supports it. Avoid promising co-op/teams for incompatible games.
+Title / Home -> Catalog -> Centered Camera Lobby (player count only) -> Play -> automatic 3-2-1 -> Gameplay -> Results -> Replay / Catalog. Quick Play and Tournament enter the same camera lobby directly. No practice or start-confirmation screen.
+Home: Quick Play, Game Catalog, Tournament. Main catalog is a compact grid of playable games, with original game drawings on the same crayon sticker panels as the homepage. Each tile goes directly to that game’s camera lobby. Quick Play picks among implemented compatible games. Tournament rotates 3 or 5 implemented games and aggregates points. Cooperative mode shares a goal; competitive/free-for-all has independent scores. 2v2 only when four players and a game supports it. Avoid promising co-op/teams for incompatible games.
 
 ## Camera, calibration and recovery
 - User selects a `videoinput` device and starts a permission request only on interaction. Offer actionable permission-denied and camera-missing states; allow simulation demo mode without hardware.
@@ -105,3 +105,21 @@ A polished illustrated homepage, complete 32-entry catalog with correct availabi
 
 ## Product decisions / defaults
 Family-friendly all ages; competitive default, optional co-op; no login; progress local; sound on with mute; 60-second default; English UI first, localization-ready; choose original noninfringing visuals. Prefer shipping working features to unverified breadth.
+
+## Current playfield direction (user correction, 2026-11-15)
+The live mirrored camera image is the game screen. Keep the person clearly visible
+at full opacity; draw targets, hazards, smudges and feedback directly over them.
+Preserve the complete video aspect ratio with letterboxing, never cover-crop.
+Use compact score/time/control overlays and lightweight crayon framing rather than
+opaque illustrated boards. Brush games must reveal the person beneath their effects.
+Player count remains the only setup choice; preserve stream continuity.
+
+Camera setup follows the same camera-first presentation: a viewport-fitted, centered
+preview with a small player-count selector and Play button over it. No surrounding
+site header/footer, oversized game heading, explanatory panel, or scrolling is needed.
+Show permission/recovery explanations only when an error occurs.
+
+Game selection uses compact illustrated crayon stickers matching the homepage panels,
+without numbered placeholder art or oversized card descriptions. Play starts the game
+countdown immediately: no practice screen, confirmation dialog or second start button.
+Tournament rounds also advance directly into their countdown.

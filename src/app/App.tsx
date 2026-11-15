@@ -1,3 +1,4 @@
+import { GameDoodle } from '../design/GameDoodle'
 import { gameAudio } from '../audio/GameAudio'
 import { useEffect, useState } from 'react'
 import { GeneratedHomeScene } from '../design/GeneratedHomeScene'
@@ -15,6 +16,7 @@ const routeFromHash = (): Route => {
   if (hash === 'settings') return { page: 'settings' }
   if (hash === 'camera') return { page: 'camera' }
   if (hash === 'tournament') return { page: 'camera', tournament: true }
+  if (hash === 'camera/fish-frenzy') return { page: 'camera', game: 'fish-frenzy' }
   if (hash === 'camera/plate-spinner') return { page: 'camera', game: 'plate-spinner' }
   if (hash === 'camera/pizza-maker') return { page: 'camera', game: 'pizza-maker' }
   if (hash === 'camera/graffiti-race') return { page: 'camera', game: 'graffiti-race' }
@@ -57,8 +59,8 @@ function Home() {
 }
 
 function Catalog() {
-  return <section className="catalog-page" aria-labelledby="catalog-title"><a className="back-link" href="#/">← Home</a><div className="catalog-heading"><div><p className="eyebrow">Pick a game</p><h1 id="catalog-title">The toy box</h1><p>Click a game. Choose your players. Move!</p></div></div>
-    <div className="catalog-grid">{catalogGames.filter(game => game.available).map(game => <a className="game-card" key={game.slug} href={`#/camera/${game.slug}`} aria-label={`Play ${game.title}`}><GameArt game={game}/><div className="game-card__body"><h2>{game.title}</h2><p>{game.rules}</p><span className="details-link">Play →</span></div></a>)}</div></section>
+  return <section className="catalog-page catalog-picker" aria-labelledby="catalog-title"><a className="back-link" href="#/">← Home</a><div className="catalog-heading"><div><h1 id="catalog-title">The toy box</h1><p>Pick a game and jump in.</p></div></div>
+    <div className="catalog-grid">{catalogGames.filter(game => game.available).map(game => <a className="game-card" key={game.slug} href={`#/camera/${game.slug}`} aria-label={`Play ${game.title}`}><GameDoodle slug={game.slug}/><div className="game-card__body"><h2>{game.title}</h2><p className="sr-only">{game.rules}</p></div></a>)}</div></section>
 }
 
 function GameDetail({ slug }: { slug: string }) {

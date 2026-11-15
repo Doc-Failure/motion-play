@@ -18,7 +18,7 @@ export const catalogGames: readonly CatalogGame[] = [
   game(8, 'balloon-panic', 'Balloon Panic', 'Hit only the balloon color called out on screen.', 'Hit & Destroy', 'MOTION_HIT', 'Normal', 'Competitive', ['#ee654f', '#66c7df'], true),
   game(9, 'fruit-catcher', 'Fruit Catcher', 'Catch fresh fruit and dodge anything rotten.', 'Catch & Collect', 'HAND_POSITION', 'Normal', 'Competitive', ['#f28c46', '#72b779'], true),
   game(10, 'gold-rush', 'Gold Rush', 'Collect falling coins while avoiding the hazards.', 'Catch & Collect', 'MOTION_HIT', 'Easy', 'Competitive', ['#f5c847', '#9b6b43'], true),
-  game(11, 'fish-frenzy', 'Fish Frenzy', 'Catch the most valuable fish before they swim away.', 'Catch & Collect', 'HAND_POSITION', 'Normal', 'Competitive', ['#4c9ed9', '#66c7df']),
+  game(11, 'fish-frenzy', 'Fish Frenzy', 'Catch the most valuable fish before they swim away.', 'Catch & Collect', 'HAND_POSITION', 'Normal', 'Competitive', ['#4c9ed9', '#66c7df'], true),
   game(12, 'supermarket-rush', 'Supermarket Rush', 'Pick the correct groceries from the moving belt.', 'Catch & Collect', 'MOTION_HIT', 'Normal', 'Competitive', ['#ee654f', '#f5c847'], true),
   game(13, 'star-collector', 'Star Collector', 'Touch the twinkling stars before they disappear.', 'Catch & Collect', 'MOTION_HIT', 'Easy', 'Competitive', ['#f5c847', '#7557a8'], true),
   game(14, 'treasure-grab', 'Treasure Grab', 'Grab bright treasures and avoid the cursed objects.', 'Catch & Collect', 'MOTION_HIT', 'Normal', 'Competitive', ['#f5c847', '#4c9ed9'], true),

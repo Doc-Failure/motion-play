@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react'
+import { InputFeedbackContext } from './InputFeedbackContext'
+import { useContext, useEffect, useRef, useState } from 'react'
 import { gameAudio } from '../audio/GameAudio'
 
 interface FeedbackSnapshot {
@@ -8,8 +9,9 @@ interface FeedbackSnapshot {
   scores: { playerId: number; score: number }[]
 }
 export function GameFeedback({ snapshot }: { snapshot: FeedbackSnapshot }) {
+  const input = useContext(InputFeedbackContext)
   const [sound, setSound] = useState(gameAudio.enabled)
-  const [bursts, setBursts] = useState<{playerId: number; amount: number; id: number}[]>([])
+  const [bursts, setBursts] = useState<{playerId: number; amount: number; id: number; x: number; y: number}[]>([])
   const previous = useRef(snapshot)
   const countdown = Math.ceil(snapshot.countdownRemainingMs / 1000)
   const seconds = Math.ceil(snapshot.roundRemainingMs / 1000)
@@ -43,13 +45,16 @@ export function GameFeedback({ snapshot }: { snapshot: FeedbackSnapshot }) {
     if (snapshot.phase !== 'playing' || before.phase !== 'playing') return
     const changes = snapshot.scores.flatMap(score => {
       const amount = score.score - (before.scores.find(item => item.playerId === score.playerId)?.score ?? score.score)
-      return amount ? [{playerId:score.playerId, amount, id:performance.now()}] : []
+      const point = input.events.find(event => event.playerId === score.playerId)
+      return amount ? [{playerId:score.playerId, amount, id:performance.now(),
+        x: ((score.playerId - 1) + (point?.x ?? .5)) / input.playerCount,
+        y: point?.y ?? .5}] : []
     })
     if (changes.length) {
       gameAudio.play(changes.some(change => change.amount < 0) ? 'miss' : 'score')
       setBursts(changes)
     }
-  }, [snapshot])
+  }, [snapshot, input])
   useEffect(() => {
     if (!bursts.length) return
     const timer = window.setTimeout(() => setBursts([]), 850)
@@ -58,6 +63,6 @@ export function GameFeedback({ snapshot }: { snapshot: FeedbackSnapshot }) {
   return <>
     <div className="game-tools"><span className="game-live-label">✦ Move. Play. Smile.</span><button className="sound-toggle" type="button" aria-label={sound ? 'Mute game sound' : 'Enable game sound'} aria-pressed={!sound} onClick={() => {gameAudio.setEnabled(!sound); setSound(!sound)}}>{sound ? '♫ Sound on' : '♫ Sound off'}</button></div>
     <div className={`round-track${seconds <= 10 ? ' round-track--ending' : ''}`} aria-hidden="true"><span style={{width:`${Math.min(100, snapshot.roundRemainingMs / duration.current * 100)}%`}} /></div>
-    <div className="score-bursts" aria-hidden="true">{bursts.map(burst => <span key={`${burst.playerId}-${burst.id}`} className={burst.amount < 0 ? 'score-burst score-burst--miss' : 'score-burst'}>P{burst.playerId} {burst.amount > 0 ? '+' : '−'}{Math.abs(burst.amount)} {burst.amount > 0 ? '✦' : 'Oops!'}</span>)}</div>
+    <div className="score-bursts" aria-hidden="true">{bursts.map(burst => <span key={`${burst.playerId}-${burst.id}`} style={{left:`${burst.x * 100}%`,top:`${burst.y * 100}%`}} className={burst.amount < 0 ? 'score-burst score-burst--miss' : 'score-burst'}>P{burst.playerId} {burst.amount > 0 ? '+' : '−'}{Math.abs(burst.amount)} {burst.amount > 0 ? '✦' : 'Oops!'}</span>)}</div>
   </>
 }

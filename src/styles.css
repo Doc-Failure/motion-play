@@ -544,3 +544,45 @@ body { background: #fffdf8 url('./assets/home/paper-background.webp') repeat; ba
 .plate-target meter { display: block; width: 90%; height: .8rem; margin: .2rem auto; }
 .plate-target--wobble svg { transform: rotate(-12deg); }
 .plate-target:disabled { cursor: default; }
+
+.fish-game { position: relative; z-index: 1; padding: 1rem; color: #34254c; background: #fff8e7; }
+.fish-game h1 { margin: 0; font-size: clamp(2.3rem, 6vw, 4.5rem); letter-spacing: -.05em; }
+.fish-rules { padding: .8rem; border: 3px dashed #34254c; border-radius: .8rem 1.2rem .7rem 1rem; background: #ffe48a; text-align: center; font-weight: 800; }
+.fish-help { text-align: center; font-weight: 750; line-height: 1.5; }
+.fish-feedback { min-height: 2.5em; margin: .6rem 0; padding: .4rem; text-align: center; font-weight: 800; overflow-wrap: anywhere; }
+.fish-boards { display: grid; gap: 1rem; }
+.fish-boards--2, .fish-boards--3, .fish-boards--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.fish-player { --player-paper: #fce0eb; min-width: 0; }
+.fish-player--2 { --player-paper: #d6f0f8; }.fish-player--3 { --player-paper: #e5f1d5; }.fish-player--4 { --player-paper: #eee0f9; }
+.fish-player h2 { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem; margin: 0; padding: .5rem .8rem; border: 3px solid #34254c; border-radius: .7rem 1rem 0 0; background: var(--player-paper); font-size: 1.15rem; }
+.fish-player h2 span { font-size: 1rem; overflow-wrap: anywhere; }
+.fish-board { position: relative; height: 50vh; min-height: 20rem; overflow: hidden; border: 4px solid #34254c; border-radius: 0 0 1.3rem .8rem; background: repeating-linear-gradient(7deg, transparent 0 8px, #34254c08 9px 10px), #a6dfeb; box-shadow: 4px 5px 0 #34254c; touch-action: none; }
+.fish-boards--3 .fish-board, .fish-boards--4 .fish-board { height: 30vh; min-height: 15rem; }
+.fish-board:focus-visible { outline: 4px solid #34254c; outline-offset: 3px; }
+.fish-water { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.swimming-fish { position: absolute; width: 20%; aspect-ratio: 5 / 3; translate: -50% -50%; pointer-events: none; text-align: center; }
+.swimming-fish svg { display: block; width: 100%; height: 100%; fill: #ee987d; stroke: #34254c; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.swimming-fish--silver svg { fill: #e6e8f2; }.swimming-fish--golden svg { fill: #ffe066; }
+.swimming-fish span { position: absolute; top: 100%; left: 50%; translate: -50% 0; width: max-content; padding: 0 .15rem; border-radius: .4rem; color: #34254c; background: #fff8e7; font-weight: 850; font-size: .85rem; line-height: 1.2; }
+.fish-net { position: absolute; width: 24%; height: 30%; translate: -50% -50%; stroke: #34254c; stroke-width: 4; fill: none; pointer-events: none; }
+.fish-game .battle-results { color: #34254c; background: #fff8e7; }
+@media (max-width: 600px) { .fish-game { padding: .65rem; }.fish-player h2, .fish-player h2 span { font-size: .85rem; }.fish-boards { gap: .7rem; }.fish-player h2 { padding: .4rem; }.swimming-fish span { font-size: .75rem; } }
+/* Compact toy-box stickers, using the same hand-colored panels as Home. */
+.catalog-picker { width: min(100% - 2rem, 75rem); padding: 1rem 0 2rem; }
+.catalog-picker .back-link { display: inline-block; margin-bottom: .4rem; font-size: .85rem; }
+.catalog-picker .catalog-heading { margin: 0 0 1rem; }
+.catalog-picker .catalog-heading h1 { margin: 0; font-size: clamp(2rem,4vw,3rem); line-height: 1.1; }
+.catalog-picker .catalog-heading p { margin: .4rem 0 0; font-size: .9rem; }
+.catalog-picker .catalog-grid { grid-template-columns: repeat(6,minmax(0,1fr)); gap: .7rem; }
+.catalog-picker .game-card { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: .25rem; min-height: 9.5rem; padding: 1rem .6rem; border: 0; border-radius: 0; box-shadow: none; background: transparent url('./assets/home/quick-play-panel.webp') center / 100% 100% no-repeat; transform: rotate(-1deg); text-align: center; }
+.catalog-picker .game-card:nth-child(3n+2) { background-image: url('./assets/home/catalog-panel.webp'); transform: rotate(1deg); }
+.catalog-picker .game-card:nth-child(3n) { background-image: url('./assets/home/tournament-panel.webp'); }
+.catalog-picker .game-card:nth-child(4n) { background-image: url('./assets/home/settings-panel.webp'); }
+.catalog-picker .game-card:hover { transform: translateY(-4px) rotate(1deg); }
+.catalog-picker .game-card__body { padding: 0 .3rem; }
+.catalog-picker .game-card h2 { margin: 0; color: #20252b; font-size: clamp(.85rem,1.35vw,1.15rem); line-height: 1.15; text-shadow: 0 1px #ffffff77; }
+.game-doodle { width: 4.5rem; height: 4.5rem; overflow: visible; transform: rotate(-4deg); }
+.catalog-picker ~ .home-footer { display: none; }
+@media (max-width: 1050px) { .catalog-picker .catalog-grid { grid-template-columns: repeat(4,minmax(0,1fr)); } }
+@media (max-width: 650px) { .catalog-picker .catalog-grid { grid-template-columns: repeat(3,minmax(0,1fr)); gap: .4rem; } .catalog-picker .game-card { min-height: 8rem; padding: .75rem .35rem; } .game-doodle { width: 3.5rem; height: 3.5rem; } }
+@media (max-width: 380px) { .catalog-picker .catalog-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }

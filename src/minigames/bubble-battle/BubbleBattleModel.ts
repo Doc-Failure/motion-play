@@ -19,6 +19,7 @@ export interface BubbleBattleSnapshot extends GameSessionSnapshot {
 }
 
 export interface BubbleBattleOptions {
+  aspectRatio?: number
   playerCount?: PlayerCount
   countdownMs?: number
   roundDurationMs?: number
@@ -31,6 +32,7 @@ const BOMB_PENALTY = -15
 
 /** Game-only logic. It knows normalized input events, never cameras or pixels. */
 export class BubbleBattleModel {
+  private readonly aspectRatio: number
   private readonly session: GameSession
   private readonly spawnIntervalMs: number
   private readonly random: () => number
@@ -42,6 +44,7 @@ export class BubbleBattleModel {
   private lastResults = emptyResults()
 
   constructor(options: BubbleBattleOptions = {}) {
+    this.aspectRatio = options.aspectRatio && options.aspectRatio > 0 ? options.aspectRatio : 1
     this.session = new GameSession({
       playerCount: options.playerCount ?? 1,
       countdownMs: options.countdownMs,
@@ -93,7 +96,7 @@ export class BubbleBattleModel {
     if (!this.playerIds.includes(event.playerId) || event.kind !== 'MOTION_HIT' || event.confidence < 0.2 || this.session.getSnapshot().phase !== 'playing') {
       return this.snapshot(timestamp)
     }
-    const target = [...this.targets].reverse().find((candidate) => candidate.playerId === event.playerId && Math.hypot(event.x - candidate.x, event.y - candidate.y) <= candidate.radius)
+    const target = [...this.targets].reverse().find((candidate) => candidate.playerId === event.playerId && Math.hypot((event.x - candidate.x) / Math.min(1, 1 / this.aspectRatio), (event.y - candidate.y) / Math.min(1, this.aspectRatio)) <= candidate.radius)
     if (!target) return this.snapshot(timestamp)
     this.targets = this.targets.filter((candidate) => candidate.id !== target.id)
     this.lastResults[event.playerId] = target.kind

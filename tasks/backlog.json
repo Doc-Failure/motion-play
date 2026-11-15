@@ -432,11 +432,37 @@
   {
     "id": "T25K",
     "title": "Implement and test Fish Frenzy using generic HAND_POSITION input",
-    "depends_on": ["T25J"],
-    "status": "pending",
-    "attempts": 0,
-    "notes": "Acceptance: deterministic 1-4 player position-event model, fish values/misses/isolation tests, rendered simulation, practice/setup/catalog routing, pointer fallback, honest availability gating, and no claim of landmark tracking.",
+    "depends_on": [
+      "T25J"
+    ],
+    "status": "done",
+    "attempts": 1,
+    "notes": "Implemented deterministic competitive 1–4 player Fish Frenzy consuming normalized HAND_POSITION events only. Three swimming fish kinds award 5/10/20 points; misses cost nothing. Added isolated scores/catch/miss counts, render-cadence-independent spawning, fresh-input-only catches, malformed/stale/duplicate rejection and pause-safe clocks. Integrated original local crayon SVG art, pointer/touch and keyboard controls, practice/countdown/results/replay, catalog/direct setup, manual/tab/camera recovery and focus restoration. Camera adapter uses motion centroids, explicitly disclosed as moving regions rather than hand tracking; camera-free fallback works after denial and camera activation is explicit for Fish Frenzy. Added 21 model/component cases, two setup cases, catalog navigation, and two browser scenarios. On 2026-11-15, all 327 unit/component tests across 49 files, typecheck, lint, build and diff checks passed. Initial rendered tests exposed a missing injected random prop, fixed; a route-title test race was corrected to await its actual heading. Chromium scenarios could not execute: macOS denied MachPortRendezvousServer startup (1100), including a single-worker retry. Initial six browser scenarios and desktop/narrow visual review passed in follow-up; T25K-browser is now complete with 11 passing scenarios, including four added synthetic camera-pipeline catches, and reviewed desktop/portrait/camera screenshots; see the follow-up progress entry for verification details. Physical webcam tracking and motion feel remain unverified; hardware_verified stays false. No deployment, external upload or commit.",
     "needs_hardware_validation": true,
+    "hardware_verified": false
+  },
+  {
+    "id": "T25K-browser",
+    "title": "Run Fish Frenzy browser acceptance and inspect desktop/narrow screenshots",
+    "depends_on": [
+      "T25K"
+    ],
+    "status": "done",
+    "attempts": 4,
+    "notes": "Completed browser acceptance on 2026-11-15. All 11 Fish Frenzy Chromium scenarios pass, including four new real-video-pipeline synthetic camera catches for 1–4 players, mirrored lane alignment, artwork/input coordinate alignment, score isolation and expired input feedback. Fixed fish artwork offset in tall lanes, centered the net on its catch ellipse, kept value labels near fish, waited for resize layout before measuring, and moved portrait controls/rules into letterbox margins with regression assertions. Reviewed desktop, 390px portrait and synthetic-camera screenshots. Intermittent macOS Chromium MachPort launch denial (1100) occurred; subsequent runs executed and passed. Broader regression results are recorded in progress.md. Synthetic fixtures do not establish physical webcam tracking, latency or motion feel. No deployment, external upload or commit.",
+    "needs_hardware_validation": false,
+    "hardware_verified": false
+  },
+  {
+    "id": "T25K-regression",
+    "title": "Complete full browser regression after shared camera/setup integration",
+    "depends_on": [
+      "T25K-browser"
+    ],
+    "status": "pending",
+    "attempts": 3,
+    "notes": "2026-11-15 follow-up: inspected shared camera/setup and preserved concurrent direct-Play/catalog changes. Added a component and Chromium recovery regression; reproduced and fixed failed reconnect clearing the external pause, and show the latest recovery error in Bubble Battle. Current integration attaches replacement streams to the active video, clears stale motion and resets frame-loss timing. Corrected remaining Graffiti Race practice-heading assertion and stale openCamera helper. Broad Chromium run executed 34 scenarios: 32 passed, including every playable game in one/four-player mode; two failures exposed the recovery fixture/playback path and stale heading, both subsequently updated. Earlier overlapping baseline stopped after 18 passes when direct-Play source/tests changed. Final stable-source verification: 335 unit/component tests across 50 files, typecheck, lint, build and diff checks passed. Final full 34-scenario rerun and two targeted retries were blocked before test execution by macOS Chromium MachPortRendezvousServer denial (1100). Final browser fixes still require execution; do not claim a clean full-suite pass. Reviewed synthetic setup/gameplay and narrow catalog/Fish Frenzy screenshots. No physical webcam validation, deployment, external upload or commit.",
+    "needs_hardware_validation": false,
     "hardware_verified": false
   },
   {

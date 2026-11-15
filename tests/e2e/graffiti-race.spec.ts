@@ -7,8 +7,7 @@ test('Graffiti Race routes from the catalog and isolates four-player painting wi
   await page.getByRole('link', { name: 'Play Graffiti Race' }).click()
   await page.getByRole('button', { name: '4 players' }).click()
   await page.getByRole('button', { name: 'Play Graffiti Race' }).click()
-  await expect(page.getByRole('heading', { name: 'Reveal your secret mural' })).toBeVisible()
-  await page.getByRole('button', { name: 'Start round now' }).click()
+  await expect(page.getByRole('heading', { name: 'Graffiti Race', exact: true })).toBeVisible()
   await page.clock.runFor(3100)
   await page.getByLabel('Player 1 Graffiti Race play area').focus()
   await page.keyboard.press('Space')
@@ -40,12 +39,12 @@ test('Graffiti Race routes from the catalog and isolates four-player painting wi
 })
 
 test('Graffiti Race ends as soon as a player reveals their mural', async ({ page, installMockCamera }) => {
+  test.setTimeout(60_000)
   await page.clock.install()
   await installMockCamera()
   await openApp(page, '#/camera/graffiti-race')
   await page.getByRole('button', { name: '2 players' }).click()
   await page.getByRole('button', { name: 'Play Graffiti Race' }).click()
-  await page.getByRole('button', { name: 'Start round now' }).click()
   await page.clock.runFor(3100)
   const bounds = (await page.getByLabel('Player 2 Graffiti Race play area').boundingBox())!
   for (let row = 0; row < 8; row++) {

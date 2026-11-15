@@ -17,7 +17,7 @@ describe('catalog data', () => {
     expect(new Set(catalogGames.map((game) => game.slug))).toHaveLength(32)
     expect(new Set(catalogGames.map((game) => game.title))).toHaveLength(32)
     expect(new Set(catalogGames.map((game) => game.category))).toEqual(new Set(catalogCategories))
-    expect(catalogGames.filter((game) => game.available).map((game) => [game.slug, game.players])).toEqual([['bubble-battle', [1, 2, 3, 4]], ['whack-a-mole', [1, 2, 3, 4]], ['meteor-smash', [1, 2, 3, 4]], ['pinata-party', [1, 2, 3, 4]], ['monster-defense', [1, 2, 3, 4]], ['balloon-panic', [1, 2, 3, 4]], ['fruit-catcher', [1, 2, 3, 4]], ['gold-rush', [1, 2, 3, 4]], ['supermarket-rush', [1, 2, 3, 4]], ['star-collector', [1, 2, 3, 4]], ['treasure-grab', [1, 2, 3, 4]], ['window-wipe', [1, 2, 3, 4]], ['paint-splash', [1, 2, 3, 4]], ['car-wash', [1, 2, 3, 4]], ['pizza-maker', [1, 2, 3, 4]], ['graffiti-race', [1, 2, 3, 4]], ['air-pong', [1, 2, 3, 4]], ['goalkeeper', [1, 2, 3, 4]], ['simon-says', [1, 2, 3, 4]], ['plate-spinner', [1, 2, 3, 4]]])
+    expect(catalogGames.filter((game) => game.available).map((game) => [game.slug, game.players])).toEqual([['bubble-battle', [1, 2, 3, 4]], ['whack-a-mole', [1, 2, 3, 4]], ['meteor-smash', [1, 2, 3, 4]], ['pinata-party', [1, 2, 3, 4]], ['monster-defense', [1, 2, 3, 4]], ['balloon-panic', [1, 2, 3, 4]], ['fruit-catcher', [1, 2, 3, 4]], ['gold-rush', [1, 2, 3, 4]], ['fish-frenzy', [1, 2, 3, 4]], ['supermarket-rush', [1, 2, 3, 4]], ['star-collector', [1, 2, 3, 4]], ['treasure-grab', [1, 2, 3, 4]], ['window-wipe', [1, 2, 3, 4]], ['paint-splash', [1, 2, 3, 4]], ['car-wash', [1, 2, 3, 4]], ['pizza-maker', [1, 2, 3, 4]], ['graffiti-race', [1, 2, 3, 4]], ['air-pong', [1, 2, 3, 4]], ['goalkeeper', [1, 2, 3, 4]], ['simon-says', [1, 2, 3, 4]], ['plate-spinner', [1, 2, 3, 4]]])
     expect(catalogGames.filter((game) => !game.available).every((game) => game.players.join() === '1,2,3,4')).toBe(true)
   })
 
@@ -35,12 +35,12 @@ describe('App navigation', () => {
     expect(screen.getByRole('link', {name: 'Play Bubble Battle'})).toHaveAttribute('href', '#/camera/bubble-battle')
     expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
   })
-  it.each(['Supermarket Rush', 'Star Collector', 'Treasure Grab', 'Pizza Maker', 'Graffiti Race', 'Plate Spinner'])('opens %s from its catalog link', async (title) => {
+  it.each(['Supermarket Rush', 'Star Collector', 'Treasure Grab', 'Pizza Maker', 'Graffiti Race', 'Plate Spinner', 'Fish Frenzy'])('opens %s from its catalog link', async (title) => {
     visit('#/catalog')
     render(<App />)
     fireEvent.click(screen.getByRole('link', { name: `Play ${title}` }))
     expect(await screen.findByRole('button', { name: '4 players' })).toBeVisible()
-    expect(screen.getByRole('heading', { name: title })).toBeVisible()
+    expect(await screen.findByRole('heading', { name: title })).toBeVisible()
   })
 
 })

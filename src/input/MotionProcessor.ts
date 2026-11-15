@@ -4,7 +4,7 @@ export interface MotionFrame { width: number; height: number; data: Uint8Clamped
 export interface MotionInputEvent { playerId: PlayerId; kind: 'MOTION_HIT' | 'MOTION_BRUSH' | 'HAND_POSITION' | 'BODY_MOVE'; x: number; y: number; confidence: number; timestamp: number }
 export interface ZoneMotion { playerId: PlayerId; activePixels: number; activity: number; centroid: { x: number; y: number } | null }
 export interface MotionResult { mask: Uint8ClampedArray; width: number; height: number; threshold: number; zones: ZoneMotion[]; events: MotionInputEvent[]; positions?: MotionInputEvent[] }
-export interface MotionOptions { sensitivity?: number; smoothing?: number; minimumNeighbors?: number; minimumZoneActivity?: number; debounceMs?: number }
+export interface MotionOptions { spatialSampling?: boolean; sensitivity?: number; smoothing?: number; minimumNeighbors?: number; minimumZoneActivity?: number; debounceMs?: number }
 
 const clamp = (value: number, minimum = 0, maximum = 1) => Math.min(maximum, Math.max(minimum, value))
 
@@ -13,6 +13,7 @@ export class MotionProcessor {
   private smoothed: Float32Array | null = null
   private noiseFloor = 0
   private readonly lastHit = new Map<PlayerId, number>()
+  private readonly spatialSampling: boolean
   private sensitivity: number
   private readonly smoothing: number
   private readonly minimumNeighbors: number
@@ -20,6 +21,7 @@ export class MotionProcessor {
   private readonly debounceMs: number
 
   constructor(options: MotionOptions = {}) {
+    this.spatialSampling = options.spatialSampling ?? false
     this.sensitivity = clamp(options.sensitivity ?? 0.55)
     this.smoothing = clamp(options.smoothing ?? 0.45)
     this.minimumNeighbors = options.minimumNeighbors ?? 2
@@ -83,7 +85,7 @@ export class MotionProcessor {
     const positions = zoneMotion.flatMap(motion => {
       if (!motion.centroid || motion.activity < this.minimumZoneActivity || motion.activity > .65) return []
       const zone = zones.find(item => item.playerId === motion.playerId)!
-      return motionComponents(mask, frame.width, frame.height, zone).map(point => ({
+      return motionComponents(mask, frame.width, frame.height, zone, this.spatialSampling).map(point => ({
         playerId: motion.playerId, kind: 'MOTION_HIT' as const, ...point,
         confidence: clamp(.5 + motion.activity * 2), timestamp,
       }))
@@ -125,7 +127,7 @@ function summarizeZone(mask: Uint8ClampedArray, width: number, height: number, z
 }
 
 // Keep separated moving hands separate: their average may be empty background.
-function motionComponents(mask: Uint8ClampedArray, width: number, height: number, zone: PlayerCameraZone) {
+function motionComponents(mask: Uint8ClampedArray, width: number, height: number, zone: PlayerCameraZone, spatialSampling = false) {
   const seen = new Uint8Array(mask.length)
   const points: { x: number; y: number }[] = []
   const inside = (index: number) => {
@@ -136,16 +138,27 @@ function motionComponents(mask: Uint8ClampedArray, width: number, height: number
     if (!mask[index] || seen[index] || !inside(index)) continue
     const queue = [index]; seen[index] = 1
     let sumX = 0, sumY = 0
+    const cells = new Map<number, {x: number; y: number; count: number}>()
     for (let cursor = 0; cursor < queue.length; cursor++) {
       const pixel = queue[cursor], x = pixel % width, y = Math.floor(pixel / width)
       sumX += (x + .5) / width; sumY += (y + .5) / height
+      if (spatialSampling) {
+        const local = mapCameraPoint({x:(x+.5)/width,y:(y+.5)/height},zone)!
+        const key = Math.min(9,Math.floor(local.y*10))*10 + Math.min(9,Math.floor(local.x*10))
+        const cell = cells.get(key) ?? {x:0,y:0,count:0}
+        cell.x += local.x; cell.y += local.y; cell.count++
+        cells.set(key,cell)
+      }
       for (const [nx, ny] of [[x-1,y],[x+1,y],[x,y-1],[x,y+1]]) {
         const next = ny * width + nx
         if (nx < 0 || nx >= width || ny < 0 || ny >= height || seen[next] || !mask[next] || !inside(next)) continue
         seen[next] = 1; queue.push(next)
       }
     }
-    if (queue.length >= 3) {
+    if (queue.length >= 3 && spatialSampling) {
+      // Sample occupied mask cells, never empty space between moving body parts.
+      for (const cell of cells.values()) points.push({x:cell.x/cell.count,y:cell.y/cell.count})
+    } else if (queue.length >= 3) {
       const point = mapCameraPoint({ x: sumX / queue.length, y: sumY / queue.length }, zone)
       if (point) points.push(point)
     }

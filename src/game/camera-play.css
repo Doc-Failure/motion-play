@@ -1,0 +1,118 @@
+/* The mirrored person IS the playfield. All lanes use the full camera height. */
+.camera-play { position: fixed; inset: 0; z-index: 50; min-height: 0; background: #171c26; overflow: hidden; }
+.camera-arena { position: absolute; overflow: hidden; isolation: isolate; }
+.camera-play .game-camera { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: fill; transform: scaleX(-1); opacity: 1; filter: none; z-index: -1; }
+.camera-play .camera-arena > section { position: absolute; inset: 0; width: 100%; height: 100%; min-height: 0; margin: 0; padding: 0; color: #20252b; background: transparent; }
+.camera-play .camera-arena > section:not(.practice-card) > [class*="-boards"] { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(var(--players), minmax(0,1fr)); grid-template-rows: 1fr; gap: 0; width: 100%; max-width: none; height: 100%; min-height: 0; margin: 0; padding: 0; pointer-events: none; }
+.camera-play { --players: 1; }
+.camera-play[data-players="2"] { --players: 2; }
+.camera-play[data-players="3"] { --players: 3; }
+.camera-play[data-players="4"] { --players: 4; }
+.camera-play [class*="-boards"] > :is(div, section) { position: relative; min-width: 0; min-height: 0; height: 100%; margin: 0; padding: 0; background: transparent; border: 0; }
+.camera-play [class*="-boards"] > :is(div, section) + :is(div, section) { box-shadow: -1px 0 #ffffff88; }
+.camera-play [class*="-boards"] > :is(div, section) > [aria-label$="play area"] { position: absolute; inset: 0; width: 100%; height: 100%; min-height: 0; max-height: none; margin: 0; padding: 0; aspect-ratio: auto; border: 0; border-radius: 0; box-shadow: none; background: transparent; backdrop-filter: none; pointer-events: auto; }
+.camera-play [class*="-boards"] > :is(div, section) > h2 { position: absolute; z-index: 6; top: 4rem; left: .4rem; right: .4rem; width: fit-content; max-width: calc(100% - .8rem); margin: 0; padding: .25rem .45rem; font-size: .7rem; line-height: 1.3; background: #fff8e9df; border: 2px solid #29313c; border-radius: .5rem; transform: none; pointer-events: none; }
+.camera-play [class*="-boards"] > :is(div, section) > h2 :is(span,small) { font-size: .65rem; }
+.camera-play .bubble-game__header { position: absolute; z-index: 10; inset: .5rem .5rem auto; display: flex; align-items: center; justify-content: flex-start; flex-wrap: nowrap; gap: .5rem; min-height: 2.5rem; padding: .35rem .6rem !important; border: 2px solid #29313c; border-radius: .7rem !important; background: #fff9e9e8 !important; box-shadow: 2px 3px #29313c33; }
+.camera-play .bubble-game__header h1 { font-size: clamp(.85rem,1.8vw,1.4rem); white-space: nowrap; }
+.camera-play .bubble-game__header .eyebrow { display: none; }
+.camera-play .bubble-game__header dl { width: auto; margin-left: auto; gap: .4rem; flex-wrap: nowrap; }
+.camera-play .bubble-game__header dl > div { display: flex; align-items: center; flex-wrap: wrap; justify-content: center; gap: .25rem; min-width: 0; padding: .15rem .35rem; border: 0; box-shadow: none; transform: none; border-radius: .3rem; }
+.camera-play .bubble-game__header dt { font-size: .55rem; }
+.camera-play .bubble-game__header dd { font-size: 1rem; }
+.camera-play .game-header-actions { display: flex; gap: .35rem; }
+.camera-play .bubble-game__header .text-button { min-height: 32px; padding: .25rem .4rem; font-size: .7rem; white-space: nowrap; }
+.camera-play .game-tools { position: absolute; z-index: 12; bottom: .5rem; right: .5rem; margin: 0; }
+.camera-play .game-live-label { display: none; }
+.camera-play .sound-toggle { min-height: 36px; font-size: .75rem; background: #fff8e9e8; }
+.camera-play .round-track { position: absolute; z-index: 11; top: 3.5rem; left: 1rem; right: 1rem; height: 4px; margin: 0; background: #ffffff66; }
+.camera-play .camera-arena > section:not(.practice-card) > :is(p,[role="status"]) { position: absolute; z-index: 6; bottom: .4rem; left: .5rem; width: fit-content; max-width: calc(100% - 9rem); max-height: 4rem; overflow: auto; margin: 0; padding: .35rem .65rem; border: 0; border-radius: .5rem; background: #fff8e9e8; color: #29313c; font-size: .75rem; line-height: 1.35; text-align: left; }
+.camera-play .camera-arena > section:not(.practice-card) > :is([class$="-help"],[class$="-team-status"]) { display: none; }
+.camera-play [class*="-boards"] > :is(div, section) > :is(p,progress) { position: absolute; z-index: 6; bottom: 3rem; left: .4rem; right: .4rem; width: auto; margin: 0; padding: .2rem .35rem; border-radius: .3rem; font-size: .65rem; background: #fff8e9dd; pointer-events: none; }
+.camera-play .game-curtain { z-index: 7; background: #ffffff18; backdrop-filter: none; pointer-events: none; }
+.camera-play .game-curtain span { padding: .3rem .5rem; border-radius: .3rem; background: #fff9e9e8; font-size: .8rem; }
+.camera-play .game-curtain strong { width: 1.3em; height: 1.3em; font-size: clamp(2rem,6vw,5rem); }
+.camera-play :is(.battle-results,.pause-overlay) { z-index: 20; inset: 15% 10% auto; max-height: 75%; overflow: auto; padding: 1.25rem; }
+.camera-play :is(.battle-results,.pause-overlay) h2 { font-size: clamp(1.5rem,4vw,3rem); }
+.camera-play .score-bursts { position: absolute; inset: 0; transform: none; pointer-events: none; }
+.camera-play .score-burst { position: absolute; translate: -50% -50%; font-size: 1.1rem; }
+/* Props remain on the camera image; large decorative scenery must not hide it. */
+.camera-play :is(.fish-water,.star-sky,.treasure-map,.monster-landscape,.grocery-scenery) { opacity: .15; }
+.camera-play .car-board > svg > g:not(.car-mud) { opacity: .4; }
+.camera-play .graffiti-board > svg { opacity: .5; }
+.camera-play .paint-board > span.is-painted { opacity: .42; }
+.camera-play .wipe-board > span { background: radial-gradient(ellipse, #a28b69aa 0 25%,#c0a98766 40%,transparent 65%); }
+.camera-play .simon-pad { opacity: .35; }
+.camera-play .simon-pad.is-lit { opacity: .9; }
+.camera-play .mole-hole { background-color: #73534266; }
+.camera-play .plate-target { min-width: 24px; min-height: 24px; }
+.camera-play .practice-card { inset: 10% 12% auto !important; width: 76% !important; height: auto !important; max-height: 80%; padding: 1rem !important; overflow: auto; background: #fff9e9eb !important; }
+.camera-play .practice-card h1 { font-size: clamp(1.3rem,3vw,2.5rem); }
+.camera-play .practice-zones { display: none; }
+.camera-play .practice-card > p:not(.eyebrow) { font-size: .85rem; }
+.camera-play .tournament-ribbon { z-index: 15; top: 4rem; bottom: auto; }
+@media (max-width: 700px) {
+  .camera-play .swimming-fish span { font-size: .65rem; padding: 0 .05rem; }
+  /* Use the letterbox space for controls on narrow Fish Frenzy screens. */
+  .camera-play .fish-game .bubble-game__header { position: fixed; top: .5rem; }
+  .camera-play .fish-game .fish-rules { position: fixed !important; bottom: 3.5rem !important; max-width: calc(100% - 1rem) !important; max-height: none !important; }
+  .camera-play .fish-player > h2 { top: .25rem !important; display: block !important; font-size: .6rem !important; }
+  .camera-play .fish-player > h2 span { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: .6rem !important; }
+  .camera-play .fish-player > .fish-feedback { bottom: .25rem !important; min-height: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .camera-play .fish-game .game-tools { position: fixed; }
+  .camera-play .bubble-game__header { gap: .25rem; padding: .25rem !important; inset: .2rem .2rem auto; }
+  .camera-play .bubble-game__header dt { font-size: .45rem; }
+  .camera-play .bubble-game__header dd { font-size: .75rem; }
+  .camera-play .bubble-game__header dl { gap: .15rem; }
+  .camera-play .bubble-game__header dl > div { padding: .1rem; }
+  .camera-play .bubble-game__header .text-button { font-size: .6rem; padding: .2rem; }
+}
+.camera-play .grocery-order { top: 6.5rem; left: .4rem; width: calc(100% - .8rem); padding: .3rem; border-radius: .4rem; font-size: .75rem; background: #fff1b9e8; }
+.camera-play [class*="-boards"] > section > .pizza-order { bottom: auto; top: 6.5rem; min-height: 0; font-size: .7rem; background: #fff1b9e8; }
+.camera-play .pizza-pie { opacity: .45; }
+.camera-play .plate-stage { opacity: .3; }
+/* HUD text never steals physical-space pointer strokes. Controls remain operable. */
+.camera-play :is(.bubble-game__header,.round-track),
+.camera-play .camera-arena > section:not(.practice-card) > p,
+.camera-play [class*="-boards"] :is(h2,p) { pointer-events: none; }
+.camera-play .bubble-game__header button { pointer-events: auto; }
+.camera-play :is(.pizza-target,.plate-target) { min-width: 24px; min-height: 24px; }
+@media (max-width: 700px) {
+  .camera-play :is(.pizza-target,.plate-target) span { position: absolute; left: 0; top: 65%; width: 100%; max-height: 30%; margin: 0; padding: 0; overflow: hidden; overflow-wrap: anywhere; }
+  .camera-play .plate-target meter { position: absolute; bottom: 0; left: 5%; width: 90%; height: 8%; margin: 0; }
+}
+/* Setup is also a camera screen, with no surrounding page or scroll. */
+html:has(.camera-lobby:not([hidden])), body:has(.camera-lobby:not([hidden])) { overflow: hidden; }
+.home-shell:has(.camera-lobby:not([hidden])) > :is(.site-header,.home-footer) { display: none; }
+.camera-lobby { position: fixed; z-index: 40; inset: 0; margin: 0; padding: 0; overflow: hidden; background: #171c26; color: #fff9e9; }
+.camera-lobby__frame { position: absolute; overflow: hidden; isolation: isolate; }
+.camera-lobby__frame > video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; transform: scaleX(-1); }
+.camera-lobby__top { position: absolute; z-index: 2; inset: 1rem 1rem auto; display: flex; align-items: center; gap: 1rem; text-shadow: 0 1px 4px #000; }
+.camera-lobby__top h1 { margin: 0; font-size: clamp(1rem,2.2vw,1.5rem); font-weight: 900; }
+.camera-lobby__back { display: grid; place-items: center; min-height: 44px; padding: .4rem .8rem; border: 1px solid #ffffff66; border-radius: .7rem; color: #fff9e9; background: #171c2699; font-size: .9rem; text-decoration: none; }
+.camera-lobby__live { margin-left: auto; font-size: .75rem; color: #dcf1cf; }
+.camera-lobby__actions { position: absolute; z-index: 3; left: 50%; bottom: max(1.25rem,env(safe-area-inset-bottom)); display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: .75rem; width: max-content; max-width: calc(100% - 2rem); padding: .65rem .85rem; border: 1px solid #ffffff55; border-radius: 1.2rem; background: #171c26d9; transform: translateX(-50%); }
+.camera-lobby__players { display: flex; align-items: center; gap: .35rem; margin: 0; padding: 0; border: 0; }
+.camera-lobby__players legend { float: left; margin-right: .6rem; padding: 0; font-size: .85rem; }
+.camera-lobby__players button { width: 44px; height: 44px; padding: 0; border: 2px solid transparent; border-radius: .65rem .45rem .6rem .5rem; background: #fff9e92b; color: #fff9e9; font-size: 1.15rem; font-weight: 900; cursor: pointer; }
+.camera-lobby__players button[aria-pressed="true"] { background: #fff9e9; border-color: #ffe17a; color: #29313c; }
+.camera-lobby__play { min-height: 44px; padding: .6rem 1.1rem; border: 2px solid #29313c; border-radius: .7rem .5rem .8rem .5rem; background: #ffe17a; color: #29313c; font-size: 1rem; font-weight: 900; cursor: pointer; }
+.camera-lobby button:disabled { opacity: .65; cursor: wait; }
+.camera-lobby :is(button,a):focus-visible { outline: 3px solid #ffe17a; outline-offset: 4px; }
+.camera-lobby__fallback { border: 0; padding: .5rem; background: none; color: #fff9e9; font-size: .75rem; text-decoration: underline; cursor: pointer; }
+.camera-lobby__zones { position: absolute; inset: 0; pointer-events: none; }
+.camera-lobby__zones > div { position: absolute; top: 0; height: 100%; }
+.camera-lobby__zones > div + div { border-left: 1px dashed #ffffff55; }
+.camera-lobby__zones span { position: absolute; top: 5rem; left: .6rem; padding: .2rem .45rem; border-radius: .35rem; background: #171c2677; font-size: .7rem; }
+.camera-lobby__placeholder { position: absolute; inset: 0; display: grid; place-items: center; padding: 5rem 1rem; color: #fff9e9aa; font-size: 1.1rem; }
+.camera-lobby__error { position: absolute; z-index: 2; left: 50%; top: 50%; width: min(26rem,85%); padding: 1rem; border-radius: .8rem; background: #fff9e9f2; color: #29313c; transform: translate(-50%,-50%); text-align: center; }
+.camera-lobby__error p { margin-bottom: 0; font-size: .85rem; }
+@media (max-width: 600px) {
+  .camera-lobby__top { inset: .4rem .5rem auto; gap: .5rem; }
+  .camera-lobby__top h1 { font-size: .95rem; }
+  .camera-lobby__live { font-size: .6rem; }
+  .camera-lobby__actions { gap: .4rem; padding: .45rem; bottom: .5rem; }
+  .camera-lobby__players legend { font-size: .75rem; margin-right: .3rem; }
+  .camera-lobby__players button { width: 36px; height: 40px; }
+  .camera-lobby__play { font-size: .85rem; min-height: 40px; padding: .45rem .7rem; }
+}

@@ -118,3 +118,13 @@ describe('BubbleBattleModel', () => {
     expect(resumed.scores[0].score).toBe(10)
   })
 })
+
+it('matches circular target hit bounds in a tall camera lane', () => {
+  const model = new BubbleBattleModel({countdownMs:0,aspectRatio:1/3})
+  model.start(0)
+  model.setTargets([{id:1,playerId:1,kind:'bubble',x:.5,y:.5,radius:.1}])
+  const outside = model.handleInput({playerId:1,kind:'MOTION_HIT',x:.5,y:.56,confidence:1,timestamp:1})
+  expect(outside.scores[0].score).toBe(0)
+  const inside = model.handleInput({playerId:1,kind:'MOTION_HIT',x:.5,y:.52,confidence:1,timestamp:2})
+  expect(inside.scores[0].score).toBe(10)
+})

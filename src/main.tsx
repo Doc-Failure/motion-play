@@ -16,3 +16,5 @@ createRoot(root).render(
     <App />
   </StrictMode>,
 )
+
+import './game/camera-play.css'

@@ -1,5 +1,6 @@
 import { expect, openApp, test } from './fixtures'
 import type { Locator, Page } from '@playwright/test'
+import { catalogGames } from '../../src/app/catalog'
 
 async function clickMovingTarget(page: Page, target: Locator) {
   // Moving targets never pass the stationary-element actionability check.
@@ -14,16 +15,15 @@ async function clickMovingTarget(page: Page, target: Locator) {
 test('simple game selection and persistent camera across games', async ({ page, installMockCamera }) => {
   await installMockCamera()
   await openApp(page, '#/catalog')
-  await expect(page.locator('.game-card')).toHaveCount(20)
+  await expect(page.locator('.game-card')).toHaveCount(catalogGames.filter(game => game.available).length)
   await expect(page.getByRole('combobox')).toHaveCount(0)
   await page.getByRole('link', {name: 'Play Bubble Battle'}).click()
   await expect(page.getByText('● Camera on', {exact:true})).toBeVisible()
   await page.getByRole('button', {name: '4 players'}).click()
   await page.getByRole('button', {name: 'Play Bubble Battle'}).click()
-  await page.getByRole('button', {name: 'Start round now'}).click()
   for(const playerId of [1,2,3,4]) await expect(page.getByLabel(`Player ${playerId} Bubble Battle play area`)).toBeVisible()
   await page.getByRole('button', {name: 'Exit game'}).click()
-  await page.getByRole('link', {name:'← Games'}).click()
+  await page.getByRole('link', {name:'Back to games'}).click()
   await page.getByRole('link', {name:'Play Window Wipe'}).click()
   await expect(page.getByRole('button', {name:'Play Window Wipe'})).toBeEnabled()
   const media = await page.evaluate(() => (window as typeof window & {__mockMediaState:{requests:number;stoppedTracks:number}}).__mockMediaState)
@@ -56,8 +56,7 @@ test('Piñata Party supports four players, keyboard and pointer hits, and pause'
   await page.getByRole('link', { name: 'Play Piñata Party' }).click()
   await page.getByRole('button', { name: '4 players' }).click()
   await page.getByRole('button', { name: 'Play Piñata Party' }).click()
-  await expect(page.getByRole('heading', { name: 'Fill the candy jar together' })).toBeVisible()
-  await page.getByRole('button', { name: 'Start round now' }).click()
+  await expect(page.getByRole('heading', { name: 'Piñata Party' })).toBeVisible()
   const target = page.getByRole('button', { name: 'Hit Player 1 piñata' })
   await page.clock.runFor(3100)
   for (const playerId of [1, 2, 3, 4]) {
@@ -94,8 +93,7 @@ test('Monster Defense routes from catalog and supports four-player keyboard defe
   await page.getByRole('link', { name: 'Play Monster Defense' }).click()
   await page.getByRole('button', { name: '4 players' }).click()
   await page.getByRole('button', { name: 'Play Monster Defense' }).click()
-  await expect(page.getByRole('heading', { name: 'Protect the gates together' })).toBeVisible()
-  await page.getByRole('button', { name: 'Start round now' }).click()
+  await expect(page.getByRole('heading', { name: 'Monster Defense' })).toBeVisible()
   await page.clock.runFor(3100)
   const target = page.getByRole('button', { name: 'Stop Player 1 monster 1', exact: true })
   await target.focus()
@@ -124,8 +122,7 @@ test('Supermarket Rush routes from catalog and supports four-player shopping', a
   await page.getByRole('link', { name: 'Play Supermarket Rush' }).click()
   await page.getByRole('button', { name: '4 players' }).click()
   await page.getByRole('button', { name: 'Play Supermarket Rush' }).click()
-  await expect(page.getByRole('heading', { name: 'Pick from your shopping list' })).toBeVisible()
-  await page.getByRole('button', { name: 'Start round now' }).click()
+  await expect(page.getByRole('heading', { name: 'Supermarket Rush' })).toBeVisible()
   await page.clock.runFor(3100)
   const target = page.getByRole('button', { name: 'Pick Player 1 apple 1', exact: true })
   await target.focus()
@@ -165,8 +162,7 @@ test('Star Collector supports four-player catches, expiry, pause, results and re
   await page.getByRole('link', { name: 'Play Star Collector' }).click()
   await page.getByRole('button', { name: '4 players' }).click()
   await page.getByRole('button', { name: 'Play Star Collector' }).click()
-  await expect(page.getByRole('heading', { name: 'Catch the fading stars' })).toBeVisible()
-  await page.getByRole('button', { name: 'Start round now' }).click()
+  await expect(page.getByRole('heading', { name: 'Star Collector' })).toBeVisible()
   await page.clock.runFor(3100)
   for (const id of [1, 2, 3, 4]) await expect(page.getByLabel(`Player ${id} Star Collector play area`)).toBeVisible()
   const first = page.getByRole('button', { name: 'Collect Player 1 star 1', exact: true })
@@ -203,8 +199,7 @@ test('Treasure Grab supports four-player catches, expiry, pause, results and rep
   await page.getByRole('link', { name: 'Play Treasure Grab' }).click()
   await page.getByRole('button', { name: '4 players' }).click()
   await page.getByRole('button', { name: 'Play Treasure Grab' }).click()
-  await expect(page.getByRole('heading', { name: 'Find treasure, avoid curses' })).toBeVisible()
-  await page.getByRole('button', { name: 'Start round now' }).click()
+  await expect(page.getByRole('heading', { name: 'Treasure Grab' })).toBeVisible()
   await page.clock.runFor(3100)
   for (const id of [1, 2, 3, 4]) await expect(page.getByLabel(`Player ${id} Treasure Grab play area`)).toBeVisible()
   const first = page.getByRole('button', { name: 'Player 1 gold chest +10 1', exact: true })
@@ -252,8 +247,7 @@ test('Car Wash supports four-player cooperative scrubbing, pause, results and re
   await page.getByRole('link', { name: 'Play Car Wash' }).click()
   await page.getByRole('button', { name: '4 players' }).click()
   await page.getByRole('button', { name: 'Play Car Wash' }).click()
-  await expect(page.getByRole('heading', { name: 'Scrub the cars together' })).toBeVisible()
-  await page.getByRole('button', { name: 'Start round now' }).click()
+  await expect(page.getByRole('heading', { name: 'Car Wash' })).toBeVisible()
   await page.clock.runFor(3100)
   const first = page.getByLabel('Player 1 Car Wash play area')
   await first.focus()
@@ -293,7 +287,6 @@ test('Car Wash finishes early only after every car is clean', async ({ page, ins
   await openApp(page, '#/camera/car-wash')
   await page.getByRole('button', { name: '2 players' }).click()
   await page.getByRole('button', { name: 'Play Car Wash' }).click()
-  await page.getByRole('button', { name: 'Start round now' }).click()
   await page.clock.runFor(3100)
   for (const player of [1, 2]) {
     const board = page.getByLabel(`Player ${player} Car Wash play area`)

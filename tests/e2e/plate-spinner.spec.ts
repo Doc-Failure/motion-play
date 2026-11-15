@@ -1,14 +1,14 @@
 import { expect, openApp, test } from './fixtures'
 
 test('Plate Spinner supports four-player rescue, drops, pause, results, replay and narrow layout', async ({ page, installMockCamera }) => {
-  await page.clock.install()
+  await page.clock.install({time:new Date('2030-01-01T00:00:00Z')})
+  await page.clock.pauseAt(new Date('2030-01-01T00:01:00Z'))
   await installMockCamera()
   await openApp(page, '#/catalog')
   await page.getByRole('link', { name: 'Play Plate Spinner' }).click()
   await page.getByRole('button', { name: '4 players' }).click()
   await page.getByRole('button', { name: 'Play Plate Spinner' }).click()
-  await expect(page.getByRole('heading', { name: 'Keep the plates spinning' })).toBeVisible()
-  await page.getByRole('button', { name: 'Start round now' }).click()
+  await expect(page.getByRole('heading', { name: 'Plate Spinner' })).toBeVisible()
   await page.clock.runFor(5300)
   await page.getByRole('button', { name: 'Spin Player 1 plate 1', exact: true }).focus()
   await page.keyboard.press('Enter')

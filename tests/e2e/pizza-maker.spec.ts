@@ -1,14 +1,13 @@
 import { expect, openApp, test } from './fixtures'
 
-test('Pizza Maker routes through practice and supports four-player input, pause, results and replay', async ({ page, installMockCamera }) => {
+test('Pizza Maker routes starts directly and supports four-player input, pause, results and replay', async ({ page, installMockCamera }) => {
   await page.clock.install()
   await installMockCamera()
   await openApp(page, '#/catalog')
   await page.getByRole('link', { name: 'Play Pizza Maker' }).click()
   await page.getByRole('button', { name: '4 players' }).click()
   await page.getByRole('button', { name: 'Play Pizza Maker' }).click()
-  await expect(page.getByRole('heading', { name: 'Match your pizza order' })).toBeVisible()
-  await page.getByRole('button', { name: 'Start round now' }).click()
+  await expect(page.getByRole('heading', { name: 'Pizza Maker' })).toBeVisible()
   await page.clock.runFor(3100)
   await page.getByRole('button', { name: 'Pick Player 1 tomato', exact: true }).click()
   await page.clock.runFor(350)
@@ -58,7 +57,6 @@ test('Pizza Maker reaches its cooperative goal before timeout', async ({ page, i
   await installMockCamera()
   await openApp(page, '#/camera/pizza-maker')
   await page.getByRole('button', { name: 'Play Pizza Maker' }).click()
-  await page.getByRole('button', { name: 'Start round now' }).click()
   await page.clock.runFor(3100)
   for (const recipe of [['basil', 'tomato'], ['tomato', 'mushroom'], ['mushroom', 'basil']]) {
     for (const ingredient of recipe) {

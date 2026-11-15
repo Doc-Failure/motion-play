@@ -66,3 +66,14 @@ it('ignores uniform lighting changes', () => {
   processor.process(frame(20, 10, [], 20), defaultCameraZones(1), 0)
   expect(processor.process(frame(20, 10, [], 100), defaultCameraZones(1), 50).events).toEqual([])
 })
+
+it('samples occupied movement across the body instead of hitting only its center', () => {
+  const processor = new MotionProcessor({smoothing:0,spatialSampling:true})
+  const zones = defaultCameraZones(1)
+  const arm = Array.from({length:42},(_,i) => [3+i%14,4+Math.floor(i/14)] as [number,number])
+  processor.process(frame(20,10),zones,0)
+  const result = processor.process(frame(20,10,arm),zones,100)
+  expect(result.events.some(event => event.x < .25)).toBe(true)
+  expect(result.events.some(event => event.x > .75)).toBe(true)
+  expect(result.events.every(event => event.y >= .4 && event.y <= .7)).toBe(true)
+})

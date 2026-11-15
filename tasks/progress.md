@@ -1283,3 +1283,229 @@ or commit was performed; existing unrelated working-tree work was retained.
 - Camera fixtures were synthetic. Physical webcam tracking, framing, lighting,
   latency, occlusion and motion feel remain unverified; hardware_verified stays
   false. No deployment, external upload or commit.
+
+
+## T25K — Fish Frenzy (2026-11-15)
+
+- Read SPEC.md and AGENTS.md and inspected the application, input adapter,
+  existing position games, shared lifecycle, recent minigames, styles and tests.
+- Implemented competitive 1–4 player Fish Frenzy using only normalized
+  HAND_POSITION events. Minnow/silver/golden fish award 5/10/20 points and swim
+  at different speeds. Misses cost nothing. Each player owns separate water,
+  scores, catches, misses and input state. Spawn schedules and paths do not
+  depend on render cadence; fresh events catch at most one fish, and cached
+  positions never score. Malformed, stale and duplicate captures are rejected.
+- Added original local crayon SVG fish, net and underwater scenery, numbered
+  colored boards, visible value labels, pointer/touch and keyboard controls,
+  catalog/direct setup routing, practice, countdown, results/ties/replay,
+  shared feedback, manual/tab/camera recovery and focus restoration.
+- Fish Frenzy camera activation requires interaction, including when entering
+  from the catalog. Camera-free play stops an existing camera and works after
+  permission denial; camera use can be restored from setup. Setup, practice
+  and gameplay explicitly describe motion centroids as moving regions rather
+  than tracked hands. No new dependencies or camera/media access in minigames.
+- Added 21 model/component cases, two setup cases, catalog navigation coverage
+  and two Chromium acceptance scenarios. Mirrored synthetic MotionProcessor
+  positions exercise scoring and player isolation for all player counts.
+  Tests cover fish values/expiry, no passive catches, stale/malformed/duplicate
+  events, frame cadence, pause timing, zero/short rounds, detached snapshots,
+  StrictMode, pointer/keyboard controls, recovery, results and replay.
+- Verification passed: all 327 unit/component tests across 49 files, typecheck,
+  lint, production build and git diff --check. Initial rendered tests found a
+  missing injected random prop; fixed it. A subsequent full run exposed an
+  existing route-title assertion race; it now awaits the requested heading,
+  and the repeated full suite passed.
+- Browser verification remains pending: both targeted Chromium attempts,
+  including a single-worker retry, failed before executing tests because macOS
+  denied MachPortRendezvousServer startup (1100). No screenshots were generated
+  or visually reviewed. Added T25K-browser to track the remaining acceptance
+  run and desktop/narrow visual review.
+- All input fixtures were synthetic. Physical webcam tracking, framing,
+  lighting, latency, occlusion and motion feel remain unverified;
+  hardware_verified stays false. No deployment, external upload or commit.
+
+
+## T25K follow-up — browser acceptance (2026-11-15)
+
+- Reviewed the existing uncommitted Fish Frenzy implementation against SPEC.md
+  and AGENTS.md. Preserved its camera → normalized input → game boundary.
+- Chromium launched successfully in this invocation. Both existing Fish Frenzy
+  scenarios passed. Added four catalog-to-game browser cases covering 1–4
+  player layouts, each player's labelled catch value, score isolation, and zero
+  camera requests in fallback mode; all four passed.
+- Inspected generated desktop and 390px-wide screenshots. Player labels, score
+  text, fish values and controls remain readable without horizontal overflow.
+- Reverified 327 unit/component tests across 49 files, typecheck, lint, production
+  build and whitespace checks before concurrent camera/UI edits appeared.
+- The full browser run found a stale catalog count (20 before Fish Frenzy).
+  Updated the assertion to derive the playable count from catalog data.
+  Full-suite outcome and any retries are recorded below once complete.
+- Concurrent camera/UI work appeared during verification and was preserved.
+  Synthetic fixtures do not validate physical webcams, tracking or motion feel.
+  No deployment, external upload or commit.
+
+- Full browser outcome: 20 passed, four failed. Fixed the stale count and shared
+  camera CSS practice-description overlap. A retry passed Pizza Maker's early
+  completion case, while catalog/Monster Defense still used the earlier CSS and
+  Plate Spinner exposed a 23.39px target; added 24px minimum target dimensions.
+- Added a seventh Fish Frenzy browser case exercising its camera-mode practice
+  Start control. Reverified 332 tests across 50 files, lint, typecheck and build
+  including concurrent camera/UI changes. A final targeted 11-scenario browser
+  rerun failed before any test executed: Chromium MachPortRendezvousServer startup
+  was denied (1100). These latest browser checks remain pending in T25K-browser;
+  the earlier six Fish Frenzy passes and visual review apply to the earlier build.
+
+## 2026-11-15 — Camera-first / EyeToy interaction correction
+
+The user's explicit correction supersedes the old separate illustrated viewport grid.
+All 21 currently playable games now overlay one full-opacity mirrored video frame.
+The frame is letterboxed without cropping; transparent full-height player lanes align
+with the normalized side-by-side camera zones for one through four players. Compact
+scores/time/actions replace the surrounding page layout. Brush effects and props
+allow the camera to remain visible. Score bursts use normalized input positions.
+Camera persistence and local-only processing remain intact.
+
+Added spatial sampling of occupied motion-mask cells for hit and brush games instead
+of collapsing the moving body to one average point. Position-controlled props retain
+one movement center per player; this is motion input, not skeletal/hand tracking.
+Bubble collision ellipses in normalized coordinates now match the visibly circular
+objects in camera lanes with different aspect ratios. Updated SPEC.md to record the
+camera-first layout and current camera lifetime direction.
+
+Validation: typecheck, lint, production build and all 334 unit/component tests passed.
+New browser checks verify full-opacity mirrored video, actual source aspect ratio,
+exact lane/video rectangles for 1–4 players, and successful Bubble Battle scoring from
+an altered synthetic video frame without pointer input. Synthetic-person screenshots
+were reviewed. The 27-test browser sweep passed 24 checks initially, including every
+game in one- and four-player mode. It exposed HUD interception of brush strokes,
+undersized narrow-screen targets and a wall-clock-sensitive Plate Spinner assertion.
+Fixed pointer routing, target sizing/labels and deterministic test timing. Six affected
+camera/Graffiti/Pizza checks passed together after fixes; Plate Spinner's complete
+browser check then passed with the fixed paused test clock. The whole suite was not
+repeated after these targeted fixes. No physical webcam or speaker results are claimed.
+No deployment, commit, camera upload or new dependency. Unrelated in-progress work
+was preserved.
+
+
+## T25K — camera alignment and browser completion (2026-11-15)
+
+- Inspected the existing Fish Frenzy implementation and preserved all pre-existing
+  working-tree changes. Generic HAND_POSITION events remain the only model input;
+  the minigame has no camera/media dependencies.
+- Corrected the fish art being vertically offset from its normalized input point
+  in tall camera lanes. Fish now retain their aspect ratio with value labels
+  directly beneath them. Centered the net drawing on the input point and sized
+  its outline to the catch ellipse.
+- Added four browser regressions driving actual synthetic video frames through
+  capture, MotionProcessor, mirroring, zone mapping and the HAND_POSITION adapter
+  for 1–4 players. Checks cover visible-art/input alignment, independent scoring
+  and net expiration after movement stops.
+- Fixed a resize assertion race by waiting for lane geometry. Screenshot review
+  exposed portrait HUD overlap; moved header/rules to letterbox margins, kept
+  score and feedback overlays compact, and asserted that controls and rules stay
+  clear of the portrait playfield. Full accessible score/status text is retained.
+- Final Fish Frenzy acceptance: 11 Chromium scenarios passed. Reviewed desktop,
+  390px portrait and synthetic-camera screenshots. Chromium launches intermittently
+  failed with macOS MachPortRendezvousServer permission denial (1100); subsequent
+  attempts executed and passed. T25K-browser is complete.
+- Initial full unit/component suite: 334 tests across 50 files passed. Repeated
+  all 21 Fish Frenzy model/component cases after the net change; typecheck, lint,
+  production build and whitespace checks passed. Final broad regression outcome
+  follows below. Concurrent shared camera/setup edits were preserved.
+- All camera input here was synthetic. Physical webcam tracking, lighting,
+  latency, occlusion and motion feel remain unverified; hardware_verified stays
+  false. No deployment, external upload or commit.
+
+## 2026-11-15 — Centered camera setup, without page chrome
+
+Replaced the oversized setup page shown in the user's screenshot with a fixed,
+viewport-fitted camera lobby. The uncropped mirrored preview stays centered using
+its actual video aspect ratio, including after window resizing. Removed the site
+header/footer, large heading, explanatory panel, decorative frame and document scroll.
+Player count and Play sit in one compact overlay; back, game name and camera status
+are small overlays at the top. Permission errors appear only when needed. Existing
+camera persistence, player zones and the explicit Fish Frenzy fallback are retained.
+
+Validation: typecheck, lint, build and 24 focused component/geometry/navigation tests
+passed. Three Chromium checks passed: setup is centered with no document overflow at
+1280×720, 1440×900 and 390×844; every setup control stays in view; returning from
+practice retains the same stream; gameplay's 1–4-player alignment and scoring from
+synthetic video movement still work. Reviewed the new setup screenshot using the
+synthetic person fixture. No physical webcam validation, deployment or commit.
+
+
+### T25K final regression outcome
+
+- Sequential final verification passed all 334 unit/component tests across 50
+  files, typecheck, lint and production build. A prior overlapping unit run had
+  one 5-second Fish Frenzy setup timeout; the sequential repeat passed it.
+- The initial 27-scenario browser sweep passed 26 and caught the Fish Frenzy
+  resize assertion race, which was fixed and verified by the 11-scenario targeted
+  acceptance run. A later 31-scenario sweep passed 22 before hitting an old
+  back-link locator while shared setup accessible labels were changing; one
+  case was interrupted and seven skipped. Current source uses Back to games.
+- The final 32-scenario sweep could not execute: macOS denied Chromium startup
+  with MachPortRendezvousServer error 1100. The whole browser suite is therefore
+  not claimed passing; T25K-regression records the remaining broad acceptance
+  run. Fish Frenzy's final targeted 11-scenario pass and screenshot review remain
+  valid. No physical webcam verification or deployment.
+
+## 2026-11-15 — Homepage-aligned catalog and immediate Play
+
+Replaced large numbered catalog cards with compact game-specific SVG drawings on
+reused homepage crayon sticker panels. Reduced the heading and removed long visible
+card descriptions and repeated Play labels. Catalog links still select the game
+without extra detail/settings steps; all available games remain reachable by keyboard.
+
+Removed PracticeTutorial from the active flow. Play now mounts the selected game
+immediately and its own countdown runs automatically. Tournament rounds advance the
+same way. Activate-camera-and-play also begins the game after permission succeeds,
+without requiring a second Play click. Updated existing startup tests to assert the
+game instead of the removed introduction, and added a browser check that no start
+button or confirmation dialog follows Play.
+
+Validation: full unit/component run passed (335 tests), then 25 focused camera,
+geometry and navigation tests passed after stream-start cleanup. Typecheck, lint and
+production build passed. The final seven Chromium checks passed, including compact
+catalog screenshots at desktop/mobile widths, no-confirmation starts, every playable
+game with 1/4 players, mirrored motion scoring, sound/mute and disconnect/retry.
+Reviewed the catalog screenshot. A recovery check exposed waiting on playback of a
+hidden preview during reconnection; start now attaches to the active video without
+blocking on that hidden element and clears stale motion. Camera tests use synthetic
+video; no physical hardware result is claimed. No deployment or commit.
+
+
+## T25K-regression — recovery fix and broad browser follow-up (2026-11-15)
+
+- Read SPEC.md and AGENTS.md and inspected shared setup, camera lifecycle,
+  input mapping, playfield CSS and existing acceptance coverage. Preserved all
+  pre-existing changes and concurrent direct-Play/catalog work.
+- Added a component regression reproducing a disconnected round resuming after
+  a denied reconnect. Failed reconnects now retain the external pause and show
+  the current permission/device error; Bubble Battle no longer shows only the
+  original disconnect message. A successful retry can resume the same round.
+- Added Chromium coverage for disconnect, failed retry, frozen timer and successful
+  replacement stream recovery. Current camera integration clears ended video,
+  attaches replacement streams to the active video without awaiting hidden
+  preview playback, clears old motion and resets the frame-loss grace period.
+  The synthetic replacement stream gets an explicit fresh frame with the test
+  clock paused. Final browser execution of this path remains outstanding.
+- Corrected Graffiti Race's remaining assertion for the removed practice heading
+  and updated the camera fixture helper's old setup title.
+- The initial baseline browser run passed 18 scenarios before interruption as
+  source/tests changed concurrently to direct Play. The next full 34-scenario
+  run executed 32 passing scenarios, including all 21 playable games in one-
+  and four-player mode, mirrored synthetic camera input, persistence, narrow
+  layout, scoring, pause/results/replay and Web Audio scheduling. Its two failures
+  were the new recovery playback/fixture path and stale Graffiti practice heading;
+  these were updated afterward. This is not a clean full-suite pass.
+- Final sequential verification on stable source: 335 tests across 50 files,
+  typecheck, lint and production build passed. Source/test hashes remained
+  unchanged through these final checks. Whitespace checks passed. The final
+  full 34-scenario browser rerun could not execute any scenario: macOS denied
+  Chromium startup with MachPortRendezvousServer error 1100. Two targeted recovery
+  retries were also denied at launch. T25K-regression remains pending until the
+  corrected full browser suite can execute.
+- Reviewed synthetic-person setup/gameplay and current narrow catalog/Fish Frenzy
+  screenshots. No physical webcam, lighting, latency, occlusion, speaker or
+  motion-feel validation is claimed. No deployment, upload, dependency or commit.
