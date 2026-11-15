@@ -347,9 +347,9 @@
     "id": "T25C",
     "title": "Implement and test Monster Defense using generic MOTION_HIT input",
     "depends_on": ["T25B"],
-    "status": "pending",
-    "attempts": 0,
-    "notes": "Acceptance: deterministic 1-4 player cooperative defense model, scoring/failure/isolation tests, rendered simulation, practice/setup/catalog routing, pointer fallback, and honest availability gating.",
+    "status": "done",
+    "attempts": 2,
+    "notes": "Implemented deterministic 1-4 player cooperative Monster Defense using normalized MOTION_HIT events, approaching lane targets, shared score/goal, player-local contributions and breach penalties, bounded waves, countdown/results/replay, pause/tab visibility/camera recovery, original crayon SVG monsters, keyboard/pointer controls, and practice/setup/catalog routing. Follow-up review fixed capture-time collision detection for delayed events and rejected unknown players before clock advancement. Added mirrored synthetic-frame-to-score coverage for 1-4 players. Current verification on 2026-11-15: typecheck, lint, 129 unit/component tests, production build and diff whitespace checks passed. All 5 Chromium E2E tests were blocked before execution by macOS sandbox launch denial (MachPortRendezvousServer Permission denied); earlier browser/screenshot claims were not reverified in this invocation. No physical webcam validation or deployment.",
     "needs_hardware_validation": true,
     "hardware_verified": false
   },

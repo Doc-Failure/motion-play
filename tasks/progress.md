@@ -874,3 +874,61 @@ are claimed. Existing working-tree changes were preserved; no deployment or comm
 Physical webcam motion feel, lighting tolerance, latency, framing and multiplayer
 occlusion still require human hardware testing. T25B retains
 `needs_hardware_validation: true` and `hardware_verified: false`.
+
+## T25C — done (attempt 1, 2026-11-15)
+
+- Read SPEC.md and AGENTS.md and inspected the app and existing minigame/input
+  integration before editing. Implemented Monster Defense through the established
+  camera -> normalized events -> game boundary, without new dependencies.
+- Added deterministic 1–4 player cooperative defense. Monsters advance through
+  three lanes toward each player's gate. A hit removes one monster and adds 10
+  points; each breach costs that player 5 points once. Individual contributions
+  sum into a team goal of 100 points per player over the shared 60-second round.
+  Waves use scheduled timestamps, stay bounded to four targets per player, and
+  settle pre-deadline breaches consistently even when a tick crosses round end.
+- Added countdown, results, replay, user/tab-hidden pause and camera recovery.
+  Pausing freezes movement, spawn timing and the clock. Malformed, wrong-kind,
+  low-confidence, out-of-region and pre-countdown/resume inputs cannot score.
+- Added original local SVG monsters, paper-textured numbered player boards,
+  visible team score and breaches, native keyboard target buttons and normalized
+  pointer fallback. Connected catalog availability, hash route, setup, practice,
+  and exit. Updated the browser catalog count to 13 playable games.
+- Added 19 unit/component cases covering mechanics, scoring, breaches, isolation,
+  malformed/stale input, cadence independence, pause/resume/countdown, snapshot
+  copies, bounded targets, StrictMode, rendered input, results/replay, pointer
+  coordinates, recovery and the four-player setup/practice/gameplay route.
+- Validation: typecheck, lint, all 122 unit/component tests across 31 files,
+  production build and diff whitespace checks passed. All five Chromium E2E
+  tests passed with a synthetic canvas camera, including Monster Defense's
+  catalog route, four-player keyboard/pointer scoring, pause/resume, exit and
+  narrow-screen overflow checks. Inspected the desktop and narrow screenshots.
+  An initial rendered-results expectation was corrected to include all scheduled
+  breach penalties after adding the delayed-round-end regression test.
+- Physical webcam behavior remains unverified: motion feel, lighting, latency,
+  framing and occlusion need real human hardware testing. Hardware flags remain
+  `needs_hardware_validation: true` and `hardware_verified: false`.
+  No deployment or commit was performed.
+
+## T25C — follow-up review (attempt 2, 2026-11-15)
+
+- The Monster Defense implementation and integration edits above were already in
+  the working tree at the start of this invocation. Read SPEC.md and AGENTS.md,
+  inspected the current app, preserved those changes and reviewed their behavior.
+- Reproduced three defects with failing regression tests: delayed valid hits
+  could miss, delayed misses could score against a monster's newer position, and
+  an unknown player's event could advance the clock through the entire round.
+  Hit detection now uses capture-time positions for surviving targets while
+  keeping the round clock monotonic. Invalid player IDs are rejected before
+  updating the simulation. Already breached targets remain expired.
+- Added seven test cases: the three regressions plus synthetic frames processed
+  through MotionProcessor, mirrored camera-zone mapping and generic MOTION_HIT
+  scoring for each supported player count. Verified player isolation and absence
+  of fresh events from unchanged frames; no camera dependency enters game code.
+- Current checks passed: typecheck, lint, all 129 unit/component tests across
+  31 files, production build and diff whitespace checks.
+- Attempted all five Chromium E2E tests; every test was blocked before execution
+  by the macOS sandbox denying Chromium's MachPortRendezvousServer registration
+  (`bootstrap_check_in ... Permission denied (1100)`). The earlier working-tree
+  record of browser passes/screenshots above was not reproduced in this run.
+  No new browser visual inspection, physical webcam validation, deployment or
+  commit is claimed. Hardware validation flags remain unchanged and unverified.

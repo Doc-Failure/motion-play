@@ -14,7 +14,7 @@ export const catalogGames: readonly CatalogGame[] = [
   game(4, 'fruit-slash', 'Fruit Slash', 'Swipe the fruit, but do not slice the bombs.', 'Hit & Destroy', 'HAND_SWIPE', 'Normal', 'Competitive', ['#ee654f', '#72b779']),
   game(5, 'punch-arena', 'Punch Arena', 'Punch the matching targets as they spring into view.', 'Hit & Destroy', 'HAND_SWIPE', 'Hard', 'Competitive', ['#f28c46', '#4c9ed9']),
   game(6, 'pinata-party', 'Piñata Party', 'Land repeated hits to shower the party with candy.', 'Hit & Destroy', 'MOTION_HIT', 'Easy', 'Cooperative', ['#e45b9d', '#f5c847'], true),
-  game(7, 'monster-defense', 'Monster Defense', 'Stop the silly monsters before they reach the gate.', 'Hit & Destroy', 'MOTION_HIT', 'Normal', 'Cooperative', ['#72b779', '#7557a8']),
+  game(7, 'monster-defense', 'Monster Defense', 'Stop the silly monsters before they reach the gate.', 'Hit & Destroy', 'MOTION_HIT', 'Normal', 'Cooperative', ['#72b779', '#7557a8'], true),
   game(8, 'balloon-panic', 'Balloon Panic', 'Hit only the balloon color called out on screen.', 'Hit & Destroy', 'MOTION_HIT', 'Normal', 'Competitive', ['#ee654f', '#66c7df'], true),
   game(9, 'fruit-catcher', 'Fruit Catcher', 'Catch fresh fruit and dodge anything rotten.', 'Catch & Collect', 'HAND_POSITION', 'Normal', 'Competitive', ['#f28c46', '#72b779'], true),
   game(10, 'gold-rush', 'Gold Rush', 'Collect falling coins while avoiding the hazards.', 'Catch & Collect', 'MOTION_HIT', 'Easy', 'Competitive', ['#f5c847', '#9b6b43'], true),

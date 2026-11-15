@@ -355,3 +355,22 @@ body { background: #fffdf8 url('./assets/home/paper-background.webp') repeat; ba
 .pinata-candy > span { font-size: 3rem; }.pinata-candy strong { font-size: 1.6rem; }
 .pinata-game .battle-results { color: #34254c; background: #fff8e7; }
 @media (max-width: 600px) { .pinata-game { padding: .65rem; }.pinata-player h2 { flex-wrap: wrap; font-size: 1rem; }.pinata-player h2 span { font-size: .85rem; }.pinata-bunting { letter-spacing: .1rem; }.pinata-board { min-height: 15rem; }.pinata-candy > span { font-size: 2rem; } }
+
+.monster-game { position: relative; z-index: 1; padding: 1rem; color: #34254c; background: #fff8e7; }
+.monster-game h1 { margin: 0; font-size: clamp(2.3rem, 6vw, 4.5rem); letter-spacing: -.05em; }
+.monster-rules { padding: .8rem; border: 3px dashed #34254c; border-radius: .8rem 1.2rem .7rem 1rem; background: #ffe48a; text-align: center; font-weight: 800; }
+.monster-team-status, .monster-help { text-align: center; font-weight: 750; }
+.monster-boards { display: grid; gap: 1rem; }
+.monster-boards--2, .monster-boards--3, .monster-boards--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.monster-player { --player-paper: #fce0eb; min-width: 0; }
+.monster-player--2 { --player-paper: #d6f0f8; }.monster-player--3 { --player-paper: #e5f1d5; }.monster-player--4 { --player-paper: #eee0f9; }
+.monster-player h2 { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem; margin: 0; padding: .5rem .8rem; border: 3px solid #34254c; border-radius: .7rem 1rem 0 0; background: var(--player-paper); font-size: 1.15rem; }
+.monster-player h2 span { font-size: 1rem; }
+.monster-board { position: relative; height: 52vh; min-height: 20rem; overflow: hidden; border: 4px solid #34254c; border-radius: 0 0 1.3rem .8rem; background: repeating-linear-gradient(7deg, transparent 0 8px, #34254c08 9px 10px), var(--player-paper); box-shadow: 4px 5px 0 #34254c; touch-action: manipulation; }
+.monster-boards--3 .monster-board, .monster-boards--4 .monster-board { height: 30vh; min-height: 15rem; }
+.monster-gate { position: absolute; inset: 0 0 0 88%; padding: .4rem; border-left: 5px dashed #34254c; background: repeating-linear-gradient(90deg, #f4cb86 0 8px, #9b6b43 9px 12px); writing-mode: vertical-rl; font-weight: 900; }
+.monster-target { position: absolute; width: 20%; height: 26%; min-width: 28px; min-height: 36px; padding: 0; translate: -50% -50%; border: 0; background: transparent; cursor: pointer; }
+.monster-target svg { width: 100%; height: 100%; }
+.monster-target:focus-visible { outline: 4px solid #34254c; outline-offset: 3px; border-radius: 35%; }
+.monster-game .battle-results { color: #34254c; background: #fff8e7; }
+@media (max-width: 600px) { .monster-game { padding: .65rem; }.monster-player h2, .monster-player h2 span { font-size: .85rem; }.monster-gate { padding: 0; } }
