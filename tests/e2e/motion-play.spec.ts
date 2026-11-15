@@ -97,6 +97,28 @@ test('launches Balloon Panic and scores the called color', async ({ page }) => {
   await expect.poll(async () => Number(await score.textContent())).toBeGreaterThan(before)
 })
 
+test('launches Gold Rush and collects a falling coin', async ({ page }) => {
+  await openApp(page, '#/camera/gold-rush')
+  await page.getByRole('button', { name: 'Use demo mode' }).click()
+  await page.getByRole('button', { name: 'Play Gold Rush' }).click()
+  await page.getByRole('button', { name: 'Start round now' }).click()
+  await expect(page.locator('.game-curtain')).toHaveCount(0, { timeout: 5_000 })
+  const board = page.getByLabel('Player 1 Gold Rush play area')
+  const score = page.locator('.bubble-game__header dl > div').filter({ hasText: 'Player 1' }).locator('dd')
+  const before = Number(await score.textContent())
+  const coin = board.getByLabel('gold coin').first()
+  await expect(coin).toBeVisible()
+  await expect.poll(async () => {
+    const box = await coin.boundingBox()
+    const boardBox = await board.boundingBox()
+    return Boolean(box && boardBox && box.y > boardBox.y && box.y + box.height < boardBox.y + boardBox.height)
+  }).toBe(true)
+  const box = await coin.boundingBox()
+  expect(box).not.toBeNull()
+  await page.mouse.click(box!.x + box!.width / 2, box!.y + box!.height / 2)
+  await expect.poll(async () => Number(await score.textContent())).toBeGreaterThan(before)
+})
+
 test('deterministic synthetic frames drive calibration motion and debug output', async ({ page }) => {
   await openCamera(page)
   await page.getByRole('button', { name: 'Use demo mode' }).click()

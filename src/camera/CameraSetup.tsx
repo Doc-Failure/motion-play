@@ -16,8 +16,9 @@ import { PracticeTutorial } from '../game/PracticeTutorial'
 import { WindowWipe } from '../minigames/window-wipe/WindowWipe'
 import { WhackAMole } from '../minigames/whack-a-mole/WhackAMole'
 import { BalloonPanic } from '../minigames/balloon-panic/BalloonPanic'
+import { GoldRush } from '../minigames/gold-rush/GoldRush'
 
-export type PlayableGame = 'bubble-battle' | 'window-wipe' | 'whack-a-mole' | 'balloon-panic'
+export type PlayableGame = 'bubble-battle' | 'window-wipe' | 'whack-a-mole' | 'balloon-panic' | 'gold-rush'
 
 export interface CameraController {
   listDevices(): Promise<CameraDevice[]>
@@ -193,12 +194,12 @@ export function CameraSetup({ source: providedSource, initialGame = 'bubble-batt
     : flow === 'playing' && status === 'requesting' ? 'Reconnecting the camera…'
       : flow === 'playing' && status === 'idle' && failure === 'disconnected' ? 'The camera disconnected. Reconnect it to continue this round.'
         : null
-  const selectedTitle = selectedGame === 'window-wipe' ? 'Window Wipe' : selectedGame === 'whack-a-mole' ? 'Whack-a-Mole' : selectedGame === 'balloon-panic' ? 'Balloon Panic' : 'Bubble Battle'
+  const selectedTitle = selectedGame === 'window-wipe' ? 'Window Wipe' : selectedGame === 'whack-a-mole' ? 'Whack-a-Mole' : selectedGame === 'balloon-panic' ? 'Balloon Panic' : selectedGame === 'gold-rush' ? 'Gold Rush' : 'Bubble Battle'
   const gameEvents = selectedGame === 'window-wipe'
     ? (motion?.events ?? []).map((event) => ({ ...event, kind: 'MOTION_BRUSH' as const }))
     : motion?.events ?? []
 
-  return <>{gameActive && <div className={`game-stage game-stage--${status}`}><video ref={gameVideoRef} className="game-camera" muted playsInline aria-label="Mirrored live camera during gameplay" />{flow === 'practice' ? <PracticeTutorial playerCount={playerCount} game={selectedGame} onStart={beginPlaying} onBack={returnToSetup} /> : selectedGame === 'window-wipe' ? <WindowWipe playerCount={playerCount} inputEvents={gameEvents} onExit={returnToSetup} /> : selectedGame === 'whack-a-mole' ? <WhackAMole playerCount={playerCount} inputEvents={gameEvents} onExit={returnToSetup} /> : selectedGame === 'balloon-panic' ? <BalloonPanic playerCount={playerCount} inputEvents={gameEvents} onExit={returnToSetup} /> : <BubbleBattle playerCount={playerCount} inputEvents={gameEvents} externalPauseReason={recoveryReason} onReconnect={() => void start()} onExit={returnToSetup} />}</div>}<section className="camera-page" aria-labelledby="camera-title" hidden={gameActive}>
+  return <>{gameActive && <div className={`game-stage game-stage--${status}`}><video ref={gameVideoRef} className="game-camera" muted playsInline aria-label="Mirrored live camera during gameplay" />{flow === 'practice' ? <PracticeTutorial playerCount={playerCount} game={selectedGame} onStart={beginPlaying} onBack={returnToSetup} /> : selectedGame === 'window-wipe' ? <WindowWipe playerCount={playerCount} inputEvents={gameEvents} onExit={returnToSetup} /> : selectedGame === 'whack-a-mole' ? <WhackAMole playerCount={playerCount} inputEvents={gameEvents} onExit={returnToSetup} /> : selectedGame === 'balloon-panic' ? <BalloonPanic playerCount={playerCount} inputEvents={gameEvents} onExit={returnToSetup} /> : selectedGame === 'gold-rush' ? <GoldRush playerCount={playerCount} inputEvents={gameEvents} onExit={returnToSetup} /> : <BubbleBattle playerCount={playerCount} inputEvents={gameEvents} externalPauseReason={recoveryReason} onReconnect={() => void start()} onExit={returnToSetup} />}</div>}<section className="camera-page" aria-labelledby="camera-title" hidden={gameActive}>
     <a className="back-link" href="#/">← Home</a>
     <div className="camera-heading"><p className="eyebrow">Camera setup</p><h1 id="camera-title">Let’s see your moves</h1><p>Your camera stays on this device. Motion Play never uploads or records its picture.</p></div>
     <div className="camera-layout">

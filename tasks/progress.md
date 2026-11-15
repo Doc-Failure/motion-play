@@ -463,3 +463,31 @@ does not establish that a physical webcam produces usable hits. The ordered
 backlog had no pending camera-defect task and repository instructions prohibited
 inserting or skipping work in this invocation. Real webcam capture remains
 unverified and needs a dedicated backlog task before any hardware claim.
+
+## T17 — done (attempt 2, 2026-11-15)
+
+- Implemented a deterministic, camera-independent Gold Rush model that accepts
+  only normalized `MOTION_HIT` events, with falling coins and rock hazards,
+  10-point rewards/penalties, synchronized timing, isolated 1–4 player state,
+  results, replay, and pointer fallback.
+- Added a responsive crayon-style mine play surface, game-specific practice
+  instructions, direct setup routing, deterministic model tests for falling,
+  expiry, scoring, one-time collection, confidence/input-kind gates, and player
+  isolation. Gold Rush is now catalog-playable only after browser acceptance.
+- Reworked the Playwright fixture to inject the built client directly into a
+  real Chromium page, avoiding a forbidden localhost socket while retaining
+  browser navigation, mocked camera, pointer, lifecycle, and gameplay checks.
+- Automated evidence: `npm run typecheck`, `npm run lint`, `npm run test` (12
+  files, 62 tests), `npm run build`, and `npm run test:e2e` (10 Chromium
+  scenarios) all exited successfully. The Gold Rush scenario launched through
+  demo setup, waited for a falling coin inside the board, collected it with a
+  simulated pointer hit, and observed the score increase.
+
+Outstanding risk: tests use deterministic events, pointer simulation, and
+mocked media. Physical webcam motion feel, lighting, background noise, latency,
+and browser camera behavior were not tested. T17 records
+`needs_hardware_validation: true` and `hardware_verified: false`; no physical
+webcam validation is claimed. A later repeat of the full browser suite was
+unable to launch Chromium because the managed macOS sandbox denied Chromium's
+Mach port registration; it failed before test execution and does not replace
+the successful 10-scenario acceptance run recorded above.

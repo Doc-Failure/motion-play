@@ -55,6 +55,19 @@ a { color: inherit; }
 .action-card p { margin: .4rem 0 .65rem; font-size: .86rem; line-height: 1.3; }
 .coming-soon { display: inline-block; padding: .28rem .55rem; border: 2px solid currentColor; border-radius: .3rem; color: #4c5660; font-size: .72rem; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; transform: rotate(-1deg); }
 .available-now { display: inline-block; padding: .28rem .55rem; border: 2px solid #17612e; border-radius: .3rem; color: #124e25; background: #dff1df; font-size: .72rem; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; transform: rotate(1deg); }
+
+.gold-game { position: relative; z-index: 1; min-height: 100vh; padding: 1rem; color: #392b20; }
+.gold-callout { width: fit-content; margin: .5rem auto 1rem; padding: .45rem 1rem; border: 3px solid #684a22; border-radius: 999px; background: #fff5bf; font-weight: 800; transform: rotate(-.5deg); }
+.gold-boards { display: grid; gap: .8rem; min-height: 66vh; }
+.gold-boards--2 { grid-template-columns: repeat(2, 1fr); }
+.gold-boards--3, .gold-boards--4 { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(2, minmax(15rem, 1fr)); }
+.gold-player { min-width: 0; }
+.gold-player > h2 { margin: 0 0 .25rem; text-align: center; font-size: 1rem; }
+.gold-board { position: relative; height: calc(100% - 1.5rem); min-height: 24rem; overflow: hidden; border: 5px solid #684a22; border-radius: 1.4rem .8rem 1.2rem .7rem; background: linear-gradient(#6fc6df 0 18%, #d5a45b 18% 100%); box-shadow: inset 0 0 0 5px rgba(255,255,255,.25), 5px 6px 0 rgba(66,42,20,.22); touch-action: none; }
+.gold-item { position: absolute; display: grid; width: 3.4rem; height: 3.4rem; translate: -50% -50%; place-items: center; border: 4px solid #4d371f; border-radius: 50%; font-style: normal; font-size: 1.55rem; font-weight: 950; pointer-events: none; }
+.gold-item--coin { color: #7a4b00; background: #ffd83d; box-shadow: inset 0 0 0 5px #f6ac1b, 3px 4px 0 rgba(73,45,16,.25); }
+.gold-item--hazard { color: #fff8df; background: #5a514c; border-radius: 43% 57% 48% 52%; transform: rotate(12deg); }
+@media (max-width: 700px) { .gold-boards--2, .gold-boards--3, .gold-boards--4 { grid-template-columns: 1fr; grid-template-rows: none; } .gold-board { min-height: 20rem; } }
 .browse-label, .details-link { color: #134f78; font-weight: 900; }
 .action-card[href]:hover { box-shadow: 2px 3px 0 var(--ink); transform: translate(2px, 2px) rotate(-.3deg); }
 .action-card[href]:focus-visible, .details-link:focus-visible, .back-link:focus-visible { outline: 4px solid var(--coral); outline-offset: 4px; }

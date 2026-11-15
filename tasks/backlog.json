@@ -221,10 +221,10 @@
     "depends_on": [
       "T16"
     ],
-    "status": "pending",
-    "attempts": 0,
-    "notes": "",
-    "needs_hardware_validation": false,
+    "status": "done",
+    "attempts": 2,
+    "notes": "Implemented deterministic Gold Rush for 1-4 players using generic MOTION_HIT events, falling coins and hazards, isolated scores, pointer fallback, practice/catalog/setup routing, and simulation coverage. Adapted Playwright to load the built client without a local socket, then verified typecheck, lint, 62 unit/component tests, build, and 10 Chromium scenarios including collecting a visible coin on 2026-11-15. Physical webcam play remains unverified.",
+    "needs_hardware_validation": true,
     "hardware_verified": false
   },
   {
