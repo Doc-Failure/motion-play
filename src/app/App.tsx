@@ -5,7 +5,7 @@ import { catalogCategories, catalogGames, getGameBySlug, type CatalogCategory, t
 import { GameArt } from './GameArt'
 import { CameraSetup } from '../camera/CameraSetup'
 
-type Route = { page: 'home' } | { page: 'catalog' } | { page: 'camera'; game?: 'bubble-battle' | 'window-wipe' | 'whack-a-mole' | 'balloon-panic' | 'gold-rush' | 'paint-splash' | 'simon-says' } | { page: 'detail'; slug: string }
+type Route = { page: 'home' } | { page: 'catalog' } | { page: 'camera'; game?: 'bubble-battle' | 'window-wipe' | 'whack-a-mole' | 'balloon-panic' | 'gold-rush' | 'paint-splash' | 'simon-says' | 'fruit-catcher' } | { page: 'detail'; slug: string }
 const routeFromHash = (): Route => {
   const hash = window.location.hash.replace(/^#\/?/, '')
   if (hash === 'catalog') return { page: 'catalog' }
@@ -16,6 +16,7 @@ const routeFromHash = (): Route => {
   if (hash === 'camera/gold-rush') return { page: 'camera', game: 'gold-rush' }
   if (hash === 'camera/paint-splash') return { page: 'camera', game: 'paint-splash' }
   if (hash === 'camera/simon-says') return { page: 'camera', game: 'simon-says' }
+  if (hash === 'camera/fruit-catcher') return { page: 'camera', game: 'fruit-catcher' }
   if (hash === 'camera/bubble-battle') return { page: 'camera', game: 'bubble-battle' }
   if (hash.startsWith('games/')) return { page: 'detail', slug: hash.slice(6) }
   return { page: 'home' }

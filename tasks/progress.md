@@ -553,3 +553,29 @@ They do not validate real webcam hit accuracy, cue visibility at play distance,
 lighting/background noise, latency, reach, or multiplayer occlusion. T19 records
 `needs_hardware_validation: true` and `hardware_verified: false`; no physical
 webcam validation was performed or claimed.
+
+## T20 — done (attempt 1, 2026-11-15)
+
+- Added a deterministic, camera-independent Fruit Catcher model that consumes
+  only normalized `HAND_POSITION` events. Fresh apples and oranges award 10
+  points, rotten fruit removes 10 points, and low-confidence or wrong-kind
+  input is ignored.
+- Implemented falling fruit, hand-controlled baskets, synchronized timing,
+  independent 1–4 player boards and scores, results/replay, pointer fallback,
+  catalog availability, direct setup routing, and practice-flow integration.
+- Kept the input boundary explicit: the minigame has no camera or media-library
+  dependency. The setup adapter can provide generic position events from the
+  deterministic simulator, but this is not represented as landmark tracking.
+- Added three model tests covering rewards/penalties, confidence and kind gates,
+  player isolation, deterministic spawning, and result cleanup. Added a
+  rendered component simulation that advances the real game, supplies a
+  `HAND_POSITION` event, and verifies a visible basket and score increase.
+- Automated evidence: `npm run typecheck`, `npm run lint`, `npm run test` (18
+  files, 78 tests), `npm run build`, and `git diff --check` all exited
+  successfully on 2026-11-15.
+
+Outstanding risk: simulation and pointer input demonstrate the game boundary,
+not physical hand landmark tracking. Real webcam hand accuracy, confidence,
+latency, lighting tolerance, reach, and multiplayer occlusion were not tested.
+T20 records `needs_hardware_validation: true` and `hardware_verified: false`;
+no physical webcam validation was performed or claimed.

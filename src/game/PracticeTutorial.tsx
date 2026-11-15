@@ -3,7 +3,7 @@ import type { PlayerCount } from '../input/PlayerZoneMapper'
 
 const PRACTICE_SECONDS = 7
 
-export function PracticeTutorial({ playerCount, game = 'bubble-battle', onStart, onBack }: { playerCount: PlayerCount; game?: 'bubble-battle' | 'window-wipe' | 'whack-a-mole' | 'balloon-panic' | 'gold-rush' | 'paint-splash' | 'simon-says'; onStart(): void; onBack(): void }) {
+export function PracticeTutorial({ playerCount, game = 'bubble-battle', onStart, onBack }: { playerCount: PlayerCount; game?: 'bubble-battle' | 'window-wipe' | 'whack-a-mole' | 'balloon-panic' | 'gold-rush' | 'paint-splash' | 'simon-says' | 'fruit-catcher'; onStart(): void; onBack(): void }) {
   const [remaining, setRemaining] = useState(PRACTICE_SECONDS)
   useEffect(() => {
     const timer = window.setInterval(() => setRemaining((current) => {
