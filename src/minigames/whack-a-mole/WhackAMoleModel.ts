@@ -60,8 +60,9 @@ export class WhackAMoleModel {
 
   setMoles(moles: Mole[]) { this.moles = moles.map((mole) => ({ ...mole })) }
   pause(timestamp: number) {
-    const now = Math.max(timestamp, this.lastTimestamp ?? timestamp)
-    this.lastTimestamp = now
+    const state = this.update(timestamp)
+    if (state.phase !== 'playing' && state.phase !== 'countdown') return state
+    const now = this.lastTimestamp!
     this.session.pause(now)
     this.pausedAt = now
     return this.snapshot(now)

@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { App } from '../src/app/App'
-import { catalogCategories, catalogGames } from '../src/app/catalog'
+import { catalogCategories, catalogGames, visibleCatalogGames } from '../src/app/catalog'
 
 function visit(hash: string) {
   window.location.hash = hash
@@ -33,16 +33,23 @@ describe('App navigation', () => {
     expect(screen.queryByRole('link', {name: /Tournament/})).not.toBeInTheDocument()
     expect(screen.getByRole('link', {name:/Quick Play/})).toHaveAttribute('href','#/quick-play')
     fireEvent.click(screen.getByRole('link', {name: /game catalog/i}))
-    await waitFor(() => expect(screen.getByRole('heading', {name: 'The toy box'})).toBeVisible())
+    await waitFor(() => expect(screen.getByRole('heading', {name: 'Game Catalog', level: 1})).toBeVisible())
     expect(screen.getByRole('link', {name: 'Play Bubble Battle'})).toHaveAttribute('href', '#/camera/bubble-battle')
     expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
   })
-  it.each(['Supermarket Rush', 'Star Collector', 'Treasure Grab', 'Pizza Maker', 'Graffiti Race', 'Plate Spinner', 'Fish Frenzy'])('opens %s from its catalog link', async (title) => {
+  it('shows exactly five games under a minimal catalog header', () => {
     visit('#/catalog')
     render(<App />)
-    fireEvent.click(screen.getByRole('link', { name: `Play ${title}` }))
-    expect(await screen.findByRole('button', { name: '4 players' })).toBeVisible()
-    expect(await screen.findByRole('heading', { name: title })).toBeVisible()
+    expect(screen.getByRole('heading',{name:'Game Catalog'})).toBeVisible()
+    expect(screen.getByRole('link',{name:'← Back to Home'})).toHaveAttribute('href','#/')
+    expect(visibleCatalogGames.map(game => game.slug)).toEqual(['bubble-battle','window-wipe','whack-a-mole','fruit-catcher','goalkeeper'])
+    expect(screen.getAllByRole('link',{name:/^Play /})).toHaveLength(5)
+    expect(screen.queryByLabelText('Motion Play')).not.toBeInTheDocument()
   })
-
+  it.each(['#/camera/meteor-smash','#/games/pizza-maker'])('keeps deferred game URL %s in the catalog', hash => {
+    visit(hash)
+    render(<App />)
+    expect(screen.getByRole('heading',{name:'Game Catalog'})).toBeVisible()
+    expect(screen.queryByRole('button',{name:'Play Meteor Smash'})).not.toBeInTheDocument()
+  })
 })

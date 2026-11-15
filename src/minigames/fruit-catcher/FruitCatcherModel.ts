@@ -1,3 +1,4 @@
+import { PauseClock } from '../../game/PauseClock'
 import { GameSession, type GameSessionSnapshot } from '../../game/GameSession'
 import type { MotionInputEvent } from '../../input/MotionProcessor'
 import type { PlayerCount, PlayerId } from '../../input/PlayerZoneMapper'
@@ -9,6 +10,7 @@ export interface FruitCatcherSnapshot extends GameSessionSnapshot { fruit: Falli
 interface StoredFruit extends Omit<FallingFruit, 'y'> { startY: number }
 
 export class FruitCatcherModel {
+  private readonly clock = new PauseClock()
   private readonly session: GameSession
   private readonly players: PlayerId[]
   private readonly random: () => number
@@ -30,13 +32,32 @@ export class FruitCatcherModel {
   }
 
   start(timestamp: number) {
+    this.clock.reset(timestamp)
+
     this.fruit = []; this.hands.clear(); this.nextSpawnAt = null; this.nextId = 1; this.lastTimestamp = timestamp
     this.session.start(timestamp)
     return this.update(timestamp)
   }
 
+  pause(timestamp: number) {
+    const state = this.update(timestamp)
+    if (state.phase !== 'playing' && state.phase !== 'countdown') return state
+    this.session.pause(this.lastTimestamp!)
+    this.clock.pause(timestamp)
+    return this.snapshot(this.lastTimestamp!)
+  }
+
+  resume(timestamp: number) {
+    if (!this.clock.paused) return this.update(timestamp)
+    this.clock.resume(timestamp)
+    this.lastTimestamp = Math.max(this.clock.time(timestamp), this.lastTimestamp ?? 0)
+    this.session.resume(this.lastTimestamp)
+    return this.snapshot(this.lastTimestamp)
+  }
+
   update(timestamp: number) {
-    const now = Math.max(timestamp, this.lastTimestamp ?? timestamp)
+    const now = Math.max(this.clock.time(timestamp), this.lastTimestamp ?? this.clock.time(timestamp))
+    if (this.clock.paused) return this.snapshot(now)
     const state = this.session.update(now)
     this.fruit = this.fruit.filter((item) => now - item.spawnedAt < item.fallsForMs)
     if (state.phase === 'playing') {
@@ -53,8 +74,9 @@ export class FruitCatcherModel {
   }
 
   moveHand(event: MotionInputEvent) {
-    const now = Math.max(event.timestamp, this.lastTimestamp ?? event.timestamp)
-    this.update(now)
+    if (!this.clock.accepts(event.timestamp)) return this.snapshot(this.lastTimestamp ?? 0)
+    this.update(event.timestamp)
+    const now = this.lastTimestamp!
     if (event.kind !== 'HAND_POSITION' || event.confidence < .45 || !this.players.includes(event.playerId) || this.session.getSnapshot().phase !== 'playing') return this.snapshot(now)
     this.hands.set(event.playerId, { playerId: event.playerId, x: clamp(event.x), y: clamp(event.y), confidence: event.confidence })
     this.catchFruit(now)

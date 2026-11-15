@@ -52,7 +52,12 @@ export class WindowWipeModel {
     return this.snapshot(now)
   }
 
-  pause(timestamp: number) { const now = Math.max(timestamp, this.lastTimestamp ?? timestamp); this.lastTimestamp = now; this.session.pause(now); return this.snapshot(now) }
+  pause(timestamp: number) {
+    const state = this.update(timestamp)
+    if (state.phase !== 'playing' && state.phase !== 'countdown') return state
+    this.session.pause(this.lastTimestamp!)
+    return this.snapshot(this.lastTimestamp!)
+  }
   resume(timestamp: number) { const now = Math.max(timestamp, this.lastTimestamp ?? timestamp); this.lastTimestamp = now; this.session.resume(now); return this.snapshot(now) }
 
   private snapshot(timestamp: number): WindowWipeSnapshot {

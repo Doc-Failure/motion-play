@@ -8,6 +8,10 @@ function controller(): CameraController {
 describe('simple camera flow', () => {
   it.each([
     ['window-wipe', 'Window Wipe'], ['whack-a-mole', 'Whack-a-Mole'],
+    ['paint-splash', 'Paint Splash'], ['meteor-smash', 'Meteor Smash'],
+    ['balloon-panic', 'Balloon Panic'], ['gold-rush', 'Gold Rush'],
+    ['simon-says', 'Simon Says'], ['fruit-catcher', 'Fruit Catcher'],
+    ['air-pong', 'Air Pong'], ['goalkeeper', 'Goalkeeper'],
   ] as const)('keeps %s paused through denial and requires resume after recovery', async (game, title) => {
     const source = controller()
     vi.mocked(source.start)

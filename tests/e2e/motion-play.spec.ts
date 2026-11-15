@@ -1,6 +1,7 @@
+import { isGameVisible } from '../../src/app/catalog'
 import { expect, openApp, test } from './fixtures'
 import type { Locator, Page } from '@playwright/test'
-import { catalogGames } from '../../src/app/catalog'
+import { visibleCatalogGames } from '../../src/app/catalog'
 
 async function clickMovingTarget(page: Page, target: Locator) {
   // Moving targets never pass the stationary-element actionability check.
@@ -15,7 +16,7 @@ async function clickMovingTarget(page: Page, target: Locator) {
 test('simple game selection and persistent camera across games', async ({ page, installMockCamera }) => {
   await installMockCamera()
   await openApp(page, '#/catalog')
-  await expect(page.locator('.game-card')).toHaveCount(catalogGames.filter(game => game.available).length)
+  await expect(page.locator('.game-card')).toHaveCount(visibleCatalogGames.length)
   await expect(page.getByRole('combobox')).toHaveCount(0)
   await page.getByRole('link', {name: 'Play Bubble Battle'}).click()
   await expect(page.getByText('● Camera on', {exact:true})).toBeVisible()
@@ -37,7 +38,7 @@ test('camera is requested only after entering a game', async ({page,installMockC
   await openApp(page, '#/')
   expect(await page.evaluate(() => (window as typeof window & {__mockMediaState:{requests:number}}).__mockMediaState.requests)).toBe(0)
   await page.getByRole('link',{name:/Game Catalog/}).click()
-  await expect(page.getByRole('heading',{name:'The toy box'})).toBeVisible()
+  await expect(page.getByRole('heading',{name:'Game Catalog'})).toBeVisible()
   await page.screenshot({path:'test-results/simple-catalog.png',fullPage:true})
 })
 
@@ -66,6 +67,7 @@ test('permission denial still allows camera-free multiplayer and changing games'
 })
 
 test('Piñata Party supports four players, keyboard and pointer hits, and pause', async ({ page, installMockCamera }) => {
+  test.skip(!isGameVisible('pinata-party'), 'Hidden while individual games are refined.')
   await page.clock.install()
   await installMockCamera()
   await openApp(page, '#/catalog')
@@ -103,6 +105,7 @@ test('Piñata Party supports four players, keyboard and pointer hits, and pause'
 })
 
 test('Monster Defense routes from catalog and supports four-player keyboard defense', async ({ page, installMockCamera }) => {
+  test.skip(!isGameVisible('monster-defense'), 'Hidden while individual games are refined.')
   await page.clock.install()
   await installMockCamera()
   await openApp(page, '#/catalog')
@@ -132,6 +135,7 @@ test('Monster Defense routes from catalog and supports four-player keyboard defe
 })
 
 test('Supermarket Rush routes from catalog and supports four-player shopping', async ({ page, installMockCamera }) => {
+  test.skip(!isGameVisible('supermarket-rush'), 'Hidden while individual games are refined.')
   await page.clock.install()
   await installMockCamera()
   await openApp(page, '#/catalog')
@@ -172,6 +176,7 @@ test('Supermarket Rush routes from catalog and supports four-player shopping', a
 })
 
 test('Star Collector supports four-player catches, expiry, pause, results and replay', async ({ page, installMockCamera }) => {
+  test.skip(!isGameVisible('star-collector'), 'Hidden while individual games are refined.')
   await page.clock.install()
   await installMockCamera()
   await openApp(page, '#/catalog')
@@ -209,6 +214,7 @@ test('Star Collector supports four-player catches, expiry, pause, results and re
 })
 
 test('Treasure Grab supports four-player catches, expiry, pause, results and replay', async ({ page, installMockCamera }) => {
+  test.skip(!isGameVisible('treasure-grab'), 'Hidden while individual games are refined.')
   await page.clock.install()
   await installMockCamera()
   await openApp(page, '#/catalog')
@@ -257,6 +263,7 @@ test('Treasure Grab supports four-player catches, expiry, pause, results and rep
 })
 
 test('Car Wash supports four-player cooperative scrubbing, pause, results and replay', async ({ page, installMockCamera }) => {
+  test.skip(!isGameVisible('car-wash'), 'Hidden while individual games are refined.')
   await page.clock.install()
   await installMockCamera()
   await openApp(page, '#/catalog')
@@ -298,6 +305,7 @@ test('Car Wash supports four-player cooperative scrubbing, pause, results and re
 })
 
 test('Car Wash finishes early only after every car is clean', async ({ page, installMockCamera }) => {
+  test.skip(!isGameVisible('car-wash'), 'Hidden while individual games are refined.')
   await page.clock.install()
   await installMockCamera()
   await openApp(page, '#/camera/car-wash')

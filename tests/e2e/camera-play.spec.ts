@@ -1,13 +1,15 @@
+import { isGameVisible } from '../../src/app/catalog'
 import { expect, openApp, test } from './fixtures'
 
-for (const [slug, title] of [['window-wipe', 'Window Wipe'], ['whack-a-mole', 'Whack-a-Mole']]) {
-  test(`${title} freezes camera recovery without losing the round`, async ({page, installMockCamera}) => {
+for (const [slug, title] of [['window-wipe', 'Window Wipe'], ['whack-a-mole', 'Whack-a-Mole'], ['paint-splash', 'Paint Splash'], ['meteor-smash', 'Meteor Smash'], ['balloon-panic', 'Balloon Panic'], ['gold-rush', 'Gold Rush'], ['simon-says', 'Simon Says'], ['fruit-catcher', 'Fruit Catcher'], ['air-pong', 'Air Pong'], ['goalkeeper', 'Goalkeeper']]) {
+  for (const countdown of [false, true]) test(`${title} ${countdown ? 'countdown' : 'gameplay'} freezes camera recovery without losing the round`, async ({page, installMockCamera}) => {
+    test.skip(!isGameVisible(slug), 'Hidden while individual games are refined; model and component recovery remains covered.')
     await page.clock.install({time:new Date('2030-01-01T00:00:00Z')})
     await page.clock.pauseAt(new Date('2030-01-01T00:01:00Z'))
     await installMockCamera({person:true})
     await openApp(page, `#/camera/${slug}`)
     await page.getByRole('button', {name:`Play ${title}`, exact:true}).click()
-    await page.clock.runFor(3500)
+    await page.clock.runFor(countdown ? 1000 : 3500)
     const video = page.getByLabel('Mirrored live camera during gameplay')
     await video.evaluate(element => {
       const track = ((element as HTMLVideoElement).srcObject as MediaStream).getVideoTracks()[0]
@@ -21,12 +23,15 @@ for (const [slug, title] of [['window-wipe', 'Window Wipe'], ['whack-a-mole', 'W
     await expect(dialog).toContainText('The camera disconnected')
     const clock = page.locator('.bubble-game__header dl > div').last().locator('dd')
     const time = await clock.textContent()
+    const boards = page.locator('[class*="-boards"]').first()
+    const frozenBoard = await boards.innerHTML()
     const targets = await page.locator('.mole').count()
-    if (slug === 'whack-a-mole') expect(targets).toBeGreaterThan(0)
+    if (slug === 'whack-a-mole' && !countdown) expect(targets).toBeGreaterThan(0)
     await page.getByRole('button', {name:'Reconnect camera'}).click()
     await expect(dialog).toContainText('Camera permission is blocked')
     await page.clock.runFor(10000)
     await expect(clock).toHaveText(time!)
+    expect(await boards.innerHTML()).toBe(frozenBoard)
     expect(await page.locator('.mole').count()).toBe(targets)
     await expect(page.getByRole('button', {name:'Resume round'})).toBeDisabled()
     await page.evaluate(() => {
@@ -42,8 +47,28 @@ for (const [slug, title] of [['window-wipe', 'Window Wipe'], ['whack-a-mole', 'W
     await expect(clock).toHaveText(time!)
     await page.getByRole('button', {name:'Resume round'}).click()
     await expect(dialog).toHaveCount(0)
-    await page.clock.runFor(1000)
+    await page.clock.runFor(countdown ? 3500 : 1000)
     await expect(clock).not.toHaveText(time!)
+    if (!countdown) {
+      await page.evaluate(() => {
+        Object.defineProperty(document, 'hidden', {configurable:true, value:true})
+        document.dispatchEvent(new Event('visibilitychange'))
+      })
+      await expect(dialog).toContainText('The tab was hidden')
+      const tabTime = await clock.textContent()
+      const tabBoard = await boards.innerHTML()
+      await page.clock.runFor(10000)
+      await expect(clock).toHaveText(tabTime!)
+      expect(await boards.innerHTML()).toBe(tabBoard)
+      await expect(page.getByRole('button', {name:'Resume round'})).toBeDisabled()
+      await page.evaluate(() => {
+        Reflect.deleteProperty(document, 'hidden')
+        document.dispatchEvent(new Event('visibilitychange'))
+      })
+      await expect(dialog).toBeVisible()
+      await page.getByRole('button', {name:'Resume round'}).click()
+      await expect(dialog).toHaveCount(0)
+    }
   })
 }
 

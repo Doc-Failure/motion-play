@@ -4,6 +4,15 @@ import { WindowWipeModel } from '../src/minigames/window-wipe/WindowWipeModel'
 const brush = (x: number, y: number, timestamp: number, playerId: 1 | 2 = 1) => ({ playerId, kind: 'MOTION_BRUSH' as const, x, y, confidence: 1, timestamp })
 
 describe('WindowWipeModel', () => {
+  it('handles repeated pauses and a pause arriving at round end', () => {
+    const model = new WindowWipeModel({ countdownMs: 0, roundDurationMs: 1000 })
+    model.start(0)
+    const paused = model.pause(100)
+    expect(model.pause(200)).toEqual(paused)
+    model.resume(300)
+    expect(model.pause(1200).phase).toBe('results')
+  })
+
   it('accumulates a brush trace and awards only newly cleaned cells', () => {
     const model = new WindowWipeModel({ countdownMs: 0, roundDurationMs: 10_000 })
     model.start(0)

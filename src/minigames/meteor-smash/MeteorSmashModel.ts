@@ -1,3 +1,4 @@
+import { PauseClock } from '../../game/PauseClock'
 import { GameSession, type GameSessionSnapshot } from '../../game/GameSession'
 import type { MotionInputEvent } from '../../input/MotionProcessor'
 import type { PlayerCount, PlayerId } from '../../input/PlayerZoneMapper'
@@ -19,6 +20,7 @@ export interface MeteorSmashSnapshot extends GameSessionSnapshot {
 interface StoredMeteor extends Omit<Meteor, 'y'> { startY: number }
 
 export class MeteorSmashModel {
+  private readonly clock = new PauseClock()
   private readonly session: GameSession
   private readonly players: PlayerId[]
   private readonly random: () => number
@@ -40,6 +42,8 @@ export class MeteorSmashModel {
   }
 
   start(timestamp: number) {
+    this.clock.reset(timestamp)
+
     this.meteors = []
     this.impacts = emptyImpacts()
     this.nextSpawnAt = null
@@ -49,8 +53,25 @@ export class MeteorSmashModel {
     return this.update(timestamp)
   }
 
+  pause(timestamp: number) {
+    const state = this.update(timestamp)
+    if (state.phase !== 'playing' && state.phase !== 'countdown') return state
+    this.session.pause(this.lastTimestamp!)
+    this.clock.pause(timestamp)
+    return this.snapshot(this.lastTimestamp!)
+  }
+
+  resume(timestamp: number) {
+    if (!this.clock.paused) return this.update(timestamp)
+    this.clock.resume(timestamp)
+    this.lastTimestamp = Math.max(this.clock.time(timestamp), this.lastTimestamp ?? 0)
+    this.session.resume(this.lastTimestamp)
+    return this.snapshot(this.lastTimestamp)
+  }
+
   update(timestamp: number) {
-    const now = Math.max(timestamp, this.lastTimestamp ?? timestamp)
+    const now = Math.max(this.clock.time(timestamp), this.lastTimestamp ?? this.clock.time(timestamp))
+    if (this.clock.paused) return this.snapshot(now)
     const state = this.session.update(now)
     const impacted = this.meteors.filter((meteor) => now - meteor.spawnedAt >= meteor.fallsForMs)
     this.meteors = this.meteors.filter((meteor) => now - meteor.spawnedAt < meteor.fallsForMs)
@@ -73,8 +94,9 @@ export class MeteorSmashModel {
   }
 
   hit(event: MotionInputEvent) {
-    const now = Math.max(event.timestamp, this.lastTimestamp ?? event.timestamp)
-    this.update(now)
+    if (!this.clock.accepts(event.timestamp)) return this.snapshot(this.lastTimestamp ?? 0)
+    this.update(event.timestamp)
+    const now = this.lastTimestamp!
     if (event.kind !== 'MOTION_HIT' || event.confidence < .2 || !this.players.includes(event.playerId) || this.session.getSnapshot().phase !== 'playing') return this.snapshot(now)
     const meteor = this.visibleMeteors(now).find((candidate) => candidate.playerId === event.playerId && Math.hypot(candidate.x - event.x, candidate.y - event.y) <= .14)
     if (!meteor) return this.snapshot(now)

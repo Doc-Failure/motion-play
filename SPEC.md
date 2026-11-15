@@ -130,3 +130,12 @@ deferred. Quick Play randomly selects an available game supporting all retained
 player counts and launches its countdown once the camera is ready. It needs no
 additional Play/confirmation click. Returning from a game does not auto-relaunch it.
 The UI pack contains typography PNG references only, not an installable font file.
+
+## Five-game refinement phase (2026-11-16)
+The public catalog and Quick Play expose only Bubble Battle, Window Wipe, Whack-a-Mole,
+Fruit Catcher and Goalkeeper while each game is refined individually. All other game
+implementations remain in the codebase but are hidden; legacy public URLs return to
+the catalog. Restoring games is controlled by visibleGameSlugs in src/app/catalog.ts.
+The catalog header contains only Back to Home and Game Catalog, with no site header,
+tagline, subtitle or decorative sheets/scenery around it. Improving animation and
+distinct game identities is subsequent per-game work, not completed by hiding games.

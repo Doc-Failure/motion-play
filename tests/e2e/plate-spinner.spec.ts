@@ -1,4 +1,7 @@
+import { isGameVisible } from '../../src/app/catalog'
 import { expect, openApp, test } from './fixtures'
+
+test.skip(!isGameVisible('plate-spinner'), 'Hidden while individual games are refined.')
 
 test('Plate Spinner supports four-player rescue, drops, pause, results, replay and narrow layout', async ({ page, installMockCamera }) => {
   await page.clock.install({time:new Date('2030-01-01T00:00:00Z')})

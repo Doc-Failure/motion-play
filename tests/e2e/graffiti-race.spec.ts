@@ -1,4 +1,7 @@
+import { isGameVisible } from '../../src/app/catalog'
 import { expect, openApp, test } from './fixtures'
+
+test.skip(!isGameVisible('graffiti-race'), 'Hidden while individual games are refined.')
 
 test('Graffiti Race routes from the catalog and isolates four-player painting with pause and replay', async ({ page, installMockCamera }) => {
   await page.clock.install()

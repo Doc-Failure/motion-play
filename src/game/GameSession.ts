@@ -117,7 +117,7 @@ export class GameSession {
     const roundRemainingMs = this.phase === 'playing'
       ? this.remainingFor('playing', timestamp)
       : this.phase === 'paused' && this.activePhase === 'playing' ? this.pausedRemainingMs
-        : this.phase === 'idle' || this.phase === 'countdown' ? this.roundDurationMs : 0
+        : this.phase === 'idle' || this.phase === 'countdown' || (this.phase === 'paused' && this.activePhase === 'countdown') ? this.roundDurationMs : 0
     return {
       phase: this.phase,
       countdownRemainingMs,

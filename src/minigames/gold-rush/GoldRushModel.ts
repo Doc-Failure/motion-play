@@ -1,3 +1,4 @@
+import { PauseClock } from '../../game/PauseClock'
 import { GameSession, type GameSessionSnapshot } from '../../game/GameSession'
 import type { MotionInputEvent } from '../../input/MotionProcessor'
 import type { PlayerCount, PlayerId } from '../../input/PlayerZoneMapper'
@@ -19,6 +20,7 @@ export interface GoldRushSnapshot extends GameSessionSnapshot { items: GoldRushI
 interface StoredItem extends Omit<GoldRushItem, 'y'> { startY: number }
 
 export class GoldRushModel {
+  private readonly clock = new PauseClock()
   private readonly session: GameSession
   private readonly players: PlayerId[]
   private readonly random: () => number
@@ -39,6 +41,8 @@ export class GoldRushModel {
   }
 
   start(timestamp: number) {
+    this.clock.reset(timestamp)
+
     this.items = []
     this.nextSpawnAt = null
     this.nextId = 1
@@ -47,8 +51,25 @@ export class GoldRushModel {
     return this.update(timestamp)
   }
 
+  pause(timestamp: number) {
+    const state = this.update(timestamp)
+    if (state.phase !== 'playing' && state.phase !== 'countdown') return state
+    this.session.pause(this.lastTimestamp!)
+    this.clock.pause(timestamp)
+    return this.snapshot(this.lastTimestamp!)
+  }
+
+  resume(timestamp: number) {
+    if (!this.clock.paused) return this.update(timestamp)
+    this.clock.resume(timestamp)
+    this.lastTimestamp = Math.max(this.clock.time(timestamp), this.lastTimestamp ?? 0)
+    this.session.resume(this.lastTimestamp)
+    return this.snapshot(this.lastTimestamp)
+  }
+
   update(timestamp: number) {
-    const now = Math.max(timestamp, this.lastTimestamp ?? timestamp)
+    const now = Math.max(this.clock.time(timestamp), this.lastTimestamp ?? this.clock.time(timestamp))
+    if (this.clock.paused) return this.snapshot(now)
     const state = this.session.update(now)
     this.items = this.items.filter((item) => now - item.spawnedAt < item.fallsForMs)
     if (state.phase === 'playing') {
@@ -66,8 +87,9 @@ export class GoldRushModel {
   }
 
   hit(event: MotionInputEvent) {
-    const now = Math.max(event.timestamp, this.lastTimestamp ?? event.timestamp)
-    this.update(now)
+    if (!this.clock.accepts(event.timestamp)) return this.snapshot(this.lastTimestamp ?? 0)
+    this.update(event.timestamp)
+    const now = this.lastTimestamp!
     if (event.kind !== 'MOTION_HIT' || event.confidence < .2 || !this.players.includes(event.playerId) || this.session.getSnapshot().phase !== 'playing') return this.snapshot(now)
     const item = this.visibleItems(now).find((candidate) => candidate.playerId === event.playerId && Math.hypot(candidate.x - event.x, candidate.y - event.y) <= .14)
     if (!item) return this.snapshot(now)

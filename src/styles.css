@@ -616,3 +616,18 @@ body { background: #fffdf8 url('./assets/home/paper-background.webp') repeat; ba
   .reference-home .action-card { min-height: 10rem; }
   .reference-home .play-menu { padding-bottom: 6rem; }
 }
+/* A single catalog title row and the five games currently being refined. */
+.catalog-picker { padding-top: 1.25rem; }
+.catalog-picker::before, .catalog-picker::after { display: none; }
+.catalog-toolbar { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 1rem; margin-bottom: 2rem; }
+.catalog-picker .catalog-toolbar h1 { grid-column: 2; margin: 0; color: #8131ad; font-size: clamp(1.6rem,3vw,2.5rem); line-height: 1.2; }
+.catalog-picker .catalog-toolbar .back-link { justify-self: start; margin: 0; font-size: .9rem; text-decoration: none; }
+.catalog-picker .catalog-grid { grid-template-columns: repeat(5,minmax(0,1fr)); gap: 1rem; }
+.catalog-picker .game-card { min-height: 11rem; }
+@media (max-width: 900px) { .catalog-picker .catalog-grid { grid-template-columns: repeat(3,minmax(0,1fr)); } }
+@media (max-width: 550px) {
+  .catalog-toolbar { grid-template-columns: 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+  .catalog-picker .catalog-toolbar h1 { grid-column: 1; justify-self: start; }
+  .catalog-picker .catalog-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: .7rem; }
+  .catalog-picker .game-card { min-height: 9rem; }
+}

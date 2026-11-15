@@ -15,7 +15,7 @@ test('supplied UI artwork loads on home and catalog without changing camera setu
   }
   await page.setViewportSize({width:1440,height:900})
   await page.getByRole('link',{name:/Game Catalog/}).click()
-  await expect(page.getByRole('heading',{name:'The toy box'})).toBeVisible()
+  await expect(page.getByRole('heading',{name:'Game Catalog'})).toBeVisible()
   await page.screenshot({path:test.info().outputPath('catalog-pack.png'),fullPage:true})
   await page.getByRole('link',{name:'Play Bubble Battle',exact:true}).click()
   const play = page.getByRole('button',{name:'Play Bubble Battle',exact:true})

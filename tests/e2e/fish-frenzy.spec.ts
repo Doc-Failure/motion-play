@@ -1,4 +1,7 @@
+import { isGameVisible } from '../../src/app/catalog'
 import { expect, openApp, test } from './fixtures'
+
+test.skip(!isGameVisible('fish-frenzy'), 'Hidden while individual games are refined.')
 
 for (const playerCount of [1, 2, 3, 4]) {
   test(`Fish Frenzy isolates catches in the ${playerCount}-player layout`, async ({ page, installMockCamera }) => {

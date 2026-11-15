@@ -1,3 +1,4 @@
+import { PauseClock } from '../../game/PauseClock'
 import { GameSession, type GameSessionSnapshot } from '../../game/GameSession'
 import type { MotionInputEvent } from '../../input/MotionProcessor'
 import type { PlayerCount, PlayerId } from '../../input/PlayerZoneMapper'
@@ -12,6 +13,7 @@ const KEEPER_REACH_Y = .2
 const SHOT_SPEED = .00022
 
 export class GoalkeeperModel {
+  private readonly clock = new PauseClock()
   private readonly session: GameSession
   private readonly players: PlayerId[]
   private keepers = new Map<PlayerId, Keeper>()
@@ -27,6 +29,8 @@ export class GoalkeeperModel {
   }
 
   start(timestamp: number) {
+    this.clock.reset(timestamp)
+
     this.keepers.clear(); this.shots.clear(); this.saveCounts.clear(); this.shotNumbers.clear(); this.lastTimestamp = timestamp
     for (const playerId of this.players) {
       this.keepers.set(playerId, { playerId, x: .5, y: GOAL_LINE, confidence: 1 })
@@ -36,8 +40,25 @@ export class GoalkeeperModel {
     return this.snapshot(timestamp)
   }
 
+  pause(timestamp: number) {
+    const state = this.update(timestamp)
+    if (state.phase !== 'playing' && state.phase !== 'countdown') return state
+    this.session.pause(this.lastTimestamp!)
+    this.clock.pause(timestamp)
+    return this.snapshot(this.lastTimestamp!)
+  }
+
+  resume(timestamp: number) {
+    if (!this.clock.paused) return this.update(timestamp)
+    this.clock.resume(timestamp)
+    this.lastTimestamp = Math.max(this.clock.time(timestamp), this.lastTimestamp ?? 0)
+    this.session.resume(this.lastTimestamp)
+    return this.snapshot(this.lastTimestamp)
+  }
+
   update(timestamp: number) {
-    const now = Math.max(timestamp, this.lastTimestamp ?? timestamp)
+    const now = Math.max(this.clock.time(timestamp), this.lastTimestamp ?? this.clock.time(timestamp))
+    if (this.clock.paused) return this.snapshot(now)
     const previous = this.lastTimestamp ?? now
     const before = this.session.getSnapshot(previous)
     const state = this.session.update(now)
@@ -48,8 +69,9 @@ export class GoalkeeperModel {
   }
 
   moveBody(event: MotionInputEvent) {
-    const now = Math.max(event.timestamp, this.lastTimestamp ?? event.timestamp)
-    this.update(now)
+    if (!this.clock.accepts(event.timestamp)) return this.snapshot(this.lastTimestamp ?? 0)
+    this.update(event.timestamp)
+    const now = this.lastTimestamp!
     if (event.kind !== 'BODY_MOVE' || event.confidence < .45 || !this.players.includes(event.playerId) || this.session.getSnapshot().phase !== 'playing') return this.snapshot(now)
     this.keepers.set(event.playerId, { playerId: event.playerId, x: clamp(event.x), y: clampRange(event.y, .58, .88), confidence: event.confidence })
     return this.snapshot(now)

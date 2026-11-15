@@ -1,12 +1,12 @@
 import { expect, openApp, test } from './fixtures'
-import { catalogGames } from '../../src/app/catalog'
+import { visibleCatalogGames } from '../../src/app/catalog'
 
 for (const players of [1, 4]) {
   test(`illustrated game screens support ${players} players`, async ({page, installMockCamera}) => {
     test.setTimeout(120_000)
     await installMockCamera()
     await openApp(page,'#/catalog')
-    for(const game of catalogGames.filter(game => game.available)) {
+    for(const game of visibleCatalogGames.filter(game => game.available)) {
       await page.evaluate(slug => {window.location.hash = `#/camera/${slug}`},game.slug)
       await page.getByRole('button',{name:`${players} ${players === 1 ? 'player' : 'players'}`,exact:true}).click()
       await page.getByRole('button',{name:`Play ${game.title}`,exact:true}).click()

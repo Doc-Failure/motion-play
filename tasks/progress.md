@@ -1614,3 +1614,61 @@ new two-choice Home screenshot. No physical-camera result or deployment is claim
   documentation changed. The earlier 38-scenario single-worker run also passed.
   Final whitespace and backlog JSON/unique-ID checks passed. T25K-regression is
   complete; T25K-recovery remains pending for the explicitly listed coverage gaps.
+
+## T25K-recovery — older-game lifecycle integration (2026-11-16)
+
+- Read SPEC.md and AGENTS.md and inspected the shared camera/input path and
+  existing game views/models before editing. Integrated shared external camera
+  pause/reconnect into Paint Splash, Meteor Smash, Balloon Panic, Gold Rush,
+  Simon Says, Fruit Catcher, Air Pong and Goalkeeper.
+- Added common manual/tab recovery controls to those eight games plus Window
+  Wipe and Whack-a-Mole, including keyboard focus, actionable reconnect errors,
+  explicit Resume after recovery, hidden-tab blocking and replay blocking when
+  the camera is unavailable. Camera/media logic remains outside game models.
+- Added a gameplay clock that excludes interrupted intervals. Countdown, target
+  expiry/spawning, ball movement, Simon cues, scores and progress survive long
+  pauses; events captured during interruptions cannot score after resume.
+  Fixed countdown pauses displaying a zero round timer and made Window Wipe /
+  Whack-a-Mole pauses harmless when repeated or arriving at round completion.
+- Added four-player deterministic comparisons against uninterrupted models,
+  paused/stale input checks, countdown/active-round manual and tab pause tests,
+  focus restoration, replay and camera denial/retry integration coverage.
+- Preserved concurrent catalog/UI changes limiting public routes to five games.
+  Browser regressions respect that visibility gate; deferred games retain model
+  and component coverage. Fixed a catalog navigation assertion to wait for the
+  main heading rather than matching the same text still visible on Home.
+- Final verification: **395 tests across 53 files passed**; lint, typecheck,
+  production build and whitespace checks passed. A transient Quick Play export
+  failure while catalog files changed and a catalog-heading test race were
+  followed by a clean final full-suite run.
+- Expanded synthetic browser recovery coverage to gameplay/countdown disconnect,
+  denied retry, reacquisition, frozen boards/clocks and hidden tabs. Chromium
+  could not launch for any of the 23 attempted camera-play scenarios because
+  macOS denied MachPortRendezvousServer registration (1100). A final single-worker
+  fail-fast retry encountered the same launch failure. No browser assertion or
+  screenshot review ran successfully in this invocation; T25K-recovery remains
+  pending browser acceptance. Hidden-game browser scenarios are explicitly
+  skipped until public routes are restored. Tournament acceptance stays deferred.
+- No physical webcam validation, Safari verification, deployment, upload,
+  dependency change or commit was performed.
+
+## 2026-11-16 — Minimal catalog and five-game refinement scope
+
+Removed catalog site branding/header/footer, tagline, subtitle and decorative scenery.
+A single toolbar now contains Back to Home and the centered Game Catalog title.
+Public games are Bubble Battle, Window Wipe, Whack-a-Mole, Fruit Catcher and Goalkeeper.
+A separate visibleGameSlugs list controls exposure, preserving all other implementations
+and their existing availability metadata. Quick Play uses only the five public games;
+legacy camera/detail URLs for deferred games render the catalog.
+
+Updated navigation/Quick Play tests for the public boundary. Browser route tests for
+deferred games are conditionally skipped until those games are restored; their model
+and component tests remain active. Animation/identity improvements are future per-game
+work and are not claimed as completed by this scope reduction.
+
+Validation: 395 unit/component tests passed across 53 files; typecheck, lint and build
+passed. Full Chromium run: 23 active scenarios passed, 35 deferred-game scenarios
+intentionally skipped. This includes all five games at 1/4 players, Quick Play, hidden
+legacy routes, camera geometry/recovery, native keyboard/pointer flows and responsive
+catalog screenshots. Reviewed the simplified desktop catalog. Camera fixtures are
+synthetic; no physical hardware verification, deployment or commit is claimed.

@@ -1,3 +1,4 @@
+import { PauseClock } from '../../game/PauseClock'
 import { GameSession, type GameSessionSnapshot } from '../../game/GameSession'
 import type { MotionInputEvent } from '../../input/MotionProcessor'
 import type { PlayerCount, PlayerId } from '../../input/PlayerZoneMapper'
@@ -11,6 +12,7 @@ const PADDLE_REACH = .16
 const BALL_SPEED = .00024
 
 export class AirPongModel {
+  private readonly clock = new PauseClock()
   private readonly session: GameSession
   private readonly players: PlayerId[]
   private paddles = new Map<PlayerId, PongPaddle>()
@@ -25,6 +27,8 @@ export class AirPongModel {
   }
 
   start(timestamp: number) {
+    this.clock.reset(timestamp)
+
     this.paddles.clear(); this.balls.clear(); this.returns.clear(); this.lastTimestamp = timestamp
     for (const playerId of this.players) {
       this.paddles.set(playerId, { playerId, y: .5, confidence: 1 })
@@ -35,8 +39,25 @@ export class AirPongModel {
     return this.snapshot(timestamp)
   }
 
+  pause(timestamp: number) {
+    const state = this.update(timestamp)
+    if (state.phase !== 'playing' && state.phase !== 'countdown') return state
+    this.session.pause(this.lastTimestamp!)
+    this.clock.pause(timestamp)
+    return this.snapshot(this.lastTimestamp!)
+  }
+
+  resume(timestamp: number) {
+    if (!this.clock.paused) return this.update(timestamp)
+    this.clock.resume(timestamp)
+    this.lastTimestamp = Math.max(this.clock.time(timestamp), this.lastTimestamp ?? 0)
+    this.session.resume(this.lastTimestamp)
+    return this.snapshot(this.lastTimestamp)
+  }
+
   update(timestamp: number) {
-    const now = Math.max(timestamp, this.lastTimestamp ?? timestamp)
+    const now = Math.max(this.clock.time(timestamp), this.lastTimestamp ?? this.clock.time(timestamp))
+    if (this.clock.paused) return this.snapshot(now)
     const previous = this.lastTimestamp ?? now
     const before = this.session.getSnapshot(previous)
     const state = this.session.update(now)
@@ -49,8 +70,9 @@ export class AirPongModel {
   }
 
   moveHand(event: MotionInputEvent) {
-    const now = Math.max(event.timestamp, this.lastTimestamp ?? event.timestamp)
-    this.update(now)
+    if (!this.clock.accepts(event.timestamp)) return this.snapshot(this.lastTimestamp ?? 0)
+    this.update(event.timestamp)
+    const now = this.lastTimestamp!
     if (event.kind !== 'HAND_POSITION' || event.confidence < .45 || !this.players.includes(event.playerId) || this.session.getSnapshot().phase !== 'playing') return this.snapshot(now)
     this.paddles.set(event.playerId, { playerId: event.playerId, y: clamp(event.y), confidence: event.confidence })
     return this.snapshot(now)

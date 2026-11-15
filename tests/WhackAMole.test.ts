@@ -4,6 +4,15 @@ import { WhackAMoleModel } from '../src/minigames/whack-a-mole/WhackAMoleModel'
 const hit = (x: number, y: number, timestamp: number, playerId: 1 | 2 = 1) => ({ playerId, kind: 'MOTION_HIT' as const, x, y, confidence: 1, timestamp })
 
 describe('WhackAMoleModel', () => {
+  it('handles repeated pauses and a pause arriving at round end', () => {
+    const model = new WhackAMoleModel({ countdownMs: 0, roundDurationMs: 1000 })
+    model.start(0)
+    const paused = model.pause(100)
+    expect(model.pause(200)).toEqual(paused)
+    model.resume(300)
+    expect(model.pause(1200).phase).toBe('results')
+  })
+
   it('freezes targets, spawn timing, scores and round time throughout a long pause', () => {
     const model = new WhackAMoleModel({ countdownMs: 0, visibleMs: 500, random: () => .5 })
     model.start(0)

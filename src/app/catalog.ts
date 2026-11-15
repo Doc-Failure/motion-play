@@ -43,3 +43,11 @@ export const catalogGames: readonly CatalogGame[] = [
 ]
 
 export const getGameBySlug = (slug: string) => catalogGames.find((entry) => entry.slug === slug)
+
+// The focused public set. Other implementations stay available for later refinement.
+export const visibleGameSlugs = ['bubble-battle','window-wipe','whack-a-mole','fruit-catcher','goalkeeper'] as const
+export const visibleCatalogGames: readonly CatalogGame[] = visibleGameSlugs.flatMap(slug => {
+  const entry = getGameBySlug(slug)
+  return entry?.available ? [entry] : []
+})
+export const isGameVisible = (slug: string) => visibleCatalogGames.some(game => game.slug === slug)

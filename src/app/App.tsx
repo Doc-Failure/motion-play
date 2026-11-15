@@ -4,7 +4,7 @@ import { GameDoodle } from '../design/GameDoodle'
 import { gameAudio } from '../audio/GameAudio'
 import { useEffect, useState } from 'react'
 import { GeneratedHomeScene } from '../design/GeneratedHomeScene'
-import { catalogGames, getGameBySlug } from './catalog'
+import { visibleCatalogGames, isGameVisible, getGameBySlug } from './catalog'
 import { GameArt } from './GameArt'
 import { CameraSetup, type PlayableGame } from '../camera/CameraSetup'
 import { loadSettings, saveSettings, unlockAchievement } from './localPreferences'
@@ -13,6 +13,7 @@ import { syncOfflineCaching } from './offlineCache'
 type Route = { page: 'home' } | { page: 'catalog' } | { page: 'settings' } | { page: 'camera'; game?: PlayableGame; autoPlay?: boolean } | { page: 'detail'; slug: string }
 const routeFromHash = (): Route => {
   const hash = window.location.hash.replace(/^#\/?/, '')
+  if ((hash.startsWith('camera/') && !isGameVisible(hash.slice(7))) || (hash.startsWith('games/') && !isGameVisible(hash.slice(6)))) return {page:'catalog'}
   if (hash === 'catalog') return { page: 'catalog' }
   if (hash === 'settings') return { page: 'settings' }
   if (hash === 'camera') return { page: 'camera' }
@@ -59,8 +60,8 @@ function Home() {
 }
 
 function Catalog() {
-  return <section className="catalog-page catalog-picker" aria-labelledby="catalog-title"><a className="back-link" href="#/">← Home</a><div className="catalog-heading"><div><h1 id="catalog-title">The toy box</h1><p>Pick a game and jump in.</p></div></div>
-    <div className="catalog-grid">{catalogGames.filter(game => game.available).map(game => <a className="game-card" key={game.slug} href={`#/camera/${game.slug}`} aria-label={`Play ${game.title}`}><GameDoodle slug={game.slug}/><div className="game-card__body"><h2>{game.title}</h2><p className="sr-only">{game.rules}</p></div></a>)}</div></section>
+  return <section className="catalog-page catalog-picker" aria-labelledby="catalog-title"><header className="catalog-toolbar"><a className="back-link" href="#/">← Back to Home</a><h1 id="catalog-title">Game Catalog</h1></header>
+    <div className="catalog-grid">{visibleCatalogGames.map(game => <a className="game-card" key={game.slug} href={`#/camera/${game.slug}`} aria-label={`Play ${game.title}`}><GameDoodle slug={game.slug}/><div className="game-card__body"><h2>{game.title}</h2><p className="sr-only">{game.rules}</p></div></a>)}</div></section>
 }
 
 function GameDetail({ slug }: { slug: string }) {
@@ -83,5 +84,5 @@ export function App() {
     document.title = `${route.page === 'home' ? '' : `${route.page === 'detail' ? getGameBySlug(route.slug)?.title ?? 'Game' : route.page[0].toUpperCase() + route.page.slice(1)} · `}Motion Play`
     document.getElementById('main-content')?.focus({ preventScroll: true })
   }, [route])
-  return <><a className="skip-link" href="#main-content">Skip to main content</a><main onPointerDown={gameAudio.unlock} onKeyDown={gameAudio.unlock} className="home-shell" id="main-content" tabIndex={-1}>{route.page !== 'home' && <AppHeader />}{route.page === 'home' ? <Home /> : route.page === 'catalog' ? <Catalog /> : route.page === 'settings' ? <Catalog /> : route.page === 'camera' ? null : <GameDetail slug={route.slug} />}<div hidden={route.page !== 'camera'}><CameraSetup active={route.page === 'camera'} initialGame={route.page === 'camera' ? route.game : undefined} autoPlay={route.page === 'camera' && route.autoPlay} /></div>{route.page !== 'home' && <footer className="home-footer"><p><span aria-hidden="true">★</span> Made for 1–4 local players <span aria-hidden="true">★</span></p></footer>}</main></>
+  return <><a className="skip-link" href="#main-content">Skip to main content</a><main onPointerDown={gameAudio.unlock} onKeyDown={gameAudio.unlock} className="home-shell" id="main-content" tabIndex={-1}>{route.page === 'detail' && <AppHeader />}{route.page === 'home' ? <Home /> : route.page === 'catalog' ? <Catalog /> : route.page === 'settings' ? <Catalog /> : route.page === 'camera' ? null : <GameDetail slug={route.slug} />}<div hidden={route.page !== 'camera'}><CameraSetup active={route.page === 'camera'} initialGame={route.page === 'camera' ? route.game : undefined} autoPlay={route.page === 'camera' && route.autoPlay} /></div>{route.page === 'detail' && <footer className="home-footer"><p><span aria-hidden="true">★</span> Made for 1–4 local players <span aria-hidden="true">★</span></p></footer>}</main></>
 }

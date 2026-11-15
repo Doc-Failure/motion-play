@@ -1,4 +1,7 @@
+import { isGameVisible } from '../../src/app/catalog'
 import { expect, openApp, test } from './fixtures'
+
+test.skip(!isGameVisible('pizza-maker'), 'Hidden while individual games are refined.')
 
 test('Pizza Maker routes starts directly and supports four-player input, pause, results and replay', async ({ page, installMockCamera }) => {
   await page.clock.install()

@@ -1,5 +1,5 @@
 import { expect, openApp, test } from './fixtures'
-import { catalogGames } from '../../src/app/catalog'
+import { visibleCatalogGames } from '../../src/app/catalog'
 
 test('home offers only two choices and Quick Play starts a random game',async ({page,installMockCamera}) => {
   await installMockCamera({person:true})
@@ -10,7 +10,7 @@ test('home offers only two choices and Quick Play starts a random game',async ({
   await expect(page.locator('.home-callouts')).toHaveCount(0)
   await page.screenshot({path:test.info().outputPath('two-choice-home.png'),fullPage:true})
   await page.getByRole('link',{name:/Quick Play/}).click()
-  const games = catalogGames.filter(game => game.available && [1,2,3,4].every(count => game.players.includes(count)))
+  const games = visibleCatalogGames.filter(game => game.available && [1,2,3,4].every(count => game.players.includes(count)))
   const chosen = games[Math.floor(games.length*.5)]
   await expect(page.locator('.camera-play')).toHaveAttribute('data-flow','playing')
   await expect(page.getByRole('heading',{name:chosen.title,exact:true})).toBeVisible()

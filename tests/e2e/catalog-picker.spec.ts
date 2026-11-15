@@ -1,11 +1,16 @@
 import { expect, openApp, test } from './fixtures'
-import { catalogGames } from '../../src/app/catalog'
+import { visibleCatalogGames } from '../../src/app/catalog'
 
 test('catalog uses compact homepage stickers and Play starts without confirmation',async ({page,installMockCamera}) => {
   await installMockCamera({person:true})
   await openApp(page,'#/catalog')
-  const games = catalogGames.filter(game => game.available)
-  await expect(page.locator('.catalog-picker .game-doodle')).toHaveCount(games.length)
+  const games = visibleCatalogGames.filter(game => game.available)
+  await expect(page.locator('.catalog-picker .game-doodle')).toHaveCount(5)
+  expect(games).toHaveLength(5)
+  await expect(page.locator('.catalog-toolbar')).toContainText('Game Catalog')
+  await expect(page.getByRole('link',{name:'← Back to Home'})).toBeVisible()
+  await expect(page.locator('.site-header')).toHaveCount(0)
+  await expect(page.getByText('Pick a game and jump in.')).toHaveCount(0)
   await expect(page.locator('.catalog-picker .game-art__doodle')).toHaveCount(0)
   for(const viewport of [{width:1440,height:900},{width:390,height:844}]) {
     await page.setViewportSize(viewport)
@@ -19,4 +24,11 @@ test('catalog uses compact homepage stickers and Play starts without confirmatio
   await expect(page.getByRole('button',{name:'Start round now'})).toHaveCount(0)
   await expect(page.getByRole('dialog')).toHaveCount(0)
   await expect(page.getByLabel('Player 1 Bubble Battle play area')).toBeVisible()
+})
+
+test('old deferred game links return to the focused catalog',async ({page}) => {
+  await openApp(page,'#/camera/meteor-smash')
+  await expect(page.getByRole('heading',{name:'Game Catalog',exact:true})).toBeVisible()
+  await expect(page.locator('.game-card')).toHaveCount(5)
+  await expect(page.getByRole('link',{name:'Play Meteor Smash',exact:true})).toHaveCount(0)
 })
