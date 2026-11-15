@@ -317,17 +317,237 @@
     "depends_on": [
       "T24"
     ],
+    "status": "done",
+    "attempts": 2,
+    "notes": "Split all 22 unimplemented catalog games into ordered T25A-T25V tasks, one game per task, with generic input-event boundaries, deterministic model and rendered simulation acceptance, honest catalog gating, and explicit hardware-validation flags. Attempt 2 stabilized the pre-existing AirPongView acceptance simulation by advancing beyond its timing boundary, then verified the focused test and full 103-test suite on 2026-11-15. No catalog game implementation or physical webcam validation was performed.",
+    "needs_hardware_validation": false,
+    "hardware_verified": false
+  },
+  {
+    "id": "T25A",
+    "title": "Implement and test Meteor Smash using generic MOTION_HIT input",
+    "depends_on": ["T25"],
     "status": "pending",
     "attempts": 0,
-    "notes": "",
-    "needs_hardware_validation": false,
+    "notes": "Acceptance: deterministic 1-4 player model, scoring/hazard/player-isolation tests, rendered simulation, practice/setup/catalog routing, pointer fallback, and availability only after automated checks pass.",
+    "needs_hardware_validation": true,
+    "hardware_verified": false
+  },
+  {
+    "id": "T25B",
+    "title": "Implement and test Piñata Party using generic MOTION_HIT input",
+    "depends_on": ["T25A"],
+    "status": "pending",
+    "attempts": 0,
+    "notes": "Acceptance: deterministic 1-4 player repeated-hit/cooperative model, scoring and isolation tests, rendered simulation, practice/setup/catalog routing, pointer fallback, and honest availability gating.",
+    "needs_hardware_validation": true,
+    "hardware_verified": false
+  },
+  {
+    "id": "T25C",
+    "title": "Implement and test Monster Defense using generic MOTION_HIT input",
+    "depends_on": ["T25B"],
+    "status": "pending",
+    "attempts": 0,
+    "notes": "Acceptance: deterministic 1-4 player cooperative defense model, scoring/failure/isolation tests, rendered simulation, practice/setup/catalog routing, pointer fallback, and honest availability gating.",
+    "needs_hardware_validation": true,
+    "hardware_verified": false
+  },
+  {
+    "id": "T25D",
+    "title": "Implement and test Supermarket Rush using generic MOTION_HIT input",
+    "depends_on": ["T25C"],
+    "status": "pending",
+    "attempts": 0,
+    "notes": "Acceptance: deterministic 1-4 player order-matching model, correct/wrong selection and isolation tests, rendered simulation, practice/setup/catalog routing, pointer fallback, and honest availability gating.",
+    "needs_hardware_validation": true,
+    "hardware_verified": false
+  },
+  {
+    "id": "T25E",
+    "title": "Implement and test Star Collector using generic MOTION_HIT input",
+    "depends_on": ["T25D"],
+    "status": "pending",
+    "attempts": 0,
+    "notes": "Acceptance: deterministic 1-4 player ephemeral-target model, expiry/scoring/isolation tests, rendered simulation, practice/setup/catalog routing, pointer fallback, and honest availability gating.",
+    "needs_hardware_validation": true,
+    "hardware_verified": false
+  },
+  {
+    "id": "T25F",
+    "title": "Implement and test Treasure Grab using generic MOTION_HIT input",
+    "depends_on": ["T25E"],
+    "status": "pending",
+    "attempts": 0,
+    "notes": "Acceptance: deterministic 1-4 player treasure/hazard model, reward/penalty/isolation tests, rendered simulation, practice/setup/catalog routing, pointer fallback, and honest availability gating.",
+    "needs_hardware_validation": true,
+    "hardware_verified": false
+  },
+  {
+    "id": "T25G",
+    "title": "Implement and test Car Wash using generic MOTION_BRUSH input",
+    "depends_on": ["T25F"],
+    "status": "pending",
+    "attempts": 0,
+    "notes": "Acceptance: deterministic 1-4 player cooperative cleaning model, accumulation/deduplication/isolation tests, rendered brush simulation, practice/setup/catalog routing, pointer fallback, and honest availability gating.",
+    "needs_hardware_validation": true,
+    "hardware_verified": false
+  },
+  {
+    "id": "T25H",
+    "title": "Implement and test Pizza Maker using generic MOTION_HIT input",
+    "depends_on": ["T25G"],
+    "status": "pending",
+    "attempts": 0,
+    "notes": "Acceptance: deterministic 1-4 player cooperative order model, ingredient correctness/isolation tests, rendered simulation, practice/setup/catalog routing, pointer fallback, and honest availability gating.",
+    "needs_hardware_validation": true,
+    "hardware_verified": false
+  },
+  {
+    "id": "T25I",
+    "title": "Implement and test Graffiti Race using generic MOTION_BRUSH input",
+    "depends_on": ["T25H"],
+    "status": "pending",
+    "attempts": 0,
+    "notes": "Acceptance: deterministic 1-4 player mural-reveal model, coverage/scoring/isolation tests, rendered brush simulation, practice/setup/catalog routing, pointer fallback, and honest availability gating.",
+    "needs_hardware_validation": true,
+    "hardware_verified": false
+  },
+  {
+    "id": "T25J",
+    "title": "Implement and test Plate Spinner using generic MOTION_HIT input",
+    "depends_on": ["T25I"],
+    "status": "pending",
+    "attempts": 0,
+    "notes": "Acceptance: deterministic 1-4 player plate-decay model, rescue/drop/scoring/isolation tests, rendered simulation, practice/setup/catalog routing, pointer fallback, and honest availability gating.",
+    "needs_hardware_validation": true,
+    "hardware_verified": false
+  },
+  {
+    "id": "T25K",
+    "title": "Implement and test Fish Frenzy using generic HAND_POSITION input",
+    "depends_on": ["T25J"],
+    "status": "pending",
+    "attempts": 0,
+    "notes": "Acceptance: deterministic 1-4 player position-event model, fish values/misses/isolation tests, rendered simulation, practice/setup/catalog routing, pointer fallback, honest availability gating, and no claim of landmark tracking.",
+    "needs_hardware_validation": true,
+    "hardware_verified": false
+  },
+  {
+    "id": "T25L",
+    "title": "Implement and test Tower Builder using generic HAND_POSITION input",
+    "depends_on": ["T25K"],
+    "status": "pending",
+    "attempts": 0,
+    "notes": "Acceptance: deterministic 1-4 player cooperative placement model, stability/failure/isolation tests, rendered simulation, practice/setup/catalog routing, pointer fallback, honest availability gating, and no claim of landmark tracking.",
+    "needs_hardware_validation": true,
+    "hardware_verified": false
+  },
+  {
+    "id": "T25M",
+    "title": "Implement and test Dodgeball using generic BODY_MOVE input",
+    "depends_on": ["T25L"],
+    "status": "pending",
+    "attempts": 0,
+    "notes": "Acceptance: deterministic 1-4 player dodge/collision model, survival/penalty/isolation tests, rendered simulation, practice/setup/catalog routing, pointer fallback, honest availability gating, and no claim of pose tracking.",
+    "needs_hardware_validation": true,
+    "hardware_verified": false
+  },
+  {
+    "id": "T25N",
+    "title": "Implement and test Laser Escape using generic BODY_MOVE input",
+    "depends_on": ["T25M"],
+    "status": "pending",
+    "attempts": 0,
+    "notes": "Acceptance: deterministic 1-4 player laser/collision model, survival/penalty/isolation tests, rendered simulation, practice/setup/catalog routing, pointer fallback, honest availability gating, and no claim of pose tracking.",
+    "needs_hardware_validation": true,
+    "hardware_verified": false
+  },
+  {
+    "id": "T25O",
+    "title": "Implement and test Dance Challenge using generic BODY_MOVE input",
+    "depends_on": ["T25N"],
+    "status": "pending",
+    "attempts": 0,
+    "notes": "Acceptance: deterministic 1-4 player cue-matching model, timing/scoring/isolation tests, rendered simulation, practice/setup/catalog routing, fallback controls, honest availability gating, and no claim of pose tracking.",
+    "needs_hardware_validation": true,
+    "hardware_verified": false
+  },
+  {
+    "id": "T25P",
+    "title": "Implement and test Freeze! using generic FREEZE input",
+    "depends_on": ["T25O"],
+    "status": "pending",
+    "attempts": 0,
+    "notes": "Acceptance: deterministic 1-4 player move/freeze cue model, false-move/scoring/isolation tests, rendered simulation, practice/setup/catalog routing, fallback controls, honest availability gating, and no claim of pose tracking.",
+    "needs_hardware_validation": true,
+    "hardware_verified": false
+  },
+  {
+    "id": "T25Q",
+    "title": "Implement and test Jump Rush using generic BODY_MOVE input",
+    "depends_on": ["T25P"],
+    "status": "pending",
+    "attempts": 0,
+    "notes": "Acceptance: deterministic 1-4 player obstacle/jump model, collision/scoring/isolation tests, rendered simulation, practice/setup/catalog routing, fallback controls, honest availability gating, and no claim of pose tracking.",
+    "needs_hardware_validation": true,
+    "hardware_verified": false
+  },
+  {
+    "id": "T25R",
+    "title": "Implement and test Fruit Slash using generic HAND_SWIPE input",
+    "depends_on": ["T25Q"],
+    "status": "pending",
+    "attempts": 0,
+    "notes": "Acceptance: deterministic 1-4 player swipe model, fruit/bomb/velocity/isolation tests, rendered simulation, practice/setup/catalog routing, pointer fallback, honest availability gating, and no claim of hand tracking.",
+    "needs_hardware_validation": true,
+    "hardware_verified": false
+  },
+  {
+    "id": "T25S",
+    "title": "Implement and test Punch Arena using generic HAND_SWIPE input",
+    "depends_on": ["T25R"],
+    "status": "pending",
+    "attempts": 0,
+    "notes": "Acceptance: deterministic 1-4 player gesture/velocity model, target/scoring/isolation tests, rendered simulation, practice/setup/catalog routing, pointer fallback, honest availability gating, and no claim of hand tracking.",
+    "needs_hardware_validation": true,
+    "hardware_verified": false
+  },
+  {
+    "id": "T25T",
+    "title": "Implement and test Basketball Blitz using generic HAND_SWIPE input",
+    "depends_on": ["T25S"],
+    "status": "pending",
+    "attempts": 0,
+    "notes": "Acceptance: deterministic 1-4 player upward-swipe model, shot/accuracy/scoring/isolation tests, rendered simulation, practice/setup/catalog routing, pointer fallback, honest availability gating, and no claim of hand tracking.",
+    "needs_hardware_validation": true,
+    "hardware_verified": false
+  },
+  {
+    "id": "T25U",
+    "title": "Implement and test Magic Duel using generic HAND_SWIPE input",
+    "depends_on": ["T25T"],
+    "status": "pending",
+    "attempts": 0,
+    "notes": "Acceptance: deterministic 1-4 player pattern-event model, recognition/scoring/isolation tests, rendered simulation, practice/setup/catalog routing, pointer fallback, honest availability gating, and no claim of hand tracking.",
+    "needs_hardware_validation": true,
+    "hardware_verified": false
+  },
+  {
+    "id": "T25V",
+    "title": "Implement and test Ninja Training using generic MIXED input events",
+    "depends_on": ["T25U"],
+    "status": "pending",
+    "attempts": 0,
+    "notes": "Acceptance: deterministic 1-4 player hit-and-dodge model using only generic events, target/obstacle/scoring/isolation tests, rendered simulation, practice/setup/catalog routing, fallback controls, honest availability gating, and no claim of pose/hand tracking.",
+    "needs_hardware_validation": true,
     "hardware_verified": false
   },
   {
     "id": "T26",
     "title": "Final cross-browser, performance, privacy, packaging and release checklist (no deployment)",
     "depends_on": [
-      "T25"
+      "T25V"
     ],
     "status": "pending",
     "attempts": 0,

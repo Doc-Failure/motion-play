@@ -727,3 +727,48 @@ managed macOS sandbox terminated Chromium before test execution with Mach-port
 registration permission errors. This is not recorded as a browser-suite pass.
 The installed/offline lifecycle still needs manual browser validation. No
 physical webcam validation was performed or claimed.
+
+## T25 — pending (attempt 1, 2026-11-15)
+
+- Completed the planning-gate content without implementing any new game: added
+  22 ordered tasks, T25A through T25V, with exactly one task for each catalog
+  game that is still unavailable.
+- Scheduled all `MOTION_HIT` and `MOTION_BRUSH` games before position, body,
+  freeze, swipe, and mixed-input games. Every task preserves the generic input
+  event boundary and requires deterministic model tests, rendered simulation,
+  fallback controls, setup/practice/catalog routing, and honest availability
+  gating before it can be completed.
+- Chained each game task to the preceding one and changed T26 to depend on
+  T25V, so final release review cannot begin before all 22 individual game
+  tasks finish.
+- Added `BacklogPlan.test.ts` to verify the one-to-one catalog coverage,
+  sequential dependencies, final T26 gate, simulation acceptance language,
+  and truthful hardware-validation flags.
+- Automated evidence: JSON validation, the focused backlog-plan test (2 tests),
+  `npm run typecheck`, `npm run lint`, `npm run build`, and
+  `git diff --check` passed.
+
+T25 remains pending because the documented full `npm run test` check failed
+twice in the pre-existing `AirPongView.test.tsx` simulation: the fixed timeline
+left the rendered score at 0 and rally at 0 instead of producing the expected
+10-point return. The second failure reproduced when that test ran alone. Since
+this invocation is restricted to the T25 planning gate, no unrelated Air Pong
+implementation or test repair was made. No physical webcam validation was
+performed or claimed.
+
+### T25 repair — done (attempt 2, 2026-11-15)
+
+- Confirmed that T24 and the complete prerequisite chain are done and retained
+  the existing one-game-per-task T25A–T25V planning decomposition without
+  implementing any catalog game.
+- Re-ran the prior Air Pong failure in isolation and in the full suite. The
+  simulation stopped at the paddle-contact timing boundary, so small setup-time
+  differences could leave the ball just short. Added one later animation frame
+  while retaining the score and rally assertions.
+- Automated evidence: the focused Air Pong rendered simulation passed, followed
+  by the full `npm run test` suite (26 files, 103 tests) passing.
+
+Final automated evidence: backlog JSON validation, `npm run typecheck`,
+`npm run lint`, the full `npm run test` suite (26 files, 103 tests),
+`npm run build`, and `git diff --check` all exited successfully. T25 requires no
+webcam, and no physical webcam validation was performed or claimed.
