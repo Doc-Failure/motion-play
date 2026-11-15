@@ -1223,3 +1223,31 @@ or commit was performed; existing unrelated working-tree work was retained.
 - Only synthetic camera and browser input was tested. Physical webcam behavior,
   lighting, framing, latency, occlusion and motion feel remain unverified;
   hardware_verified stays false. No deployment, external upload or commit.
+
+
+## T25I — Graffiti Race (2026-11-15)
+
+- Read SPEC.md and AGENTS.md and inspected the current app, camera adapter,
+  session model, brush games, shared styling and existing tests.
+- Implemented a deterministic competitive 1–4 player mural race receiving only
+  normalized MOTION_BRUSH events. Each newly revealed patch earns one point;
+  repeated strokes never add points. Each player owns a separate mural and score.
+  First complete mural ends the race; timeout uses scores and allows ties.
+- Added original local SVG rainbow/cloud/star mural artwork behind 96 equal
+  patches, numbered and colored player boards, progress bars, expiring input
+  traces, pointer dragging/touch capture and keyboard brush controls. Connected
+  catalog, direct setup route, practice, countdown, shared audiovisual feedback,
+  results/replay, manual/tab/camera pauses, reconnect and focus restoration.
+  Camera/media dependencies remain outside the game model and view.
+- Added 25 model/component cases covering 1–4 players, fresh-patch scoring,
+  isolation, early completion, ties, malformed and stale captures, pause/resume,
+  expiry, detached snapshots, render cadence, StrictMode, replay and fallbacks.
+  Mirrored synthetic frames exercise MotionProcessor-to-brush scoring for each
+  player count. Added catalog navigation and two Chromium acceptance scenarios.
+- Verification passed: typecheck, lint, 282 unit/component tests across 45 files,
+  production build, all 17 Chromium scenarios, and git diff --check. Inspected
+  desktop, narrow and completed-mural screenshots; narrow layout has no horizontal
+  overflow. Full browser suite includes one/four-player sweeps across playable games.
+- Camera/browser fixtures were synthetic. Physical webcam behavior, lighting,
+  framing, latency, occlusion and motion feel remain unverified; hardware_verified
+  remains false. No deployment, external upload or commit.

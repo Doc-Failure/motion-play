@@ -411,9 +411,9 @@
     "id": "T25I",
     "title": "Implement and test Graffiti Race using generic MOTION_BRUSH input",
     "depends_on": ["T25H"],
-    "status": "pending",
-    "attempts": 0,
-    "notes": "Acceptance: deterministic 1-4 player mural-reveal model, coverage/scoring/isolation tests, rendered brush simulation, practice/setup/catalog routing, pointer fallback, and honest availability gating.",
+    "status": "done",
+    "attempts": 1,
+    "notes": "Implemented deterministic 1–4 player competitive Graffiti Race consuming normalized MOTION_BRUSH events, fresh-patch scoring, isolated murals/progress, first-complete early finish and timed score/tie results. Added original crayon SVG mural, recent brush traces, pointer drag/touch capture, keyboard controls, catalog/setup/practice routing, countdown/results/replay, pause/tab visibility/camera recovery and focus restoration. Added 25 model/component cases plus catalog navigation and two Chromium scenarios, including mirrored synthetic input for every player count. Verified on 2026-11-15: typecheck, lint, 282 unit/component tests across 45 files, production build, all 17 Chromium scenarios and diff checks. Inspected desktop, narrow and completed-mural screenshots. Physical webcam tracking, motion feel and latency remain unverified; hardware_verified stays false. No deployment or commit.",
     "needs_hardware_validation": true,
     "hardware_verified": false
   },
