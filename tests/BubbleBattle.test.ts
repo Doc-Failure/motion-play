@@ -87,4 +87,34 @@ describe('BubbleBattleModel', () => {
     expect(model.update(50).phase).toBe('results')
     expect(model.start(100).scores.map(({ score }) => score)).toEqual([0, 0])
   })
+
+  it('keeps all four player targets and scores independent', () => {
+    const model = new BubbleBattleModel({ playerCount: 4, countdownMs: 0, roundDurationMs: 100, random: () => 0.5 })
+    expect(model.start(0).targets.map(({ playerId }) => playerId)).toEqual([1, 2, 3, 4])
+    model.setTargets([1, 2, 3, 4].map((playerId) => ({ id: playerId, playerId: playerId as 1 | 2 | 3 | 4, kind: 'bubble' as const, x: 0.5, y: 0.5, radius: 0.1 })))
+    const playerFour = model.handleInput({ ...hit(0.5, 0.5, 10), playerId: 4 as const })
+    expect(playerFour.scores.map(({ score }) => score)).toEqual([0, 0, 0, 10])
+    expect(playerFour.targets.map(({ playerId }) => playerId)).toEqual([1, 2, 3])
+  })
+
+  it('bounds catch-up spawning after a long render gap', () => {
+    const model = new BubbleBattleModel({ playerCount: 4, countdownMs: 0, roundDurationMs: 60_000, spawnIntervalMs: 100, random: () => 0.5 })
+    model.start(0)
+    const resumed = model.update(30_000)
+    expect(resumed.targets).toHaveLength(28)
+    expect(resumed.targets.filter(({ playerId }) => playerId === 1)).toHaveLength(7)
+  })
+
+  it('preserves round time, scores, and targets across pause and resume', () => {
+    const model = new BubbleBattleModel({ countdownMs: 0, roundDurationMs: 10_000 })
+    model.start(0)
+    model.setTargets([{ id: 1, playerId: 1, kind: 'bubble', x: 0.5, y: 0.5, radius: 0.1 }])
+    expect(model.handleInput(hit(0.5, 0.5, 1_000)).scores[0].score).toBe(10)
+    const paused = model.pause(2_000)
+    expect(paused).toMatchObject({ phase: 'paused', roundRemainingMs: 8_000 })
+    expect(model.update(7_000).roundRemainingMs).toBe(8_000)
+    const resumed = model.resume(8_000)
+    expect(resumed).toMatchObject({ phase: 'playing', roundRemainingMs: 8_000 })
+    expect(resumed.scores[0].score).toBe(10)
+  })
 })

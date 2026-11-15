@@ -216,3 +216,250 @@ camera framing, occlusion, lighting/background noise behavior, hit feel, input
 latency, and browser compatibility were not tested. T09 remains
 `needs_hardware_validation: true` and `hardware_verified: false`; no physical
 webcam validation is claimed.
+
+## T10 — done (attempt 4, 2026-11-14)
+
+- Added Playwright configuration and a `test:e2e` script that runs the built
+  client without a backend or external service.
+- Added five browser scenarios covering catalog/detail gating, interaction-only
+  camera requests, mocked stream selection and cleanup, actionable permission
+  denial, deterministic synthetic-frame motion/debug output, two-player layout,
+  countdown, and isolated pointer scoring.
+- The media fixture supplies a local canvas-backed `MediaStream`; gameplay still
+  receives only generic motion events and remains independent of media APIs.
+- Installed Playwright's matching Chromium revision, corrected the test harness
+  to run the built application from a local Vite preview origin, and made the
+  moving-target pointer fixture wait until its bubble is actually inside the
+  player viewport.
+- Automated evidence: `npm run typecheck`, `npm run lint`, `npm run test` (7
+  files, 34 tests), `npm run build`, `npm run test:e2e` (5 Chromium scenarios),
+  and `git diff --check` all exited successfully.
+
+Outstanding risk: these browser scenarios use mocked media streams and
+deterministic synthetic motion. They do not validate physical webcam framing,
+lighting, motion feel, latency, or browser camera permissions, and no hardware
+validation was performed or claimed.
+
+## T11 — done (2026-11-15)
+
+- Extended Bubble Battle from two players to all supported 1–4 player counts.
+  Three and four players use the specified 2 × 2 game layout while calibrated
+  camera zones remain independent and continue producing player-local events.
+- Preserved isolated targets, scores, penalties, feedback, results, and replay
+  for every player. The catalog and detail view now accurately advertise 1–4
+  player availability.
+- Kept a mirrored live-camera surface visible beneath translucent game boards
+  during real-camera play; demo mode retains its camera-free presentation. The
+  camera stream remains owned by `CameraSetup`, and the minigame still consumes
+  only generic normalized input events.
+- Bounded spawn catch-up to the seven-target-per-player cap and reduced React
+  snapshot rendering from 60 to approximately 30 updates per second, avoiding
+  unnecessary long-round work while maintaining the shared clock.
+- Automated evidence: `npm run typecheck`, `npm run lint`, `npm run test` (7
+  files, 37 tests), `npm run build`, and `npm run test:e2e` (6 Chromium
+  scenarios) all exited successfully.
+
+Outstanding risk: the reported physical-camera disappearance and roughly
+30-second crash could only be reproduced and guarded with mocked streams,
+synthetic timing gaps, and browser automation. Real multi-person framing,
+camera visibility, motion feel, sustained hardware performance, occlusion, and
+lighting remain unverified. T11 remains `needs_hardware_validation: true` and
+`hardware_verified: false`; a person must validate these behaviors with the
+actual webcam.
+
+## T11A — done, revised after user review (attempt 2, 2026-11-15)
+
+- Added this user-authorized backlog item immediately after T11 to align the
+  homepage with the supplied Motion Play crayon menu reference without
+  reordering or implementing T12.
+- Rebuilt the opening composition around a centered multicolor “Motion Play!”
+  title, outlined 1–4-player banner, warm near-white paper, and four large
+  yellow, purple, blue, and green menu tiles in the reference order.
+- Added original local camera/player callouts and retained the existing
+  procedural SVG illustration at low contrast. The shared generated bitmap is
+  a design reference only and is not embedded or hotlinked in the application.
+- Preserved semantic headings, keyboard focus, readable contrast, reduced
+  motion behavior, responsive two-column mobile cards, honest coming-soon
+  labels, and all existing navigation.
+- Automated evidence: `npm run typecheck`, `npm run lint`, `npm run test` (7
+  files, 37 tests), `npm run build`, `npm run test:e2e` (6 Chromium scenarios),
+  and `git diff --check` all exited successfully. A 1200 × 800 local Chromium
+  screenshot was also inspected for composition and clipping.
+
+Outstanding risk: the procedural SVG behind the title deliberately echoes the
+reference composition rather than reproducing the generated children, rainbow,
+flowers, or lettering pixel-for-pixel. Mobile behavior is covered by responsive
+CSS and DOM tests but has not received a physical-device visual review.
+
+User review rejected the first pass as visually too clean and unlike the
+supplied crayon illustration. The second pass therefore replaced the faded
+generic hero art and polished cards with a purpose-built, edge-to-edge SVG/CSS
+scene: a rough yellow cloud around the title, smiling sun, hatched clouds,
+six-stroke rainbow, hand-drawn children, flowers, grass, stars, doubled uneven
+outlines, and visibly scribbled menu fills. Conventional homepage chrome,
+descriptions, and browse labels were removed so the four illustrated controls
+remain dominant. The revised 1200 × 800 render was visually inspected, and all
+37 unit/component tests, the production build, and all 6 Chromium scenarios
+continued to pass. The artwork remains original code-native SVG and does not
+embed the supplied bitmap.
+
+## T12 — done (2026-11-15)
+
+- Added a framework-independent `DwellController` that turns repeated generic
+  player-local motion samples into deliberate menu choices. Player 1 controls
+  the menu by default; other players are ignored.
+- Implemented the specified 1.2-second dwell, cancellation when motion leaves a
+  target or continuity is lost, and a 750 ms post-activation cooldown to avoid
+  duplicate choices.
+- Added a large three-choice overlay to the calibrated camera preview for Play,
+  Recalibrate, and Home, with conic progress rings and concise usage guidance.
+  It consumes normalized input events and does not access camera frames or
+  media APIs.
+- Kept every action as a semantic native button, providing mouse, touch,
+  keyboard, visible focus, and screen-reader fallback independent of motion.
+- Added controller tests for timing boundaries, target changes, leaving,
+  continuity loss, player isolation, and cooldown, plus component coverage for
+  focus and pointer activation.
+- Automated evidence: `npm run typecheck`, `npm run lint`, `npm run test` (8
+  files, 42 tests), `npm run build`, `npm run test:e2e` (6 Chromium scenarios),
+  and `git diff --check` all exited successfully.
+
+Outstanding risk: real-camera dwell comfort, accidental activation rate, and
+the practical 1.2-second timing need human validation under varied lighting and
+movement. Automated coverage uses normalized synthetic motion events and does
+not claim physical webcam validation.
+
+## T13 — done (2026-11-15)
+
+- Added a seven-second optional practice screen before Bubble Battle with clear
+  rules, one preview zone per player, automatic progression, Start now, and Back
+  to setup routes.
+- Added visible Pause and Exit controls during play. Pausing preserves the
+  countdown/round clock, scores, targets, and feedback; Resume continues from
+  the saved time rather than restarting.
+- Pauses automatically when the browser tab becomes hidden and requires an
+  explicit resume after returning. Added browser coverage for this lifecycle.
+- Keeps the game mounted when the camera track disconnects or live frame
+  processing stops for three seconds. The pause dialog offers Reconnect camera;
+  a successful reconnect restores the mirrored gameplay feed and resumes the
+  same round without losing scores.
+- Tracking-loss detection is based on missing processed frames, not a player
+  standing still, avoiding false tracking-loss claims from ordinary inactivity.
+- Hardened the Bubble Battle model against sub-millisecond differences between
+  animation-frame timestamps and `performance.now()` during asynchronous pause
+  and reconnect events while retaining the strict shared session clock.
+- Automated evidence: `npm run typecheck`, `npm run lint`, `npm run test` (8
+  files, 44 tests), `npm run build`, `npm run test:e2e` (6 Chromium scenarios),
+  and `git diff --check` all exited successfully.
+
+Outstanding risk: automated reconnect coverage uses mocked streams, and frame
+loss uses the browser processing watchdog. Physical disconnection, camera
+reacquisition, lighting loss, and multi-person tracking still require human
+webcam validation; no hardware verification is claimed.
+
+The user supplied `/Users/conve/Downloads/motion-play-assets.zip` during this
+task. It was deliberately not imported because T13 is a lifecycle/recovery
+task and the repository permits only one backlog task per invocation. The
+archive remains available for a later user-authorized UI asset integration.
+
+## T13A — done (2026-11-15)
+
+- Added this user-authorized task immediately after T13 and integrated every
+  supplied visual from `/Users/conve/Downloads/motion-play-assets.zip`: paper
+  texture, title cloud, sun/cloud group, rainbow, left/right children, and four
+  colored crayon menu panels.
+- Converted the 46 MB source PNG set into dimension-appropriate transparent
+  WebP files totaling about 2 MB. All assets are bundled locally by Vite; there
+  are no runtime hotlinks, remote requests, or external image dependencies.
+- Replaced the procedural hero scene and CSS panel fills with the supplied
+  artwork while retaining real semantic headings, links, button names, focus
+  behavior, responsive layout, and screen-reader-hidden decoration.
+- Kept existing SVG menu icons and HTML camera/player callouts because the ZIP
+  did not include the separately requested icon or callout assets.
+- Automated evidence: `npm run typecheck`, `npm run lint`, `npm run test` (8
+  files, 44 tests), `npm run build`, `npm run test:e2e` (6 Chromium scenarios),
+  and `git diff --check` all exited successfully. A 1200 × 800 Chromium render
+  was inspected after integration for loading, layering, and clipping.
+
+Outstanding risk: the generated raster assets increase the initial homepage
+payload by about 2 MB and should receive a slower-device loading review. The
+icons and lower callouts remain code-rendered and will not exactly match the
+generated crayon medium unless the user supplies those missing assets.
+
+## T14 — done (2026-11-15)
+
+- Added a deterministic, camera-independent Window Wipe model that accepts only
+  generic normalized `MOTION_BRUSH` events. Camera motion samples are adapted at
+  the setup boundary; the minigame does not access video frames or media APIs.
+- Implemented an independent 10 × 6 cleaning grid for each of 1–4 players.
+  Brush traces clear nearby cells, award points only for newly cleaned cells,
+  reject low-confidence/wrong-kind input, and preserve player isolation.
+- Added synchronized countdown/round timing, per-player completion percentages,
+  early completion when all windows are clean, results, and replay.
+- Added responsive translucent window boards, visible smudges, pointer-drag
+  fallback, game-specific practice instructions, and direct catalog detail →
+  Window Wipe setup routing.
+- Added a setup game selector while retaining Bubble Battle as Quick Play's
+  default. The catalog now truthfully marks exactly Bubble Battle and Window
+  Wipe playable; the other 30 entries remain Coming soon.
+- Added model coverage for brush accumulation, no duplicate score, input-kind
+  and confidence gates, pause preservation, and player isolation. Added UI and
+  browser coverage that launches Window Wipe through demo mode and verifies a
+  deterministic pointer brush increases cleaning progress.
+- Automated evidence: `npm run typecheck`, `npm run lint`, `npm run test` (9
+  files, 49 tests), `npm run build`, `npm run test:e2e` (7 Chromium scenarios),
+  and `git diff --check` all exited successfully.
+
+Outstanding risk: synthetic brush traces and pointer input cannot validate real
+webcam scrubbing feel, background noise, reach, or fatigue. Physical camera
+behavior remains unverified and no hardware verification is claimed.
+
+## T15 — done (2026-11-15)
+
+- Added a deterministic, camera-independent Whack-a-Mole model that consumes
+  only generic normalized `HIT` events; the minigame has no camera or media API
+  dependency.
+- Implemented independent 3 × 3 boards for 1–4 players, seeded mole spawning,
+  hit expiry, confidence and input-kind gates, isolated scoring, timed rounds,
+  results, and replay.
+- Added an accessible crayon-style mole board with pointer fallback, per-player
+  instructions and score displays, game-specific practice guidance, setup game
+  selection, and catalog detail routing.
+- Marked Whack-a-Mole playable only after model, component, and browser
+  simulation coverage passed. The catalog now truthfully exposes three playable
+  games and keeps the remaining 29 entries gated as Coming soon.
+- Automated evidence: `npm run typecheck`, `npm run lint`, `npm run test` (10
+  files, 54 tests), `npm run build`, and `npm run test:e2e` (8 Chromium
+  scenarios, including launching Whack-a-Mole and scoring a visible mole) all
+  exited successfully.
+
+Outstanding risk: synthetic hit events and pointer interaction cannot validate
+real webcam hit accuracy, reach, lighting tolerance, or multi-player tracking.
+Physical camera behavior remains unverified and no hardware verification is
+claimed.
+
+## T16 — done (2026-11-15)
+
+- Added a deterministic Balloon Panic model that consumes only normalized
+  `MOTION_HIT` events and has no camera/media dependency.
+- Implemented called-color targets, 10-point correct hits, 5-point wrong-color
+  penalties, expiring balloons, independent 1–4 player boards and scores,
+  synchronized timing, results, replay, and pointer fallback.
+- Added accessible crayon-style balloon boards, color names in addition to
+  color cues, game-specific practice guidance, catalog/setup routing, and
+  truthful availability updates.
+- Added model coverage for deterministic spawning/expiry, correct and incorrect
+  scoring, one-time hits, confidence/input-kind gates, and player isolation.
+  Browser coverage launches the game through demo mode and scores the called
+  color. Also made the existing Whack-a-Mole browser score assertion resilient
+  to valid synthetic events occurring before its deliberate pointer hit.
+- Automated evidence: `npm run typecheck`, `npm run lint`, `npm run test` (11
+  files, 58 tests), `npm run build`, and `npm run test:e2e` (9 Chromium
+  scenarios) all exited successfully.
+
+Outstanding risk: the user reported that real motion capture is not working.
+T16 validates only the game/input-event boundary and synthetic motion path; it
+does not establish that a physical webcam produces usable hits. The ordered
+backlog had no pending camera-defect task and repository instructions prohibited
+inserting or skipping work in this invocation. Real webcam capture remains
+unverified and needs a dedicated backlog task before any hardware claim.

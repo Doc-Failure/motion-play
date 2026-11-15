@@ -20,10 +20,13 @@ npm run typecheck
 npm run lint
 npm run test
 npm run build
+npm run test:e2e
 ```
 
-The current automated tests use a browser-like DOM and mock the Phaser lifecycle;
-they do not perform or claim physical camera validation.
+The browser tests run the production build with mocked local media streams and
+deterministic synthetic motion fixtures. Run `npm run build` first and install
+Chromium once with `npx playwright install chromium`.
+These checks do not perform or claim physical camera validation.
 
 ## Autonomous runner
 

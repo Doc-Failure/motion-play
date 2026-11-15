@@ -5,17 +5,17 @@ export type InputKind = 'MOTION_HIT' | 'MOTION_BRUSH' | 'HAND_POSITION' | 'HAND_
 export type Difficulty = 'Easy' | 'Normal' | 'Hard'
 export type CatalogGame = { id: number; slug: string; title: string; rules: string; category: CatalogCategory; input: InputKind; difficulty: Difficulty; mode: 'Competitive' | 'Cooperative' | 'Solo score chase'; players: readonly number[]; available: boolean; colors: readonly [string, string] }
 
-const game = (id: number, slug: string, title: string, rules: string, category: CatalogCategory, input: InputKind, difficulty: Difficulty, mode: CatalogGame['mode'], colors: readonly [string, string], available = false): CatalogGame => ({ id, slug, title, rules, category, input, difficulty, mode, players: available ? [1, 2] : [1, 2, 3, 4], available, colors })
+const game = (id: number, slug: string, title: string, rules: string, category: CatalogCategory, input: InputKind, difficulty: Difficulty, mode: CatalogGame['mode'], colors: readonly [string, string], available = false): CatalogGame => ({ id, slug, title, rules, category, input, difficulty, mode, players: [1, 2, 3, 4], available, colors })
 
 export const catalogGames: readonly CatalogGame[] = [
   game(1, 'bubble-battle', 'Bubble Battle', 'Pop floating bubbles and keep clear of the bombs.', 'Hit & Destroy', 'MOTION_HIT', 'Easy', 'Competitive', ['#66c7df', '#ee654f'], true),
-  game(2, 'whack-a-mole', 'Whack-a-Mole', 'Strike each mole before it ducks back underground.', 'Hit & Destroy', 'MOTION_HIT', 'Easy', 'Competitive', ['#72b779', '#9b6b43']),
+  game(2, 'whack-a-mole', 'Whack-a-Mole', 'Strike each mole before it ducks back underground.', 'Hit & Destroy', 'MOTION_HIT', 'Easy', 'Competitive', ['#72b779', '#9b6b43'], true),
   game(3, 'meteor-smash', 'Meteor Smash', 'Smash meteors before they crash into your base.', 'Hit & Destroy', 'MOTION_HIT', 'Normal', 'Competitive', ['#7557a8', '#f28c46']),
   game(4, 'fruit-slash', 'Fruit Slash', 'Swipe the fruit, but do not slice the bombs.', 'Hit & Destroy', 'HAND_SWIPE', 'Normal', 'Competitive', ['#ee654f', '#72b779']),
   game(5, 'punch-arena', 'Punch Arena', 'Punch the matching targets as they spring into view.', 'Hit & Destroy', 'HAND_SWIPE', 'Hard', 'Competitive', ['#f28c46', '#4c9ed9']),
   game(6, 'pinata-party', 'Piñata Party', 'Land repeated hits to shower the party with candy.', 'Hit & Destroy', 'MOTION_HIT', 'Easy', 'Cooperative', ['#e45b9d', '#f5c847']),
   game(7, 'monster-defense', 'Monster Defense', 'Stop the silly monsters before they reach the gate.', 'Hit & Destroy', 'MOTION_HIT', 'Normal', 'Cooperative', ['#72b779', '#7557a8']),
-  game(8, 'balloon-panic', 'Balloon Panic', 'Hit only the balloon color called out on screen.', 'Hit & Destroy', 'MOTION_HIT', 'Normal', 'Competitive', ['#ee654f', '#66c7df']),
+  game(8, 'balloon-panic', 'Balloon Panic', 'Hit only the balloon color called out on screen.', 'Hit & Destroy', 'MOTION_HIT', 'Normal', 'Competitive', ['#ee654f', '#66c7df'], true),
   game(9, 'fruit-catcher', 'Fruit Catcher', 'Catch fresh fruit and dodge anything rotten.', 'Catch & Collect', 'HAND_POSITION', 'Normal', 'Competitive', ['#f28c46', '#72b779']),
   game(10, 'gold-rush', 'Gold Rush', 'Collect falling coins while avoiding the hazards.', 'Catch & Collect', 'MOTION_HIT', 'Easy', 'Competitive', ['#f5c847', '#9b6b43']),
   game(11, 'fish-frenzy', 'Fish Frenzy', 'Catch the most valuable fish before they swim away.', 'Catch & Collect', 'HAND_POSITION', 'Normal', 'Competitive', ['#4c9ed9', '#66c7df']),
@@ -28,7 +28,7 @@ export const catalogGames: readonly CatalogGame[] = [
   game(18, 'freeze', 'Freeze!', 'Move with the music, then hold still when it stops.', 'Move & Survive', 'FREEZE', 'Easy', 'Competitive', ['#66c7df', '#7557a8']),
   game(19, 'ninja-training', 'Ninja Training', 'Hit the targets and dodge every obstacle.', 'Move & Survive', 'MIXED', 'Hard', 'Competitive', ['#18334a', '#ee654f']),
   game(20, 'jump-rush', 'Jump Rush', 'Jump over obstacles as they race toward you.', 'Move & Survive', 'BODY_MOVE', 'Normal', 'Competitive', ['#72b779', '#f28c46']),
-  game(21, 'window-wipe', 'Window Wipe', 'Sweep across the window until every smudge is gone.', 'Clean & Create', 'MOTION_BRUSH', 'Easy', 'Competitive', ['#66c7df', '#fffaf0']),
+  game(21, 'window-wipe', 'Window Wipe', 'Sweep across the window until every smudge is gone.', 'Clean & Create', 'MOTION_BRUSH', 'Easy', 'Competitive', ['#66c7df', '#fffaf0'], true),
   game(22, 'paint-splash', 'Paint Splash', 'Cover as much of your canvas with paint as you can.', 'Clean & Create', 'MOTION_BRUSH', 'Easy', 'Competitive', ['#e45b9d', '#f5c847']),
   game(23, 'car-wash', 'Car Wash', 'Scrub away the mud to reveal the bright car beneath.', 'Clean & Create', 'MOTION_BRUSH', 'Easy', 'Cooperative', ['#4c9ed9', '#9b6b43']),
   game(24, 'pizza-maker', 'Pizza Maker', 'Choose ingredients to copy each tasty pizza order.', 'Clean & Create', 'MOTION_HIT', 'Normal', 'Cooperative', ['#ee654f', '#f5c847']),

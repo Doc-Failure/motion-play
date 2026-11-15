@@ -17,8 +17,8 @@ describe('catalog data', () => {
     expect(new Set(catalogGames.map((game) => game.slug))).toHaveLength(32)
     expect(new Set(catalogGames.map((game) => game.title))).toHaveLength(32)
     expect(new Set(catalogGames.map((game) => game.category))).toEqual(new Set(catalogCategories))
-    expect(catalogGames.filter((game) => game.available).map((game) => [game.slug, game.players])).toEqual([['bubble-battle', [1, 2]]])
-    expect(catalogGames.slice(1).every((game) => game.available === false && game.players.join() === '1,2,3,4')).toBe(true)
+    expect(catalogGames.filter((game) => game.available).map((game) => [game.slug, game.players])).toEqual([['bubble-battle', [1, 2, 3, 4]], ['whack-a-mole', [1, 2, 3, 4]], ['balloon-panic', [1, 2, 3, 4]], ['window-wipe', [1, 2, 3, 4]]])
+    expect(catalogGames.filter((game) => !game.available).every((game) => game.players.join() === '1,2,3,4')).toBe(true)
   })
 })
 
@@ -28,9 +28,9 @@ describe('App navigation', () => {
 
   it('renders the homepage and makes only the catalog available', () => {
     render(<App />)
-    expect(screen.getByRole('heading', { level: 1, name: /ready\. set\. move!/i })).toBeVisible()
+    expect(screen.getByRole('heading', { level: 1, name: 'Motion Play!' })).toBeVisible()
+    expect(screen.getByText('Camera Party Games for 1–4 Players')).toBeVisible()
     expect(screen.getByText('No accounts. No uploads. Just local play.')).toBeVisible()
-    expect(screen.getByRole('link', { name: 'Choose a game' })).toHaveAttribute('href', '#/catalog')
     expect(screen.getByRole('link', { name: /game catalog/i })).toHaveAttribute('href', '#/catalog')
     expect(screen.getByRole('link', { name: /quick play/i })).toHaveAttribute('href', '#/camera')
     expect(screen.getAllByText('Coming soon')).toHaveLength(2)
@@ -41,8 +41,8 @@ describe('App navigation', () => {
     render(<App />)
     expect(screen.getByRole('heading', { level: 1, name: 'Game Catalog' })).toBeVisible()
     expect(screen.getAllByRole('link', { name: /view .+ details/i })).toHaveLength(32)
-    expect(screen.getByText('Play now')).toBeVisible()
-    expect(screen.getAllByText('Coming soon')).toHaveLength(32)
+    expect(screen.getAllByText('Play now')).toHaveLength(4)
+    expect(screen.getAllByText('Coming soon')).toHaveLength(29)
     expect(screen.getByLabelText('Availability')).toBeDisabled()
     fireEvent.change(screen.getByLabelText('Category'), { target: { value: 'Clean & Create' } })
     expect(screen.getAllByRole('link', { name: /view .+ details/i })).toHaveLength(6)
@@ -58,14 +58,14 @@ describe('App navigation', () => {
     expect(screen.getByText('Pop floating bubbles and keep clear of the bombs.')).toBeVisible()
     const facts = screen.getByText('How you move').parentElement
     expect(facts && within(facts).getByRole('definition')).toHaveTextContent('MOTION HIT')
-    expect(screen.getByText('Playable • 1–2 players')).toBeVisible()
-    expect(screen.getByRole('link', { name: 'Set up & play' })).toHaveAttribute('href', '#/camera')
+    expect(screen.getByText('Playable • 1–4 players')).toBeVisible()
+    expect(screen.getByRole('link', { name: 'Set up & play' })).toHaveAttribute('href', '#/camera/bubble-battle')
     expect(screen.getByText(/choose a camera or no-camera demo/i)).toBeVisible()
     expect(screen.getByRole('link', { name: /all games/i })).toHaveAttribute('href', '#/catalog')
   })
 
   it('continues to prevent starting an unvalidated game', () => {
-    visit('#/games/whack-a-mole')
+    visit('#/games/meteor-smash')
     render(<App />)
     expect(screen.getByRole('button', { name: 'Start game' })).toBeDisabled()
     expect(screen.getByText(/unlock only after its controls and scoring are validated/i)).toBeVisible()
@@ -73,7 +73,7 @@ describe('App navigation', () => {
 
   it('keeps decorative artwork out of the accessibility tree', () => {
     const { container } = render(<App />)
-    expect(container.querySelector('.hero-art')).toHaveAttribute('aria-hidden', 'true')
+    expect(container.querySelector('.generated-home-scene')).toHaveAttribute('aria-hidden', 'true')
     expect(screen.getByRole('heading', { level: 2, name: 'How do you want to play?' })).toBeVisible()
   })
 })

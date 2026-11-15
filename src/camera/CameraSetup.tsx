@@ -11,6 +11,13 @@ import { MotionProcessor, type MotionFrame, type MotionResult } from '../input/M
 import { SyntheticMotionSimulator } from '../input/SyntheticMotionSimulator'
 import { MotionDebugOverlay } from '../input/MotionDebugOverlay'
 import { BubbleBattle } from '../minigames/bubble-battle/BubbleBattle'
+import { DwellMenu } from '../app/DwellMenu'
+import { PracticeTutorial } from '../game/PracticeTutorial'
+import { WindowWipe } from '../minigames/window-wipe/WindowWipe'
+import { WhackAMole } from '../minigames/whack-a-mole/WhackAMole'
+import { BalloonPanic } from '../minigames/balloon-panic/BalloonPanic'
+
+export type PlayableGame = 'bubble-battle' | 'window-wipe' | 'whack-a-mole' | 'balloon-panic'
 
 export interface CameraController {
   listDevices(): Promise<CameraDevice[]>
@@ -27,14 +34,17 @@ const failureCopy: Record<CameraFailure, { title: string; help: string }> = {
   'unknown': { title: 'The camera could not start', help: 'Check the camera connection and browser permission, then try again.' },
 }
 
-export function CameraSetup({ source: providedSource }: { source?: CameraController }) {
+export function CameraSetup({ source: providedSource, initialGame = 'bubble-battle' }: { source?: CameraController; initialGame?: PlayableGame }) {
   const [defaultSource] = useState<CameraController>(() => new CameraSource())
   const source = providedSource ?? defaultSource
   const videoRef = useRef<HTMLVideoElement>(null)
+  const gameVideoRef = useRef<HTMLVideoElement>(null)
+  const streamRef = useRef<MediaStream | null>(null)
   const captureCanvasRef = useRef<HTMLCanvasElement>(null)
   const processorRef = useRef(new MotionProcessor())
   const simulatorRef = useRef(new SyntheticMotionSimulator())
   const recentFramesRef = useRef<MotionFrame[]>([])
+  const lastProcessedFrameRef = useRef(performance.now())
   const [devices, setDevices] = useState<CameraDevice[]>([])
   const [selected, setSelected] = useState('')
   const [status, setStatus] = useState<'idle' | 'requesting' | 'ready' | 'simulation'>('idle')
@@ -46,7 +56,13 @@ export function CameraSetup({ source: providedSource }: { source?: CameraControl
   const [motion, setMotion] = useState<MotionResult | null>(null)
   const [fps, setFps] = useState(0)
   const [calibration, setCalibration] = useState('Move naturally to test each player zone.')
-  const [playing, setPlaying] = useState(false)
+  const [flow, setFlow] = useState<'setup' | 'practice' | 'playing'>('setup')
+  const [selectedGame, setSelectedGame] = useState<PlayableGame>(initialGame)
+  const [trackingLost, setTrackingLost] = useState(false)
+  const gameActive = flow !== 'setup'
+  const beginPractice = useCallback(() => setFlow('practice'), [])
+  const beginPlaying = useCallback(() => setFlow('playing'), [])
+  const returnToSetup = useCallback(() => setFlow('setup'), [])
 
   const choosePlayerCount = (count: PlayerCount) => {
     setPlayerCount(count)
@@ -77,6 +93,18 @@ export function CameraSetup({ source: providedSource }: { source?: CameraControl
   }, [sensitivity])
 
   useEffect(() => {
+    if (!gameActive || status !== 'ready' || !gameVideoRef.current || !streamRef.current) return
+    gameVideoRef.current.srcObject = streamRef.current
+    void Promise.resolve(gameVideoRef.current.play()).catch(() => undefined)
+  }, [gameActive, status])
+
+  useEffect(() => {
+    if (flow !== 'playing' || status !== 'ready') { setTrackingLost(false); return }
+    const timer = window.setInterval(() => setTrackingLost(performance.now() - lastProcessedFrameRef.current >= 3_000), 500)
+    return () => window.clearInterval(timer)
+  }, [flow, status])
+
+  useEffect(() => {
     if (status !== 'ready' && status !== 'simulation') return
     let stopped = false
     let timer = 0
@@ -96,6 +124,8 @@ export function CameraSetup({ source: providedSource }: { source?: CameraControl
         }
       }
       if (frame) {
+        lastProcessedFrameRef.current = performance.now()
+        setTrackingLost(false)
         recentFramesRef.current = [...recentFramesRef.current.slice(-11), frame]
         setMotion(processorRef.current.process(frame, zones, performance.now()))
         frames += 1
@@ -114,10 +144,12 @@ export function CameraSetup({ source: providedSource }: { source?: CameraControl
     setFailure(null)
     try {
       const stream = await source.start(selected || undefined, () => {
+        streamRef.current = null
         if (videoRef.current) videoRef.current.srcObject = null
         setStatus('idle')
         setFailure('disconnected')
       })
+      streamRef.current = stream
       if (videoRef.current) {
         videoRef.current.srcObject = stream
         await Promise.resolve(videoRef.current.play()).catch(() => undefined)
@@ -134,6 +166,7 @@ export function CameraSetup({ source: providedSource }: { source?: CameraControl
     setSelected(deviceId)
     if (status === 'ready') {
       source.stop()
+      streamRef.current = null
       if (videoRef.current) videoRef.current.srcObject = null
       setStatus('idle')
     }
@@ -141,6 +174,7 @@ export function CameraSetup({ source: providedSource }: { source?: CameraControl
 
   const simulate = () => {
     source.stop()
+    streamRef.current = null
     if (videoRef.current) videoRef.current.srcObject = null
     setFailure(null)
     simulatorRef.current.reset()
@@ -154,7 +188,17 @@ export function CameraSetup({ source: providedSource }: { source?: CameraControl
     setCalibration(`Calibration ready — background noise ${Math.round(noise)} / 255.`)
   }
 
-  return <>{playing && (playerCount === 1 || playerCount === 2) && <BubbleBattle playerCount={playerCount} inputEvents={motion?.events ?? []} onExit={() => setPlaying(false)} />}<section className="camera-page" aria-labelledby="camera-title" hidden={playing}>
+  const recoveryReason = trackingLost
+    ? 'Camera frames stopped for three seconds. Check lighting, framing, or the camera connection.'
+    : flow === 'playing' && status === 'requesting' ? 'Reconnecting the camera…'
+      : flow === 'playing' && status === 'idle' && failure === 'disconnected' ? 'The camera disconnected. Reconnect it to continue this round.'
+        : null
+  const selectedTitle = selectedGame === 'window-wipe' ? 'Window Wipe' : selectedGame === 'whack-a-mole' ? 'Whack-a-Mole' : selectedGame === 'balloon-panic' ? 'Balloon Panic' : 'Bubble Battle'
+  const gameEvents = selectedGame === 'window-wipe'
+    ? (motion?.events ?? []).map((event) => ({ ...event, kind: 'MOTION_BRUSH' as const }))
+    : motion?.events ?? []
+
+  return <>{gameActive && <div className={`game-stage game-stage--${status}`}><video ref={gameVideoRef} className="game-camera" muted playsInline aria-label="Mirrored live camera during gameplay" />{flow === 'practice' ? <PracticeTutorial playerCount={playerCount} game={selectedGame} onStart={beginPlaying} onBack={returnToSetup} /> : selectedGame === 'window-wipe' ? <WindowWipe playerCount={playerCount} inputEvents={gameEvents} onExit={returnToSetup} /> : selectedGame === 'whack-a-mole' ? <WhackAMole playerCount={playerCount} inputEvents={gameEvents} onExit={returnToSetup} /> : selectedGame === 'balloon-panic' ? <BalloonPanic playerCount={playerCount} inputEvents={gameEvents} onExit={returnToSetup} /> : <BubbleBattle playerCount={playerCount} inputEvents={gameEvents} externalPauseReason={recoveryReason} onReconnect={() => void start()} onExit={returnToSetup} />}</div>}<section className="camera-page" aria-labelledby="camera-title" hidden={gameActive}>
     <a className="back-link" href="#/">← Home</a>
     <div className="camera-heading"><p className="eyebrow">Camera setup</p><h1 id="camera-title">Let’s see your moves</h1><p>Your camera stays on this device. Motion Play never uploads or records its picture.</p></div>
     <div className="camera-layout">
@@ -170,6 +214,11 @@ export function CameraSetup({ source: providedSource }: { source?: CameraControl
           style={{ left: `${zone.x * 100}%`, top: `${zone.y * 100}%`, width: `${zone.width * 100}%`, height: `${zone.height * 100}%` }}
         ><span>Player {zone.playerId}{(motion?.zones.find((item) => item.playerId === zone.playerId)?.activity ?? 0) > .025 ? ' • moving!' : ''}</span></div>)}</div>
         {debug && <MotionDebugOverlay result={motion} zones={zones} />}
+        {(status === 'ready' || status === 'simulation') && <DwellMenu events={motion?.events ?? []} items={[
+          { id: 'play', label: 'Play', hint: `Start ${selectedTitle}`, onActivate: beginPractice },
+          { id: 'calibrate', label: 'Calibrate', hint: 'Reset the background', onActivate: recalibrate },
+          { id: 'home', label: 'Home', hint: 'Return to the title', onActivate: () => { window.location.hash = '#/' } },
+        ]} />}
       </div>
       <div className="camera-controls">
         <h2>Choose your camera</h2>
@@ -184,8 +233,8 @@ export function CameraSetup({ source: providedSource }: { source?: CameraControl
           <button className="text-button" type="button" onClick={simulate}>Use demo mode</button>
         </div>
         <p className="camera-note"><strong>When you leave this screen, the camera turns off.</strong> A real webcam still needs a person to check framing, lighting, and browser behavior.</p>
-        <button className="crayon-button crayon-button--primary" type="button" disabled={(status !== 'ready' && status !== 'simulation') || playerCount > 2} onClick={() => setPlaying(true)}>Play Bubble Battle</button>
-        {playerCount > 2 && <p className="camera-note">Bubble Battle is currently validated for one or two players. Three- and four-player play comes later.</p>}
+        <fieldset className="game-choice"><legend>Choose a game</legend><button type="button" aria-pressed={selectedGame === 'bubble-battle'} onClick={() => setSelectedGame('bubble-battle')}>Bubble Battle</button><button type="button" aria-pressed={selectedGame === 'window-wipe'} onClick={() => setSelectedGame('window-wipe')}>Window Wipe</button><button type="button" aria-pressed={selectedGame === 'whack-a-mole'} onClick={() => setSelectedGame('whack-a-mole')}>Whack-a-Mole</button><button type="button" aria-pressed={selectedGame === 'balloon-panic'} onClick={() => setSelectedGame('balloon-panic')}>Balloon Panic</button></fieldset>
+        <button className="crayon-button crayon-button--primary" type="button" disabled={status !== 'ready' && status !== 'simulation'} onClick={beginPractice}>Play {selectedTitle}</button>
       </div>
     </div>
     <section className="motion-calibration" aria-labelledby="motion-title">

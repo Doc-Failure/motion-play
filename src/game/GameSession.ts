@@ -90,6 +90,13 @@ export class GameSession {
     return this.snapshot(timestamp)
   }
 
+  finish(timestamp: number): GameSessionSnapshot {
+    this.update(timestamp)
+    if (this.phase !== 'playing') throw new Error(`Cannot finish a session while ${this.phase}.`)
+    this.phase = 'results'
+    return this.snapshot(timestamp)
+  }
+
   awardScore(playerId: PlayerId, points: number): number {
     if (!this.scores.has(playerId)) throw new Error(`Player ${playerId} is not in this session.`)
     if (this.phase !== 'playing') return this.scores.get(playerId) ?? 0

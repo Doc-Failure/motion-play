@@ -63,25 +63,28 @@ export class BubbleBattleModel {
   }
 
   update(timestamp: number): BubbleBattleSnapshot {
-    const before = this.session.getSnapshot(timestamp)
-    const snapshot = this.session.update(timestamp)
+    const now = Math.max(timestamp, this.lastUpdateAt ?? timestamp)
+    const before = this.session.getSnapshot(now)
+    const snapshot = this.session.update(now)
     if (snapshot.phase === 'playing') {
-      if (this.nextSpawnAt === null) this.nextSpawnAt = timestamp
-      const elapsed = before.phase === 'playing' && this.lastUpdateAt !== null ? timestamp - this.lastUpdateAt : 0
+      if (this.nextSpawnAt === null) this.nextSpawnAt = now
+      const elapsed = before.phase === 'playing' && this.lastUpdateAt !== null ? now - this.lastUpdateAt : 0
       this.targets = this.targets
         .map((target) => ({ ...target, y: target.y - elapsed * (target.kind === 'bomb' ? 0.000045 : 0.000065) }))
         .filter((target) => target.y + target.radius >= 0)
-      while (this.nextSpawnAt <= timestamp) {
+      const spawnSteps = Math.floor((now - this.nextSpawnAt) / this.spawnIntervalMs) + 1
+      const usefulSteps = Math.min(spawnSteps, 7)
+      for (let step = 0; step < usefulSteps; step += 1) {
         for (const playerId of this.playerIds) {
           if (this.targets.filter((target) => target.playerId === playerId).length < 7) this.targets.push(this.createTarget(playerId))
         }
-        this.nextSpawnAt += this.spawnIntervalMs
       }
+      this.nextSpawnAt += spawnSteps * this.spawnIntervalMs
     } else if (snapshot.phase === 'results') {
       this.targets = []
     }
-    this.lastUpdateAt = timestamp
-    return this.snapshot(timestamp)
+    this.lastUpdateAt = now
+    return this.snapshot(now)
   }
 
   handleInput(event: MotionInputEvent): BubbleBattleSnapshot {
@@ -96,6 +99,19 @@ export class BubbleBattleModel {
     this.lastResults[event.playerId] = target.kind
     this.session.awardScore(event.playerId, target.kind === 'bubble' ? BUBBLE_POINTS : BOMB_PENALTY)
     return this.snapshot(timestamp)
+  }
+
+  pause(timestamp: number): BubbleBattleSnapshot {
+    const now = Math.max(timestamp, this.lastUpdateAt ?? timestamp)
+    this.lastUpdateAt = now
+    return { ...this.session.pause(now), targets: this.targets.map((target) => ({ ...target })), lastResults: { ...this.lastResults } }
+  }
+
+  resume(timestamp: number): BubbleBattleSnapshot {
+    const now = Math.max(timestamp, this.lastUpdateAt ?? timestamp)
+    this.lastUpdateAt = now
+    this.session.resume(now)
+    return this.snapshot(now)
   }
 
   /** Test/support hook for deterministic synthetic fixtures. */

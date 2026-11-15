@@ -113,9 +113,9 @@
     "depends_on": [
       "T09"
     ],
-    "status": "pending",
-    "attempts": 0,
-    "notes": "",
+    "status": "done",
+    "attempts": 4,
+    "notes": "Added and executed a Playwright browser suite with mocked media streams, deterministic synthetic motion, catalog gating, camera lifecycle/error coverage, and two-player isolated scoring. Verified npm run typecheck, lint, test (34 passing), build, and test:e2e (5 passing Chromium scenarios) on 2026-11-14. Browser tests are synthetic and do not claim physical webcam validation.",
     "needs_hardware_validation": false,
     "hardware_verified": false
   },
@@ -125,10 +125,22 @@
     "depends_on": [
       "T10"
     ],
-    "status": "pending",
-    "attempts": 0,
-    "notes": "",
+    "status": "done",
+    "attempts": 1,
+    "notes": "Extended Bubble Battle to tested three- and four-player 2x2 layouts with independent targets/scores and existing calibrated camera-zone mapping. Kept a mirrored live-camera surface visible during gameplay, capped catch-up spawning after long frame gaps, and reduced React gameplay updates to about 30 FPS. Verified typecheck, lint, 37 unit/component tests, build, and 6 Playwright scenarios on 2026-11-15. Physical multi-person framing, webcam visibility/feel, and long-round hardware stability still require human validation.",
     "needs_hardware_validation": true,
+    "hardware_verified": false
+  },
+  {
+    "id": "T11A",
+    "title": "Align homepage visual composition to the approved Motion Play crayon menu reference",
+    "depends_on": [
+      "T11"
+    ],
+    "status": "done",
+    "attempts": 2,
+    "notes": "Attempt 1 matched only the composition and was rejected as too polished. Attempt 2 rebuilt the homepage as a dense code-native SVG/CSS crayon scene with a rough cloud-backed title, sun, clouds, rainbow, children, grass, flowers, stars, layered irregular strokes, scribble-filled menu panels, and illustrated callouts. Verified typecheck, lint, 37 tests, build, 6 Playwright scenarios, and a 1200x800 rendered-page review on 2026-11-15.",
+    "needs_hardware_validation": false,
     "hardware_verified": false
   },
   {
@@ -137,9 +149,9 @@
     "depends_on": [
       "T10"
     ],
-    "status": "pending",
-    "attempts": 0,
-    "notes": "",
+    "status": "done",
+    "attempts": 1,
+    "notes": "Implemented a reusable player-one dwell controller and accessible camera-preview menu with 1.2-second activation, continuity cancellation, post-activation cooldown, animated progress rings, and native mouse/touch/keyboard buttons for Play, Calibrate, and Home. Verified typecheck, lint, 42 tests, build, and 6 Playwright scenarios on 2026-11-15.",
     "needs_hardware_validation": false,
     "hardware_verified": false
   },
@@ -149,9 +161,21 @@
     "depends_on": [
       "T12"
     ],
-    "status": "pending",
-    "attempts": 0,
-    "notes": "",
+    "status": "done",
+    "attempts": 1,
+    "notes": "Added a seven-second optional practice/onboarding step, manual pause/resume, tab-visibility pause, camera-disconnect and frame-loss pause, reconnect without unmounting the round, and safe monotonic clock handling across asynchronous browser events. Verified typecheck, lint, 44 tests, build, and 6 Playwright scenarios on 2026-11-15.",
+    "needs_hardware_validation": false,
+    "hardware_verified": false
+  },
+  {
+    "id": "T13A",
+    "title": "Integrate the user-supplied generated crayon assets into the accessible homepage",
+    "depends_on": [
+      "T13"
+    ],
+    "status": "done",
+    "attempts": 1,
+    "notes": "Integrated all ten user-supplied generated PNGs from /Users/conve/Downloads/motion-play-assets.zip as optimized local WebP artwork: paper, title cloud, sun/clouds, rainbow, children, and four menu panels. Preserved semantic HTML labels, links, icons, focus states, and responsive behavior. Reduced the copied asset payload from about 46 MB to 2 MB. Verified typecheck, lint, 44 tests, build, 6 Playwright scenarios, and a 1200x800 rendered-page review on 2026-11-15.",
     "needs_hardware_validation": false,
     "hardware_verified": false
   },
@@ -161,9 +185,9 @@
     "depends_on": [
       "T13"
     ],
-    "status": "pending",
-    "attempts": 0,
-    "notes": "",
+    "status": "done",
+    "attempts": 1,
+    "notes": "Implemented Window Wipe for 1–4 players with generic MOTION_BRUSH input, isolated 10x6 cleaning grids, newly-cleaned-cell scoring, progress/results/replay, pointer fallback, game-specific practice and direct catalog setup routing. Verified typecheck, lint, 49 tests, build, and 7 Playwright scenarios including deterministic cleaning on 2026-11-15.",
     "needs_hardware_validation": false,
     "hardware_verified": false
   },
@@ -173,9 +197,9 @@
     "depends_on": [
       "T14"
     ],
-    "status": "pending",
-    "attempts": 0,
-    "notes": "",
+  "status": "done",
+  "attempts": 1,
+  "notes": "Implemented a deterministic camera-independent 3x3 Whack-a-Mole game for 1-4 players using generic HIT events, independent boards and scores, timed rounds, pointer fallback, catalog/setup routing, and practice guidance. Automated model, UI, and browser simulation acceptance passed; physical webcam play remains unverified.",
     "needs_hardware_validation": false,
     "hardware_verified": false
   },
@@ -185,9 +209,9 @@
     "depends_on": [
       "T15"
     ],
-    "status": "pending",
-    "attempts": 0,
-    "notes": "",
+  "status": "done",
+  "attempts": 1,
+  "notes": "Implemented deterministic Balloon Panic for 1-4 players using generic MOTION_HIT events, called-color matching, wrong-color penalties, independent boards/scores, pointer fallback, practice/catalog/setup routing, and simulation tests. Automated acceptance passed; real webcam motion remains unverified and the user-reported capture failure requires a dedicated backlog task.",
     "needs_hardware_validation": false,
     "hardware_verified": false
   },
