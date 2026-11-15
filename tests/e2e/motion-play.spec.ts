@@ -42,6 +42,22 @@ test('launches calibrated four-player viewports with independent score displays'
   }
 })
 
+test('starts a five-round tournament from one shared setup', async ({ page }) => {
+  await openApp(page, '#/')
+  await page.getByRole('link', { name: /Tournament/ }).click()
+  await expect(page).toHaveURL(/#\/tournament$/)
+  await expect(page.getByRole('heading', { name: 'Build your game night' })).toBeVisible()
+  await page.getByRole('button', { name: '5 rounds Full party' }).click()
+  await page.getByRole('button', { name: '2 players' }).click()
+  await page.getByRole('button', { name: 'Use demo mode' }).click()
+  await page.getByRole('button', { name: 'Start 5-round tournament' }).click()
+  await expect(page.getByRole('heading', { name: 'Wave at the bubbles' })).toBeVisible()
+  const progress = page.getByLabel('Tournament progress')
+  await expect(progress).toContainText('Round 1 of 5: Bubble Battle')
+  await expect(progress).toContainText('Competitive round')
+  await expect(progress).toContainText('P1 0 • P2 0')
+})
+
 test('shows actionable mocked permission failure without claiming a live camera', async ({ page, installMockCamera }) => {
   await installMockCamera({ denied: true })
   await openCamera(page)

@@ -15,6 +15,15 @@ function controller(overrides: Partial<CameraController> = {}): CameraController
 }
 
 describe('CameraSetup', () => {
+  it('starts a configured tournament with an aggregate scoreboard and first round', () => {
+    render(<CameraSetup source={controller()} tournament />)
+    fireEvent.click(screen.getByRole('button', { name: '5 rounds Full party' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Use demo mode' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Start 5-round tournament' }))
+    expect(screen.getByRole('heading', { name: 'Wave at the bubbles' })).toBeVisible()
+    expect(screen.getByLabelText('Tournament progress')).toHaveTextContent('Round 1 of 5: Bubble Battle')
+    expect(screen.getByLabelText('Tournament progress')).toHaveTextContent('P1 0')
+  })
   it('launches one-player Bubble Battle from generic simulated motion input', () => {
     render(<CameraSetup source={controller()} />)
     expect(screen.getByRole('button', { name: 'Play Bubble Battle' })).toBeDisabled()

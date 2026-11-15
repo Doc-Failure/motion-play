@@ -638,3 +638,40 @@ confidence, latency, lighting tolerance, framing, and multiplayer occlusion
 were not tested. T22 records `needs_hardware_validation: true` and
 `hardware_verified: false`; no physical webcam validation was performed or
 claimed.
+
+## T23 — done (attempt 1, 2026-11-15)
+
+- Enabled the homepage Tournament card and added a dedicated setup route with
+  accessible three-round “Quick cup” and five-round “Full party” choices.
+- Added a deterministic `TournamentSession` that schedules only validated
+  games, accepts one score per configured player, preserves round history,
+  aggregates player totals, and produces stable rankings including ties.
+- Reuses one camera/demo and player-zone setup across the tournament. Each
+  round keeps the existing generic input-event boundary and advances through
+  its game-specific practice screen; no minigame reads camera/media APIs.
+- Three-round tournaments play Bubble Battle, Window Wipe, and Goalkeeper.
+  Five-round tournaments add Whack-a-Mole and Paint Splash. A persistent
+  crayon-style ribbon shows round progress and running player totals.
+- Treats Goalkeeper as the appropriate cooperative round: individual scores
+  still contribute to tournament ranking, while those player scores are also
+  combined into a clearly labelled team score. Final results show ranked
+  aggregate totals and the cooperative total.
+- Added model tests for both schedules, aggregation, cooperative totals, stable
+  tie ranking, validation, and snapshot isolation. Added component coverage for
+  homepage navigation, tournament configuration, and starting the real first
+  round with a visible aggregate scoreboard.
+- Automated evidence: `npm run typecheck`, `npm run lint`, `npm run test` (23
+  files, 93 tests), `npm run build`, and `git diff --check` all exited
+  successfully on 2026-11-15. An initial `npm run test:e2e` invocation passed
+  all 11 existing Chromium scenarios. A focused twelfth scenario was then added
+  for tournament navigation, five-round selection, shared two-player demo
+  setup, first-round practice, and the aggregate score ribbon.
+
+Outstanding risk: the expanded 12-scenario `npm run test:e2e` rerun stopped
+before test execution because the managed macOS sandbox denied Chromium Mach
+port registration (`bootstrap_check_in ... Permission denied`), so no pass is
+claimed for the newly added browser scenario. Automated tests use synthetic
+events, pointer input, and mocked media foundations; they do not validate
+physical webcam framing, lighting, motion feel, latency, hand/pose tracking, or
+browser camera permissions. No physical webcam validation was performed or
+claimed, and T23 remains `hardware_verified: false`.

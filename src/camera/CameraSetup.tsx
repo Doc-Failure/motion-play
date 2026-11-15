@@ -22,6 +22,7 @@ import { SimonSays } from '../minigames/simon-says/SimonSays'
 import { FruitCatcher } from '../minigames/fruit-catcher/FruitCatcher'
 import { AirPong } from '../minigames/air-pong/AirPong'
 import { Goalkeeper } from '../minigames/goalkeeper/Goalkeeper'
+import { TournamentSession, type TournamentLength } from '../game/TournamentSession'
 
 export type PlayableGame = 'bubble-battle' | 'window-wipe' | 'whack-a-mole' | 'balloon-panic' | 'gold-rush' | 'paint-splash' | 'simon-says' | 'fruit-catcher' | 'air-pong' | 'goalkeeper'
 
@@ -40,7 +41,7 @@ const failureCopy: Record<CameraFailure, { title: string; help: string }> = {
   'unknown': { title: 'The camera could not start', help: 'Check the camera connection and browser permission, then try again.' },
 }
 
-export function CameraSetup({ source: providedSource, initialGame = 'bubble-battle' }: { source?: CameraController; initialGame?: PlayableGame }) {
+export function CameraSetup({ source: providedSource, initialGame = 'bubble-battle', tournament = false }: { source?: CameraController; initialGame?: PlayableGame; tournament?: boolean }) {
   const [defaultSource] = useState<CameraController>(() => new CameraSource())
   const source = providedSource ?? defaultSource
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -62,13 +63,31 @@ export function CameraSetup({ source: providedSource, initialGame = 'bubble-batt
   const [motion, setMotion] = useState<MotionResult | null>(null)
   const [fps, setFps] = useState(0)
   const [calibration, setCalibration] = useState('Move naturally to test each player zone.')
-  const [flow, setFlow] = useState<'setup' | 'practice' | 'playing'>('setup')
+  const [flow, setFlow] = useState<'setup' | 'practice' | 'playing' | 'tournament-results'>('setup')
   const [selectedGame, setSelectedGame] = useState<PlayableGame>(initialGame)
+  const [tournamentLength, setTournamentLength] = useState<TournamentLength>(3)
+  const tournamentSession = useRef<TournamentSession | null>(null)
+  const [tournamentSnapshot, setTournamentSnapshot] = useState<ReturnType<TournamentSession['snapshot']> | null>(null)
   const [trackingLost, setTrackingLost] = useState(false)
   const gameActive = flow !== 'setup'
-  const beginPractice = useCallback(() => setFlow('practice'), [])
+  const beginPractice = useCallback(() => {
+    if (tournament && !tournamentSession.current) {
+      tournamentSession.current = new TournamentSession(playerCount, tournamentLength)
+      setSelectedGame(tournamentSession.current.currentRound!.game)
+      setTournamentSnapshot(tournamentSession.current.snapshot())
+    }
+    setFlow('practice')
+  }, [playerCount, tournament, tournamentLength])
   const beginPlaying = useCallback(() => setFlow('playing'), [])
-  const returnToSetup = useCallback(() => setFlow('setup'), [])
+  const returnToSetup = useCallback(() => { tournamentSession.current = null; setTournamentSnapshot(null); setFlow('setup') }, [])
+  const finishTournamentRound = useCallback((scores: { playerId: 1 | 2 | 3 | 4; score: number }[]) => {
+    const session = tournamentSession.current
+    if (!session) return
+    const next = session.record(scores)
+    setTournamentSnapshot(next)
+    if (next.isComplete) setFlow('tournament-results')
+    else { setSelectedGame(next.currentRound!.game); setFlow('practice') }
+  }, [])
 
   const choosePlayerCount = (count: PlayerCount) => {
     setPlayerCount(count)
@@ -205,9 +224,9 @@ export function CameraSetup({ source: providedSource, initialGame = 'bubble-batt
     : selectedGame === 'fruit-catcher' || selectedGame === 'air-pong' ? (motion?.events ?? []).map((event) => ({ ...event, kind: 'HAND_POSITION' as const }))
       : selectedGame === 'goalkeeper' ? (motion?.events ?? []).map((event) => ({ ...event, kind: 'BODY_MOVE' as const })) : motion?.events ?? []
 
-  return <>{gameActive && <div className={`game-stage game-stage--${status}`}><video ref={gameVideoRef} className="game-camera" muted playsInline aria-label="Mirrored live camera during gameplay" />{flow === 'practice' ? <PracticeTutorial playerCount={playerCount} game={selectedGame} onStart={beginPlaying} onBack={returnToSetup} /> : selectedGame === 'window-wipe' ? <WindowWipe playerCount={playerCount} inputEvents={gameEvents} onExit={returnToSetup} /> : selectedGame === 'paint-splash' ? <PaintSplash playerCount={playerCount} inputEvents={gameEvents} onExit={returnToSetup} /> : selectedGame === 'whack-a-mole' ? <WhackAMole playerCount={playerCount} inputEvents={gameEvents} onExit={returnToSetup} /> : selectedGame === 'balloon-panic' ? <BalloonPanic playerCount={playerCount} inputEvents={gameEvents} onExit={returnToSetup} /> : selectedGame === 'gold-rush' ? <GoldRush playerCount={playerCount} inputEvents={gameEvents} onExit={returnToSetup} /> : selectedGame === 'simon-says' ? <SimonSays playerCount={playerCount} inputEvents={gameEvents} onExit={returnToSetup} /> : selectedGame === 'fruit-catcher' ? <FruitCatcher playerCount={playerCount} inputEvents={gameEvents} onExit={returnToSetup} /> : selectedGame === 'air-pong' ? <AirPong playerCount={playerCount} inputEvents={gameEvents} onExit={returnToSetup} /> : selectedGame === 'goalkeeper' ? <Goalkeeper playerCount={playerCount} inputEvents={gameEvents} onExit={returnToSetup} /> : <BubbleBattle playerCount={playerCount} inputEvents={gameEvents} externalPauseReason={recoveryReason} onReconnect={() => void start()} onExit={returnToSetup} />}</div>}<section className="camera-page" aria-labelledby="camera-title" hidden={gameActive}>
+  return <>{gameActive && <div className={`game-stage game-stage--${status}`}><video ref={gameVideoRef} className="game-camera" muted playsInline aria-label="Mirrored live camera during gameplay" />{tournament && flow !== 'tournament-results' && tournamentSnapshot && <aside className="tournament-ribbon" aria-label="Tournament progress"><strong>Round {tournamentSnapshot.roundIndex + 1} of {tournamentSnapshot.length}: {tournamentSnapshot.currentRound?.title}</strong><span>{tournamentSnapshot.currentRound?.scoring === 'cooperative' ? 'Team score round' : 'Competitive round'}</span><span>{tournamentSnapshot.totals.map((entry) => `P${entry.playerId} ${entry.score}`).join(' • ')}</span></aside>}{flow === 'tournament-results' ? <div className="tournament-results" role="dialog" aria-label="Tournament results"><p className="eyebrow">Tournament complete</p><h1>Final scoreboard</h1><ol>{tournamentSnapshot?.ranking.map((entry) => <li key={entry.playerId}><strong>Player {entry.playerId}</strong><span>{entry.score} points</span></li>)}</ol>{tournamentSnapshot && tournamentSnapshot.cooperativeTotal > 0 && <p className="team-total">Goalkeeper team score: <strong>{tournamentSnapshot.cooperativeTotal}</strong></p>}<button className="crayon-button crayon-button--primary" type="button" onClick={returnToSetup}>New tournament</button><a className="text-button" href="#/">Home</a></div> : flow === 'practice' ? <PracticeTutorial playerCount={playerCount} game={selectedGame} onStart={beginPlaying} onBack={returnToSetup} /> : selectedGame === 'window-wipe' ? <WindowWipe playerCount={playerCount} inputEvents={gameEvents} onExit={returnToSetup} onComplete={tournament ? finishTournamentRound : undefined} /> : selectedGame === 'paint-splash' ? <PaintSplash playerCount={playerCount} inputEvents={gameEvents} onExit={returnToSetup} onComplete={tournament ? finishTournamentRound : undefined} /> : selectedGame === 'whack-a-mole' ? <WhackAMole playerCount={playerCount} inputEvents={gameEvents} onExit={returnToSetup} onComplete={tournament ? finishTournamentRound : undefined} /> : selectedGame === 'balloon-panic' ? <BalloonPanic playerCount={playerCount} inputEvents={gameEvents} onExit={returnToSetup} /> : selectedGame === 'gold-rush' ? <GoldRush playerCount={playerCount} inputEvents={gameEvents} onExit={returnToSetup} /> : selectedGame === 'simon-says' ? <SimonSays playerCount={playerCount} inputEvents={gameEvents} onExit={returnToSetup} /> : selectedGame === 'fruit-catcher' ? <FruitCatcher playerCount={playerCount} inputEvents={gameEvents} onExit={returnToSetup} /> : selectedGame === 'air-pong' ? <AirPong playerCount={playerCount} inputEvents={gameEvents} onExit={returnToSetup} /> : selectedGame === 'goalkeeper' ? <Goalkeeper playerCount={playerCount} inputEvents={gameEvents} onExit={returnToSetup} onComplete={tournament ? finishTournamentRound : undefined} /> : <BubbleBattle playerCount={playerCount} inputEvents={gameEvents} onComplete={tournament ? finishTournamentRound : undefined} externalPauseReason={recoveryReason} onReconnect={() => void start()} onExit={returnToSetup} />}</div>}<section className="camera-page" aria-labelledby="camera-title" hidden={gameActive}>
     <a className="back-link" href="#/">← Home</a>
-    <div className="camera-heading"><p className="eyebrow">Camera setup</p><h1 id="camera-title">Let’s see your moves</h1><p>Your camera stays on this device. Motion Play never uploads or records its picture.</p></div>
+    <div className="camera-heading"><p className="eyebrow">{tournament ? 'Tournament setup' : 'Camera setup'}</p><h1 id="camera-title">{tournament ? 'Build your game night' : 'Let’s see your moves'}</h1><p>{tournament ? 'Choose three quick rounds or five for the full party. Scores carry across every game.' : 'Your camera stays on this device. Motion Play never uploads or records its picture.'}</p></div>
     <div className="camera-layout">
       <div className={`camera-preview camera-preview--${status}`}>
         <video ref={videoRef} muted playsInline aria-label="Mirrored camera preview" />
@@ -240,8 +259,8 @@ export function CameraSetup({ source: providedSource, initialGame = 'bubble-batt
           <button className="text-button" type="button" onClick={simulate}>Use demo mode</button>
         </div>
         <p className="camera-note"><strong>When you leave this screen, the camera turns off.</strong> A real webcam still needs a person to check framing, lighting, and browser behavior.</p>
-        <fieldset className="game-choice"><legend>Choose a game</legend><button type="button" aria-pressed={selectedGame === 'bubble-battle'} onClick={() => setSelectedGame('bubble-battle')}>Bubble Battle</button><button type="button" aria-pressed={selectedGame === 'window-wipe'} onClick={() => setSelectedGame('window-wipe')}>Window Wipe</button><button type="button" aria-pressed={selectedGame === 'whack-a-mole'} onClick={() => setSelectedGame('whack-a-mole')}>Whack-a-Mole</button><button type="button" aria-pressed={selectedGame === 'balloon-panic'} onClick={() => setSelectedGame('balloon-panic')}>Balloon Panic</button><button type="button" aria-pressed={selectedGame === 'gold-rush'} onClick={() => setSelectedGame('gold-rush')}>Gold Rush</button><button type="button" aria-pressed={selectedGame === 'paint-splash'} onClick={() => setSelectedGame('paint-splash')}>Paint Splash</button><button type="button" aria-pressed={selectedGame === 'simon-says'} onClick={() => setSelectedGame('simon-says')}>Simon Says</button><button type="button" aria-pressed={selectedGame === 'fruit-catcher'} onClick={() => setSelectedGame('fruit-catcher')}>Fruit Catcher</button><button type="button" aria-pressed={selectedGame === 'air-pong'} onClick={() => setSelectedGame('air-pong')}>Air Pong</button><button type="button" aria-pressed={selectedGame === 'goalkeeper'} onClick={() => setSelectedGame('goalkeeper')}>Goalkeeper</button></fieldset>
-        <button className="crayon-button crayon-button--primary" type="button" disabled={status !== 'ready' && status !== 'simulation'} onClick={beginPractice}>Play {selectedTitle}</button>
+        {tournament ? <fieldset className="tournament-choice"><legend>Tournament length</legend>{([3, 5] as const).map((length) => <button type="button" key={length} aria-pressed={tournamentLength === length} onClick={() => setTournamentLength(length)}><strong>{length} rounds</strong><small>{length === 3 ? 'Quick cup' : 'Full party'}</small></button>)}<p>Bubble Battle, Window Wipe and Goalkeeper are in every cup. Five rounds add Whack-a-Mole and Paint Splash. Goalkeeper combines everyone’s saves as a cooperative team score.</p></fieldset> : <fieldset className="game-choice"><legend>Choose a game</legend><button type="button" aria-pressed={selectedGame === 'bubble-battle'} onClick={() => setSelectedGame('bubble-battle')}>Bubble Battle</button><button type="button" aria-pressed={selectedGame === 'window-wipe'} onClick={() => setSelectedGame('window-wipe')}>Window Wipe</button><button type="button" aria-pressed={selectedGame === 'whack-a-mole'} onClick={() => setSelectedGame('whack-a-mole')}>Whack-a-Mole</button><button type="button" aria-pressed={selectedGame === 'balloon-panic'} onClick={() => setSelectedGame('balloon-panic')}>Balloon Panic</button><button type="button" aria-pressed={selectedGame === 'gold-rush'} onClick={() => setSelectedGame('gold-rush')}>Gold Rush</button><button type="button" aria-pressed={selectedGame === 'paint-splash'} onClick={() => setSelectedGame('paint-splash')}>Paint Splash</button><button type="button" aria-pressed={selectedGame === 'simon-says'} onClick={() => setSelectedGame('simon-says')}>Simon Says</button><button type="button" aria-pressed={selectedGame === 'fruit-catcher'} onClick={() => setSelectedGame('fruit-catcher')}>Fruit Catcher</button><button type="button" aria-pressed={selectedGame === 'air-pong'} onClick={() => setSelectedGame('air-pong')}>Air Pong</button><button type="button" aria-pressed={selectedGame === 'goalkeeper'} onClick={() => setSelectedGame('goalkeeper')}>Goalkeeper</button></fieldset>}
+        <button className="crayon-button crayon-button--primary" type="button" disabled={status !== 'ready' && status !== 'simulation'} onClick={beginPractice}>{tournament ? `Start ${tournamentLength}-round tournament` : `Play ${selectedTitle}`}</button>
       </div>
     </div>
     <section className="motion-calibration" aria-labelledby="motion-title">

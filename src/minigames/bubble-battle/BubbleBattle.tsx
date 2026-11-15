@@ -6,15 +6,17 @@ import { BubbleBattleModel, type BubbleBattleSnapshot } from './BubbleBattleMode
 
 type PauseKind = 'manual' | 'visibility' | 'external'
 
-export function BubbleBattle({ playerCount, inputEvents = [], externalPauseReason = null, onReconnect, onExit }: { playerCount: PlayerCount; inputEvents?: MotionInputEvent[]; externalPauseReason?: string | null; onReconnect?: () => void; onExit: () => void }) {
+export function BubbleBattle({ playerCount, inputEvents = [], externalPauseReason = null, onReconnect, onExit, onComplete }: { playerCount: PlayerCount; inputEvents?: MotionInputEvent[]; externalPauseReason?: string | null; onReconnect?: () => void; onExit: () => void; onComplete?: (scores: { playerId: PlayerId; score: number }[]) => void }) {
   const model = useRef(new BubbleBattleModel({ playerCount }))
   const [snapshot, setSnapshot] = useState<BubbleBattleSnapshot>(() => model.current.start(performance.now()))
   const snapshotRef = useRef(snapshot)
   const [pauseState, setPauseState] = useState<{ kind: PauseKind; message: string } | null>(null)
   const pauseStateRef = useRef(pauseState)
+  const completionSent = useRef(false)
 
   useEffect(() => { snapshotRef.current = snapshot }, [snapshot])
   useEffect(() => { pauseStateRef.current = pauseState }, [pauseState])
+  useEffect(() => { if (snapshot.phase === 'results' && onComplete && !completionSent.current) { completionSent.current = true; onComplete(snapshot.scores) } }, [onComplete, snapshot])
 
   const pause = useCallback((kind: PauseKind, message: string) => {
     if (snapshotRef.current.phase !== 'countdown' && snapshotRef.current.phase !== 'playing') return

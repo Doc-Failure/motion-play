@@ -34,7 +34,18 @@ describe('App navigation', () => {
     expect(screen.getByText('No accounts. No uploads. Just local play.')).toBeVisible()
     expect(screen.getByRole('link', { name: /game catalog/i })).toHaveAttribute('href', '#/catalog')
     expect(screen.getByRole('link', { name: /quick play/i })).toHaveAttribute('href', '#/camera')
-    expect(screen.getAllByText('Coming soon')).toHaveLength(2)
+    expect(screen.getAllByText('Coming soon')).toHaveLength(1)
+    expect(screen.getByRole('link', { name: /tournament/i })).toHaveAttribute('href', '#/tournament')
+  })
+
+  it('offers accessible three- and five-round tournament setup', () => {
+    visit('#/tournament')
+    render(<App />)
+    expect(screen.getByRole('heading', { name: 'Build your game night' })).toBeVisible()
+    expect(screen.getByRole('button', { name: /3 rounds quick cup/i })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('button', { name: /5 rounds full party/i })).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.getByText(/goalkeeper combines everyone’s saves/i)).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Start 3-round tournament' })).toBeDisabled()
   })
 
   it('browses validated games and keeps the remaining catalog honestly gated', () => {

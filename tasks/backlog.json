@@ -293,9 +293,9 @@
     "depends_on": [
       "T22"
     ],
-    "status": "pending",
-    "attempts": 0,
-    "notes": "",
+    "status": "done",
+    "attempts": 1,
+    "notes": "Implemented playable 3/5-round tournaments using validated games, one shared camera/player setup, between-round aggregate scoring and stable ranking, with Goalkeeper player scores also combined as a cooperative team score. Verified typecheck, lint, 93 unit/component tests, build, and git diff --check on 2026-11-15. An initial Playwright run passed the existing 11 scenarios; after adding a focused tournament scenario, the 12-scenario rerun could not launch Chromium because the managed macOS sandbox denied Mach-port registration before test execution. No expanded browser-suite or physical webcam pass is claimed.",
     "needs_hardware_validation": false,
     "hardware_verified": false
   },
