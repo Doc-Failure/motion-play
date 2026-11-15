@@ -1,9 +1,20 @@
 import { expect, openApp, test } from './fixtures'
+import type { Locator, Page } from '@playwright/test'
+
+async function clickMovingTarget(page: Page, target: Locator) {
+  // Moving targets never pass the stationary-element actionability check.
+  // Send a real pointer click to the current center instead.
+  await expect(target).toBeVisible()
+  await expect(target).toBeEnabled()
+  const bounds = await target.boundingBox()
+  expect(bounds).not.toBeNull()
+  await page.mouse.click(bounds!.x + bounds!.width / 2, bounds!.y + bounds!.height / 2)
+}
 
 test('simple game selection and persistent camera across games', async ({ page, installMockCamera }) => {
   await installMockCamera()
   await openApp(page, '#/catalog')
-  await expect(page.locator('.game-card')).toHaveCount(13)
+  await expect(page.locator('.game-card')).toHaveCount(14)
   await expect(page.getByRole('combobox')).toHaveCount(0)
   await page.getByRole('link', {name: 'Play Bubble Battle'}).click()
   await expect(page.getByText('● Camera on', {exact:true})).toBeVisible()
@@ -91,7 +102,7 @@ test('Monster Defense routes from catalog and supports four-player keyboard defe
   await page.keyboard.press('Enter')
   await expect(page.getByText('10 / 400', { exact: true })).toBeVisible()
   const other = page.getByRole('button', { name: 'Stop Player 2 monster 2', exact: true })
-  await other.click()
+  await clickMovingTarget(page, other)
   await expect(page.getByText('20 / 400', { exact: true })).toBeVisible()
   await page.getByRole('button', { name: 'Pause', exact: true }).click()
   await page.clock.runFor(10000)
@@ -104,4 +115,45 @@ test('Monster Defense routes from catalog and supports four-player keyboard defe
   await page.screenshot({ path: 'test-results/monster-defense-narrow.png', fullPage: true })
   await page.getByRole('button', { name: 'Exit game' }).click()
   await expect(page.getByRole('button', { name: 'Play Monster Defense' })).toBeEnabled()
+})
+
+test('Supermarket Rush routes from catalog and supports four-player shopping', async ({ page, installMockCamera }) => {
+  await page.clock.install()
+  await installMockCamera()
+  await openApp(page, '#/catalog')
+  await page.getByRole('link', { name: 'Play Supermarket Rush' }).click()
+  await page.getByRole('button', { name: '4 players' }).click()
+  await page.getByRole('button', { name: 'Play Supermarket Rush' }).click()
+  await expect(page.getByRole('heading', { name: 'Pick from your shopping list' })).toBeVisible()
+  await page.getByRole('button', { name: 'Start round now' }).click()
+  await page.clock.runFor(3100)
+  const target = page.getByRole('button', { name: 'Pick Player 1 apple 1', exact: true })
+  await target.focus()
+  await page.keyboard.press('Enter')
+  await expect(page.getByText('10 points · 1 collected', { exact: true })).toBeVisible()
+  await expect(page.getByRole('status', { name: 'Player 1 pick feedback' })).toHaveText('✓ apple picked! +10 points.')
+  const other = page.getByRole('button', { name: 'Pick Player 2 apple 2', exact: true })
+  await clickMovingTarget(page, other)
+  await expect(page.getByText('10 points · 1 collected', { exact: true })).toHaveCount(2)
+  await page.clock.runFor(1800)
+  await clickMovingTarget(page, page.getByRole('button', { name: 'Pick Player 3 bread 7', exact: true }))
+  await expect(page.getByRole('status', { name: 'Player 3 pick feedback' })).toHaveText('Oops, bread! −5 points. Look for apple.')
+  await expect(page.getByText('-5 points · 0 collected', { exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'Pause', exact: true }).click()
+  await page.clock.runFor(10000)
+  await expect(page.getByRole('dialog', { name: 'Supermarket Rush paused' })).toBeVisible()
+  await page.getByRole('button', { name: 'Resume' }).click()
+  await expect(page.getByRole('button', { name: 'Pause', exact: true })).toBeFocused()
+  await expect(page.getByText('10 points · 1 collected', { exact: true }).first()).toBeVisible()
+  await page.screenshot({ path: 'test-results/supermarket-rush-four-players.png', fullPage: true })
+  await page.setViewportSize({ width: 390, height: 844 })
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+  await page.screenshot({ path: 'test-results/supermarket-rush-narrow.png', fullPage: true })
+  // The model uses elapsed time; skip idle render frames at the end of round.
+  await page.clock.fastForward(60000)
+  await expect(page.getByRole('dialog', { name: 'Supermarket Rush results' })).toBeVisible()
+  await page.getByRole('button', { name: 'Play again' }).click()
+  await expect(page.getByText('0 points · 0 collected', { exact: true })).toHaveCount(4)
+  await page.getByRole('button', { name: 'Exit game' }).click()
+  await expect(page.getByRole('button', { name: 'Play Supermarket Rush' })).toBeEnabled()
 })

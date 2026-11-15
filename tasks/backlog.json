@@ -357,9 +357,9 @@
     "id": "T25D",
     "title": "Implement and test Supermarket Rush using generic MOTION_HIT input",
     "depends_on": ["T25C"],
-    "status": "pending",
-    "attempts": 0,
-    "notes": "Acceptance: deterministic 1-4 player order-matching model, correct/wrong selection and isolation tests, rendered simulation, practice/setup/catalog routing, pointer fallback, and honest availability gating.",
+    "status": "done",
+    "attempts": 1,
+    "notes": "Implemented deterministic 1-4 player Supermarket Rush using normalized MOTION_HIT events, moving conveyors, independent apple/bread/milk orders, scoring and penalties, cooldowns, expiry, countdown/results/replay, pause and camera recovery, local SVG art, keyboard/pointer controls and catalog/setup/practice routing. Follow-up adds per-player live pick feedback and keyboard focus restoration. Verified on 2026-11-15: typecheck, lint, 154 unit/component tests across 33 files, production build, all six Chromium E2E scenarios and diff checks passed. Browser tests cover four-player shopping, keyboard and pointer picks, wrong-pick penalties, feedback, pause/resume, results/replay and narrow-screen overflow; inspected desktop and narrow screenshots. Fixed moving-target pointer tests in Monster Defense and Supermarket Rush. Earlier sandbox browser-launch limitation did not recur. Physical webcam play remains unverified. No deployment.",
     "needs_hardware_validation": true,
     "hardware_verified": false
   },

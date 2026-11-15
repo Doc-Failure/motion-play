@@ -932,3 +932,67 @@ occlusion still require human hardware testing. T25B retains
   record of browser passes/screenshots above was not reproduced in this run.
   No new browser visual inspection, physical webcam validation, deployment or
   commit is claimed. Hardware validation flags remain unchanged and unverified.
+
+
+## T25D — done (attempt 1, 2026-11-15)
+
+- Read SPEC.md and AGENTS.md and inspected the current routes, camera/input
+  integration, round clock, minigames, styles and tests before editing.
+- Implemented Supermarket Rush for 1–4 players through generic normalized
+  MOTION_HIT events. Scheduled groceries travel on independent conveyors;
+  each player follows their own apple/bread/milk shopping list. Correct picks
+  earn 10 points and advance only that player's list. Wrong picks lose 5 points
+  and leave the order unchanged. Unselected groceries expire without penalties.
+- Added capture-time collision checks, per-player 300ms pick cooldowns, bounded
+  targets, invalid/stale input rejection, countdown, shared 60-second clock,
+  results, replay, manual/tab-hidden pause, and camera recovery. Pauses freeze
+  belt movement, spawn timing, cooldowns and the clock. Replay also pauses when
+  the camera still needs recovery. No camera/media dependency enters game code.
+- Added original local SVG groceries, textured paper boards with player numbers,
+  visible text orders and item labels, native keyboard buttons and normalized
+  pointer fallback. Connected hash routing, catalog availability (14 playable
+  entries), setup, practice and exit without adding dependencies.
+- Added 23 unit/component cases covering order cycles, correct/wrong scoring,
+  isolation, duplicate picks, cooldowns, delayed input, expiry, render-cadence
+  independence, malformed events, pause/resume/countdown, results/replay,
+  snapshot copies, bounded targets, StrictMode, pointer coordinates, recovery,
+  catalog navigation, and setup/practice/gameplay. Synthetic mirrored frames
+  pass through MotionProcessor into scores for each supported player count.
+- Verification: typecheck, lint, all 152 unit/component tests across 33 files,
+  production build and git diff --check passed. During testing, fixed a
+  pause/resume clock issue by simplifying belt updates to use the monotonic
+  session time, and corrected a navigation test to wait for setup controls.
+- Added a four-player Chromium scenario for catalog/practice routing,
+  keyboard/pointer selection, pause/resume, exit and narrow-screen overflow.
+  Attempted all six E2E tests; each was blocked at browser launch by the macOS
+  sandbox denying MachPortRendezvousServer registration (Permission denied 1100).
+  No browser/layout or screenshot verification is claimed in this invocation.
+- Physical webcam motion feel, lighting, latency, framing and occlusion still
+  require real human hardware testing. Hardware flags remain
+  needs_hardware_validation: true and hardware_verified: false.
+  No deployment or commit was performed.
+
+## T25D — follow-up review (2026-11-15)
+
+- Read SPEC.md and AGENTS.md, inspected the existing implementation and its
+  camera/setup/catalog integration, and preserved the normalized input boundary.
+- Added independent, politely announced pick feedback explaining correct picks
+  and wrong-pick penalties, including the grocery still needed. Feedback survives
+  pauses, clears on replay, and is detached from mutable model snapshots.
+- Restored keyboard focus to Pause after resuming or replaying so it does not
+  fall back to the document when a dialog closes. Added model and rendered
+  regressions for feedback, player isolation, snapshot ownership and focus.
+- Browser launch succeeded in this invocation. The first browser run exposed
+  stationary-element click waits on continuously moving targets in both Monster
+  Defense and Supermarket Rush. Updated these tests to click actual current
+  target centers with pointer input. Skipped idle render frames when advancing
+  to shopping results to keep the complete-round test within its timeout.
+- Expanded shopping browser acceptance to assert both players' scores, wrong
+  picks and feedback, resume focus, results and replay reset. All six Chromium
+  scenarios now pass. Inspected generated four-player desktop and narrow-screen
+  shopping screenshots; the browser overflow assertion also passes. This
+  supersedes the earlier browser-launch limitation for current automated checks.
+- Verification: all 154 unit/component tests across 33 files, typecheck, lint,
+  production build, all six Chromium E2E scenarios and git diff --check passed.
+  No physical webcam validation, deployment or commit was performed; hardware
+  validation remains outstanding.
