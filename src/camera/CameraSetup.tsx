@@ -1,17 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { CameraSource, cameraFailure, type CameraDevice, type CameraFailure } from './CameraSource'
 import {
-  constrainCameraZone,
   defaultCameraZones,
-  playerViewports,
   type PlayerCameraZone,
   type PlayerCount,
 } from '../input/PlayerZoneMapper'
 import { MotionProcessor, type MotionFrame, type MotionResult } from '../input/MotionProcessor'
-import { SyntheticMotionSimulator } from '../input/SyntheticMotionSimulator'
-import { MotionDebugOverlay } from '../input/MotionDebugOverlay'
 import { BubbleBattle } from '../minigames/bubble-battle/BubbleBattle'
-import { DwellMenu } from '../app/DwellMenu'
 import { PracticeTutorial } from '../game/PracticeTutorial'
 import { WindowWipe } from '../minigames/window-wipe/WindowWipe'
 import { WhackAMole } from '../minigames/whack-a-mole/WhackAMole'
@@ -22,9 +17,11 @@ import { SimonSays } from '../minigames/simon-says/SimonSays'
 import { FruitCatcher } from '../minigames/fruit-catcher/FruitCatcher'
 import { AirPong } from '../minigames/air-pong/AirPong'
 import { Goalkeeper } from '../minigames/goalkeeper/Goalkeeper'
-import { TournamentSession, type TournamentLength } from '../game/TournamentSession'
+import { PinataParty } from '../minigames/pinata-party/PinataParty'
+import { MeteorSmash } from '../minigames/meteor-smash/MeteorSmash'
+import { TournamentSession } from '../game/TournamentSession'
 
-export type PlayableGame = 'bubble-battle' | 'window-wipe' | 'whack-a-mole' | 'balloon-panic' | 'gold-rush' | 'paint-splash' | 'simon-says' | 'fruit-catcher' | 'air-pong' | 'goalkeeper'
+export type PlayableGame = 'bubble-battle' | 'window-wipe' | 'whack-a-mole' | 'meteor-smash' | 'pinata-party' | 'balloon-panic' | 'gold-rush' | 'paint-splash' | 'simon-says' | 'fruit-catcher' | 'air-pong' | 'goalkeeper'
 
 export interface CameraController {
   listDevices(): Promise<CameraDevice[]>
@@ -41,7 +38,7 @@ const failureCopy: Record<CameraFailure, { title: string; help: string }> = {
   'unknown': { title: 'The camera could not start', help: 'Check the camera connection and browser permission, then try again.' },
 }
 
-export function CameraSetup({ source: providedSource, initialGame = 'bubble-battle', tournament = false }: { source?: CameraController; initialGame?: PlayableGame; tournament?: boolean }) {
+export function CameraSetup({ source: providedSource, initialGame = 'bubble-battle', tournament = false, active = true }: { source?: CameraController; initialGame?: PlayableGame; tournament?: boolean; active?: boolean }) {
   const [defaultSource] = useState<CameraController>(() => new CameraSource())
   const source = providedSource ?? defaultSource
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -49,23 +46,21 @@ export function CameraSetup({ source: providedSource, initialGame = 'bubble-batt
   const streamRef = useRef<MediaStream | null>(null)
   const captureCanvasRef = useRef<HTMLCanvasElement>(null)
   const processorRef = useRef(new MotionProcessor())
-  const simulatorRef = useRef(new SyntheticMotionSimulator())
   const recentFramesRef = useRef<MotionFrame[]>([])
   const lastProcessedFrameRef = useRef(performance.now())
-  const [devices, setDevices] = useState<CameraDevice[]>([])
+  const [, setDevices] = useState<CameraDevice[]>([])
   const [selected, setSelected] = useState('')
   const [status, setStatus] = useState<'idle' | 'requesting' | 'ready' | 'simulation'>('idle')
   const [failure, setFailure] = useState<CameraFailure | null>(null)
   const [playerCount, setPlayerCount] = useState<PlayerCount>(1)
   const [zones, setZones] = useState<PlayerCameraZone[]>(() => defaultCameraZones(1))
-  const [sensitivity, setSensitivity] = useState(55)
-  const [debug, setDebug] = useState(false)
+  const sensitivity = 70
   const [motion, setMotion] = useState<MotionResult | null>(null)
-  const [fps, setFps] = useState(0)
-  const [calibration, setCalibration] = useState('Move naturally to test each player zone.')
+  const [, setFps] = useState(0)
+
   const [flow, setFlow] = useState<'setup' | 'practice' | 'playing' | 'tournament-results'>('setup')
   const [selectedGame, setSelectedGame] = useState<PlayableGame>(initialGame)
-  const [tournamentLength, setTournamentLength] = useState<TournamentLength>(3)
+  const tournamentLength = 3
   const tournamentSession = useRef<TournamentSession | null>(null)
   const [tournamentSnapshot, setTournamentSnapshot] = useState<ReturnType<TournamentSession['snapshot']> | null>(null)
   const [trackingLost, setTrackingLost] = useState(false)
@@ -92,12 +87,6 @@ export function CameraSetup({ source: providedSource, initialGame = 'bubble-batt
   const choosePlayerCount = (count: PlayerCount) => {
     setPlayerCount(count)
     setZones(defaultCameraZones(count))
-  }
-
-  const updateZone = (playerId: number, field: 'x' | 'y' | 'width' | 'height', value: number) => {
-    setZones((current) => current.map((zone) => zone.playerId === playerId
-      ? constrainCameraZone({ ...zone, [field]: value })
-      : zone))
   }
 
   const refreshDevices = useCallback(async () => {
@@ -130,7 +119,7 @@ export function CameraSetup({ source: providedSource, initialGame = 'bubble-batt
   }, [flow, status])
 
   useEffect(() => {
-    if (status !== 'ready' && status !== 'simulation') return
+    if (!active || (status !== 'ready' && status !== 'simulation')) return
     let stopped = false
     let timer = 0
     let frames = 0
@@ -138,11 +127,11 @@ export function CameraSetup({ source: providedSource, initialGame = 'bubble-batt
     const processFrame = () => {
       if (stopped) return
       let frame: MotionFrame | null = null
-      if (status === 'simulation') frame = simulatorRef.current.next()
+      if (status === 'simulation') frame = null
       else {
-        const video = videoRef.current; const canvas = captureCanvasRef.current
+        const video = gameActive ? gameVideoRef.current : videoRef.current; const canvas = captureCanvasRef.current
         if (video && canvas && video.videoWidth > 0) {
-          canvas.width = 64; canvas.height = 36
+          canvas.width = 160; canvas.height = 90
           const context = canvas.getContext('2d', { willReadFrequently: true })
           context?.drawImage(video, 0, 0, canvas.width, canvas.height)
           if (context) frame = { width: canvas.width, height: canvas.height, data: context.getImageData(0, 0, canvas.width, canvas.height).data }
@@ -162,9 +151,9 @@ export function CameraSetup({ source: providedSource, initialGame = 'bubble-batt
     processorRef.current.reset()
     processFrame()
     return () => { stopped = true; window.clearTimeout(timer) }
-  }, [status, zones])
+  }, [status, zones, gameActive, active])
 
-  const start = async () => {
+  const start = useCallback(async () => {
     setStatus('requesting')
     setFailure(null)
     try {
@@ -185,104 +174,50 @@ export function CameraSetup({ source: providedSource, initialGame = 'bubble-batt
       setStatus('idle')
       setFailure(cameraFailure(error))
     }
-  }
+  }, [source, selected, refreshDevices])
 
-  const chooseDevice = async (deviceId: string) => {
-    setSelected(deviceId)
-    if (status === 'ready') {
-      source.stop()
-      streamRef.current = null
-      if (videoRef.current) videoRef.current.srcObject = null
-      setStatus('idle')
+  useEffect(() => {
+    if (active && status === 'idle' && !failure) void start()
+  }, [active, status, failure, start])
+
+  useEffect(() => {
+    if (active) { setSelectedGame(initialGame); setFlow('setup') }
+  }, [active, initialGame, tournament])
+
+  useEffect(() => {
+    if (!gameActive && status === 'ready' && videoRef.current && streamRef.current) {
+      videoRef.current.srcObject = streamRef.current
+      void Promise.resolve(videoRef.current.play()).catch(() => undefined)
     }
-  }
-
-  const simulate = () => {
-    source.stop()
-    streamRef.current = null
-    if (videoRef.current) videoRef.current.srcObject = null
-    setFailure(null)
-    simulatorRef.current.reset()
-    setStatus('simulation')
-  }
-
-  const recalibrate = () => {
-    const frames = recentFramesRef.current
-    if (frames.length < 2) { setCalibration('Keep still for a moment, then try recalibrating again.'); return }
-    const noise = processorRef.current.calibrate(frames)
-    setCalibration(`Calibration ready — background noise ${Math.round(noise)} / 255.`)
-  }
+  }, [active, gameActive, status])
 
   const recoveryReason = trackingLost
     ? 'Camera frames stopped for three seconds. Check lighting, framing, or the camera connection.'
     : flow === 'playing' && status === 'requesting' ? 'Reconnecting the camera…'
       : flow === 'playing' && status === 'idle' && failure === 'disconnected' ? 'The camera disconnected. Reconnect it to continue this round.'
         : null
-  const selectedTitle = selectedGame === 'window-wipe' ? 'Window Wipe' : selectedGame === 'whack-a-mole' ? 'Whack-a-Mole' : selectedGame === 'balloon-panic' ? 'Balloon Panic' : selectedGame === 'gold-rush' ? 'Gold Rush' : selectedGame === 'paint-splash' ? 'Paint Splash' : selectedGame === 'simon-says' ? 'Simon Says' : selectedGame === 'fruit-catcher' ? 'Fruit Catcher' : selectedGame === 'air-pong' ? 'Air Pong' : selectedGame === 'goalkeeper' ? 'Goalkeeper' : 'Bubble Battle'
+  const selectedTitle = selectedGame === 'window-wipe' ? 'Window Wipe' : selectedGame === 'whack-a-mole' ? 'Whack-a-Mole' : selectedGame === 'pinata-party' ? 'Piñata Party' : selectedGame === 'meteor-smash' ? 'Meteor Smash' : selectedGame === 'balloon-panic' ? 'Balloon Panic' : selectedGame === 'gold-rush' ? 'Gold Rush' : selectedGame === 'paint-splash' ? 'Paint Splash' : selectedGame === 'simon-says' ? 'Simon Says' : selectedGame === 'fruit-catcher' ? 'Fruit Catcher' : selectedGame === 'air-pong' ? 'Air Pong' : selectedGame === 'goalkeeper' ? 'Goalkeeper' : 'Bubble Battle'
   const gameEvents = selectedGame === 'window-wipe' || selectedGame === 'paint-splash'
-    ? (motion?.events ?? []).map((event) => ({ ...event, kind: 'MOTION_BRUSH' as const }))
-    : selectedGame === 'fruit-catcher' || selectedGame === 'air-pong' ? (motion?.events ?? []).map((event) => ({ ...event, kind: 'HAND_POSITION' as const }))
-      : selectedGame === 'goalkeeper' ? (motion?.events ?? []).map((event) => ({ ...event, kind: 'BODY_MOVE' as const })) : motion?.events ?? []
+    ? (motion?.positions ?? []).map((event) => ({ ...event, kind: 'MOTION_BRUSH' as const }))
+    : selectedGame === 'fruit-catcher' || selectedGame === 'air-pong' ? (motion?.positions ?? []).map((event) => ({ ...event, kind: 'HAND_POSITION' as const }))
+      : selectedGame === 'goalkeeper' ? (motion?.positions ?? []).map((event) => ({ ...event, kind: 'BODY_MOVE' as const })) : motion?.events ?? []
 
-  return <>{gameActive && <div className={`game-stage game-stage--${status}`}><video ref={gameVideoRef} className="game-camera" muted playsInline aria-label="Mirrored live camera during gameplay" />{tournament && flow !== 'tournament-results' && tournamentSnapshot && <aside className="tournament-ribbon" aria-label="Tournament progress"><strong>Round {tournamentSnapshot.roundIndex + 1} of {tournamentSnapshot.length}: {tournamentSnapshot.currentRound?.title}</strong><span>{tournamentSnapshot.currentRound?.scoring === 'cooperative' ? 'Team score round' : 'Competitive round'}</span><span>{tournamentSnapshot.totals.map((entry) => `P${entry.playerId} ${entry.score}`).join(' • ')}</span></aside>}{flow === 'tournament-results' ? <div className="tournament-results" role="dialog" aria-label="Tournament results"><p className="eyebrow">Tournament complete</p><h1>Final scoreboard</h1><ol>{tournamentSnapshot?.ranking.map((entry) => <li key={entry.playerId}><strong>Player {entry.playerId}</strong><span>{entry.score} points</span></li>)}</ol>{tournamentSnapshot && tournamentSnapshot.cooperativeTotal > 0 && <p className="team-total">Goalkeeper team score: <strong>{tournamentSnapshot.cooperativeTotal}</strong></p>}<button className="crayon-button crayon-button--primary" type="button" onClick={returnToSetup}>New tournament</button><a className="text-button" href="#/">Home</a></div> : flow === 'practice' ? <PracticeTutorial playerCount={playerCount} game={selectedGame} onStart={beginPlaying} onBack={returnToSetup} /> : selectedGame === 'window-wipe' ? <WindowWipe playerCount={playerCount} inputEvents={gameEvents} onExit={returnToSetup} onComplete={tournament ? finishTournamentRound : undefined} /> : selectedGame === 'paint-splash' ? <PaintSplash playerCount={playerCount} inputEvents={gameEvents} onExit={returnToSetup} onComplete={tournament ? finishTournamentRound : undefined} /> : selectedGame === 'whack-a-mole' ? <WhackAMole playerCount={playerCount} inputEvents={gameEvents} onExit={returnToSetup} onComplete={tournament ? finishTournamentRound : undefined} /> : selectedGame === 'balloon-panic' ? <BalloonPanic playerCount={playerCount} inputEvents={gameEvents} onExit={returnToSetup} /> : selectedGame === 'gold-rush' ? <GoldRush playerCount={playerCount} inputEvents={gameEvents} onExit={returnToSetup} /> : selectedGame === 'simon-says' ? <SimonSays playerCount={playerCount} inputEvents={gameEvents} onExit={returnToSetup} /> : selectedGame === 'fruit-catcher' ? <FruitCatcher playerCount={playerCount} inputEvents={gameEvents} onExit={returnToSetup} /> : selectedGame === 'air-pong' ? <AirPong playerCount={playerCount} inputEvents={gameEvents} onExit={returnToSetup} /> : selectedGame === 'goalkeeper' ? <Goalkeeper playerCount={playerCount} inputEvents={gameEvents} onExit={returnToSetup} onComplete={tournament ? finishTournamentRound : undefined} /> : <BubbleBattle playerCount={playerCount} inputEvents={gameEvents} onComplete={tournament ? finishTournamentRound : undefined} externalPauseReason={recoveryReason} onReconnect={() => void start()} onExit={returnToSetup} />}</div>}<section className="camera-page" aria-labelledby="camera-title" hidden={gameActive}>
-    <a className="back-link" href="#/">← Home</a>
-    <div className="camera-heading"><p className="eyebrow">{tournament ? 'Tournament setup' : 'Camera setup'}</p><h1 id="camera-title">{tournament ? 'Build your game night' : 'Let’s see your moves'}</h1><p>{tournament ? 'Choose three quick rounds or five for the full party. Scores carry across every game.' : 'Your camera stays on this device. Motion Play never uploads or records its picture.'}</p></div>
+  return <>{gameActive && <div className={`game-stage game-stage--${status}`}><video ref={gameVideoRef} className="game-camera" muted playsInline aria-label="Mirrored live camera during gameplay" />{tournament && flow !== 'tournament-results' && tournamentSnapshot && <aside className="tournament-ribbon" aria-label="Tournament progress"><strong>Round {tournamentSnapshot.roundIndex + 1} of {tournamentSnapshot.length}: {tournamentSnapshot.currentRound?.title}</strong><span>{tournamentSnapshot.currentRound?.scoring === 'cooperative' ? 'Team score round' : 'Competitive round'}</span><span>{tournamentSnapshot.totals.map((entry) => `P${entry.playerId} ${entry.score}`).join(' • ')}</span></aside>}{flow === 'tournament-results' ? <div className="tournament-results" role="dialog" aria-label="Tournament results"><p className="eyebrow">Tournament complete</p><h1>Final scoreboard</h1><ol>{tournamentSnapshot?.ranking.map((entry) => <li key={entry.playerId}><strong>Player {entry.playerId}</strong><span>{entry.score} points</span></li>)}</ol>{tournamentSnapshot && tournamentSnapshot.cooperativeTotal > 0 && <p className="team-total">Goalkeeper team score: <strong>{tournamentSnapshot.cooperativeTotal}</strong></p>}<button className="crayon-button crayon-button--primary" type="button" onClick={returnToSetup}>New tournament</button><a className="text-button" href="#/">Home</a></div> : flow === 'practice' ? <PracticeTutorial playerCount={playerCount} game={selectedGame} onStart={beginPlaying} onBack={returnToSetup} /> : selectedGame === 'window-wipe' ? <WindowWipe playerCount={playerCount} inputEvents={gameEvents} onExit={returnToSetup} onComplete={tournament ? finishTournamentRound : undefined} /> : selectedGame === 'paint-splash' ? <PaintSplash playerCount={playerCount} inputEvents={gameEvents} onExit={returnToSetup} onComplete={tournament ? finishTournamentRound : undefined} /> : selectedGame === 'whack-a-mole' ? <WhackAMole playerCount={playerCount} inputEvents={gameEvents} onExit={returnToSetup} onComplete={tournament ? finishTournamentRound : undefined} /> : selectedGame === 'pinata-party' ? <PinataParty playerCount={playerCount} inputEvents={gameEvents} externalPauseReason={recoveryReason} onReconnect={() => void start()} onExit={returnToSetup} /> : selectedGame === 'meteor-smash' ? <MeteorSmash playerCount={playerCount} inputEvents={gameEvents} onExit={returnToSetup} /> : selectedGame === 'balloon-panic' ? <BalloonPanic playerCount={playerCount} inputEvents={gameEvents} onExit={returnToSetup} /> : selectedGame === 'gold-rush' ? <GoldRush playerCount={playerCount} inputEvents={gameEvents} onExit={returnToSetup} /> : selectedGame === 'simon-says' ? <SimonSays playerCount={playerCount} inputEvents={gameEvents} onExit={returnToSetup} /> : selectedGame === 'fruit-catcher' ? <FruitCatcher playerCount={playerCount} inputEvents={gameEvents} onExit={returnToSetup} /> : selectedGame === 'air-pong' ? <AirPong playerCount={playerCount} inputEvents={gameEvents} onExit={returnToSetup} /> : selectedGame === 'goalkeeper' ? <Goalkeeper playerCount={playerCount} inputEvents={gameEvents} onExit={returnToSetup} onComplete={tournament ? finishTournamentRound : undefined} /> : <BubbleBattle playerCount={playerCount} inputEvents={gameEvents} onComplete={tournament ? finishTournamentRound : undefined} externalPauseReason={recoveryReason} onReconnect={() => void start()} onExit={returnToSetup} />}</div>}<section className="camera-page" aria-labelledby="camera-title" hidden={gameActive}>
+    <a className="back-link" href="#/catalog">← Games</a>
+    <div className="camera-heading"><p className="eyebrow">Let’s play!</p><h1 id="camera-title">{tournament ? 'Tournament' : selectedTitle}</h1><p>Choose your players and jump in. Stand side by side and wave to play.</p></div>
+    <fieldset className="player-count"><legend>Number of players</legend>{([1, 2, 3, 4] as const).map((count) => <button type="button" aria-pressed={playerCount === count} onClick={() => choosePlayerCount(count)} key={count}>{count}<small>{count === 1 ? 'player' : 'players'}</small></button>)}</fieldset>
     <div className="camera-layout">
       <div className={`camera-preview camera-preview--${status}`}>
         <video ref={videoRef} muted playsInline aria-label="Mirrored camera preview" />
         <canvas ref={captureCanvasRef} hidden />
-        {status !== 'ready' && <div className="camera-placeholder"><span aria-hidden="true">✦</span><strong>{status === 'simulation' ? 'Demo mode ready' : 'Camera preview'}</strong><small>{status === 'simulation' ? 'No camera is being used.' : 'Your picture will appear here after you choose Start camera.'}</small></div>}
-        {status === 'ready' && <span className="camera-live"><i aria-hidden="true" /> Camera on</span>}
-        <div className="camera-zones" aria-label="Player camera zones">{zones.map((zone) => <div
-          className={`camera-zone camera-zone--${zone.playerId}`}
-          data-testid={`camera-zone-${zone.playerId}`}
-          key={zone.playerId}
-          style={{ left: `${zone.x * 100}%`, top: `${zone.y * 100}%`, width: `${zone.width * 100}%`, height: `${zone.height * 100}%` }}
-        ><span>Player {zone.playerId}{(motion?.zones.find((item) => item.playerId === zone.playerId)?.activity ?? 0) > .025 ? ' • moving!' : ''}</span></div>)}</div>
-        {debug && <MotionDebugOverlay result={motion} zones={zones} />}
-        {(status === 'ready' || status === 'simulation') && <DwellMenu events={motion?.events ?? []} items={[
-          { id: 'play', label: 'Play', hint: `Start ${selectedTitle}`, onActivate: beginPractice },
-          { id: 'calibrate', label: 'Calibrate', hint: 'Reset the background', onActivate: recalibrate },
-          { id: 'home', label: 'Home', hint: 'Return to the title', onActivate: () => { window.location.hash = '#/' } },
-        ]} />}
+        {status !== 'ready' && <div className="camera-placeholder"><strong>{status === 'requesting' ? 'Opening camera…' : 'Ready to move?'}</strong></div>}
+        {status === 'ready' && <span className="camera-live">● Camera on</span>}
+        <div className="camera-zones" aria-label="Player camera zones">{zones.map(zone => <div className={`camera-zone camera-zone--${zone.playerId}`} key={zone.playerId} style={{left: `${zone.x * 100}%`, top: `${zone.y * 100}%`, width: `${zone.width * 100}%`, height: `${zone.height * 100}%`}}><span>Player {zone.playerId}{(motion?.zones.find(item => item.playerId === zone.playerId)?.activity ?? 0) > .005 ? ' • moving!' : ''}</span></div>)}</div>
       </div>
-      <div className="camera-controls">
-        <h2>Choose your camera</h2>
-        <label htmlFor="camera-device">Camera device</label>
-        <select id="camera-device" value={selected} onChange={(event) => void chooseDevice(event.target.value)} disabled={status === 'requesting'}>
-          {devices.length === 0 ? <option value="">Default camera</option> : devices.map((device, index) => <option value={device.deviceId} key={device.deviceId}>{device.label || `Camera ${index + 1}`}</option>)}
-        </select>
-        <p className="camera-explainer">Your browser will ask for permission only after you press Start camera.</p>
-        {failure && <div className="camera-error" role="alert"><strong>{failureCopy[failure].title}</strong><p>{failureCopy[failure].help}</p></div>}
-        <div className="camera-actions">
-          <button className="crayon-button crayon-button--primary" type="button" onClick={() => void start()} disabled={status === 'requesting'}>{status === 'requesting' ? 'Starting…' : status === 'ready' ? 'Restart camera' : 'Start camera'}</button>
-          <button className="text-button" type="button" onClick={simulate}>Use demo mode</button>
-        </div>
-        <p className="camera-note"><strong>When you leave this screen, the camera turns off.</strong> A real webcam still needs a person to check framing, lighting, and browser behavior.</p>
-        {tournament ? <fieldset className="tournament-choice"><legend>Tournament length</legend>{([3, 5] as const).map((length) => <button type="button" key={length} aria-pressed={tournamentLength === length} onClick={() => setTournamentLength(length)}><strong>{length} rounds</strong><small>{length === 3 ? 'Quick cup' : 'Full party'}</small></button>)}<p>Bubble Battle, Window Wipe and Goalkeeper are in every cup. Five rounds add Whack-a-Mole and Paint Splash. Goalkeeper combines everyone’s saves as a cooperative team score.</p></fieldset> : <fieldset className="game-choice"><legend>Choose a game</legend><button type="button" aria-pressed={selectedGame === 'bubble-battle'} onClick={() => setSelectedGame('bubble-battle')}>Bubble Battle</button><button type="button" aria-pressed={selectedGame === 'window-wipe'} onClick={() => setSelectedGame('window-wipe')}>Window Wipe</button><button type="button" aria-pressed={selectedGame === 'whack-a-mole'} onClick={() => setSelectedGame('whack-a-mole')}>Whack-a-Mole</button><button type="button" aria-pressed={selectedGame === 'balloon-panic'} onClick={() => setSelectedGame('balloon-panic')}>Balloon Panic</button><button type="button" aria-pressed={selectedGame === 'gold-rush'} onClick={() => setSelectedGame('gold-rush')}>Gold Rush</button><button type="button" aria-pressed={selectedGame === 'paint-splash'} onClick={() => setSelectedGame('paint-splash')}>Paint Splash</button><button type="button" aria-pressed={selectedGame === 'simon-says'} onClick={() => setSelectedGame('simon-says')}>Simon Says</button><button type="button" aria-pressed={selectedGame === 'fruit-catcher'} onClick={() => setSelectedGame('fruit-catcher')}>Fruit Catcher</button><button type="button" aria-pressed={selectedGame === 'air-pong'} onClick={() => setSelectedGame('air-pong')}>Air Pong</button><button type="button" aria-pressed={selectedGame === 'goalkeeper'} onClick={() => setSelectedGame('goalkeeper')}>Goalkeeper</button></fieldset>}
-        <button className="crayon-button crayon-button--primary" type="button" disabled={status !== 'ready' && status !== 'simulation'} onClick={beginPractice}>{tournament ? `Start ${tournamentLength}-round tournament` : `Play ${selectedTitle}`}</button>
+      <div className="camera-controls"><h2>Everybody ready?</h2><p>Your camera stays on as you switch games. Pictures stay on this device. Close the tab to turn it off.</p>
+      {failure && <div className="camera-error" role="alert"><strong>{failureCopy[failure].title}</strong><p>{failureCopy[failure].help}</p></div>}
+      <button className="crayon-button crayon-button--primary" type="button" disabled={status === 'requesting'} onClick={() => { if(status === 'ready') beginPractice(); else void start() }}>{status === 'requesting' ? 'Opening camera…' : status === 'ready' ? `Play ${selectedTitle}` : 'Activate camera & play'}</button>
       </div>
     </div>
-    <section className="motion-calibration" aria-labelledby="motion-title">
-      <div><p className="eyebrow">Motion calibration</p><h2 id="motion-title">Wave and watch the scribbles</h2><p>Frame differences measure movement, not hand contact. Stand still while recalibrating so background flicker is ignored.</p></div>
-      <div className="motion-controls">
-        <label>Sensitivity <strong>{sensitivity}%</strong><input aria-label="Motion sensitivity" type="range" min="0" max="100" value={sensitivity} onChange={(event) => setSensitivity(Number(event.target.value))} /></label>
-        <button className="crayon-button" type="button" onClick={recalibrate}>Recalibrate background</button>
-        <label className="debug-toggle"><input type="checkbox" checked={debug} onChange={(event) => setDebug(event.target.checked)} /> Show mask debug overlay</label>
-        <p role="status">{calibration}</p>
-        {debug && <dl className="motion-stats"><div><dt>Threshold</dt><dd>{Math.round(motion?.threshold ?? 0)}</dd></div><div><dt>Processing</dt><dd>{fps} FPS</dd></div><div><dt>Hits</dt><dd>{motion?.events.length ?? 0}</dd></div></dl>}
-      </div>
-      <div className="motion-meters" aria-label="Player motion levels">{zones.map((zone) => { const activity = motion?.zones.find((item) => item.playerId === zone.playerId)?.activity ?? 0; return <div key={zone.playerId}><span>Player {zone.playerId}</span><meter min="0" max="0.25" value={Math.min(activity, .25)} aria-label={`Player ${zone.playerId} motion level`} /><strong>{activity > .025 ? 'Moving' : 'Still'}</strong></div> })}</div>
-    </section>
-    <section className="zone-setup" aria-labelledby="zone-title">
-      <div className="zone-setup__heading"><div><p className="eyebrow">Player spaces</p><h2 id="zone-title">Give everyone a camera zone</h2></div><p>Camera zones describe where people stand. Game viewports are laid out separately.</p></div>
-      <fieldset className="player-count"><legend>Number of players</legend>{([1, 2, 3, 4] as const).map((count) => <button type="button" aria-pressed={playerCount === count} onClick={() => choosePlayerCount(count)} key={count}>{count}<small>{count === 1 ? 'player' : 'players'}</small></button>)}</fieldset>
-      <div className="zone-workspace">
-        <div className="zone-editors">{zones.map((zone) => <fieldset className={`zone-editor zone-editor--${zone.playerId}`} key={zone.playerId}><legend>Player {zone.playerId} camera zone</legend>{([
-          ['x', 'Left'], ['y', 'Top'], ['width', 'Width'], ['height', 'Height'],
-        ] as const).map(([field, label]) => <label key={field}>{label}<span>{Math.round(zone[field] * 100)}%</span><input aria-label={`Player ${zone.playerId} ${label}`} type="range" min="0" max="100" step="1" value={Math.round(zone[field] * 100)} onChange={(event) => updateZone(zone.playerId, field, Number(event.target.value) / 100)} /></label>)}</fieldset>)}</div>
-        <div className="viewport-card"><h3>Game viewport layout</h3><p>{playerCount === 1 ? 'One full-screen view' : playerCount === 2 ? 'Two side-by-side views' : 'A 2 × 2 grid'} — independent from the camera zones.</p><div className={`viewport-map viewport-map--${playerCount}`} aria-label={`${playerCount} player game viewport layout`}>{playerViewports(playerCount).map((viewport) => <div key={viewport.playerId} style={{ left: `${viewport.x * 100}%`, top: `${viewport.y * 100}%`, width: `${viewport.width * 100}%`, height: `${viewport.height * 100}%` }}>P{viewport.playerId}</div>)}</div></div>
-      </div>
-    </section>
   </section></>
 }

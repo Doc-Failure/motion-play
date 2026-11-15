@@ -48,3 +48,21 @@ describe('MotionProcessor', () => {
     expect(first.next().data).toEqual(second.next().data)
   })
 })
+
+it('keeps separated hands separate and provides positions between debounced hits', () => {
+  const processor = new MotionProcessor({smoothing: 0})
+  const zones = defaultCameraZones(1)
+  const hands = [2, 14].flatMap(left => Array.from({length: 9}, (_, i) => [left + i % 3, 3 + Math.floor(i / 3)] as [number, number]))
+  processor.process(frame(20, 10), zones, 0)
+  const first = processor.process(frame(20, 10, hands), zones, 10)
+  expect(first.events).toHaveLength(2)
+  expect(first.events.every(event => Math.abs(event.x - .5) > .2)).toBe(true)
+  const next = processor.process(frame(20, 10), zones, 60)
+  expect(next.events).toHaveLength(0)
+  expect(next.positions).toHaveLength(2)
+})
+it('ignores uniform lighting changes', () => {
+  const processor = new MotionProcessor({smoothing: 0})
+  processor.process(frame(20, 10, [], 20), defaultCameraZones(1), 0)
+  expect(processor.process(frame(20, 10, [], 100), defaultCameraZones(1), 50).events).toEqual([])
+})

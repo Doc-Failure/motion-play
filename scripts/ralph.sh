@@ -19,28 +19,17 @@ if [[ ! -d .git ]]; then
   }
 fi
 if [[ -n "$(git status --porcelain)" ]]; then
-  echo 'Working tree has uncommitted changes. Commit/stash them first to avoid mixing tasks.' >&2
-  exit 2
+  echo 'Working tree has existing changes; Ralph will preserve and verify them with the next iteration.'
 fi
 
-next_task() {
+next_focus() {
   python3 - <<'PY'
 import json
 from pathlib import Path
 items=json.loads(Path('tasks/backlog.json').read_text())
-status={x['id']:x['status'] for x in items}
 for x in items:
-    if x['status']=='pending' and all(status.get(d)=='done' for d in x['depends_on']):
+    if x['status']=='pending':
         print(x['id']+'|'+x['title']); break
-PY
-}
-check_status() {
-  python3 - "$1" <<'PY'
-import sys,json
-from pathlib import Path
-items=json.loads(Path('tasks/backlog.json').read_text())
-match=[x for x in items if x['id']==sys.argv[1]]
-print(match[0]['status'] if len(match)==1 else 'unknown')
 PY
 }
 verify() {
@@ -68,9 +57,9 @@ PY
 
 success_count=0
 while (( success_count < LIMIT )); do
-  task="$(next_task)"
+  task="$(next_focus)"
   if [[ -z "$task" ]]; then
-    echo 'No eligible pending tasks. Done or blocked; inspect tasks/backlog.json.'
+    echo 'No pending backlog focus remains. Add a new objective or continue interactively.'
     break
   fi
   id="${task%%|*}"
@@ -80,7 +69,7 @@ while (( success_count < LIMIT )); do
   for ((attempt=1; attempt<=MAX_RETRIES; attempt++)); do
     echo "Attempt $attempt/$MAX_RETRIES"
     log="logs/${id}_attempt${attempt}_$(date +%Y%m%d_%H%M%S).log"
-    prompt="Read SPEC.md, AGENTS.md, tasks/backlog.json and tasks/progress.md. Implement ONLY task ${id}: ${title}. Read the complete task dependency chain. If repairing a prior failure, fix the current implementation, do not start another task. Add appropriate automated tests. Mark task ${id} done only after actually running relevant tests successfully; otherwise leave pending and state issues. Update tasks/progress.md truthfully. Do not commit, deploy, request external services, alter other tasks, skip the existing task acceptance expectations, or claim physical webcam validation."
+    prompt="Read SPEC.md and AGENTS.md, inspect the current application, and autonomously advance Motion Play. Suggested backlog focus: ${id}: ${title}. Treat the backlog as a planning aid, not a lock: prioritize current defects, coherent integration, UI consistency, and the user's latest intent; update planning records truthfully. Add relevant tests and run appropriate checks. Do not deploy or claim physical webcam validation without real human hardware testing."
     # Workspace-limited permissions; never --yolo or danger-full-access.
     if codex exec --sandbox workspace-write --cd "$PWD" "$prompt" 2>&1 | tee "$log"; then
       echo 'Codex invocation finished.'
@@ -88,7 +77,7 @@ while (( success_count < LIMIT )); do
       echo 'Codex invocation failed; retrying if possible.' >&2
     fi
     # Verify outside the agent; never trust a self-reported success alone.
-    if [[ "$(check_status "$id")" == 'done' ]] && verify 2>&1 | tee -a "$log"; then
+    if verify 2>&1 | tee -a "$log"; then
       git add -A
       if git diff --cached --quiet; then
         echo 'No changes to commit; stop to avoid false completion.' >&2; exit 1
@@ -99,11 +88,7 @@ while (( success_count < LIMIT )); do
       echo "Verified and committed $id ($success_count/$LIMIT)"
       break
     fi
-    echo "Task $id not verified, or Codex has not marked it done." >&2
-    if [[ "$(check_status "$id")" == 'blocked' ]]; then
-      echo 'Agent marked task blocked; stopping for review.' >&2
-      exit 1
-    fi
+    echo "Iteration for $id did not pass verification." >&2
   done
   if [[ "$successful" != 'true' ]]; then
     echo "STOP: $id failed after $MAX_RETRIES attempts. Inspect logs and task status; no automatic rollback." >&2

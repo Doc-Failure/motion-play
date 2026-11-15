@@ -83,6 +83,7 @@ a { color: inherit; }
 .gold-item--coin { color: #7a4b00; background: #ffd83d; box-shadow: inset 0 0 0 5px #f6ac1b, 3px 4px 0 rgba(73,45,16,.25); }
 .gold-item--hazard { color: #fff8df; background: #5a514c; border-radius: 43% 57% 48% 52%; transform: rotate(12deg); }
 @media (max-width: 700px) { .gold-boards--2, .gold-boards--3, .gold-boards--4 { grid-template-columns: 1fr; grid-template-rows: none; } .gold-board { min-height: 20rem; } }
+.meteor-game { position: relative; z-index: 1; min-height: 100vh; padding: 1rem; color: #fffaf0; }.meteor-game h1 { margin: 0; color: #fffaf0; font-size: clamp(2.5rem, 6vw, 4.5rem); letter-spacing: -.06em; text-shadow: 3px 3px 0 #34254c; }.meteor-rules { padding: .65rem 1rem; border: 3px solid #34254c; border-radius: .8rem 1.2rem .7rem 1rem; color: #34254c; background: #ffd85a; font-weight: 850; text-align: center; }.meteor-boards { display: grid; gap: .9rem; min-height: 66vh; }.meteor-boards--2, .meteor-boards--3, .meteor-boards--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }.meteor-player h2 { display: flex; justify-content: space-between; margin: 0; padding: .35rem .65rem; border: 3px solid #34254c; color: #34254c; background: #ffd85a; }.meteor-player h2 small { align-self: center; }.meteor-board { position: relative; height: calc(100% - 2rem); min-height: 22rem; overflow: hidden; border: 5px solid #34254c; border-radius: 1.2rem .7rem 1rem .8rem; background: radial-gradient(circle at 20% 22%, #fff 0 2px, transparent 3px), radial-gradient(circle at 72% 15%, #ffd85a 0 2px, transparent 3px), linear-gradient(#38295d, #765aa5 72%, #e38a46 73%); box-shadow: 6px 7px 0 #241b35; touch-action: none; }.meteor { position: absolute; z-index: 2; display: grid; width: 3.7rem; height: 3.7rem; translate: -50% -50%; place-items: center; border: 4px solid #34254c; border-radius: 55% 45% 53% 47%; color: #fff5d7; background: #e56445; box-shadow: inset 0 0 0 5px #f59b4f, -12px -12px 0 -5px #ffd85a; font-size: 2rem; font-style: normal; pointer-events: none; transform: rotate(18deg); }.meteor-base { position: absolute; inset: auto 8% 0; height: 2.8rem; padding-top: .35rem; border: 4px solid #34254c; border-bottom: 0; border-radius: 1rem 1rem 0 0; color: #34254c; background: #65c2d9; font-size: 1.5rem; text-align: center; }.meteor-game .battle-results { color: #34254c; }@media (max-width: 700px) { .meteor-boards--2, .meteor-boards--3, .meteor-boards--4 { grid-template-columns: 1fr; }.meteor-board { min-height: 20rem; } }
 .paint-game { position: relative; z-index: 1; width: min(100% - 2rem, 75rem); min-height: 100vh; margin: 0 auto; padding: 1rem 0 5rem; color: #34263a; }
 .paint-game h1 { margin: 0; font-size: clamp(2.5rem, 6vw, 4.5rem); letter-spacing: -.06em; }
 .paint-callout { width: fit-content; margin: .5rem auto 1rem; padding: .45rem 1rem; border: 3px solid #5d3566; border-radius: 48% 52% 45% 55%; background: #ffe0ef; font-weight: 850; transform: rotate(-.5deg); }
@@ -307,3 +308,50 @@ a { color: inherit; }
 .keeper-body { position: absolute; display: grid; width: 22%; height: 30%; translate: -50% -50%; place-items: center; border: 4px solid #294426; border-radius: 45% 55% 40% 50%; color: #294426; background: #f5c847; font-size: 1.5rem; font-style: normal; box-shadow: inset 5px 0 rgb(255 255 255 / .3); pointer-events: none; }
 .keeper-ball { position: absolute; display: grid; width: 2.2rem; aspect-ratio: 1; translate: -50% -50%; place-items: center; border: 4px solid #18334a; border-radius: 50%; color: #fffaf0; background: #fffaf0; font-style: normal; box-shadow: 2px 4px 0 rgb(24 51 74 / .25); pointer-events: none; }
 @media (max-width: 700px) { .keeper-boards--2, .keeper-boards--3, .keeper-boards--4 { grid-template-columns: 1fr; } }
+
+/* Shared paper, pastel crayons and home illustration across the play flow. */
+.catalog-page, .camera-page, .detail-page { position: relative; isolation: isolate; }
+.catalog-page::before, .camera-page::before, .detail-page::before { content: ''; position: absolute; z-index: -1; inset: -2rem calc((min(100vw - 2rem, 75rem) - 100vw) / 2); background: url('./assets/home/sun-clouds.webp') left top / 18rem auto no-repeat, url('./assets/home/rainbow.webp') right top / 16rem auto no-repeat; opacity: .13; pointer-events: none; }
+.catalog-heading h1, .camera-heading h1, .detail-copy h1 { color: #8131ad; text-shadow: 2px 2px #f0d2ff; transform: rotate(-1deg); }
+.game-card { color: var(--ink); text-decoration: none; background: #fff9da; }
+.game-card:nth-child(3n + 2) { background: #e6f4ff; }
+.game-card:nth-child(3n) { background: #f4e5fc; }
+.game-card:hover { transform: translateY(-4px) rotate(-.5deg); }
+.game-card:focus-visible { outline: 4px solid #1666c5; outline-offset: 5px; }
+.camera-controls { background: #fff0a0; }
+.crayon-button--primary { color: #20252b; background: #f5c847; }
+.action-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+[hidden] { display: none !important; }
+@media (max-width: 600px) { .action-grid { grid-template-columns: 1fr; } }
+:root { font-family: "Comic Sans MS", "Trebuchet MS", system-ui, sans-serif; }
+.game-stage { background: #fff9e9; }
+.game-stage [role="dialog"], .practice-tutorial { border-radius: 1.8rem 1.2rem 1.7rem 1.25rem; background-color: #fff9da; }
+body { background: #fffdf8 url('./assets/home/paper-background.webp') repeat; background-size: 42rem 42rem; }
+.skip-link { top: -10rem; transform: none; }
+.skip-link:focus { top: .5rem; }
+.game-card, .camera-controls, .game-stage [role="dialog"] { background-image: repeating-linear-gradient(-10deg, transparent 0 6px, rgb(255 255 255 / .24) 7px 9px); }
+
+/* Piñata Party: paper cutouts, marker cracks, and a shared candy jar. */
+.pinata-game { position: relative; z-index: 1; padding: 1rem; color: #34254c; background: #fff8e7; }
+.pinata-game h1 { margin: 0; font-size: clamp(2.3rem, 6vw, 4.5rem); letter-spacing: -.05em; }
+.pinata-rules { padding: .8rem; border: 3px dashed #34254c; border-radius: .8rem 1.2rem .7rem 1rem; background: #ffe48a; text-align: center; font-weight: 800; }
+.pinata-team-status, .pinata-help { text-align: center; font-weight: 750; }
+.pinata-boards { display: grid; gap: 1rem; }
+.pinata-boards--2, .pinata-boards--3, .pinata-boards--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.pinata-player { --player-paper: #fce0eb; min-width: 0; }
+.pinata-player--2 { --player-paper: #d6f0f8; }.pinata-player--3 { --player-paper: #e5f1d5; }.pinata-player--4 { --player-paper: #eee0f9; }
+.pinata-player h2 { display: flex; justify-content: space-between; gap: .5rem; margin: 0; padding: .5rem .8rem; border: 3px solid #34254c; border-radius: .7rem 1rem 0 0; background: var(--player-paper); font-size: 1.15rem; }
+.pinata-player h2 span { font-size: 1rem; }
+.pinata-board { position: relative; height: 52vh; min-height: 20rem; overflow: hidden; border: 4px solid #34254c; border-radius: 0 0 1.3rem .8rem; background: repeating-linear-gradient(7deg, transparent 0 8px, #34254c08 9px 10px), var(--player-paper); box-shadow: 4px 5px 0 #34254c; touch-action: manipulation; }
+.pinata-boards--3 .pinata-board, .pinata-boards--4 .pinata-board { height: 30vh; min-height: 15rem; }
+.pinata-bunting { position: absolute; top: .5rem; width: 100%; text-align: center; font-size: 1.8rem; letter-spacing: .8rem; color: #78406b; transform: rotate(-3deg); }
+.pinata-rope { position: absolute; top: 0; left: 50%; height: 35%; border-left: 4px dashed #78406b; }
+.pinata-target { position: absolute; width: 32%; height: 40%; padding: 0; translate: -50% -50%; border: 0; background: transparent; cursor: pointer; }
+.pinata-target svg { width: 100%; height: 100%; overflow: visible; }
+.pinata-target:focus-visible { outline: 4px solid #34254c; outline-offset: 8px; border-radius: 35%; }
+.pinata-target:disabled { cursor: default; }.pinata-target:disabled:has(+ .pinata-candy) { visibility: hidden; }
+.pinata-hit-count { position: absolute; bottom: .25rem; width: 100%; text-align: center; font-size: 1.2rem; font-weight: 900; pointer-events: none; }
+.pinata-candy { position: absolute; inset: 20% 10%; display: grid; place-content: center; gap: .4rem; text-align: center; pointer-events: none; }
+.pinata-candy > span { font-size: 3rem; }.pinata-candy strong { font-size: 1.6rem; }
+.pinata-game .battle-results { color: #34254c; background: #fff8e7; }
+@media (max-width: 600px) { .pinata-game { padding: .65rem; }.pinata-player h2 { flex-wrap: wrap; font-size: 1rem; }.pinata-player h2 span { font-size: .85rem; }.pinata-bunting { letter-spacing: .1rem; }.pinata-board { min-height: 15rem; }.pinata-candy > span { font-size: 2rem; } }

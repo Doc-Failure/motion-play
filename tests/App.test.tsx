@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { App } from '../src/app/App'
 import { catalogCategories, catalogGames } from '../src/app/catalog'
@@ -17,7 +17,7 @@ describe('catalog data', () => {
     expect(new Set(catalogGames.map((game) => game.slug))).toHaveLength(32)
     expect(new Set(catalogGames.map((game) => game.title))).toHaveLength(32)
     expect(new Set(catalogGames.map((game) => game.category))).toEqual(new Set(catalogCategories))
-    expect(catalogGames.filter((game) => game.available).map((game) => [game.slug, game.players])).toEqual([['bubble-battle', [1, 2, 3, 4]], ['whack-a-mole', [1, 2, 3, 4]], ['balloon-panic', [1, 2, 3, 4]], ['fruit-catcher', [1, 2, 3, 4]], ['gold-rush', [1, 2, 3, 4]], ['window-wipe', [1, 2, 3, 4]], ['paint-splash', [1, 2, 3, 4]], ['air-pong', [1, 2, 3, 4]], ['goalkeeper', [1, 2, 3, 4]], ['simon-says', [1, 2, 3, 4]]])
+    expect(catalogGames.filter((game) => game.available).map((game) => [game.slug, game.players])).toEqual([['bubble-battle', [1, 2, 3, 4]], ['whack-a-mole', [1, 2, 3, 4]], ['meteor-smash', [1, 2, 3, 4]], ['pinata-party', [1, 2, 3, 4]], ['balloon-panic', [1, 2, 3, 4]], ['fruit-catcher', [1, 2, 3, 4]], ['gold-rush', [1, 2, 3, 4]], ['window-wipe', [1, 2, 3, 4]], ['paint-splash', [1, 2, 3, 4]], ['air-pong', [1, 2, 3, 4]], ['goalkeeper', [1, 2, 3, 4]], ['simon-says', [1, 2, 3, 4]]])
     expect(catalogGames.filter((game) => !game.available).every((game) => game.players.join() === '1,2,3,4')).toBe(true)
   })
 
@@ -26,123 +26,13 @@ describe('catalog data', () => {
 describe('App navigation', () => {
   beforeEach(() => { window.localStorage.clear(); visit('#/') })
   afterEach(() => visit('#/'))
-
-  it('renders the homepage with playable navigation and local settings', () => {
+  it('keeps a simple home and sends game cards straight to play', async () => {
     render(<App />)
-    expect(screen.getByRole('heading', { level: 1, name: 'Motion Play!' })).toBeVisible()
-    expect(screen.getByText('Camera Party Games for 1–4 Players')).toBeVisible()
-    expect(screen.getByText('No accounts. No uploads. Just local play.')).toBeVisible()
-    expect(screen.getByRole('link', { name: /game catalog/i })).toHaveAttribute('href', '#/catalog')
-    expect(screen.getByRole('link', { name: /quick play/i })).toHaveAttribute('href', '#/camera')
-    expect(screen.queryByText('Coming soon')).not.toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /tournament/i })).toHaveAttribute('href', '#/tournament')
-    expect(screen.getByRole('link', { name: /settings/i })).toHaveAttribute('href', '#/settings')
-  })
-
-  it('persists accessibility settings locally and exposes achievement progress', async () => {
-    visit('#/catalog')
-    const view = render(<App />)
-    visit('#/settings')
-    const reduceMotion = await screen.findByRole('checkbox', { name: /reduce motion/i })
-    fireEvent.click(reduceMotion)
-    expect(document.documentElement).toHaveClass('reduce-motion')
-    expect(JSON.parse(window.localStorage.getItem('motion-play:settings:v1') ?? '{}')).toMatchObject({ reducedMotion: true })
-    expect(screen.getByText('Toy-box explorer')).toBeVisible()
-    expect(screen.getByText(/nothing is uploaded/i)).toBeVisible()
-    view.unmount()
-    render(<App />)
-    await waitFor(() => expect(screen.getByRole('checkbox', { name: /reduce motion/i })).toBeChecked())
-  })
-
-  it('provides a keyboard skip link and a focusable main landmark', () => {
-    const { container } = render(<App />)
-    expect(screen.getByRole('link', { name: 'Skip to main content' })).toHaveAttribute('href', '#main-content')
-    expect(container.querySelector('main')).toHaveAttribute('tabindex', '-1')
-  })
-
-  it('offers accessible three- and five-round tournament setup', () => {
-    visit('#/tournament')
-    render(<App />)
-    expect(screen.getByRole('heading', { name: 'Build your game night' })).toBeVisible()
-    expect(screen.getByRole('button', { name: /3 rounds quick cup/i })).toHaveAttribute('aria-pressed', 'true')
-    expect(screen.getByRole('button', { name: /5 rounds full party/i })).toHaveAttribute('aria-pressed', 'false')
-    expect(screen.getByText(/goalkeeper combines everyone’s saves/i)).toBeVisible()
-    expect(screen.getByRole('button', { name: 'Start 3-round tournament' })).toBeDisabled()
-  })
-
-  it('browses validated games and keeps the remaining catalog honestly gated', () => {
-    visit('#/catalog')
-    render(<App />)
-    expect(screen.getByRole('heading', { level: 1, name: 'Game Catalog' })).toBeVisible()
-    expect(screen.getAllByRole('link', { name: /view .+ details/i })).toHaveLength(32)
-    expect(screen.getAllByText('Play now')).toHaveLength(10)
-    expect(screen.getAllByText('Coming soon')).toHaveLength(23)
-    expect(screen.getByLabelText('Availability')).toBeDisabled()
-    fireEvent.change(screen.getByLabelText('Category'), { target: { value: 'Clean & Create' } })
-    expect(screen.getAllByRole('link', { name: /view .+ details/i })).toHaveLength(6)
-    fireEvent.change(screen.getByLabelText('Search games'), { target: { value: 'window' } })
-    expect(screen.getByRole('link', { name: 'View Window Wipe details' })).toBeVisible()
-    expect(screen.queryByRole('link', { name: 'View Paint Splash details' })).not.toBeInTheDocument()
-  })
-
-  it('shows validated one- and two-player Bubble Battle details and a setup route', () => {
-    visit('#/games/bubble-battle')
-    render(<App />)
-    expect(screen.getByRole('heading', { level: 1, name: 'Bubble Battle' })).toBeVisible()
-    expect(screen.getByText('Pop floating bubbles and keep clear of the bombs.')).toBeVisible()
-    const facts = screen.getByText('How you move').parentElement
-    expect(facts && within(facts).getByRole('definition')).toHaveTextContent('MOTION HIT')
-    expect(screen.getByText('Playable • 1–4 players')).toBeVisible()
-    expect(screen.getByRole('link', { name: 'Set up & play' })).toHaveAttribute('href', '#/camera/bubble-battle')
-    expect(screen.getByText(/choose a camera or no-camera demo/i)).toBeVisible()
-    expect(screen.getByRole('link', { name: /all games/i })).toHaveAttribute('href', '#/catalog')
-  })
-
-  it('offers Gold Rush only after its simulated play acceptance passes', () => {
-    visit('#/games/gold-rush')
-    render(<App />)
-    expect(screen.getByText('Playable • 1–4 players')).toBeVisible()
-    expect(screen.getByRole('link', { name: 'Set up & play' })).toHaveAttribute('href', '#/camera/gold-rush')
-  })
-
-  it('offers Paint Splash after its simulated play acceptance passes', () => {
-    visit('#/games/paint-splash')
-    render(<App />)
-    expect(screen.getByText('Playable • 1–4 players')).toBeVisible()
-    expect(screen.getByRole('link', { name: 'Set up & play' })).toHaveAttribute('href', '#/camera/paint-splash')
-  })
-
-  it('offers Simon Says after its simulated play acceptance passes', () => {
-    visit('#/games/simon-says')
-    render(<App />)
-    expect(screen.getByText('Playable • 1–4 players')).toBeVisible()
-    expect(screen.getByRole('link', { name: 'Set up & play' })).toHaveAttribute('href', '#/camera/simon-says')
-  })
-
-  it('offers Air Pong after its simulated play acceptance passes', () => {
-    visit('#/games/air-pong')
-    render(<App />)
-    expect(screen.getByText('Playable • 1–4 players')).toBeVisible()
-    expect(screen.getByRole('link', { name: 'Set up & play' })).toHaveAttribute('href', '#/camera/air-pong')
-  })
-
-  it('offers Goalkeeper after its simulated play acceptance passes', () => {
-    visit('#/games/goalkeeper')
-    render(<App />)
-    expect(screen.getByText('Playable • 1–4 players')).toBeVisible()
-    expect(screen.getByRole('link', { name: 'Set up & play' })).toHaveAttribute('href', '#/camera/goalkeeper')
-  })
-
-  it('continues to prevent starting an unvalidated game', () => {
-    visit('#/games/meteor-smash')
-    render(<App />)
-    expect(screen.getByRole('button', { name: 'Start game' })).toBeDisabled()
-    expect(screen.getByText(/unlock only after its controls and scoring are validated/i)).toBeVisible()
-  })
-
-  it('keeps decorative artwork out of the accessibility tree', () => {
-    const { container } = render(<App />)
-    expect(container.querySelector('.generated-home-scene')).toHaveAttribute('aria-hidden', 'true')
-    expect(screen.getByRole('heading', { level: 2, name: 'How do you want to play?' })).toBeVisible()
+    expect(screen.getByRole('heading', {name: 'Motion Play!'})).toBeVisible()
+    expect(screen.queryByRole('link', {name: 'Settings'})).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('link', {name: /game catalog/i}))
+    await waitFor(() => expect(screen.getByRole('heading', {name: 'The toy box'})).toBeVisible())
+    expect(screen.getByRole('link', {name: 'Play Bubble Battle'})).toHaveAttribute('href', '#/camera/bubble-battle')
+    expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
   })
 })

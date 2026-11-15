@@ -3,7 +3,7 @@ import { mapCameraPoint, type PlayerCameraZone, type PlayerId } from './PlayerZo
 export interface MotionFrame { width: number; height: number; data: Uint8ClampedArray }
 export interface MotionInputEvent { playerId: PlayerId; kind: 'MOTION_HIT' | 'MOTION_BRUSH' | 'HAND_POSITION' | 'BODY_MOVE'; x: number; y: number; confidence: number; timestamp: number }
 export interface ZoneMotion { playerId: PlayerId; activePixels: number; activity: number; centroid: { x: number; y: number } | null }
-export interface MotionResult { mask: Uint8ClampedArray; width: number; height: number; threshold: number; zones: ZoneMotion[]; events: MotionInputEvent[] }
+export interface MotionResult { mask: Uint8ClampedArray; width: number; height: number; threshold: number; zones: ZoneMotion[]; events: MotionInputEvent[]; positions?: MotionInputEvent[] }
 export interface MotionOptions { sensitivity?: number; smoothing?: number; minimumNeighbors?: number; minimumZoneActivity?: number; debounceMs?: number }
 
 const clamp = (value: number, minimum = 0, maximum = 1) => Math.min(maximum, Math.max(minimum, value))
@@ -23,7 +23,7 @@ export class MotionProcessor {
     this.sensitivity = clamp(options.sensitivity ?? 0.55)
     this.smoothing = clamp(options.smoothing ?? 0.45)
     this.minimumNeighbors = options.minimumNeighbors ?? 2
-    this.minimumZoneActivity = options.minimumZoneActivity ?? 0.025
+    this.minimumZoneActivity = options.minimumZoneActivity ?? 0.005
     this.debounceMs = options.debounceMs ?? 280
   }
 
@@ -55,8 +55,16 @@ export class MotionProcessor {
     }
     const smoothed = this.smoothed ?? new Float32Array(gray.length)
     const candidate = new Uint8ClampedArray(gray.length)
+    // Cancel uniform exposure changes rather than interpreting room flicker as a hit.
+    const differences = new Uint32Array(511)
+    for (let pixel = 0; pixel < gray.length; pixel += 1) differences[gray[pixel] - this.previous[pixel] + 255]++
+    let cumulative = 0, exposureChange = 0
+    for (let index = 0; index < differences.length; index++) {
+      cumulative += differences[index]
+      if (cumulative >= gray.length / 2) { exposureChange = index - 255; break }
+    }
     for (let pixel = 0; pixel < gray.length; pixel += 1) {
-      const difference = Math.abs(gray[pixel] - this.previous[pixel])
+      const difference = Math.abs(gray[pixel] - this.previous[pixel] - exposureChange)
       smoothed[pixel] = smoothed[pixel] * this.smoothing + difference * (1 - this.smoothing)
       candidate[pixel] = smoothed[pixel] >= threshold ? 1 : 0
     }
@@ -72,12 +80,18 @@ export class MotionProcessor {
     this.previous = gray
     this.smoothed = smoothed
     const zoneMotion = zones.map((zone) => summarizeZone(mask, frame.width, frame.height, zone))
-    const events = zoneMotion.flatMap((motion) => {
-      if (!motion.centroid || motion.activity < this.minimumZoneActivity || timestamp - (this.lastHit.get(motion.playerId) ?? -Infinity) < this.debounceMs) return []
-      this.lastHit.set(motion.playerId, timestamp)
-      return [{ playerId: motion.playerId, kind: 'MOTION_HIT' as const, ...motion.centroid, confidence: clamp(motion.activity / 0.2), timestamp }]
+    const positions = zoneMotion.flatMap(motion => {
+      if (!motion.centroid || motion.activity < this.minimumZoneActivity || motion.activity > .65) return []
+      const zone = zones.find(item => item.playerId === motion.playerId)!
+      return motionComponents(mask, frame.width, frame.height, zone).map(point => ({
+        playerId: motion.playerId, kind: 'MOTION_HIT' as const, ...point,
+        confidence: clamp(.5 + motion.activity * 2), timestamp,
+      }))
     })
-    return { mask, width: frame.width, height: frame.height, threshold, zones: zoneMotion, events }
+    const eligible = new Set(positions.filter(event => timestamp - (this.lastHit.get(event.playerId) ?? -Infinity) >= this.debounceMs).map(event => event.playerId))
+    const events = positions.filter(event => eligible.has(event.playerId))
+    eligible.forEach(playerId => this.lastHit.set(playerId, timestamp))
+    return { mask, width: frame.width, height: frame.height, threshold, zones: zoneMotion, events, positions }
   }
 
   private assertCompatible(a: MotionFrame, b: MotionFrame) {
@@ -108,4 +122,33 @@ function summarizeZone(mask: Uint8ClampedArray, width: number, height: number, z
   }
   const centroid = activePixels ? mapCameraPoint({ x: sumX / activePixels, y: sumY / activePixels }, zone) : null
   return { playerId: zone.playerId, activePixels, activity: totalPixels ? activePixels / totalPixels : 0, centroid }
+}
+
+// Keep separated moving hands separate: their average may be empty background.
+function motionComponents(mask: Uint8ClampedArray, width: number, height: number, zone: PlayerCameraZone) {
+  const seen = new Uint8Array(mask.length)
+  const points: { x: number; y: number }[] = []
+  const inside = (index: number) => {
+    const x = 1 - (index % width + .5) / width, y = (Math.floor(index / width) + .5) / height
+    return x >= zone.x && x <= zone.x + zone.width && y >= zone.y && y <= zone.y + zone.height
+  }
+  for (let index = 0; index < mask.length; index++) {
+    if (!mask[index] || seen[index] || !inside(index)) continue
+    const queue = [index]; seen[index] = 1
+    let sumX = 0, sumY = 0
+    for (let cursor = 0; cursor < queue.length; cursor++) {
+      const pixel = queue[cursor], x = pixel % width, y = Math.floor(pixel / width)
+      sumX += (x + .5) / width; sumY += (y + .5) / height
+      for (const [nx, ny] of [[x-1,y],[x+1,y],[x,y-1],[x,y+1]]) {
+        const next = ny * width + nx
+        if (nx < 0 || nx >= width || ny < 0 || ny >= height || seen[next] || !mask[next] || !inside(next)) continue
+        seen[next] = 1; queue.push(next)
+      }
+    }
+    if (queue.length >= 3) {
+      const point = mapCameraPoint({ x: sumX / queue.length, y: sumY / queue.length }, zone)
+      if (point) points.push(point)
+    }
+  }
+  return points
 }

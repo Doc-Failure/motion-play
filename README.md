@@ -2,7 +2,7 @@
 
 A client-only motion-controlled party game, built with React, TypeScript, Vite,
 and Phaser. Gameplay and camera features are being delivered incrementally from
-the ordered backlog in `tasks/backlog.json`.
+the editable planning backlog in `tasks/backlog.json`.
 
 ## Local development
 
@@ -44,12 +44,12 @@ chmod +x scripts/ralph.sh
 ./scripts/ralph.sh 1      # first task, inspect changes
 ./scripts/ralph.sh 5      # up to five more tasks
 ```
-`MAX_TASKS` is not necessary: the positional argument limits successful tasks; each task gets at most `MAX_RETRIES` (default 3). The runner stops on failure, missing dependencies, or no eligible tasks. Use `CTRL-C` to stop. Task logs go in `logs/` and are ignored by Git. Commits require completed checks and task status evidence.
+`MAX_TASKS` is not necessary: the positional argument limits successful iterations; each iteration gets at most `MAX_RETRIES` (default 3). The runner stops on failed verification or when no pending planning focus remains. Use `CTRL-C` to stop. Task logs go in `logs/` and are ignored by Git. Existing working-tree changes are preserved, verified, and included in the next successful runner commit.
 
-If no tasks remain eligible or all are done, the loop stops. For T25, Codex must split the 22 remaining games into small separate entries before proceeding. No auto-deploy, no `--yolo` or unrestricted filesystem access.
+The backlog supplies a suggested focus rather than locking the agent to a task or dependency order. Codex may repair defects, align UI, update planning, and complete related integration work in the same iteration. No auto-deploy, no `--yolo`, and no fabricated hardware-validation claims.
 
 ## Validation
-The runner checks `npm run typecheck`, `npm run lint`, `npm run test`, and `npm run build` once scripts exist. It additionally runs `npm run test:e2e` if present. Tests may fail until dependencies have been installed. Script refuses to commit failing changes; Codex still must update task status legitimately. **Green synthetic tests cannot certify gameplay with physical webcam**.
+The runner checks `npm run typecheck`, `npm run lint`, `npm run test`, and `npm run build` once scripts exist. It additionally runs `npm run test:e2e` if present. Tests may fail until dependencies have been installed. The script refuses to commit failing changes. **Green synthetic tests cannot certify gameplay with physical webcam**.
 
 ## Product milestones requiring human review
 1. 2-player Bubble Battle running against actual Mac camera.

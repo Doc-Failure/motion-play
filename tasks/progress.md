@@ -772,3 +772,105 @@ Final automated evidence: backlog JSON validation, `npm run typecheck`,
 `npm run lint`, the full `npm run test` suite (26 files, 103 tests),
 `npm run build`, and `git diff --check` all exited successfully. T25 requires no
 webcam, and no physical webcam validation was performed or claimed.
+
+## T25A — done (attempt 1, 2026-11-15)
+
+- Added a deterministic, camera-independent Meteor Smash model for 1–4 players
+  that consumes only normalized `MOTION_HIT` events. Meteors descend toward
+  each player’s base; smashing one earns 10 points and an impact removes 5.
+- Preserved player isolation across meteor ownership, scores, and impact counts,
+  with confidence/input-kind gates, synchronized round timing, results/replay,
+  and a pointer fallback routed through the same generic input shape.
+- Added a responsive crayon-style space/base play surface, game-specific
+  practice instructions, setup selection, direct catalog routing, and honest
+  1–4 player availability only after the acceptance simulation passed.
+- Added model tests for deterministic falling/spawning, smash rewards,
+  one-time scoring, base-impact penalties, invalid input, and four-player
+  isolation. Added a rendered simulation that advances the real countdown,
+  supplies a generic motion hit, and verifies the visible score and meteor
+  removal, plus setup/practice routing coverage.
+- Updated the T25 planning regression test to validate the stable one-to-one
+  mapping between all 22 expansion games and T25A–T25V; it no longer incorrectly
+  assumes that every planned game remains unavailable after implementation.
+- Automated evidence: focused Meteor/model/view/catalog/routing tests passed,
+  followed by `npm run typecheck`, `npm run lint`, the full `npm run test` suite
+  (28 files, 109 tests), `npm run build`, and `git diff --check`, all exiting
+  successfully on 2026-11-15.
+
+Outstanding risk: automated tests use deterministic events and DOM simulation.
+Physical webcam motion accuracy, hit feel, lighting/background-noise tolerance,
+latency, framing, multiplayer occlusion, and browser camera behavior were not
+tested. T25A remains `needs_hardware_validation: true` and
+`hardware_verified: false`; no physical webcam validation was performed or
+claimed.
+
+Verification rerun: the focused T25A acceptance set passed (5 files, 36 tests),
+then `npm run typecheck`, `npm run lint`, the full `npm run test` suite (28
+files, 109 tests), and `npm run build` all exited successfully on 2026-11-15.
+No physical webcam validation was performed.
+
+Current-invocation audit: re-read the complete T25A dependency chain and
+reviewed the existing implementation as a repair/verification pass. No defect
+was found. The focused acceptance set again passed (5 files, 36 tests), as did
+`npm run typecheck`, `npm run lint`, the full test suite (28 files, 109 tests),
+and `npm run build`. T25A remains done; hardware validation remains outstanding
+and was not claimed.
+
+## 2026-11-15 — Simplified play flow and motion-input repair
+
+Applied the user's current direction over the older multi-step setup specification:
+only player count is configurable; playable catalog cards open camera setup directly,
+request the default camera on entering a game, and retain the same stream while
+navigating inside the app. Camera tracks stop when the app unmounts/tab closes.
+Removed settings, filters, device selection, sensitivity, zone editing and tournament
+length from the player-facing flow. Reused the home paper, typography, palette and
+illustration assets through the remaining screens.
+
+Motion review found frame differencing, not human pose recognition. Separate moving
+components now retain separate coordinates; continuous position/brush updates bypass
+hit debounce, resolution increased to 160×90, small motions have a lower activity gate,
+and median exposure compensation rejects uniform lighting changes. This remains a
+motion detector: stationary body/hand pose recognition is not implemented or verified.
+
+Validation: typecheck, lint, build, 83 unit/component tests and three Chromium browser
+tests passed. Browser tests use a synthetic canvas camera and verify one stream across
+games, four-player layout, permission recovery and the simplified UI. Chromium required
+an unsandboxed rerun after macOS denied its launch. No real-webcam or hardware results
+are claimed. Existing working-tree changes were preserved; no deployment or commit.
+
+
+## T25B — done (attempt 1, 2026-11-15)
+
+- Read SPEC.md and AGENTS.md and inspected the current app before editing.
+  Preserved the existing uncommitted simplified navigation, camera/input repairs,
+  Meteor Smash implementation, and other working-tree edits.
+- Implemented Piñata Party for 1–4 players using only normalized `MOTION_HIT`
+  events. Each player has an independent target and 350 ms hit debounce. Three
+  hits spill 10 candy once, followed by a 900 ms respawn. Individual contributions
+  fill a shared goal of 50 candy per player; play continues until the shared
+  60-second clock expires, including after the goal is reached.
+- Added countdown, results/replay, pause/resume, tab-hidden pause, and camera
+  recovery integration. Pauses preserve countdown, round time, hit cooldowns,
+  and respawn timing. Input batches from before replay/resume and countdown
+  cannot award hits; small delivery delays after render ticks are supported.
+- Added original local SVG paper piñatas, visible damage, candy-burst feedback,
+  numbered player boards, native keyboard target buttons, and pointer input.
+  Connected catalog availability, direct routes, setup, practice and exit/replay.
+  Reused the shared playable-game type for route and practice declarations.
+- Added 20 unit/component cases covering mechanics, malformed events, debounce,
+  isolation, shared goals, timing, snapshot isolation, pause/replay, StrictMode,
+  normalized pointer input, 1–4 rendered targets, generic-event scoring, and the
+  integrated setup/practice/gameplay route. Updated the catalog assertions and
+  added a Chromium flow for four-player keyboard/pointer play and narrow layout.
+- Validation: typecheck, lint, the full unit/component suite (29 files, 103 tests),
+  production build and diff whitespace checks passed. A final focused model run
+  also passed after strengthening resumed-countdown input rejection.
+- `npm run test:e2e` was attempted: all four tests were blocked before execution
+  because Chromium could not launch inside the macOS sandbox
+  (`bootstrap_check_in ... MachPortRendezvousServer: Permission denied (1100)`).
+  Browser acceptance, screenshots and visual layout inspection remain unverified
+  in this invocation. No sandbox escalation, deployment, or commit was performed.
+
+Physical webcam motion feel, lighting tolerance, latency, framing and multiplayer
+occlusion still require human hardware testing. T25B retains
+`needs_hardware_validation: true` and `hardware_verified: false`.
