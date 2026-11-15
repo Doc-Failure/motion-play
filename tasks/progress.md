@@ -996,3 +996,44 @@ occlusion still require human hardware testing. T25B retains
   production build, all six Chromium E2E scenarios and git diff --check passed.
   No physical webcam validation, deployment or commit was performed; hardware
   validation remains outstanding.
+
+
+## T25E — done (attempt 1, 2026-11-15)
+
+- Read SPEC.md and AGENTS.md and inspected application routes, setup and input
+  integration, shared round lifecycle, existing game models, styles and tests.
+- Implemented deterministic Star Collector for 1–4 players. Each player receives
+  the same sequence of stationary stars, spawning every 1.2 seconds and lasting
+  2.4 seconds. Each catch earns 10 points; missed stars expire without penalty.
+  Independent scores, counts and 300ms successful-hit cooldowns prevent duplicate
+  awards and cross-player scoring. The game receives only normalized MOTION_HIT
+  events, with no camera/media dependency or additional packages.
+- Added birth/expiry checks, malformed input rejection before clock advancement,
+  delayed-event handling without clock rewind or expired-target resurrection,
+  bounded target counts and detached snapshots. Countdown, 60-second rounds,
+  results/replay, manual/tab-hidden pause and camera recovery use shared timing.
+  Pauses freeze lifetimes, spawning, cooldowns and the round clock.
+- Connected catalog availability (15 playable games), direct hash routing,
+  camera setup, four-player practice and exit. Added original local crayon SVG
+  stars with quiet lifetime rings, numbered paper boards, readable rules,
+  per-player live collection feedback, pointer normalization, native keyboard
+  buttons and focus restoration after resume/replay. Screenshot review prompted
+  preserving the SVG aspect ratio so stars and rings stay proportionate.
+- Added 24 unit/component cases across model, rendered game, catalog navigation
+  and setup/practice integration. Coverage includes mirrored synthetic frames
+  through MotionProcessor into isolated scores for every supported player count,
+  exact expiry boundaries, misses, debounce, delayed/stale/malformed input,
+  cadence independence, snapshot ownership, pause/countdown/resume, recovery,
+  results, replay, pointer fallback and React StrictMode.
+- Verification passed: typecheck, lint, all 178 unit/component tests across
+  35 files, production build, all seven Chromium browser scenarios and diff
+  whitespace checks. Browser acceptance covers four-player keyboard/pointer
+  catches, feedback, untouched-star expiry, pause/resume focus, results/replay,
+  navigation and narrow-screen overflow. Inspected desktop and narrow screenshots.
+- After the SVG-only visual correction, rebuilt and reran Star Collector browser
+  acceptance successfully. A direct npx invocation first failed at browser launch
+  because macOS denied Chromium MachPortRendezvousServer registration; the retry
+  through npm run test:e2e passed. This was an environment launch failure.
+- Physical webcam motion feel, lighting, latency, framing and occlusion remain
+  unverified. Hardware flags remain needs_hardware_validation: true and
+  hardware_verified: false. No deployment or commit was performed.

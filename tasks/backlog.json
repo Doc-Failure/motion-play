@@ -367,9 +367,9 @@
     "id": "T25E",
     "title": "Implement and test Star Collector using generic MOTION_HIT input",
     "depends_on": ["T25D"],
-    "status": "pending",
-    "attempts": 0,
-    "notes": "Acceptance: deterministic 1-4 player ephemeral-target model, expiry/scoring/isolation tests, rendered simulation, practice/setup/catalog routing, pointer fallback, and honest availability gating.",
+    "status": "done",
+    "attempts": 1,
+    "notes": "Implemented deterministic 1-4 player Star Collector using generic MOTION_HIT events, short-lived stars, lifetime rings, isolated scoring/cooldowns, expiry without penalties, countdown/results/replay, pause and camera recovery, crayon SVG art, keyboard/pointer controls, and catalog/setup/practice routing. Verified on 2026-11-15: typecheck, lint, 178 unit/component tests across 35 files, production build, all seven Chromium E2E scenarios and diff checks. After correcting SVG aspect ratio, rebuilt and reran the Star Collector browser scenario successfully; inspected desktop and narrow screenshots. One direct npx browser launch was denied by the macOS sandbox; retry through npm succeeded. No physical webcam validation, deployment or commit.",
     "needs_hardware_validation": true,
     "hardware_verified": false
   },
