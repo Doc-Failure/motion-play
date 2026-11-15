@@ -1,3 +1,4 @@
+import { GameFeedback } from '../../game/GameFeedback'
 import { useEffect, useRef, useState, type PointerEvent } from 'react'
 import type { MotionInputEvent } from '../../input/MotionProcessor'
 import type { PlayerCount, PlayerId } from '../../input/PlayerZoneMapper'
@@ -50,7 +51,7 @@ export function StarCollector({ playerCount, inputEvents = [], onExit, externalP
     const bounds = event.currentTarget.getBoundingClientRect()
     hitAt(playerId, (event.clientX - bounds.left) / bounds.width, (event.clientY - bounds.top) / bounds.height)
   }
-  return <section className="star-game" aria-labelledby="star-title">
+  return <section className="star-game" aria-labelledby="star-title"><GameFeedback snapshot={snapshot} />
     <header className="bubble-game__header">
       <div><p className="eyebrow">Motion hit game</p><h1 id="star-title">Star Collector</h1></div>
       <dl><div><dt>Time</dt><dd>{Math.ceil(snapshot.roundRemainingMs / 1000)}s</dd></div></dl>

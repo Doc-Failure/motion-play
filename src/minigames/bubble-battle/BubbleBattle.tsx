@@ -1,3 +1,4 @@
+import { GameFeedback } from '../../game/GameFeedback'
 import { useCallback, useEffect, useRef, useState, type PointerEvent } from 'react'
 import type { MotionInputEvent } from '../../input/MotionProcessor'
 import type { PlayerId } from '../../input/PlayerZoneMapper'
@@ -75,11 +76,11 @@ export function BubbleBattle({ playerCount, inputEvents = [], externalPauseReaso
   const topScore = Math.max(...snapshot.scores.map(({ score }) => score))
   const winners = snapshot.scores.filter(({ score }) => score === topScore).map(({ playerId }) => playerId)
 
-  return <section className="bubble-game" aria-labelledby="bubble-game-title">
+  return <section className="bubble-game" aria-labelledby="bubble-game-title"><GameFeedback snapshot={snapshot} />
     <header className="bubble-game__header"><div><p className="eyebrow">{playerCount === 1 ? 'One-player motion game' : `${playerCount}-player motion battle`}</p><h1 id="bubble-game-title">Bubble Battle</h1></div><dl>{snapshot.scores.map(({ playerId, score }) => <div key={playerId}><dt>Player {playerId}</dt><dd>{score}</dd></div>)}<div><dt>Time</dt><dd>{seconds}s</dd></div></dl><div className="game-header-actions"><button className="text-button" type="button" onClick={() => pause('manual', 'Take a breather. Your score and time are safe.')}>Pause</button><button className="text-button" type="button" onClick={onExit}>Exit game</button></div></header>
     <p className="bubble-game__rules">Move over bubbles for +10. Keep clear of bombs — they cost 15 points. Mouse or touch works too.</p>
     <div className={`bubble-boards bubble-boards--${playerCount}`}>{players.map((playerId) => <div key={playerId} className={`bubble-viewport bubble-viewport--${playerId}`}><h2>Player {playerId}</h2><div className="bubble-board" onPointerDown={(event) => hitWithPointer(playerId, event)} aria-label={`Player ${playerId} Bubble Battle play area`}>
-      {snapshot.targets.filter((target) => target.playerId === playerId).map((target) => <span key={target.id} aria-hidden="true" className={`battle-target battle-target--${target.kind}`} style={{ left: `${(target.x - target.radius) * 100}%`, top: `${(target.y - target.radius) * 100}%`, width: `${target.radius * 200}%`, height: `${target.radius * 200}%` }}>{target.kind === 'bomb' ? '✹' : '○'}</span>)}
+      {snapshot.targets.filter((target) => target.playerId === playerId).map((target) => <span key={target.id} aria-hidden="true" className={`battle-target battle-target--${target.kind}`} style={{ left: `${target.x * 100}%`, top: `${target.y * 100}%`, width: `clamp(2rem, ${target.radius * 200}cqh, 7rem)`, height: `clamp(2rem, ${target.radius * 200}cqh, 7rem)` }}>{target.kind === 'bomb' ? '✹' : '○'}</span>)}
       {snapshot.phase === 'countdown' && <div className="game-curtain"><strong>{Math.max(1, Math.ceil(snapshot.countdownRemainingMs / 1000))}</strong><span>Player {playerId}, get ready!</span></div>}
     </div><p className="bubble-feedback" role="status">{snapshot.lastResults[playerId] === 'bubble' ? 'Pop! +10' : snapshot.lastResults[playerId] === 'bomb' ? 'Oops — bomb! −15' : 'Wave at a bubble to pop it.'}</p></div>)}</div>
     {snapshot.phase === 'results' && <div className="battle-results" role="dialog" aria-labelledby="battle-results-title"><p className="eyebrow">Round complete</p><h2 id="battle-results-title">{playerCount === 1 ? 'Great popping!' : winners.length > 1 ? 'It’s a tie!' : `Player ${winners[0]} wins!`}</h2><div className="battle-results__scores">{snapshot.scores.map(({ playerId, score }) => <p key={playerId}><strong>Player {playerId}</strong><span>{score} points</span></p>)}</div><button className="crayon-button crayon-button--primary" type="button" onClick={replay}>Play again</button></div>}

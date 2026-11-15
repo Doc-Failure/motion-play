@@ -30,7 +30,7 @@ export const catalogGames: readonly CatalogGame[] = [
   game(20, 'jump-rush', 'Jump Rush', 'Jump over obstacles as they race toward you.', 'Move & Survive', 'BODY_MOVE', 'Normal', 'Competitive', ['#72b779', '#f28c46']),
   game(21, 'window-wipe', 'Window Wipe', 'Sweep across the window until every smudge is gone.', 'Clean & Create', 'MOTION_BRUSH', 'Easy', 'Competitive', ['#66c7df', '#fffaf0'], true),
   game(22, 'paint-splash', 'Paint Splash', 'Cover as much of your canvas with paint as you can.', 'Clean & Create', 'MOTION_BRUSH', 'Easy', 'Competitive', ['#e45b9d', '#f5c847'], true),
-  game(23, 'car-wash', 'Car Wash', 'Scrub away the mud to reveal the bright car beneath.', 'Clean & Create', 'MOTION_BRUSH', 'Easy', 'Cooperative', ['#4c9ed9', '#9b6b43']),
+  game(23, 'car-wash', 'Car Wash', 'Scrub away the mud to reveal the bright car beneath.', 'Clean & Create', 'MOTION_BRUSH', 'Easy', 'Cooperative', ['#4c9ed9', '#9b6b43'], true),
   game(24, 'pizza-maker', 'Pizza Maker', 'Choose ingredients to copy each tasty pizza order.', 'Clean & Create', 'MOTION_HIT', 'Normal', 'Cooperative', ['#ee654f', '#f5c847']),
   game(25, 'graffiti-race', 'Graffiti Race', 'Paint quickly to reveal the hidden mural.', 'Clean & Create', 'MOTION_BRUSH', 'Normal', 'Competitive', ['#7557a8', '#72b779']),
   game(26, 'tower-builder', 'Tower Builder', 'Guide each block into place without toppling the tower.', 'Clean & Create', 'HAND_POSITION', 'Hard', 'Cooperative', ['#f28c46', '#4c9ed9']),

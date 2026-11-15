@@ -1096,3 +1096,94 @@ occlusion still require human hardware testing. T25B retains
   Current browser validation supersedes the earlier attempt's launch limitation.
 - Physical webcam behavior remains unverified and hardware flags remain unchanged.
   No deployment or commit was performed.
+
+
+## T25G — done (attempt 1, 2026-11-15)
+
+- Read SPEC.md and AGENTS.md and inspected the current catalog, routing, setup,
+  practice, input processor, shared session clock, brush games, recent models,
+  styles and tests before changing the application.
+- Added deterministic 1–4 player cooperative Car Wash. Each player scrubs 26 mud
+  patches arranged over their own car; newly cleaned patches earn one point.
+  Contributions remain isolated and combine into a shared cleaning percentage.
+  The round finishes early only when every participating car is fully clean,
+  otherwise the shared clock ends after 60 seconds. Duplicate and overlapping
+  brush traces cannot award a patch twice. Background areas do not score.
+- The model receives only normalized MOTION_BRUSH events. CameraSetup adapts
+  continuous processor positions through the existing brush input path. Invalid
+  input cannot advance the clock; delayed input cannot rewind it. Pre-countdown
+  and pre-resume captures are rejected. Snapshots own their arrays and scores.
+- Connected catalog availability (17 games), direct hash routes, setup, practice,
+  countdown, results and replay. Added original local SVG cars and mud, numbered
+  player boards, accessible progress meters, mouse/touch drag capture and a
+  keyboard brush (arrows to move, Space/Enter to scrub). Manual/tab-hidden pause,
+  camera recovery and focus restoration preserve the shared round lifecycle.
+  Desktop 3/4-player board width responds to viewport height. No packages added.
+- Added 21 model/component cases and setup integration, plus Chromium acceptance.
+  Tests cover accumulation, deduplication, isolation, team completion and reset,
+  all supported player counts, mirrored synthetic MotionProcessor frames,
+  malformed/stale/delayed input, expiry boundaries, pause/resume timing,
+  snapshot ownership, render cadence, StrictMode, pointer/keyboard controls,
+  camera recovery, results/replay and focus. Browser checks include four-player
+  input, untouched-player isolation, pause/resume and narrow-screen overflow.
+- Shared audio/visual feedback and associated browser-fixture changes appeared
+  concurrently in the workspace. Preserved those edits and verified Car Wash
+  with the shared GameFeedback integration, without claiming authorship of the
+  separate polish work.
+- Final verification passed: typecheck, lint, 230 unit/component tests across
+  40 files, production build, all 12 Chromium scenarios (including three shared
+  polish scenarios), and git diff --check. Inspected desktop and narrow Car Wash
+  screenshots. One targeted browser rerun failed before executing because macOS
+  denied Chromium MachPortRendezvousServer registration (1100); the subsequent
+  full browser suite passed on the final build.
+- Synthetic frames and mocked camera/browser tests do not validate physical
+  webcam behavior, lighting, framing, motion feel, latency or occlusion. Hardware
+  validation remains required and hardware_verified remains false. No deployment
+  or commit performed.
+
+## 2026-11-15 — Gameplay UI and sound polish
+
+Connected all 17 currently playable games to shared GameFeedback: accessible persistent
+sound toggle, round progress bar, per-player score/penalty bursts, countdown/go/score/
+penalty/result cues and a quiet original synthesized musical loop. Web Audio runs
+locally, unlocks through user input, and stops voices on exit, pause and mute. No
+external audio assets, new dependencies, recording or uploads.
+
+Added original local SVG garden, space, paper and stadium scenes, shared crayon/paper
+scoreboards, player colors, clearer targets (including fruit/baskets and bubbles),
+countdown/results styling and desktop playfield sizing. Gameplay hides the redundant
+site header/footer. Bubble rendering stays circular across split-screen aspect ratios.
+Reduced-motion preferences suppress score animations.
+
+Validation: typecheck, lint, production build, 231 unit/component tests and the final
+12-test Chromium suite passed. The browser sweep enters every playable game with both
+one and four players, verifies the shared controls and round UI, checks bubble aspect
+ratio, captures screenshots, and instruments real Web Audio note scheduling and mute.
+Browser fixtures now serve local built assets through request interception so artwork
+loads during visual checks. One initial Star Collector test failed on its short-lived
+star expectation under four-worker load; it passed alone and the full suite passed
+with two workers. Screenshot review prompted fixes to field height and stretched
+bubbles. No physical webcam or speaker/listening validation is claimed. No deployment
+or commit was performed; existing unrelated working-tree work was retained.
+
+
+## T25G — follow-up review (2026-11-15)
+
+- Read SPEC.md and AGENTS.md and inspected the existing uncommitted Car Wash
+  implementation, camera adapter, session lifecycle, practice, styles and tests.
+  Preserved the existing Car Wash and shared polish changes.
+- Fixed missing motion feedback: accepted generic MOTION_BRUSH events now show
+  a brush trace in the owning car without keyboard focus. Traces expire after
+  350ms without motion and clear on pause/replay; invalid events cannot move
+  them. The keyboard cursor remains independent. View radii use the model's
+  brush radius so the visible footprint matches cleaning geometry.
+- Added model/view regressions for trace expiry, player isolation, detached
+  snapshots and immediate pause/resume clearing. Added a two-player Chromium
+  scenario that scrubs both full cars, verifies the round stays active after
+  only one car is clean, and reaches the shared success result before timeout.
+- Final verification passed: typecheck, lint, all 233 unit/component tests across
+  41 files, production build, all 13 Chromium scenarios and git diff --check.
+  Inspected desktop and narrow four-player Car Wash screenshots.
+- Browser cameras and motion fixtures are synthetic. Physical webcam tracking,
+  lighting, latency and motion feel remain unverified; hardware flags remain
+  unchanged. No deployment or commit performed.

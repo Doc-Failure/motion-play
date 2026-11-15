@@ -84,6 +84,18 @@ describe('simple camera flow', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Exit game' }))
     expect(screen.getByRole('button', { name: 'Play Treasure Grab' })).toBeEnabled()
   })
+  it('routes Car Wash through four-player practice, gameplay and setup', async () => {
+    const source = controller()
+    render(<CameraSetup source={source} initialGame="car-wash" />)
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Play Car Wash' })).toBeEnabled())
+    fireEvent.click(screen.getByRole('button', { name: '4 players' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Play Car Wash' }))
+    expect(screen.getByRole('heading', { name: 'Scrub the cars together' })).toBeVisible()
+    fireEvent.click(screen.getByRole('button', { name: 'Start round now' }))
+    for (const id of [1, 2, 3, 4]) expect(screen.getByLabelText(`Player ${id} Car Wash play area`)).toBeVisible()
+    fireEvent.click(screen.getByRole('button', { name: 'Exit game' }))
+    expect(screen.getByRole('button', { name: 'Play Car Wash' })).toBeEnabled()
+  })
   it('explains denied permission and allows retry', async () => {
     const source = controller()
     vi.mocked(source.start).mockRejectedValueOnce(new DOMException('denied', 'NotAllowedError'))

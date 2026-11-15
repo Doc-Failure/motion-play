@@ -388,10 +388,12 @@
   {
     "id": "T25G",
     "title": "Implement and test Car Wash using generic MOTION_BRUSH input",
-    "depends_on": ["T25F"],
-    "status": "pending",
-    "attempts": 0,
-    "notes": "Acceptance: deterministic 1-4 player cooperative cleaning model, accumulation/deduplication/isolation tests, rendered brush simulation, practice/setup/catalog routing, pointer fallback, and honest availability gating.",
+    "depends_on": [
+      "T25F"
+    ],
+    "status": "done",
+    "attempts": 1,
+    "notes": "Implemented deterministic 1–4 player cooperative Car Wash using normalized MOTION_BRUSH events. Vehicle-shaped mud patches accumulate once, independent player progress/scores contribute to one team goal, and all cars must be clean to finish early. Added local crayon SVG art, pointer drag/touch capture and keyboard brush controls, catalog/setup/practice routing, countdown/results/replay, pause/tab visibility/camera recovery and focus restoration. Added 21 model/component cases plus setup and Chromium acceptance; synthetic mirrored MotionProcessor fixtures cover every player count. Typecheck, lint, 230 unit/component tests across 40 files and production build passed on 2026-11-15. All 12 Chromium scenarios passed on the final build, including Car Wash and concurrently added shared polish checks; inspected desktop/narrow screenshots. One targeted browser launch was blocked by macOS MachPortRendezvousServer permission denial (1100); subsequent full-suite verification passed. Hardware validation remains outstanding; no deployment or commit. Follow-up review on 2026-11-15: preserved the existing implementation and shared polish changes, added visible short-lived brush traces for accepted normalized input without requiring keyboard focus, cleared traces on pause/replay, and reused the model brush radius in the view. Added model/view regressions for trace isolation, expiry and snapshot ownership plus two-player Chromium completion coverage proving one clean car cannot finish the team round. Final checks passed: typecheck, lint, 233 unit/component tests across 41 files, production build, all 13 Chromium scenarios and git diff --check. Inspected desktop/narrow screenshots. Physical webcam validation remains outstanding; no deployment or commit.",
     "needs_hardware_validation": true,
     "hardware_verified": false
   },

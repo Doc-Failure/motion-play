@@ -1,3 +1,4 @@
+import { gameAudio } from '../audio/GameAudio'
 import { useEffect, useState } from 'react'
 import { GeneratedHomeScene } from '../design/GeneratedHomeScene'
 import { ScribbleIcon, type ScribbleIconName } from '../design/ScribbleIcon'
@@ -14,6 +15,7 @@ const routeFromHash = (): Route => {
   if (hash === 'settings') return { page: 'settings' }
   if (hash === 'camera') return { page: 'camera' }
   if (hash === 'tournament') return { page: 'camera', tournament: true }
+  if (hash === 'camera/car-wash') return { page: 'camera', game: 'car-wash' }
   if (hash === 'camera/window-wipe') return { page: 'camera', game: 'window-wipe' }
   if (hash === 'camera/whack-a-mole') return { page: 'camera', game: 'whack-a-mole' }
   if (hash === 'camera/treasure-grab') return { page: 'camera', game: 'treasure-grab' }
@@ -77,5 +79,5 @@ export function App() {
     document.title = `${route.page === 'home' ? '' : `${route.page === 'detail' ? getGameBySlug(route.slug)?.title ?? 'Game' : route.page[0].toUpperCase() + route.page.slice(1)} · `}Motion Play`
     document.getElementById('main-content')?.focus({ preventScroll: true })
   }, [route])
-  return <><a className="skip-link" href="#main-content">Skip to main content</a><main className="home-shell" id="main-content" tabIndex={-1}>{route.page !== 'home' && <AppHeader />}{route.page === 'home' ? <Home /> : route.page === 'catalog' ? <Catalog /> : route.page === 'settings' ? <Catalog /> : route.page === 'camera' ? null : <GameDetail slug={route.slug} />}<div hidden={route.page !== 'camera'}><CameraSetup active={route.page === 'camera'} initialGame={route.page === 'camera' ? route.game : undefined} tournament={route.page === 'camera' && route.tournament} /></div>{route.page !== 'home' && <footer className="home-footer"><p><span aria-hidden="true">★</span> Made for 1–4 local players <span aria-hidden="true">★</span></p></footer>}</main></>
+  return <><a className="skip-link" href="#main-content">Skip to main content</a><main onPointerDown={gameAudio.unlock} onKeyDown={gameAudio.unlock} className="home-shell" id="main-content" tabIndex={-1}>{route.page !== 'home' && <AppHeader />}{route.page === 'home' ? <Home /> : route.page === 'catalog' ? <Catalog /> : route.page === 'settings' ? <Catalog /> : route.page === 'camera' ? null : <GameDetail slug={route.slug} />}<div hidden={route.page !== 'camera'}><CameraSetup active={route.page === 'camera'} initialGame={route.page === 'camera' ? route.game : undefined} tournament={route.page === 'camera' && route.tournament} /></div>{route.page !== 'home' && <footer className="home-footer"><p><span aria-hidden="true">★</span> Made for 1–4 local players <span aria-hidden="true">★</span></p></footer>}</main></>
 }

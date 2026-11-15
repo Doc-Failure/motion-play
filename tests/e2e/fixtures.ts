@@ -50,10 +50,13 @@ export async function openApp(page: Page, hash = '#/camera') {
   const script = readdirSync(assets).find((file) => file.endsWith('.js'))
   const style = readdirSync(assets).find((file) => file.endsWith('.css'))
   if (!script || !style) throw new Error('Run `npm run build` before the browser tests.')
-  await page.goto(`about:blank${hash}`)
-  await page.setContent('<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Motion Play</title></head><body><div id="root"></div></body></html>')
-  await page.addStyleTag({ content: readFileSync(resolve(assets, style), 'utf8') })
-  await page.addScriptTag({ content: readFileSync(resolve(assets, script), 'utf8'), type: 'module' })
+  await page.route('http://motion-play.test/**', async route => {
+    const pathname = new URL(route.request().url()).pathname
+    const file = resolve(process.cwd(), 'dist', pathname === '/' ? 'index.html' : pathname.slice(1))
+    const mime = file.endsWith('.js') ? 'text/javascript' : file.endsWith('.css') ? 'text/css' : file.endsWith('.svg') ? 'image/svg+xml' : file.endsWith('.webp') ? 'image/webp' : 'text/html'
+    await route.fulfill({body:readFileSync(file),contentType:mime})
+  })
+  await page.goto(`http://motion-play.test/${hash}`)
 }
 
 export async function openCamera(page: Page) {

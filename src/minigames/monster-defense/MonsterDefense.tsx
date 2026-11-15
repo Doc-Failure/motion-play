@@ -1,3 +1,4 @@
+import { GameFeedback } from '../../game/GameFeedback'
 import { useEffect, useRef, useState, type PointerEvent } from 'react'
 import type { MotionInputEvent } from '../../input/MotionProcessor'
 import type { PlayerCount, PlayerId } from '../../input/PlayerZoneMapper'
@@ -46,7 +47,7 @@ export function MonsterDefense({ playerCount, inputEvents = [], onExit, external
     hitAt(playerId, (event.clientX - bounds.left) / bounds.width, (event.clientY - bounds.top) / bounds.height)
   }
   const goalReached = snapshot.teamScore >= snapshot.teamGoal
-  return <section className="monster-game" aria-labelledby="monster-title">
+  return <section className="monster-game" aria-labelledby="monster-title"><GameFeedback snapshot={snapshot} />
     <header className="bubble-game__header">
       <div><p className="eyebrow">Together • Motion hit game</p><h1 id="monster-title">Monster Defense</h1></div>
       <dl><div><dt>Team score</dt><dd>{snapshot.teamScore} / {snapshot.teamGoal}</dd></div><div><dt>Time</dt><dd>{Math.ceil(snapshot.roundRemainingMs / 1000)}s</dd></div></dl>

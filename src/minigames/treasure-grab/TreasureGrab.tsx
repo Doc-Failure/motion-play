@@ -1,3 +1,4 @@
+import { GameFeedback } from '../../game/GameFeedback'
 import { useEffect, useRef, useState, type PointerEvent } from 'react'
 import type { MotionInputEvent } from '../../input/MotionProcessor'
 import type { PlayerCount, PlayerId } from '../../input/PlayerZoneMapper'
@@ -50,7 +51,7 @@ export function TreasureGrab({ playerCount, inputEvents = [], onExit, externalPa
     const bounds = event.currentTarget.getBoundingClientRect()
     hitAt(playerId, (event.clientX - bounds.left) / bounds.width, (event.clientY - bounds.top) / bounds.height)
   }
-  return <section className="treasure-game" aria-labelledby="treasure-title">
+  return <section className="treasure-game" aria-labelledby="treasure-title"><GameFeedback snapshot={snapshot} />
     <header className="bubble-game__header">
       <div><p className="eyebrow">Motion hit game</p><h1 id="treasure-title">Treasure Grab</h1></div>
       <dl><div><dt>Time</dt><dd>{Math.ceil(snapshot.roundRemainingMs / 1000)}s</dd></div></dl>
