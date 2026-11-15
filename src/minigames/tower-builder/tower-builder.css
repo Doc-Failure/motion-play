@@ -1,0 +1,16 @@
+.tower-game { position: relative; color: #29313c; }
+.tower-boards { display: grid; gap: .5rem; }
+.tower-player { min-width: 0; }
+.tower-player h2 { font-size: 1rem; }
+.tower-player h2 span { display: block; font-size: .8rem; }
+.tower-board { position: relative; height: min(65vh, 36rem); border: 3px solid #29313c; border-radius: 1% 2% 1% 2%; touch-action: none; }
+.tower-board:focus-visible { outline: 4px solid #7557a8; outline-offset: -4px; }
+.tower-block { position: absolute; height: 7%; transform: translate(-50%, -50%); pointer-events: none; overflow: visible; }
+.tower-block path:first-child { fill: #f5c847bb; stroke: #29313c; stroke-width: 2; stroke-linejoin: round; }
+.tower-block path + path { fill: none; stroke: #9b6b43; stroke-width: 2; opacity: .55; }
+.tower-block--placed:nth-child(even) path:first-child { fill: #66c7dfbb; }
+.tower-block--target path:first-child { fill: #fff9e944; stroke: #29313c; stroke-width: 3; stroke-dasharray: 6 4; }
+.tower-block--target path + path { display: none; }
+.tower-block--hand path:first-child { fill: #f28c46aa; stroke-width: 3; }
+.tower-progress { position: absolute; bottom: 6%; left: 25%; width: 50%; height: .8rem; accent-color: #397960; pointer-events: none; }
+.tower-feedback, .tower-help, .tower-rules { font-size: .85rem; }

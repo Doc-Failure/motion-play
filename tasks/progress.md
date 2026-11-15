@@ -1719,3 +1719,80 @@ retain model/component recovery coverage; their existing browser recovery cases
 must execute when their public routes return. Tournament acceptance remains
 out of the current scope. No physical webcam or Safari validation, deployment,
 external upload, dependency change or commit was performed.
+
+### 2026-11-16 — T25L: Tower Builder (generic position implementation)
+
+- Added a deterministic cooperative 1–4 player model consuming normalized
+  `HAND_POSITION` events. Each lane builds independently and contributes to the
+  team total: +10 per placement, +30 bonus for completing six blocks. Holding an
+  off-balance block at the landing height topples only that lane; earned points
+  remain safe. Targets rise with the stack and follow the supporting block.
+- Placement requires 800ms of stable, fresh samples. Jitter, gaps above 250ms,
+  low confidence, leaving the landing height, explicit simulator release and
+  pauses break continuity. Rendering/cached positions cannot award points.
+  Malformed, stale, duplicate, wrong-kind and wrong-player events are rejected.
+- Added transparent crayon block overlays, steady-hold meters, player contribution
+  labels, shared team results, replay, deliberate pointer/touch holds and keyboard
+  arrows plus Space/Enter holds. Integrated shared manual/tab/camera recovery,
+  reconnect, frozen clocks and focus restoration. No camera/media imports in the
+  model or game view.
+- Integrated the existing camera-setup event adapter and game dispatch. The current
+  product scope supersedes the backlog's old practice-screen requirement: Play
+  enters countdown immediately. Tower Builder stays outside `visibleGameSlugs`;
+  catalog/Quick Play do not expose it and both legacy URLs return to the catalog.
+  Its implementation availability metadata is tested separately from visibility.
+- Camera adaptation currently uses motion centroids, not hand landmarks. Help text
+  explains that stable webcam control is unverified. Synthetic moving-patch fixtures
+  verify mirrored mapping and score isolation for 1–4 players; they are not physical
+  webcam validation. `needs_hardware_validation` remains true and
+  `hardware_verified` remains false.
+- Added 24 model/rendered component cases, two setup integration cases, catalog
+  availability coverage and two browser route-gating cases. Tests cover hold timing,
+  render cadence, jitter/missing input, low confidence, explicit release, cooperative
+  totals, completion bonus, toppling/isolation, detached snapshots, round boundaries,
+  replay, pointer normalization, keyboard controls and recovery.
+- Final verification: **439 unit/component tests across 56 files passed**;
+  typecheck, lint, production build and whitespace checks passed. Full Chromium run:
+  **25 passed, 37 intentionally skipped** for games hidden by the current public
+  scope. Tower gameplay is covered by model/component simulation; its browser cases
+  validate public gating, not gameplay or real-camera hand stability. Reviewed the
+  desktop catalog screenshot.
+- Shared-workspace Paper Dojo/catalog/audio/typography changes appeared during the
+  run and were preserved. Initial full-suite catalog failures reflected partially
+  written parallel edits; the remaining Tower availability expectation was updated.
+  The final suite passed. A first broad browser run was interrupted to rebuild the
+  changed workspace; the complete run above used the rebuilt application.
+
+T25L implementation is complete under the current hidden-game refinement scope.
+No physical webcam or Safari validation, deployment, external upload, dependency
+change or commit was performed in this task.
+
+### 2026-11-16 — T25L follow-up: input ordering, lane bounds and keyboard preview
+
+- Read SPEC.md and AGENTS.md and inspected the current application and existing
+  Tower Builder implementation. T25L was already marked done in the working tree;
+  kept the five-game public refinement scope and preserved existing unrelated edits.
+- Reproduced and fixed two placement defects with regression tests: low-confidence
+  samples now retain their timestamp so older/duplicate packets cannot restore lost
+  tracking, and a block must fit fully inside its lane before it can score. The
+  model and SVG now share the block-width constant. Off-edge placements topple only
+  the owning stack and retain previously earned points.
+- Focused keyboard lanes now show the block position before Space/Enter is held;
+  arrows move that preview without awarding points. Pointer coordinates also update
+  the preview, and blur/results clear it. Added four model/component regression
+  cases; they failed before the fixes. The preview assertion uses numeric tolerance
+  for normalized floating-point coordinates.
+- Verification: 446 unit/component tests across 57 files passed, including all 28
+  Tower Builder cases. Typecheck, lint and production build passed. Reviewed the
+  desktop camera-lobby screenshot generated with the synthetic person fixture.
+- Full Chromium run: 27 passed, 37 intentionally skipped, one Paper Dojo test
+  failed because it advanced to ~16.4s of gameplay before looking for the 18s
+  bamboo bonus. Corrected that test to advance into the bonus window. The first
+  targeted rerun was blocked at browser startup by macOS Mach-port permission
+  denial (1100); a second targeted run passed. The full suite was not repeated
+  after this test-only timing fix. Typecheck, lint and whitespace checks passed
+  again. Also reviewed the narrow catalog screenshot; existing Paper Dojo/public
+  catalog changes were preserved.
+- Tower browser coverage remains route gating; gameplay coverage uses normalized
+  synthetic events and rendered component controls. No physical webcam or Safari validation,
+  deployment, external upload, dependency change or commit was performed.

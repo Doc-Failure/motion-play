@@ -18,3 +18,4 @@ createRoot(root).render(
 )
 
 import './game/camera-play.css'
+import './design/typography.css'

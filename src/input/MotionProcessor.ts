@@ -144,7 +144,7 @@ function motionComponents(mask: Uint8ClampedArray, width: number, height: number
       sumX += (x + .5) / width; sumY += (y + .5) / height
       if (spatialSampling) {
         const local = mapCameraPoint({x:(x+.5)/width,y:(y+.5)/height},zone)!
-        const key = Math.min(9,Math.floor(local.y*10))*10 + Math.min(9,Math.floor(local.x*10))
+        const key = Math.min(19,Math.floor(local.y*20))*10 + Math.min(9,Math.floor(local.x*10))
         const cell = cells.get(key) ?? {x:0,y:0,count:0}
         cell.x += local.x; cell.y += local.y; cell.count++
         cells.set(key,cell)

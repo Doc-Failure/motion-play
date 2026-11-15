@@ -1,0 +1,7 @@
+@font-face { font-family:'Motion Hand'; src:url('../assets/fonts/PatrickHand-Regular.ttf') format('truetype'); font-style:normal; font-weight:400; font-display:swap; }
+:root { --font-hand:'Motion Hand','Chalkboard SE','Segoe Print',cursive; font-family:var(--font-hand); font-synthesis:weight; }
+body,button,input,select,textarea,svg text { font-family:var(--font-hand); }
+h1,h2,h3,.wordmark,.reference-home .hero h1,.reference-home .action-card h3 { font-family:var(--font-hand); letter-spacing:.015em; font-weight:400; -webkit-text-stroke:.022em currentColor; }
+button,a,dt,strong { letter-spacing:.01em; }
+.reference-home .hero h1 { letter-spacing:.005em; }
+.catalog-picker .catalog-toolbar h1 { -webkit-text-stroke:.018em currentColor; }

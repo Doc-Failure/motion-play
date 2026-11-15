@@ -62,7 +62,7 @@ export async function openApp(page: Page, hash = '#/camera') {
   await page.route('http://motion-play.test/**', async route => {
     const pathname = new URL(route.request().url()).pathname
     const file = resolve(process.cwd(), 'dist', pathname === '/' ? 'index.html' : pathname.slice(1))
-    const mime = file.endsWith('.js') ? 'text/javascript' : file.endsWith('.css') ? 'text/css' : file.endsWith('.svg') ? 'image/svg+xml' : file.endsWith('.webp') ? 'image/webp' : 'text/html'
+    const mime = file.endsWith('.js') ? 'text/javascript' : file.endsWith('.css') ? 'text/css' : file.endsWith('.svg') ? 'image/svg+xml' : file.endsWith('.webp') ? 'image/webp' : file.endsWith('.ttf') ? 'font/ttf' : 'text/html'
     await route.fulfill({body:readFileSync(file),contentType:mime})
   })
   await page.goto(`http://motion-play.test/${hash}`)
