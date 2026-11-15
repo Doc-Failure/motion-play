@@ -467,3 +467,29 @@ body { background: #fffdf8 url('./assets/home/paper-background.webp') repeat; ba
 @media (min-width: 800px) {
   .car-boards--3, .car-boards--4 { width: min(100%, max(32rem, calc((100vh - 25rem) * 1.6667))); margin-inline: auto; }
 }
+
+.pizza-game { position: relative; z-index: 1; padding: 1rem; color: #34254c; background: #fff8e7; }
+.pizza-game h1 { margin: 0; font-size: clamp(2.3rem, 6vw, 4.5rem); letter-spacing: -.05em; }
+.pizza-rules { padding: .8rem; border: 3px dashed #34254c; border-radius: .8rem 1.2rem .7rem 1rem; background: #ffe48a; text-align: center; font-weight: 800; }
+.pizza-help { text-align: center; font-weight: 750; }
+.pizza-feedback { min-height: 3.5em; margin: .6rem 0 0; padding: .4rem; text-align: center; font-weight: 800; overflow-wrap: anywhere; }
+.pizza-boards { display: grid; gap: 1rem; }
+.pizza-boards--2, .pizza-boards--3, .pizza-boards--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.pizza-player { --player-paper: #fce0eb; min-width: 0; }
+.pizza-player--2 { --player-paper: #d6f0f8; }.pizza-player--3 { --player-paper: #e5f1d5; }.pizza-player--4 { --player-paper: #eee0f9; }
+.pizza-player h2 { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem; margin: 0; padding: .5rem .8rem; border: 3px solid #34254c; border-radius: .7rem 1rem 0 0; background: var(--player-paper); font-size: 1.15rem; }
+.pizza-player h2 span { font-size: 1rem; }
+.pizza-board { position: relative; height: 52vh; min-height: 20rem; overflow: hidden; border: 4px solid #34254c; border-radius: 0 0 1.3rem .8rem; background: repeating-linear-gradient(7deg, transparent 0 8px, #34254c08 9px 10px), var(--player-paper); box-shadow: 4px 5px 0 #34254c; touch-action: manipulation; }
+.pizza-boards--3 .pizza-board, .pizza-boards--4 .pizza-board { height: 30vh; min-height: 15rem; }
+.pizza-order { min-height: 2.8em; display: grid; place-content: center; margin: 0; padding: .8rem; border: 2px dashed #34254c; border-radius: .6rem; background: #ffe48a; text-align: center; font-weight: 800; }
+.pizza-target { position: absolute; width: 24%; height: 32%; padding: 0; translate: -50% -50%; border: 0; background: transparent; color: #34254c; cursor: pointer; }
+.pizza-target svg { width: 100%; height: 70%; stroke: #34254c; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+.pizza-target span { display: block; width: max-content; max-width: 100%; margin: auto; padding: 0 .15rem; border-radius: .3rem; background: #fff8e7; font-size: clamp(.7rem, 2vw, 1rem); font-weight: 850; }
+.pizza-target:focus-visible { outline: 4px solid #34254c; outline-offset: 3px; border-radius: 25%; }
+.pizza-game .battle-results { color: #34254c; background: #fff8e7; }
+@media (max-width: 600px) { .pizza-game { padding: .65rem; }.pizza-player h2, .pizza-player h2 span { font-size: .85rem; }.pizza-order { padding: .5rem .1rem; font-size: .85rem; } }
+.pizza-pie { position: absolute; left: 20%; top: 2%; width: 60%; height: 52%; stroke: #34254c; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.pizza-target:disabled { cursor: default; }
+.pizza-serving { position: absolute; top: 38%; left: 20%; width: 60%; text-align: center; font-weight: 850; background: #fff8e7; border-radius: .5rem; }
+
+@media (max-width: 600px) { .pizza-target span { overflow-wrap: anywhere; line-height: 1.1; }.pizza-order { min-height: 4.2em; } }

@@ -1187,3 +1187,39 @@ or commit was performed; existing unrelated working-tree work was retained.
 - Browser cameras and motion fixtures are synthetic. Physical webcam tracking,
   lighting, latency and motion feel remain unverified; hardware flags remain
   unchanged. No deployment or commit performed.
+
+
+## T25H — Pizza Maker (2026-11-15)
+
+- Read SPEC.md and AGENTS.md and inspected the application, normalized camera
+  adapter, session lifecycle, existing games, shared artwork/styles and tests.
+- Implemented a deterministic cooperative 1–4 player order model consuming only
+  generic MOTION_HIT events. Match two toppings in either order for +10 each and
+  a +20 pizza bonus; wrong or duplicate toppings cost 5. Per-player orders,
+  cooldowns and scores remain isolated. Completed pizzas contribute to a shared
+  goal of three per player, with early success and a 900ms serving interval.
+- Added original local SVG pizza/ingredient drawings, accessible live feedback,
+  native ingredient buttons and normalized pointer fallback. Integrated catalog,
+  direct setup routes, practice, shared audiovisual feedback, countdown, results,
+  replay, pause, hidden-tab protection, camera recovery and focus restoration.
+  Camera/media libraries remain outside the game model and view.
+- Added 22 model/component test cases covering every player count, mirrored
+  synthetic motion, unordered correctness, duplicates, penalties, isolation,
+  malformed/stale/delayed input, cooldown/serving boundaries, pause/resume,
+  countdown, render cadence, snapshot ownership, team completion, timeout,
+  StrictMode, fallback controls, camera recovery and replay. Catalog navigation
+  and two Chromium acceptance scenarios cover integration and keyboard input.
+- Verification passed: typecheck, lint, 256 unit/component tests in 43 files,
+  production build, and all 15 Chromium scenarios with two workers. Reviewed
+  desktop and narrow screenshots. Follow-up visual fixes wrap narrow ingredient
+  labels within their controls, align order tickets, and replace stale serving
+  feedback when the next order arrives. Repeated all unit/component tests, lint,
+  build/typecheck, and both affected Chromium scenarios after those fixes;
+  label-containment assertions and both scenarios passed.
+- Initial failures were investigated: the one-player synthetic movement patch
+  was too small for the configured activity threshold, so the fixture was enlarged;
+  a concurrent rebuild removed assets while two browser checks were reading them.
+  The subsequent full browser run against a stable build passed all 15 cases.
+- Only synthetic camera and browser input was tested. Physical webcam behavior,
+  lighting, framing, latency, occlusion and motion feel remain unverified;
+  hardware_verified stays false. No deployment, external upload or commit.

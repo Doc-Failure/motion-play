@@ -22,7 +22,7 @@ for (const players of [1, 4]) {
         const bounds = await bubble.boundingBox()
         expect(Math.abs(bounds!.width - bounds!.height)).toBeLessThan(2)
       }
-      if (['bubble-battle','meteor-smash','whack-a-mole','fruit-catcher','car-wash'].includes(game.slug)) {
+      if (['bubble-battle','meteor-smash','whack-a-mole','fruit-catcher','car-wash','pizza-maker'].includes(game.slug)) {
         await page.screenshot({path:test.info().outputPath(`${game.slug}-${players}p.png`),fullPage:true})
       }
     }

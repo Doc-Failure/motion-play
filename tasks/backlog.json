@@ -401,9 +401,9 @@
     "id": "T25H",
     "title": "Implement and test Pizza Maker using generic MOTION_HIT input",
     "depends_on": ["T25G"],
-    "status": "pending",
-    "attempts": 0,
-    "notes": "Acceptance: deterministic 1-4 player cooperative order model, ingredient correctness/isolation tests, rendered simulation, practice/setup/catalog routing, pointer fallback, and honest availability gating.",
+    "status": "done",
+    "attempts": 1,
+    "notes": "Implemented deterministic 1–4 player cooperative Pizza Maker with normalized MOTION_HIT input, unordered two-topping recipes, per-player correctness/duplicate penalties and cooldowns, serving delay, isolated scores/orders and a shared pizza goal with early completion. Integrated catalog/setup/practice routing, local crayon SVG pizza and ingredients, pointer/native keyboard fallbacks, shared audiovisual feedback, countdown/results/replay, pause/tab visibility/camera recovery and focus restoration. Added 22 model/component cases, catalog navigation coverage and two Chromium scenarios, plus all-game sweep coverage. Final typecheck, lint, 256 unit/component tests across 43 files and production build passed on 2026-11-15. All 15 Chromium scenarios passed; after screenshot-driven narrow-label and order-feedback fixes, both affected Pizza Maker scenarios passed again with label-containment assertions. Inspected desktop and narrow screenshots. An initial motion fixture was below the configured pixel-activity threshold and was corrected; an earlier browser run lost two asset reads during a concurrent rebuild, then the full stable-build run passed. Physical webcam validation remains outstanding; hardware_verified remains false. No deployment or commit.",
     "needs_hardware_validation": true,
     "hardware_verified": false
   },
