@@ -4,11 +4,14 @@ import { ScribbleIcon, type ScribbleIconName } from '../design/ScribbleIcon'
 import { catalogCategories, catalogGames, getGameBySlug, type CatalogCategory, type Difficulty } from './catalog'
 import { GameArt } from './GameArt'
 import { CameraSetup } from '../camera/CameraSetup'
+import { loadAchievements, loadSettings, saveSettings, unlockAchievement, type LocalSettings } from './localPreferences'
+import { syncOfflineCaching } from './offlineCache'
 
-type Route = { page: 'home' } | { page: 'catalog' } | { page: 'camera'; game?: 'bubble-battle' | 'window-wipe' | 'whack-a-mole' | 'balloon-panic' | 'gold-rush' | 'paint-splash' | 'simon-says' | 'fruit-catcher' | 'air-pong' | 'goalkeeper'; tournament?: boolean } | { page: 'detail'; slug: string }
+type Route = { page: 'home' } | { page: 'catalog' } | { page: 'settings' } | { page: 'camera'; game?: 'bubble-battle' | 'window-wipe' | 'whack-a-mole' | 'balloon-panic' | 'gold-rush' | 'paint-splash' | 'simon-says' | 'fruit-catcher' | 'air-pong' | 'goalkeeper'; tournament?: boolean } | { page: 'detail'; slug: string }
 const routeFromHash = (): Route => {
   const hash = window.location.hash.replace(/^#\/?/, '')
   if (hash === 'catalog') return { page: 'catalog' }
+  if (hash === 'settings') return { page: 'settings' }
   if (hash === 'camera') return { page: 'camera' }
   if (hash === 'tournament') return { page: 'camera', tournament: true }
   if (hash === 'camera/window-wipe') return { page: 'camera', game: 'window-wipe' }
@@ -34,13 +37,28 @@ function Home() {
     { title: 'Quick Play', description: 'Jump in with your camera or try demo mode.', icon: 'play', tone: 'yellow', href: '#/camera', featured: true },
     { title: 'Tournament', description: 'Play a set of games and chase the top score.', icon: 'trophy', tone: 'purple', href: '#/tournament' },
     { title: 'Game Catalog', description: 'Peek at every game in the toy box.', icon: 'cards', tone: 'blue', href: '#/catalog' },
-    { title: 'Settings', description: 'Tune sound, motion, and accessibility.', icon: 'gear', tone: 'green' },
+    { title: 'Settings', description: 'Tune sound, motion, offline play, and accessibility.', icon: 'gear', tone: 'green', href: '#/settings' },
   ]
   return <div className="reference-home"><GeneratedHomeScene /><section className="hero" id="top" aria-labelledby="app-title"><div className="hero-copy"><h1 id="app-title" aria-label="Motion Play!"><span className="title-red">M</span><span className="title-orange">o</span><span className="title-green">t</span><span className="title-blue">i</span><span className="title-blue-dark">o</span><span className="title-pink">n</span> <span className="title-purple">Play!</span></h1><p className="intro">Camera Party Games for 1–4 Players</p></div></section>
     <section className="play-menu" id="play-menu" aria-labelledby="play-menu-title"><div className="section-heading"><p className="eyebrow">Pick your path</p><h2 id="play-menu-title">How do you want to play?</h2></div><div className="action-grid">{actions.map((action) => {
       const content = <><div className="action-icon" aria-hidden="true"><ScribbleIcon name={action.icon} /></div><div><h3>{action.title}</h3><span className="sr-only">{action.description}</span>{!action.href && <span className="coming-soon">Coming soon</span>}</div></>
       return action.href ? <a className={`action-card action-card--${action.tone}`} href={action.href} key={action.title}>{content}</a> : <article className={`action-card action-card--${action.tone}${action.featured ? ' action-card--featured' : ''}`} key={action.title}>{action.featured && <span className="sticker">Start here!</span>}{content}</article>
     })}</div><div className="home-callouts"><p><span className="camera-doodle" aria-hidden="true">◉</span> Use your camera<br />to play with your body!</p><p><span className="players-doodle" aria-hidden="true">●●●●</span> 1–4 Players</p></div><p className="privacy-note"><ScribbleIcon name="home" /> No accounts. No uploads. Just local play.</p></section></div>
+}
+
+const achievementNames = {
+  'catalog-explorer': { title: 'Toy-box explorer', description: 'Visited the complete game catalog.' },
+  'tournament-ready': { title: 'Party planner', description: 'Opened tournament setup.' },
+}
+
+function Settings({ settings, onChange }: { settings: LocalSettings; onChange: (settings: LocalSettings) => void }) {
+  const achievements = loadAchievements()
+  const update = (key: keyof LocalSettings, value: boolean) => onChange({ ...settings, [key]: value })
+  return <section className="settings-page" aria-labelledby="settings-title"><a className="back-link" href="#/">← Home</a><p className="eyebrow">Your local play space</p><h1 id="settings-title" tabIndex={-1}>Settings &amp; achievements</h1><p>These choices and achievements stay only in this browser. Nothing is uploaded.</p>
+    <div className="settings-grid"><fieldset><legend>Accessibility &amp; sound</legend><label className="toggle-row"><span><strong>Reduce motion</strong><small>Stops decorative animation even when your device preference allows it.</small></span><input type="checkbox" checked={settings.reducedMotion} onChange={(event) => update('reducedMotion', event.target.checked)} /></label><label className="toggle-row"><span><strong>Sound cues</strong><small>Stores your preference for game cues. Camera audio is never captured.</small></span><input type="checkbox" checked={settings.soundEnabled} onChange={(event) => update('soundEnabled', event.target.checked)} /></label></fieldset>
+      <fieldset><legend>Offline play</legend><label className="toggle-row"><span><strong>Cache this app on this device</strong><small>Optional. Saves visited app assets for offline use. Camera permission still depends on browser security rules.</small></span><input type="checkbox" checked={settings.offlineCaching} onChange={(event) => update('offlineCaching', event.target.checked)} /></label><p className="settings-note" role="status">{settings.offlineCaching ? 'Offline caching is enabled.' : 'Offline caching is off.'}</p></fieldset></div>
+    <section className="achievement-panel" aria-labelledby="achievements-title"><h2 id="achievements-title">Achievements</h2>{achievements.length ? <ul>{achievements.map((achievement) => <li key={achievement.id}><span aria-hidden="true">★</span><div><strong>{achievementNames[achievement.id].title}</strong><p>{achievementNames[achievement.id].description}</p></div></li>)}</ul> : <p>No achievements yet. Explore the catalog or set up a tournament to earn one.</p>}</section>
+  </section>
 }
 
 function Catalog() {
@@ -67,6 +85,18 @@ function GameDetail({ slug }: { slug: string }) {
 
 export function App() {
   const [route, setRoute] = useState(routeFromHash)
+  const [settings, setSettings] = useState(loadSettings)
   useEffect(() => { const navigate = () => setRoute(routeFromHash()); window.addEventListener('hashchange', navigate); return () => window.removeEventListener('hashchange', navigate) }, [])
-  return <main className="home-shell">{route.page !== 'home' && <AppHeader />}{route.page === 'home' ? <Home /> : route.page === 'catalog' ? <Catalog /> : route.page === 'camera' ? <CameraSetup initialGame={route.game} tournament={route.tournament} /> : <GameDetail slug={route.slug} />}{route.page !== 'home' && <footer className="home-footer"><p><span aria-hidden="true">★</span> Made for 1–4 local players <span aria-hidden="true">★</span></p></footer>}</main>
+  useEffect(() => {
+    document.documentElement.classList.toggle('reduce-motion', settings.reducedMotion)
+    saveSettings(settings)
+    void syncOfflineCaching(settings.offlineCaching).catch(() => undefined)
+  }, [settings])
+  useEffect(() => {
+    if (route.page === 'catalog') unlockAchievement('catalog-explorer')
+    if (route.page === 'camera' && route.tournament) unlockAchievement('tournament-ready')
+    document.title = `${route.page === 'home' ? '' : `${route.page === 'detail' ? getGameBySlug(route.slug)?.title ?? 'Game' : route.page[0].toUpperCase() + route.page.slice(1)} · `}Motion Play`
+    document.getElementById('main-content')?.focus({ preventScroll: true })
+  }, [route])
+  return <><a className="skip-link" href="#main-content">Skip to main content</a><main className="home-shell" id="main-content" tabIndex={-1}>{route.page !== 'home' && <AppHeader />}{route.page === 'home' ? <Home /> : route.page === 'catalog' ? <Catalog /> : route.page === 'settings' ? <Settings settings={settings} onChange={setSettings} /> : route.page === 'camera' ? <CameraSetup initialGame={route.game} tournament={route.tournament} /> : <GameDetail slug={route.slug} />}{route.page !== 'home' && <footer className="home-footer"><p><span aria-hidden="true">★</span> Made for 1–4 local players <span aria-hidden="true">★</span></p></footer>}</main></>
 }

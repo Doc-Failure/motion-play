@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { App } from '../src/app/App'
 import { catalogCategories, catalogGames } from '../src/app/catalog'
@@ -24,18 +24,40 @@ describe('catalog data', () => {
 })
 
 describe('App navigation', () => {
-  beforeEach(() => visit('#/'))
+  beforeEach(() => { window.localStorage.clear(); visit('#/') })
   afterEach(() => visit('#/'))
 
-  it('renders the homepage and makes only the catalog available', () => {
+  it('renders the homepage with playable navigation and local settings', () => {
     render(<App />)
     expect(screen.getByRole('heading', { level: 1, name: 'Motion Play!' })).toBeVisible()
     expect(screen.getByText('Camera Party Games for 1–4 Players')).toBeVisible()
     expect(screen.getByText('No accounts. No uploads. Just local play.')).toBeVisible()
     expect(screen.getByRole('link', { name: /game catalog/i })).toHaveAttribute('href', '#/catalog')
     expect(screen.getByRole('link', { name: /quick play/i })).toHaveAttribute('href', '#/camera')
-    expect(screen.getAllByText('Coming soon')).toHaveLength(1)
+    expect(screen.queryByText('Coming soon')).not.toBeInTheDocument()
     expect(screen.getByRole('link', { name: /tournament/i })).toHaveAttribute('href', '#/tournament')
+    expect(screen.getByRole('link', { name: /settings/i })).toHaveAttribute('href', '#/settings')
+  })
+
+  it('persists accessibility settings locally and exposes achievement progress', async () => {
+    visit('#/catalog')
+    const view = render(<App />)
+    visit('#/settings')
+    const reduceMotion = await screen.findByRole('checkbox', { name: /reduce motion/i })
+    fireEvent.click(reduceMotion)
+    expect(document.documentElement).toHaveClass('reduce-motion')
+    expect(JSON.parse(window.localStorage.getItem('motion-play:settings:v1') ?? '{}')).toMatchObject({ reducedMotion: true })
+    expect(screen.getByText('Toy-box explorer')).toBeVisible()
+    expect(screen.getByText(/nothing is uploaded/i)).toBeVisible()
+    view.unmount()
+    render(<App />)
+    await waitFor(() => expect(screen.getByRole('checkbox', { name: /reduce motion/i })).toBeChecked())
+  })
+
+  it('provides a keyboard skip link and a focusable main landmark', () => {
+    const { container } = render(<App />)
+    expect(screen.getByRole('link', { name: 'Skip to main content' })).toHaveAttribute('href', '#main-content')
+    expect(container.querySelector('main')).toHaveAttribute('tabindex', '-1')
   })
 
   it('offers accessible three- and five-round tournament setup', () => {

@@ -305,9 +305,9 @@
     "depends_on": [
       "T23"
     ],
-    "status": "pending",
-    "attempts": 0,
-    "notes": "",
+    "status": "done",
+    "attempts": 2,
+    "notes": "Added an opt-in installable PWA with same-origin offline shell/visited-asset caching and scoped removal; schema-validated local settings and achievements; a functional settings/achievement screen; reduced-motion, skip-navigation, route title/focus, semantic controls, and responsive accessibility improvements. Attempt 2 repaired denied-storage startup handling, limited worker removal to Motion Play's worker, removed duplicate manifest markup, and added regression tests. Verified typecheck, lint, 101 unit/component tests, build, and git diff --check on 2026-11-15. Playwright could not launch Chromium because the managed macOS sandbox denied Mach-port registration. No physical webcam or manual installed/offline browser validation is claimed.",
     "needs_hardware_validation": false,
     "hardware_verified": false
   },

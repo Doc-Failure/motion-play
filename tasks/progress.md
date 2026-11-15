@@ -675,3 +675,55 @@ events, pointer input, and mocked media foundations; they do not validate
 physical webcam framing, lighting, motion feel, latency, hand/pose tracking, or
 browser camera permissions. No physical webcam validation was performed or
 claimed, and T23 remains `hardware_verified: false`.
+
+## T24 — done (attempt 1, 2026-11-15)
+
+- Added an installable local PWA manifest, original code-native icon, and an
+  opt-in service worker. Enabling offline caching pre-caches the application
+  shell and production HTML's same-origin script/style assets, then caches
+  subsequently visited local assets. Disabling it unregisters workers and
+  removes only `motion-play-` caches.
+- Replaced the unavailable Settings card with a responsive settings and
+  achievements route. Sound-cue preference, explicit reduced motion, and
+  offline caching are stored in versioned local storage with safe defaults and
+  malformed/quota failure handling. No account, backend, tracking, or upload
+  was introduced.
+- Added two small local achievements for visiting the catalog and opening
+  tournament setup. Records are schema-validated, timestamped, deduplicated,
+  displayed with text as well as symbols, and remain only in the browser.
+- Completed an accessibility pass with a keyboard skip link, focusable main
+  landmark, route-specific document titles and navigation focus management,
+  semantic labelled controls, visible status copy, responsive settings layout,
+  and a user-controlled reduced-motion class that also suppresses animation.
+- Added automated coverage for settings defaults/round trips/malformed data,
+  achievement persistence/deduplication, service-worker opt-in and scoped
+  cleanup, settings UI persistence, achievement display, reduced motion, and
+  skip navigation.
+- Automated evidence: `npm run typecheck`, `npm run lint`, `npm run test` (25
+  files, 100 tests), `npm run build`, and `git diff --check` all exited
+  successfully on 2026-11-15.
+
+Outstanding risk: service-worker behavior is covered at its registration and
+cache-lifecycle boundaries and the production artifact contains the manifest,
+icon, and worker, but an installed/offline cycle was not manually exercised in
+a real browser. Physical webcam behavior was unchanged and was not validated;
+T24 does not claim hardware verification.
+
+### T24 repair — attempt 2 (2026-11-15)
+
+- Repaired startup when browser policy or an opaque origin denies access to the
+  `localStorage` getter. Settings and achievements now retain safe local-only
+  defaults instead of preventing the application from rendering.
+- Restricted offline opt-out cleanup to the Motion Play service worker and
+  `motion-play-` caches, preserving unrelated workers and caches on a shared
+  origin. Removed a duplicate manifest link from the document head.
+- Added regression coverage for denied storage access and unrelated service
+  worker preservation. Automated evidence: `npm run typecheck`, `npm run lint`,
+  the full `npm run test` suite (25 files, 101 tests), `npm run build`, and
+  `git diff --check` all exited successfully.
+
+Outstanding risk: `npm run test:e2e` was attempted after the repair, but the
+managed macOS sandbox terminated Chromium before test execution with Mach-port
+registration permission errors. This is not recorded as a browser-suite pass.
+The installed/offline lifecycle still needs manual browser validation. No
+physical webcam validation was performed or claimed.
