@@ -11,7 +11,7 @@ describe('simple camera flow', () => {
     ['paint-splash', 'Paint Splash'], ['meteor-smash', 'Meteor Smash'],
     ['balloon-panic', 'Balloon Panic'], ['gold-rush', 'Gold Rush'],
     ['simon-says', 'Simon Says'], ['fruit-catcher', 'Fruit Catcher'],
-    ['air-pong', 'Air Pong'], ['goalkeeper', 'Goalkeeper'], ['tower-builder', 'Tower Builder'],
+    ['dodgeball', 'Dodgeball'], ['air-pong', 'Air Pong'], ['goalkeeper', 'Goalkeeper'], ['tower-builder', 'Tower Builder'],
   ] as const)('keeps %s paused through denial and requires resume after recovery', async (game, title) => {
     const source = controller()
     vi.mocked(source.start)
@@ -82,6 +82,19 @@ describe('simple camera flow', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Play without camera' }))
     expect(screen.getByRole('heading', { name: 'Fish Frenzy' })).toBeVisible()
     expect(source.start).toHaveBeenCalledOnce()
+  })
+  it('integrates hidden Dodgeball with four-player fallback and immediate countdown', async () => {
+    const source = controller()
+    vi.mocked(source.start).mockRejectedValue(new DOMException('denied', 'NotAllowedError'))
+    render(<CameraSetup source={source} initialGame="dodgeball" />)
+    await waitFor(() => expect(screen.getByRole('alert')).toBeVisible())
+    fireEvent.click(screen.getByRole('button', { name: '4 players' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Play without camera' }))
+    expect(screen.getByRole('heading', { name: 'Dodgeball' })).toBeVisible()
+    expect(screen.getAllByRole('group', { name: /Dodgeball play area/ })).toHaveLength(4)
+    expect(screen.queryByRole('button', { name: 'Start round now' })).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Exit game' }))
+    expect(screen.getByRole('button', { name: 'Play Dodgeball' })).toBeEnabled()
   })
   it('integrates hidden Tower Builder with four-player fallback and immediate countdown', async () => {
     const source = controller()

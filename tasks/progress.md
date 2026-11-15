@@ -1796,3 +1796,44 @@ change or commit was performed in this task.
 - Tower browser coverage remains route gating; gameplay coverage uses normalized
   synthetic events and rendered component controls. No physical webcam or Safari validation,
   deployment, external upload, dependency change or commit was performed.
+
+### 2026-11-16 — T25M: Dodgeball with generic BODY_MOVE
+
+- Read SPEC.md and AGENTS.md and inspected the current input adapter, game models,
+  camera-first layout, recovery hook, public routing and tests before editing.
+- Implemented a deterministic 1–4 player horizontal marker-dodge alternative.
+  Dashed paths telegraph incoming balls; fresh BODY_MOVE positions award +10 for
+  a dodge or −5 for a collision. Each lane has independent tracking, counters and
+  scores on the shared countdown and 60-second clock. Game code consumes normalized
+  events only and does not access camera/media libraries.
+- Missing/expired input earns no points. Low-confidence and malformed positions
+  invalidate tracking; duplicate, reordered and stale events cannot restore it.
+  Impacts resolve before later samples, elapsed impacts are processed across slow
+  render frames, and the round endpoint cannot award extra points. Pauses freeze
+  flight and countdown and discard cached positions until fresh input returns.
+- Added transparent crayon paths, balls and star markers, pointer/touch simulation,
+  keyboard arrows, isolated feedback, winner/tie results, focused replay and shared
+  manual/tab/disconnect recovery. Camera setup adapts motion centers to BODY_MOVE
+  and dispatches Dodgeball directly into countdown. Rules explicitly state that
+  webcam motion-center control is unverified; this is not body-outline tracking.
+- Preserved the existing public refinement set (including Paper Dojo as present in
+  this checkout). Dodgeball implementation availability is recorded independently;
+  catalog, Quick Play and both public legacy URLs keep it hidden. Current navigation
+  requirements supersede the backlog's old practice-screen acceptance.
+- Added 35 model/rendered-component cases and two camera-setup cases, including
+  mirrored synthetic motion patches for 1–4 players, scoring/collision boundaries,
+  tracking loss, timing, replay, keyboard/pointer controls, StrictMode and recovery.
+  The first synthetic fixtures were too small to meet the existing confidence
+  threshold; increased their occupied area without changing input sensitivity or
+  production thresholds. Added two browser route-gating cases.
+- Final checks: **483 unit/component tests across 59 files passed**. Typecheck,
+  lint, production build and whitespace checks passed. Full Chromium run reported
+  51 startup failures and 16 intentional hidden-game skips. A targeted two-case
+  retry also failed before execution: macOS denied Chromium Mach-port registration
+  (`bootstrap_check_in`, permission denied 1100). No browser gameplay or visual
+  pass is claimed; the new browser cases cover public route gating only.
+- `needs_hardware_validation` remains true and `hardware_verified` remains false.
+  No physical webcam or Safari validation, deployment, external upload, dependency
+  change or commit was performed.
+
+T25M implementation is complete under the current hidden-game refinement scope.

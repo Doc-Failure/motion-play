@@ -489,9 +489,9 @@
     "id": "T25M",
     "title": "Implement and test Dodgeball using generic BODY_MOVE input",
     "depends_on": ["T25L"],
-    "status": "pending",
-    "attempts": 0,
-    "notes": "Acceptance: deterministic 1-4 player dodge/collision model, survival/penalty/isolation tests, rendered simulation, practice/setup/catalog routing, pointer fallback, honest availability gating, and no claim of pose tracking.",
+    "status": "done",
+    "attempts": 1,
+    "notes": "Implemented deterministic 1–4 player Dodgeball using generic BODY_MOVE events only: horizontal motion-center marker alternative, telegraphed timed balls, +10 dodges, −5 collisions, isolated scores and neutral missing/stale tracking. Rejects malformed, duplicate, reordered and low-confidence input; resolves impacts before later samples and handles coarse updates and round boundaries. Transparent crayon overlays, pointer/touch and keyboard simulation, shared manual/tab/camera recovery, focused results/replay, immediate countdown and CameraSetup adapter/dispatch are integrated. Current refinement scope supersedes practice-screen acceptance: stays hidden from catalog, Quick Play and public legacy routes; implementation availability is true. Added 35 model/component cases, two setup cases and two browser route-gating cases. Final verification: 483 unit/component tests across 59 files passed; typecheck, lint, production build and whitespace checks passed. Full Chromium run could not launch browsers (51 startup failures, 16 intentional skips); targeted two-case retry also failed before execution with macOS Mach-port permission denial (1100). No browser gameplay, visual, physical webcam or Safari pass claimed. No deployment, uploads, dependency changes or commit.",
     "needs_hardware_validation": true,
     "hardware_verified": false
   },
