@@ -609,3 +609,32 @@ confidence, latency, lighting tolerance, reach, and multiplayer occlusion were
 not tested. T21 records `needs_hardware_validation: true` and
 `hardware_verified: false`; no physical webcam validation was performed or
 claimed.
+
+## T22 — done (attempt 1, 2026-11-15)
+
+- Added a deterministic, camera-independent Goalkeeper model that consumes only
+  normalized `BODY_MOVE` events. Each player moves a body-sized keeper across
+  an independent goal while deterministic shots travel toward the goal line.
+- Implemented 10-point saves, five-point goal penalties, save counts,
+  confidence and input-kind gates, synchronized timing, isolated 1–4 player
+  state and scores, results/replay, and mouse/pointer fallback.
+- Preserved the input boundary: Goalkeeper has no camera or pose-library
+  dependency. Camera and deterministic simulator events are adapted to generic
+  body-move events in setup code; this is not represented as landmark tracking.
+- Added practice instructions, setup selection, direct catalog routing, and a
+  responsive crayon-style goal with color, labels, and semantic status content.
+  Goalkeeper was marked catalog-playable only after the simulation passed.
+- Added three model tests covering pose movement, saves, goal penalties, input
+  gates, and multiplayer isolation. Added a rendered component simulation that
+  advances the real countdown and shot physics, supplies a `BODY_MOVE` event,
+  and verifies the visible keeper position, score increase, and save count.
+- Automated evidence: `npm run typecheck`, `npm run lint`, `npm run test` (22
+  files, 88 tests), `npm run build`, and `git diff --check` all exited
+  successfully on 2026-11-15.
+
+Outstanding risk: simulation and pointer input validate the game/input-event
+boundary, not physical pose landmark tracking. Real webcam body tracking,
+confidence, latency, lighting tolerance, framing, and multiplayer occlusion
+were not tested. T22 records `needs_hardware_validation: true` and
+`hardware_verified: false`; no physical webcam validation was performed or
+claimed.

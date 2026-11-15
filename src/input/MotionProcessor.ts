@@ -1,7 +1,7 @@
 import { mapCameraPoint, type PlayerCameraZone, type PlayerId } from './PlayerZoneMapper'
 
 export interface MotionFrame { width: number; height: number; data: Uint8ClampedArray }
-export interface MotionInputEvent { playerId: PlayerId; kind: 'MOTION_HIT' | 'MOTION_BRUSH' | 'HAND_POSITION'; x: number; y: number; confidence: number; timestamp: number }
+export interface MotionInputEvent { playerId: PlayerId; kind: 'MOTION_HIT' | 'MOTION_BRUSH' | 'HAND_POSITION' | 'BODY_MOVE'; x: number; y: number; confidence: number; timestamp: number }
 export interface ZoneMotion { playerId: PlayerId; activePixels: number; activity: number; centroid: { x: number; y: number } | null }
 export interface MotionResult { mask: Uint8ClampedArray; width: number; height: number; threshold: number; zones: ZoneMotion[]; events: MotionInputEvent[] }
 export interface MotionOptions { sensitivity?: number; smoothing?: number; minimumNeighbors?: number; minimumZoneActivity?: number; debounceMs?: number }

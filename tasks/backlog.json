@@ -281,10 +281,10 @@
     "depends_on": [
       "T21"
     ],
-    "status": "pending",
-    "attempts": 0,
-    "notes": "",
-    "needs_hardware_validation": false,
+    "status": "done",
+    "attempts": 1,
+    "notes": "Implemented deterministic Goalkeeper for 1-4 players using generic BODY_MOVE events, pose-controlled keepers, incoming shots, isolated saves/scores, goal penalties, pointer fallback, practice/catalog/setup routing, and model plus rendered component simulation coverage. Verified typecheck, lint, 88 unit/component tests, build, and git diff --check on 2026-11-15. Physical webcam pose tracking was not validated.",
+    "needs_hardware_validation": true,
     "hardware_verified": false
   },
   {

@@ -1,0 +1,21 @@
+import { act, render, screen } from '@testing-library/react'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { Goalkeeper } from '../src/minigames/goalkeeper/Goalkeeper'
+
+describe('Goalkeeper simulated pose play', () => {
+  afterEach(() => vi.unstubAllGlobals())
+  it('moves the rendered keeper and saves a shot through BODY_MOVE simulation', () => {
+    let nextFrame: FrameRequestCallback | undefined
+    vi.stubGlobal('requestAnimationFrame', vi.fn((callback: FrameRequestCallback) => { nextFrame = callback; return 1 }))
+    vi.stubGlobal('cancelAnimationFrame', vi.fn())
+    const start = performance.now()
+    const props = { playerCount: 1 as const, onExit: vi.fn() }
+    const { rerender } = render(<Goalkeeper {...props} />)
+    act(() => nextFrame?.(start + 3_100))
+    rerender(<Goalkeeper {...props} inputEvents={[{ playerId: 1, kind: 'BODY_MOVE', x: .22, y: .78, confidence: 1, timestamp: start + 3_101 }]} />)
+    expect(screen.getByLabelText('Player 1 pose-controlled goalkeeper')).toHaveStyle({ left: '22%', top: '78%' })
+    for (const offset of [4_100, 5_100, 6_100, 6_300]) act(() => nextFrame?.(start + offset))
+    expect(screen.getByText('10')).toBeInTheDocument()
+    expect(screen.getByText('Saves 1')).toBeVisible()
+  })
+})
