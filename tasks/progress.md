@@ -525,3 +525,31 @@ physical webcam brush feel, lighting/background noise, reach, latency, and
 browser camera behavior were not tested. T18 records
 `needs_hardware_validation: true` and `hardware_verified: false`; no physical
 webcam validation is claimed.
+
+## T19 — done (attempt 1, 2026-11-15)
+
+- Added a deterministic, camera-independent Simon Says model that consumes only
+  normalized `MOTION_HIT` events. It presents a growing sequence across four
+  named, symbol-coded pads and rejects input while the sequence is showing.
+- Implemented independent progress, mistakes, and scores for 1–4 players. A
+  correct completed sequence awards points based on its length; a wrong pad
+  resets only that player's progress and applies a five-point penalty. The
+  sequence grows only after every player completes the current pattern.
+- Added a responsive crayon-style play surface, pointer fallback, synchronized
+  countdown/round/results/replay behavior, game-specific practice guidance,
+  direct catalog and setup routing, and truthful catalog availability.
+- Added four deterministic model tests covering cue timing and growth, scoring
+  and mistake reset, multiplayer isolation, and input gates. Added a rendered
+  component simulation that advances the real game through countdown and cue
+  presentation, supplies a generic simulated hit, and verifies the visible
+  score and growing sequence.
+- Automated evidence: `npm run typecheck`, `npm run lint`, `npm run test` (16
+  files, 74 tests), `npm run build`, and `git diff --check` all exited
+  successfully on 2026-11-15.
+
+Outstanding risk: automated checks use deterministic normalized events,
+rendered-component simulation, pointer fallback, and mocked camera foundations.
+They do not validate real webcam hit accuracy, cue visibility at play distance,
+lighting/background noise, latency, reach, or multiplayer occlusion. T19 records
+`needs_hardware_validation: true` and `hardware_verified: false`; no physical
+webcam validation was performed or claimed.

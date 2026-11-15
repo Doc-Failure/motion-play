@@ -245,10 +245,10 @@
     "depends_on": [
       "T18"
     ],
-    "status": "pending",
-    "attempts": 0,
-    "notes": "",
-    "needs_hardware_validation": false,
+    "status": "done",
+    "attempts": 1,
+    "notes": "Implemented deterministic Simon Says for 1-4 players using generic MOTION_HIT events, shared growing sequences, isolated player progress/scores, mistake penalties, pointer fallback, practice/catalog/setup routing, and model plus rendered UI simulation coverage. Verified typecheck, lint, 74 unit/component tests, build, and git diff --check on 2026-11-15. Physical webcam play remains unverified.",
+    "needs_hardware_validation": true,
     "hardware_verified": false
   },
   {

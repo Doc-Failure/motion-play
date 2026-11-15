@@ -248,3 +248,20 @@ a { color: inherit; }
   .reference-home .action-card { aspect-ratio: 1.25; padding: .7rem; }
   .reference-home .action-icon { height: 3.4rem; }
 }
+.simon-game { position: relative; z-index: 2; min-height: 100vh; padding: 1rem; color: #18334a; background: rgba(255, 248, 223, .82); }
+.simon-callout { width: fit-content; margin: .4rem auto 1rem; padding: .55rem 1.2rem; border: 3px solid #18334a; border-radius: 999px 850px 999px 800px; background: #fffaf0; font-weight: 900; transform: rotate(-1deg); }
+.simon-boards { display: grid; gap: 1rem; max-width: 1050px; margin: auto; }
+.simon-boards--2 { grid-template-columns: repeat(2, 1fr); }
+.simon-boards--3, .simon-boards--4 { grid-template-columns: repeat(2, 1fr); }
+.simon-player h2 { display: flex; justify-content: space-between; margin: .2rem; font-size: 1rem; }
+.simon-player h2 small { font-size: .85rem; }
+.simon-board { position: relative; aspect-ratio: 4 / 3; overflow: hidden; border: 5px solid #18334a; border-radius: 45% 48% 44% 50%; background: #eee2bd; box-shadow: inset 0 0 0 5px rgba(255,255,255,.45), 4px 5px 0 rgba(24,51,74,.2); touch-action: none; }
+.simon-pad { position: absolute; display: grid; place-items: center; width: 36%; height: 34%; border: 4px solid #18334a; border-radius: 47% 42% 50% 44%; font-style: normal; font-size: clamp(1.4rem, 5vw, 3rem); opacity: .62; transition: transform .12s, filter .12s, opacity .12s; }
+.simon-pad--sun { left: 7%; top: 8%; background: #f5c847; transform: rotate(-3deg); }
+.simon-pad--leaf { right: 7%; top: 8%; background: #72b779; transform: rotate(2deg); }
+.simon-pad--wave { left: 7%; bottom: 8%; background: #66c7df; transform: rotate(2deg); }
+.simon-pad--berry { right: 7%; bottom: 8%; background: #e45b9d; transform: rotate(-2deg); }
+.simon-pad.is-lit { opacity: 1; filter: brightness(1.28) saturate(1.35); transform: scale(1.08) rotate(-1deg); box-shadow: 0 0 0 7px #fffaf0, 0 0 22px #f5c847; }
+.simon-watch { position: absolute; inset: 43% 35%; z-index: 2; display: grid; place-items: center; border: 3px solid #18334a; border-radius: 50%; background: #fffaf0; font-weight: 900; pointer-events: none; }
+.simon-mistakes { margin: .25rem .4rem; font-size: .8rem; font-weight: 800; }
+@media (max-width: 700px) { .simon-boards--2, .simon-boards--3, .simon-boards--4 { grid-template-columns: 1fr; } }

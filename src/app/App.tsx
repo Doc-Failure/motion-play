@@ -5,7 +5,7 @@ import { catalogCategories, catalogGames, getGameBySlug, type CatalogCategory, t
 import { GameArt } from './GameArt'
 import { CameraSetup } from '../camera/CameraSetup'
 
-type Route = { page: 'home' } | { page: 'catalog' } | { page: 'camera'; game?: 'bubble-battle' | 'window-wipe' | 'whack-a-mole' | 'balloon-panic' | 'gold-rush' | 'paint-splash' } | { page: 'detail'; slug: string }
+type Route = { page: 'home' } | { page: 'catalog' } | { page: 'camera'; game?: 'bubble-battle' | 'window-wipe' | 'whack-a-mole' | 'balloon-panic' | 'gold-rush' | 'paint-splash' | 'simon-says' } | { page: 'detail'; slug: string }
 const routeFromHash = (): Route => {
   const hash = window.location.hash.replace(/^#\/?/, '')
   if (hash === 'catalog') return { page: 'catalog' }
@@ -15,6 +15,7 @@ const routeFromHash = (): Route => {
   if (hash === 'camera/balloon-panic') return { page: 'camera', game: 'balloon-panic' }
   if (hash === 'camera/gold-rush') return { page: 'camera', game: 'gold-rush' }
   if (hash === 'camera/paint-splash') return { page: 'camera', game: 'paint-splash' }
+  if (hash === 'camera/simon-says') return { page: 'camera', game: 'simon-says' }
   if (hash === 'camera/bubble-battle') return { page: 'camera', game: 'bubble-battle' }
   if (hash.startsWith('games/')) return { page: 'detail', slug: hash.slice(6) }
   return { page: 'home' }
@@ -49,7 +50,7 @@ function Catalog() {
   }), [category, difficulty, players, query])
   return <section className="catalog-page" aria-labelledby="catalog-title"><a className="back-link" href="#/">← Home</a><div className="catalog-heading"><div><p className="eyebrow">The whole toy box</p><h1 id="catalog-title">Game Catalog</h1><p>Explore all 32 planned motion games. Play buttons appear only after a game has been tested and validated.</p></div><span className="count-sticker">{filtered.length} of 32</span></div>
     <form className="catalog-filters" onSubmit={(event) => event.preventDefault()} aria-label="Filter games"><label className="search-field">Search games<input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Try “bubbles” or “brush”" /></label><label>Category<select value={category} onChange={(event) => setCategory(event.target.value as 'All' | CatalogCategory)}><option>All</option>{catalogCategories.map((item) => <option key={item}>{item}</option>)}</select></label><label>Difficulty<select value={difficulty} onChange={(event) => setDifficulty(event.target.value as 'All' | Difficulty)}><option>All</option><option>Easy</option><option>Normal</option><option>Hard</option></select></label><label>Players<select value={players} onChange={(event) => setPlayers(event.target.value as typeof players)}><option>All</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label><label>Availability<select disabled aria-describedby="availability-note"><option>Coming soon</option></select></label></form>
-    <p id="availability-note" className="filter-note">Bubble Battle, Window Wipe, Whack-a-Mole, Balloon Panic, Gold Rush, and Paint Splash are playable for one to four players. Other games stay coming soon until validated.</p>
+    <p id="availability-note" className="filter-note">Bubble Battle, Window Wipe, Whack-a-Mole, Balloon Panic, Gold Rush, Paint Splash, and Simon Says are playable for one to four players. Other games stay coming soon until validated.</p>
     {filtered.length ? <div className="catalog-grid">{filtered.map((game) => <article className="game-card" key={game.slug}><GameArt game={game} /><div className="game-card__body"><div className="game-card__topline"><span>{game.category}</span><span className={game.available ? 'available-now' : 'coming-soon'}>{game.available ? 'Play now' : 'Coming soon'}</span></div><h2>{game.title}</h2><p>{game.rules}</p><dl className="game-facts"><div><dt>Input</dt><dd>{game.input.replace('_', ' ')}</dd></div><div><dt>Difficulty</dt><dd>{game.difficulty}</dd></div><div><dt>Players</dt><dd>{game.players.join(', ')}</dd></div></dl><a className="details-link" href={`#/games/${game.slug}`} aria-label={`View ${game.title} details`}>View details <span aria-hidden="true">→</span></a></div></article>)}</div> : <div className="empty-state"><span aria-hidden="true">✎</span><h2>No games found</h2><p>Try a different search or filter.</p></div>}
   </section>
 }
