@@ -1,3 +1,4 @@
+import { BubbleBattle } from '../src/minigames/bubble-battle/BubbleBattle'
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { PaintSplash } from '../src/minigames/paint-splash/PaintSplash'
@@ -11,7 +12,7 @@ import { Goalkeeper } from '../src/minigames/goalkeeper/Goalkeeper'
 import { WindowWipe } from '../src/minigames/window-wipe/WindowWipe'
 import { WhackAMole } from '../src/minigames/whack-a-mole/WhackAMole'
 
-const games = [PaintSplash, MeteorSmash, BalloonPanic, GoldRush, SimonSays, FruitCatcher, AirPong, Goalkeeper, WindowWipe, WhackAMole]
+const games = [BubbleBattle, PaintSplash, MeteorSmash, BalloonPanic, GoldRush, SimonSays, FruitCatcher, AirPong, Goalkeeper, WindowWipe, WhackAMole]
 afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals() })
 
 for (const Game of games) describe(`${Game.name} recovery controls`, () => {
@@ -62,7 +63,7 @@ for (const Game of games) describe(`${Game.name} recovery controls`, () => {
     const props = { playerCount: 1 as const, onExit: vi.fn(), onReconnect: vi.fn() }
     const { rerender } = render(<Game {...props} />)
     advance(65000)
-    expect(screen.getByRole('dialog')).toHaveAttribute('aria-label', expect.stringContaining('results'))
+    expect(screen.getByRole('dialog')).toHaveTextContent(/Play again|Paint again|Wipe again/)
     rerender(<Game {...props} externalPauseReason="Camera unavailable" />)
     fireEvent.click(screen.getByRole('button', { name: /Play again|Paint again|Wipe again/ }))
     expect(screen.getByRole('dialog')).toHaveTextContent('Camera unavailable')

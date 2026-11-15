@@ -1,3 +1,4 @@
+import { PauseClock } from '../../game/PauseClock'
 import { GameSession, type GameSessionSnapshot } from '../../game/GameSession'
 import type { MotionInputEvent } from '../../input/MotionProcessor'
 import type { PlayerCount, PlayerId } from '../../input/PlayerZoneMapper'
@@ -32,6 +33,7 @@ const BOMB_PENALTY = -15
 
 /** Game-only logic. It knows normalized input events, never cameras or pixels. */
 export class BubbleBattleModel {
+  private readonly clock = new PauseClock()
   private readonly aspectRatio: number
   private readonly session: GameSession
   private readonly spawnIntervalMs: number
@@ -56,6 +58,7 @@ export class BubbleBattleModel {
   }
 
   start(timestamp: number): BubbleBattleSnapshot {
+    this.clock.reset(timestamp)
     this.targets = []
     this.nextTargetId = 1
     this.nextSpawnAt = null
@@ -66,7 +69,8 @@ export class BubbleBattleModel {
   }
 
   update(timestamp: number): BubbleBattleSnapshot {
-    const now = Math.max(timestamp, this.lastUpdateAt ?? timestamp)
+    const now = Math.max(this.clock.time(timestamp), this.lastUpdateAt ?? this.clock.time(timestamp))
+    if (this.clock.paused) return this.snapshot(now)
     const before = this.session.getSnapshot(now)
     const snapshot = this.session.update(now)
     if (snapshot.phase === 'playing') {
@@ -91,8 +95,9 @@ export class BubbleBattleModel {
   }
 
   handleInput(event: MotionInputEvent): BubbleBattleSnapshot {
-    const timestamp = Math.max(event.timestamp, this.lastUpdateAt ?? event.timestamp)
-    this.update(timestamp)
+    if (!this.clock.accepts(event.timestamp)) return this.snapshot(this.lastUpdateAt ?? 0)
+    this.update(event.timestamp)
+    const timestamp = this.lastUpdateAt!
     if (!this.playerIds.includes(event.playerId) || event.kind !== 'MOTION_HIT' || event.confidence < 0.2 || this.session.getSnapshot().phase !== 'playing') {
       return this.snapshot(timestamp)
     }
@@ -105,16 +110,19 @@ export class BubbleBattleModel {
   }
 
   pause(timestamp: number): BubbleBattleSnapshot {
-    const now = Math.max(timestamp, this.lastUpdateAt ?? timestamp)
-    this.lastUpdateAt = now
-    return { ...this.session.pause(now), targets: this.targets.map((target) => ({ ...target })), lastResults: { ...this.lastResults } }
+    const state = this.update(timestamp)
+    if (state.phase !== 'playing' && state.phase !== 'countdown') return state
+    this.session.pause(this.lastUpdateAt!)
+    this.clock.pause(timestamp)
+    return this.snapshot(this.lastUpdateAt!)
   }
 
   resume(timestamp: number): BubbleBattleSnapshot {
-    const now = Math.max(timestamp, this.lastUpdateAt ?? timestamp)
-    this.lastUpdateAt = now
-    this.session.resume(now)
-    return this.snapshot(now)
+    if (!this.clock.paused) return this.update(timestamp)
+    this.clock.resume(timestamp)
+    this.lastUpdateAt = Math.max(this.clock.time(timestamp), this.lastUpdateAt ?? 0)
+    this.session.resume(this.lastUpdateAt)
+    return this.snapshot(this.lastUpdateAt)
   }
 
   /** Test/support hook for deterministic synthetic fixtures. */

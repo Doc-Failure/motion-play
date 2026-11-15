@@ -7,7 +7,7 @@ function controller(): CameraController {
 }
 describe('simple camera flow', () => {
   it.each([
-    ['window-wipe', 'Window Wipe'], ['whack-a-mole', 'Whack-a-Mole'],
+    ['bubble-battle', 'Bubble Battle'], ['window-wipe', 'Window Wipe'], ['whack-a-mole', 'Whack-a-Mole'],
     ['paint-splash', 'Paint Splash'], ['meteor-smash', 'Meteor Smash'],
     ['balloon-panic', 'Balloon Panic'], ['gold-rush', 'Gold Rush'],
     ['simon-says', 'Simon Says'], ['fruit-catcher', 'Fruit Catcher'],
@@ -49,7 +49,10 @@ describe('simple camera flow', () => {
     await waitFor(() => expect(screen.getByRole('dialog')).toHaveTextContent('Camera permission is blocked'))
     expect(screen.getByRole('button', { name: 'Resume round' })).toBeDisabled()
     fireEvent.click(screen.getByRole('button', { name: 'Reconnect camera' }))
-    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Resume round' })).toBeEnabled())
+    expect(screen.getByRole('dialog')).toHaveTextContent('Camera recovered')
+    fireEvent.click(screen.getByRole('button', { name: 'Resume round' }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(source.start).toHaveBeenCalledTimes(3)
   })
   it('opens Fish Frenzy from an inactive catalog without requesting a camera and plays four-player fallback', async () => {

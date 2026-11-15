@@ -1,7 +1,7 @@
 import { isGameVisible } from '../../src/app/catalog'
 import { expect, openApp, test } from './fixtures'
 
-for (const [slug, title] of [['window-wipe', 'Window Wipe'], ['whack-a-mole', 'Whack-a-Mole'], ['paint-splash', 'Paint Splash'], ['meteor-smash', 'Meteor Smash'], ['balloon-panic', 'Balloon Panic'], ['gold-rush', 'Gold Rush'], ['simon-says', 'Simon Says'], ['fruit-catcher', 'Fruit Catcher'], ['air-pong', 'Air Pong'], ['goalkeeper', 'Goalkeeper']]) {
+for (const [slug, title] of [['bubble-battle', 'Bubble Battle'], ['window-wipe', 'Window Wipe'], ['whack-a-mole', 'Whack-a-Mole'], ['paint-splash', 'Paint Splash'], ['meteor-smash', 'Meteor Smash'], ['balloon-panic', 'Balloon Panic'], ['gold-rush', 'Gold Rush'], ['simon-says', 'Simon Says'], ['fruit-catcher', 'Fruit Catcher'], ['air-pong', 'Air Pong'], ['goalkeeper', 'Goalkeeper']]) {
   for (const countdown of [false, true]) test(`${title} ${countdown ? 'countdown' : 'gameplay'} freezes camera recovery without losing the round`, async ({page, installMockCamera}) => {
     test.skip(!isGameVisible(slug), 'Hidden while individual games are refined; model and component recovery remains covered.')
     await page.clock.install({time:new Date('2030-01-01T00:00:00Z')})
@@ -110,6 +110,9 @@ test('camera disconnect and failed reconnect keep the round frozen until recover
     canvas.getContext('2d')!.fillRect(0,0,1,1)
   })
   await page.clock.runFor(100)
+  await expect(dialog).toContainText('Camera recovered')
+  await expect(time).toHaveText(frozenTime!)
+  await page.getByRole('button', {name:'Resume round'}).click()
   await expect(dialog).toHaveCount(0)
   await expect.poll(() => video.evaluate(v => (v as HTMLVideoElement).videoWidth)).toBe(320)
   await page.clock.runFor(1000)

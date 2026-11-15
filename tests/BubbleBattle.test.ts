@@ -128,3 +128,30 @@ it('matches circular target hit bounds in a tall camera lane', () => {
   const inside = model.handleInput({playerId:1,kind:'MOTION_HIT',x:.5,y:.52,confidence:1,timestamp:2})
   expect(inside.scores[0].score).toBe(10)
 })
+
+it('rejects hits captured before resume and resets that boundary for replay', () => {
+  const model = new BubbleBattleModel({ countdownMs: 0, roundDurationMs: 10_000 })
+  model.start(0)
+  model.update(1000)
+  model.setTargets([{ id: 99, playerId: 1, kind: 'bubble', x: .5, y: .5, radius: .1 }])
+  const paused = model.pause(1000)
+  expect(model.handleInput(hit(.5, .5, 5000))).toEqual(paused)
+  const resumed = model.resume(20000)
+  for (const timestamp of [900, 1000, 5000, 19999]) {
+    expect(model.handleInput(hit(.5, .5, timestamp))).toEqual(resumed)
+  }
+  expect(model.handleInput(hit(.5, .5, 20001)).scores[0].score).toBe(10)
+  model.update(30000)
+  model.start(30001)
+  model.setTargets([{ id: 100, playerId: 1, kind: 'bubble', x: .5, y: .5, radius: .1 }])
+  expect(model.handleInput(hit(.5, .5, 20001)).scores[0].score).toBe(0)
+  expect(model.handleInput(hit(.5, .5, 30002)).scores[0].score).toBe(10)
+})
+
+it('handles a pause at the round deadline without throwing', () => {
+  const model = new BubbleBattleModel({ countdownMs: 0, roundDurationMs: 1000 })
+  model.start(0)
+  expect(model.pause(1000).phase).toBe('results')
+  expect(model.pause(2000).phase).toBe('results')
+  expect(model.resume(2000).phase).toBe('results')
+})

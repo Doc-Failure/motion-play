@@ -1,3 +1,4 @@
+import { BubbleBattleModel } from '../src/minigames/bubble-battle/BubbleBattleModel'
 import { describe, expect, it } from 'vitest'
 import { PaintSplashModel } from '../src/minigames/paint-splash/PaintSplashModel'
 import { MeteorSmashModel } from '../src/minigames/meteor-smash/MeteorSmashModel'
@@ -11,6 +12,7 @@ import type { MotionInputEvent } from '../src/input/MotionProcessor'
 
 const options = { playerCount: 4 as const, random: () => .5 }
 const games = [
+  { name: 'Bubble Battle', create: () => new BubbleBattleModel(options), input: (m: BubbleBattleModel, e: MotionInputEvent) => m.handleInput(e), kind: 'MOTION_HIT' },
   { name: 'Paint Splash', create: () => new PaintSplashModel(options), input: (m: PaintSplashModel, e: MotionInputEvent) => m.brush(e), kind: 'MOTION_BRUSH' },
   { name: 'Meteor Smash', create: () => new MeteorSmashModel(options), input: (m: MeteorSmashModel, e: MotionInputEvent) => m.hit(e), kind: 'MOTION_HIT' },
   { name: 'Balloon Panic', create: () => new BalloonPanicModel(options), input: (m: BalloonPanicModel, e: MotionInputEvent) => m.hit(e), kind: 'MOTION_HIT' },
@@ -59,7 +61,6 @@ function checkInput<M extends { start(t: number): unknown; update(t: number): un
 }
 
 it('blocks live and delayed interrupted input in every older model', () => {
-  checkInput(games[0].create, games[0].input, games[0].kind)
   checkInput(games[1].create, games[1].input, games[1].kind)
   checkInput(games[2].create, games[2].input, games[2].kind)
   checkInput(games[3].create, games[3].input, games[3].kind)
@@ -67,4 +68,5 @@ it('blocks live and delayed interrupted input in every older model', () => {
   checkInput(games[5].create, games[5].input, games[5].kind)
   checkInput(games[6].create, games[6].input, games[6].kind)
   checkInput(games[7].create, games[7].input, games[7].kind)
+  checkInput(games[8].create, games[8].input, games[8].kind)
 })

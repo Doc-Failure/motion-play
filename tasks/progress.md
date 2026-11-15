@@ -1672,3 +1672,50 @@ intentionally skipped. This includes all five games at 1/4 players, Quick Play, 
 legacy routes, camera geometry/recovery, native keyboard/pointer flows and responsive
 catalog screenshots. Reviewed the simplified desktop catalog. Camera fixtures are
 synthetic; no physical hardware verification, deployment or commit is claimed.
+
+
+## T25K-recovery — current-scope browser completion and Bubble Battle fixes (2026-11-16)
+
+Read SPEC.md and AGENTS.md and inspected the existing camera/input integration,
+older-game recovery controls, models and tests. The earlier older-game integration
+was already present; its browser acceptance record remained pending. Kept the
+five-game public catalog and all hidden implementations intact.
+
+Inspection found related Bubble Battle recovery defects: reconnect resumed without
+an explicit action, replay could run through a continuing camera error, interrupted
+input could score after resume, and long pauses advanced the target spawn schedule.
+Moved Bubble Battle onto the existing shared recovery controls and PauseClock.
+Countdown, target movement/spawning, scores and round time now exclude interruptions;
+repeated pauses and pauses at round completion are harmless. Recovery requires
+explicit Resume, stays blocked while the tab is hidden or the camera is unavailable,
+and restores keyboard focus consistently with the older games. Game code continues
+to consume normalized events without depending on camera/media internals.
+
+Expanded four-player deterministic model comparisons and rendered recovery tests to
+Bubble Battle, including manual/tab pauses during countdown and gameplay, frozen
+boards/clocks, focus restoration and replay through a camera failure. Added regression
+coverage for interrupted/stale input, replay input boundaries and a pause at the round
+deadline. CameraSetup integration tests cover denied retry and explicit resume for
+all eleven affected games. Extended synthetic browser countdown/gameplay recovery
+tests to Bubble Battle and updated its previous auto-resume expectation.
+
+Verification:
+
+- 403 unit/component tests across 53 files passed; typecheck, lint and production
+  build passed. A focused run initially exposed an overly specific results-dialog
+  label assertion; changed it to assert the shared results action, then the full
+  suite passed.
+- Full Chromium sweep passed all 25 active scenarios with one worker; 35 hidden-game
+  scenarios were intentionally skipped. All five public games passed countdown
+  and gameplay disconnect, failed reconnect, frozen boards/clocks, reacquisition
+  and explicit resume; gameplay cases also covered hidden-tab recovery. Alignment
+  checks passed for one through four players, and synthetic camera motion scored.
+- Reviewed the four-player synthetic-camera gameplay screenshot. Whitespace and
+  backlog JSON/unique-ID checks passed.
+
+T25K-recovery is complete for the current five-game scope. Hidden older games
+(Paint Splash, Meteor Smash, Balloon Panic, Gold Rush, Simon Says and Air Pong)
+retain model/component recovery coverage; their existing browser recovery cases
+must execute when their public routes return. Tournament acceptance remains
+out of the current scope. No physical webcam or Safari validation, deployment,
+external upload, dependency change or commit was performed.
