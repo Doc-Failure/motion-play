@@ -1037,3 +1037,62 @@ occlusion still require human hardware testing. T25B retains
 - Physical webcam motion feel, lighting, latency, framing and occlusion remain
   unverified. Hardware flags remain needs_hardware_validation: true and
   hardware_verified: false. No deployment or commit was performed.
+
+
+## T25F — done (attempt 1, 2026-11-15)
+
+- Read SPEC.md and AGENTS.md and inspected current routes, catalog, setup,
+  practice, shared timing, existing models/views, styles and tests before editing.
+- Implemented Treasure Grab for 1–4 players with generic normalized MOTION_HIT
+  events. Every player gets the same deterministic sequence of paired gold
+  chests (+10 points) and purple cursed objects marked × (−10 points). Objects
+  last three seconds, pairs spawn every 1.8 seconds, and misses cost nothing.
+  Scores, collection counts, feedback and 300ms hit cooldowns remain independent.
+- Added birth/expiry checks, malformed/stale input rejection, delayed-event
+  handling without clock rewind, detached snapshots and a strict per-player
+  eight-object cap, including after an individual object has been removed.
+  Pause freezes spawning, lifetimes, cooldowns and the shared round clock.
+- Connected catalog availability (16 playable games), hash routing, camera setup,
+  four-player practice, countdown, results/replay, manual/tab-hidden pause and
+  camera recovery. Added local crayon SVG chests and curses, visible value labels,
+  lifetime rings, numbered boards, per-player live feedback, normalized pointer
+  fallback, native keyboard buttons and focus restoration after resume/replay.
+  Game code has no camera/media dependency; no packages were added.
+- Added 27 unit/component cases including routing and setup integration. Tests
+  demonstrate mirrored synthetic frames through MotionProcessor into isolated
+  scores for every supported player count, rewards/penalties, duplicate hits,
+  cooldowns, exact expiry boundaries, misses, delayed/malformed events, cadence
+  independence, object bounds, snapshot ownership, pause/resume, replay, recovery,
+  StrictMode and rendered generic/pointer/button input.
+- Verification passed: typecheck, lint, all 205 unit/component tests across 37
+  files, production build and git diff --check. Added browser acceptance for
+  four-player rewards, penalties, keyboard/pointer input, expiry, pause, results,
+  replay and narrow-screen overflow. All eight Chromium scenarios were blocked
+  before execution by macOS sandbox denial of MachPortRendezvousServer
+  registration (Permission denied 1100). No browser layout or screenshot review
+  is claimed for this invocation.
+- Physical webcam behavior, motion feel, lighting, framing, latency and occlusion
+  require human hardware testing. Hardware validation remains required and
+  hardware_verified remains false. No deployment or commit was performed.
+
+
+## T25F — follow-up review (2026-11-15)
+
+- Read SPEC.md and AGENTS.md and reviewed the existing uncommitted Treasure Grab
+  implementation, catalog/setup/practice integration, normalized input boundary,
+  lifecycle, styles and synthetic model/view/browser tests.
+- Fixed a chest spawning over the previous wave's still-active curse. Explicit
+  curse positions now keep default waves separate, including sequence wraps.
+  Added a complete-round regression checking target bounds never overlap.
+- Updated the stale browser catalog expectation from 15 to 16 playable games.
+  Browser screenshot review exposed clipped curse value labels near the bottom
+  of boards; moved labels inside their targets and added narrow-screen browser
+  assertions that every visible value label stays inside its board.
+- Verification: all 206 unit/component tests across 37 files, typecheck, lint,
+  production build, all eight Chromium scenarios and git diff --check passed.
+  Inspected desktop and narrow Treasure Grab screenshots after the label fix.
+  A targeted browser launch hit macOS MachPortRendezvousServer registration
+  denial (1100); the subsequent complete browser suite passed on the final build.
+  Current browser validation supersedes the earlier attempt's launch limitation.
+- Physical webcam behavior remains unverified and hardware flags remain unchanged.
+  No deployment or commit was performed.

@@ -419,3 +419,28 @@ body { background: #fffdf8 url('./assets/home/paper-background.webp') repeat; ba
 .star-target:focus-visible { outline: 4px solid #34254c; outline-offset: 3px; border-radius: 25%; }
 .star-game .battle-results { color: #34254c; background: #fff8e7; }
 @media (max-width: 600px) { .star-game { padding: .65rem; }.star-player h2, .star-player h2 span { font-size: .85rem; } }
+
+/* Treasure Grab: crayon maps and quiet lifetime rings. */
+.treasure-game { position: relative; z-index: 1; padding: 1rem; color: #34254c; background: #fff8e7; }
+.treasure-game h1 { margin: 0; font-size: clamp(2.3rem, 6vw, 4.5rem); letter-spacing: -.05em; }
+.treasure-rules { padding: .8rem; border: 3px dashed #34254c; border-radius: .8rem 1.2rem .7rem 1rem; background: #ffe48a; text-align: center; font-weight: 800; }
+.treasure-help { text-align: center; font-weight: 750; }
+.treasure-feedback { min-height: 3.5em; margin: .6rem 0 0; padding: .4rem; text-align: center; font-weight: 800; overflow-wrap: anywhere; }
+.treasure-boards { display: grid; gap: 1rem; }
+.treasure-boards--2, .treasure-boards--3, .treasure-boards--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.treasure-player { --player-paper: #fce0eb; min-width: 0; }
+.treasure-player--2 { --player-paper: #d6f0f8; }.treasure-player--3 { --player-paper: #e5f1d5; }.treasure-player--4 { --player-paper: #eee0f9; }
+.treasure-player h2 { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem; margin: 0; padding: .5rem .8rem; border: 3px solid #34254c; border-radius: .7rem 1rem 0 0; background: var(--player-paper); font-size: 1.15rem; }
+.treasure-player h2 span { font-size: 1rem; }
+.treasure-board { position: relative; height: 52vh; min-height: 20rem; overflow: hidden; border: 4px solid #34254c; border-radius: 0 0 1.3rem .8rem; background: repeating-linear-gradient(7deg, transparent 0 8px, #34254c08 9px 10px), var(--player-paper); box-shadow: 4px 5px 0 #34254c; touch-action: manipulation; }
+.treasure-boards--3 .treasure-board, .treasure-boards--4 .treasure-board { height: 30vh; min-height: 15rem; }
+.treasure-sky { position: absolute; inset: 5% 0 auto; text-align: center; color: #68418c; font-size: 1.5rem; letter-spacing: .6rem; }
+.treasure-target { position: absolute; width: 20%; height: 26%; padding: 0; translate: -50% -50%; border: 0; background: transparent; color: #34254c; cursor: pointer; }
+.treasure-target svg { width: 100%; height: 100%; }
+.treasure-target path { stroke: #34254c; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.treasure-target:focus-visible { outline: 4px solid #34254c; outline-offset: 3px; border-radius: 25%; }
+.treasure-game .battle-results { color: #34254c; background: #fff8e7; }
+@media (max-width: 600px) { .treasure-game { padding: .65rem; }.treasure-player h2, .treasure-player h2 span { font-size: .85rem; } }
+
+.treasure-target span { position: absolute; top: 70%; left: 50%; translate: -50% 0; display: block; width: max-content; max-width: 100%; padding: .1rem .2rem; border-radius: .3rem; background: #fff8e7; font-size: clamp(.65rem, 1.5vw, .9rem); line-height: 1.1; font-weight: 850; }
+.treasure-sky { font-size: .85rem; letter-spacing: .1rem; }

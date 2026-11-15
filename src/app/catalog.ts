@@ -21,7 +21,7 @@ export const catalogGames: readonly CatalogGame[] = [
   game(11, 'fish-frenzy', 'Fish Frenzy', 'Catch the most valuable fish before they swim away.', 'Catch & Collect', 'HAND_POSITION', 'Normal', 'Competitive', ['#4c9ed9', '#66c7df']),
   game(12, 'supermarket-rush', 'Supermarket Rush', 'Pick the correct groceries from the moving belt.', 'Catch & Collect', 'MOTION_HIT', 'Normal', 'Competitive', ['#ee654f', '#f5c847'], true),
   game(13, 'star-collector', 'Star Collector', 'Touch the twinkling stars before they disappear.', 'Catch & Collect', 'MOTION_HIT', 'Easy', 'Competitive', ['#f5c847', '#7557a8'], true),
-  game(14, 'treasure-grab', 'Treasure Grab', 'Grab bright treasures and avoid the cursed objects.', 'Catch & Collect', 'MOTION_HIT', 'Normal', 'Competitive', ['#f5c847', '#4c9ed9']),
+  game(14, 'treasure-grab', 'Treasure Grab', 'Grab bright treasures and avoid the cursed objects.', 'Catch & Collect', 'MOTION_HIT', 'Normal', 'Competitive', ['#f5c847', '#4c9ed9'], true),
   game(15, 'dodgeball', 'Dodgeball', 'Move your body out of the path of incoming balls.', 'Move & Survive', 'BODY_MOVE', 'Normal', 'Competitive', ['#ee654f', '#4c9ed9']),
   game(16, 'laser-escape', 'Laser Escape', 'Duck and weave around the moving laser lines.', 'Move & Survive', 'BODY_MOVE', 'Hard', 'Competitive', ['#e45b9d', '#18334a']),
   game(17, 'dance-challenge', 'Dance Challenge', 'Match each simple movement cue to keep the beat.', 'Move & Survive', 'BODY_MOVE', 'Normal', 'Competitive', ['#e45b9d', '#7557a8']),

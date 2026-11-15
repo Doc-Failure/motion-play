@@ -376,10 +376,12 @@
   {
     "id": "T25F",
     "title": "Implement and test Treasure Grab using generic MOTION_HIT input",
-    "depends_on": ["T25E"],
-    "status": "pending",
-    "attempts": 0,
-    "notes": "Acceptance: deterministic 1-4 player treasure/hazard model, reward/penalty/isolation tests, rendered simulation, practice/setup/catalog routing, pointer fallback, and honest availability gating.",
+    "depends_on": [
+      "T25E"
+    ],
+    "status": "done",
+    "attempts": 1,
+    "notes": "Implemented deterministic 1–4 player Treasure Grab consuming generic normalized MOTION_HIT events, paired gold chests (+10) and marked curses (−10), isolated scores/feedback/cooldowns, expiry without penalties, bounded targets, countdown/results/replay, pause and camera recovery, crayon SVG art, keyboard/pointer controls and catalog/setup/practice routing. Verified on 2026-11-15: typecheck, lint, 205 unit/component tests across 37 files, production build and diff checks passed. Added four-player Chromium acceptance; all eight E2E scenarios were blocked before execution by macOS Chromium MachPortRendezvousServer registration denial (1100). No browser layout/screenshot or physical webcam validation claimed. No deployment or commit. Follow-up review on 2026-11-15: separated overlapping chest/curse waves with a full-round regression, corrected the browser catalog count to 16, and fixed clipped value labels with narrow-screen bounds assertions. All 206 unit/component tests across 37 files, typecheck, lint, production build, all eight Chromium scenarios and diff checks passed; inspected desktop/narrow Treasure Grab screenshots. One targeted browser launch was denied by macOS MachPortRendezvousServer registration (1100); a subsequent full-suite run passed on the final build. This supersedes the earlier browser-validation limitation. Physical webcam validation remains outstanding.",
     "needs_hardware_validation": true,
     "hardware_verified": false
   },
