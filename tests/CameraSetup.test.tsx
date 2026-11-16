@@ -12,7 +12,7 @@ describe('simple camera flow', () => {
     ['paint-splash', 'Paint Splash'], ['meteor-smash', 'Meteor Smash'],
     ['balloon-panic', 'Balloon Panic'], ['gold-rush', 'Gold Rush'],
     ['simon-says', 'Simon Says'], ['fruit-catcher', 'Fruit Catcher'],
-    ['freeze', 'Freeze!'], ['dance-challenge', 'Dance Challenge'], ['laser-escape', 'Laser Escape'], ['dodgeball', 'Dodgeball'], ['air-pong', 'Air Pong'], ['goalkeeper', 'Goalkeeper'], ['tower-builder', 'Tower Builder'],
+    ['jump-rush', 'Jump Rush'], ['freeze', 'Freeze!'], ['dance-challenge', 'Dance Challenge'], ['laser-escape', 'Laser Escape'], ['dodgeball', 'Dodgeball'], ['air-pong', 'Air Pong'], ['goalkeeper', 'Goalkeeper'], ['tower-builder', 'Tower Builder'],
   ] as const)('keeps %s paused through denial and requires resume after recovery', async (game, title) => {
     const source = controller()
     vi.mocked(source.start)
@@ -195,6 +195,17 @@ describe('simple camera flow', () => {
     for (const id of [1, 2, 3, 4]) expect(screen.getByLabelText(`Player ${id} Dance Challenge play area`)).toBeVisible()
     fireEvent.click(screen.getByRole('button', { name: 'Exit game' }))
     expect(screen.getByRole('button', { name: 'Play Dance Challenge' })).toBeEnabled()
+  })
+  it('routes Jump Rush directly into four-player gameplay and setup', async () => {
+    const source = controller()
+    render(<CameraSetup source={source} initialGame="jump-rush" />)
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Play Jump Rush' })).toBeEnabled())
+    fireEvent.click(screen.getByRole('button', { name: '4 players' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Play Jump Rush' }))
+    expect(screen.getByRole('heading', { name: 'Jump Rush' })).toBeVisible()
+    for (const id of [1, 2, 3, 4]) expect(screen.getByLabelText(`Player ${id} Jump Rush play area`)).toBeVisible()
+    fireEvent.click(screen.getByRole('button', { name: 'Exit game' }))
+    expect(screen.getByRole('button', { name: 'Play Jump Rush' })).toBeEnabled()
   })
   it('rejects cached video images and pauses Freeze when the decoder stops advancing', async () => {
     const source = controller()

@@ -529,9 +529,9 @@
     "id": "T25Q",
     "title": "Implement and test Jump Rush using generic BODY_MOVE input",
     "depends_on": ["T25P"],
-    "status": "pending",
-    "attempts": 0,
-    "notes": "Acceptance: deterministic 1-4 player obstacle/jump model, collision/scoring/isolation tests, rendered simulation, practice/setup/catalog routing, fallback controls, honest availability gating, and no claim of pose tracking.",
+    "status": "done",
+    "attempts": 1,
+    "notes": "Implemented deterministic competitive 1–4 player Jump Rush using generic BODY_MOVE only. Fresh upward motion-center travel triggers a 650ms hop; lowering rearms it. Shared 2400ms hurdle cycles award +10 for a tracked hop at impact or −5 for a tracked bump, once per hurdle. Missing, invalid, stale, duplicate or reordered input cannot earn clears. Includes camera-center adaptation, transparent crayon hurdle/star overlays, pointer/touch and Down/Up keyboard simulation, immediate countdown, isolated scores, results/replay/focus and shared manual/tab/camera recovery. Current direct-countdown specification supersedes old practice-screen acceptance. Implementation metadata is available, while existing public catalog/Quick Play visibility and legacy URL gating remain unchanged. Added 29 model tests, seven rendered component cases, two CameraSetup cases, two App route cases and two Chromium gating cases. Synthetic frame-difference tests verify rising motion isolation for all player counts. Final unit/component suite: 660 passed across 67 files; lint, typecheck, production build and whitespace checks passed. First full Chromium run: 38 passed, 37 intentionally skipped. Following the final SVG/CSS refinement, isolated preview and full browser rerun were blocked before assertions by macOS Mach-port permission denial (1100); the latter had 60 startup failures and 16 skips, including a temporary preview test. Local preview server was also denied with listen EPERM. Temporary harness removed; no Jump Rush browser gameplay or visual pass claimed. Physical webcam behavior, motion feel and Safari remain unverified; hardware_verified stays false. No deployment, external upload, dependency changes or commit.",
     "needs_hardware_validation": true,
     "hardware_verified": false
   },

@@ -1990,3 +1990,39 @@ T25P implementation is complete under the current hidden-game refinement scope.
   Inspected the generated synthetic-camera lobby screenshot.
 - Physical webcam behavior, motion feel and Safari remain unverified. Hardware
   flags stay unchanged. No deployment, upload, dependency changes or commit.
+
+## T25Q — Jump Rush (2026-11-16)
+
+- Read SPEC.md and AGENTS.md and inspected the application, generic motion-center
+  dispatch, lifecycle, public refinement gating and related game tests.
+- Implemented competitive 1–4 player Jump Rush through normalized BODY_MOVE events.
+  Consecutive fresh upward travel triggers a 650ms hop; lowering rearms it. Shared
+  2400ms hurdle cycles resolve once per player at impact: +10 for a tracked hop,
+  −5 for a tracked bump. Missing/uncertain input earns nothing. Gradual travel,
+  confidence/range validation, duplicate/stale/reordered rejection, timing
+  boundaries, render cadence, pauses and final-result stability are tested.
+- Added lightweight transparent crayon hurdles and stars, camera-aligned lanes,
+  pointer/touch and Down/Up keyboard fallback, countdown, isolated scores,
+  results/replay focus and shared manual/tab/camera recovery. This is a
+  motion-center alternative, not physical-jump or pose recognition.
+- Connected camera dispatch, setup and implementation metadata. Preserved the
+  existing public game set; Jump Rush stays hidden from catalog and Quick Play,
+  and both legacy URLs return to the catalog. The current direct-countdown
+  specification supersedes backlog practice-screen wording.
+- Added 29 model tests, seven rendered cases, two CameraSetup cases, two App URL
+  cases and two Chromium gating cases. Deterministic frame-difference fixtures
+  exercise rising motion in mirrored player zones for all four player counts.
+- Final checks: **660 unit/component tests in 67 files passed**; lint, typecheck,
+  production build and whitespace checks passed. Initial test expectations were
+  corrected for shared negative scoring and freshness at the collision timestamp.
+- First full Chromium run: **38 passed, 37 intentionally skipped**. After the
+  final SVG/CSS refinement, an isolated preview and a full browser rerun failed
+  before assertions with macOS Mach-port registration permission denial (1100).
+  The full retry recorded 60 startup failures and 16 skips, including the temporary
+  preview case. A local preview server also failed with listen EPERM. Temporary
+  harness files were removed. No Jump Rush browser gameplay or visual pass claimed.
+- Real webcam behavior, motion feel, presence/occlusion limitations and Safari
+  remain unverified. Hardware validation remains required and hardware_verified
+  false. No deployment, external upload, dependency changes or commit.
+
+T25Q implementation is complete within the current hidden-game refinement scope.

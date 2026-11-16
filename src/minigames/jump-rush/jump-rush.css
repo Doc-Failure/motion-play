@@ -1,0 +1,18 @@
+.jump-game { position: relative; }
+.jump-boards { display: grid; grid-template-columns: repeat(auto-fit,minmax(180px,1fr)); gap: 1rem; }
+.jump-player h2 { font-size: 1.1rem; }
+.jump-player h2 span { display: block; font-size: .9rem; }
+.jump-board { position: relative; height: 400px; overflow: hidden; border: 3px solid #29313c; border-radius: 1.2rem .6rem 1rem .7rem; background: #fff9e922; }
+.jump-board:focus-visible { outline: 4px dashed #29313c; outline-offset: -5px; }
+.jump-ground { position: absolute; left: 0; right: 0; top: 81%; border-top: 4px dashed #3a6841; }
+.jump-launch,.jump-runner,.jump-hurdle { position: absolute; top: 76%; translate: -50% -50%; font-size: clamp(2rem,5vw,4rem); line-height: 1; text-shadow: 2px 2px #fff9e9,-2px -2px #fff9e9; }
+.jump-launch,.jump-runner { left: 25%; }
+.jump-launch { color: #29313c; top: 88%; }
+.jump-runner { color: #3a6841; }
+.jump-runner.is-airborne { top: 60%; }
+.jump-hurdle { color: #984020; }
+.jump-marker { position: absolute; translate: -50% -50%; color: #29313c; background: #fff9e9; border: 2px dashed currentColor; border-radius: 50%; pointer-events: none; }
+.jump-rules,.jump-help { line-height: 1.5; }
+
+.jump-hurdle { width: clamp(2rem,5vw,4rem); height: clamp(2rem,5vw,4rem); }
+.jump-hurdle svg { display: block; width: 100%; height: 100%; overflow: visible; }
