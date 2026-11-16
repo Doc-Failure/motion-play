@@ -1,0 +1,13 @@
+.dance-game { position: relative; color: #29313c; }
+.dance-boards { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0,1fr); }
+.dance-player { min-width: 0; }
+.dance-player h2 { font-size: 1rem; }
+.dance-player h2 span { display: block; font-size: .8rem; }
+.dance-board { position: relative; height: min(65vh,36rem); border: 2px dashed #7557a8; border-radius: 1% 2%; touch-action: none; overflow: hidden; }
+.dance-board:focus-visible { outline: 4px solid #7557a8; outline-offset: -4px; }
+.dance-cue { position: absolute; top: 28%; left: 50%; transform: translateX(-50%) rotate(-3deg); display: grid; justify-items: center; padding: .3rem .6rem; color: #492c68; background: #fff8e9e8; border: 3px dashed #7557a8; border-radius: 43% 38% 32% 25%; pointer-events: none; }
+.dance-cue strong { font-size: clamp(2rem,6vw,4rem); line-height: 1; }
+.dance-cue span { white-space: nowrap; font-size: .85rem; }
+.dance-cue.is-active { border-style: solid; box-shadow: 3px 4px #e45b9d; }
+.dance-marker { position: absolute; transform: translate(-50%,-50%); color: #fff8e9; background: #7557a8; border: 2px solid #29313c; border-radius: 43% 51% 47% 40%; width: 2rem; text-align: center; pointer-events: none; }
+.dance-help, .dance-rules { font-size: .85rem; }

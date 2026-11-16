@@ -1885,3 +1885,43 @@ T25M implementation is complete under the current hidden-game refinement scope.
 
 T25N implementation is complete under the current hidden-game refinement scope.
 Desktop/narrow browser visual inspection remains a follow-up validation item.
+
+## T25O — Dance Challenge (2026-11-16)
+
+- Read SPEC.md and AGENTS.md; inspected application routing, camera adapter,
+  normalized BODY_MOVE games, shared timing/recovery and camera-first layout.
+- Implemented deterministic competitive Dance Challenge for 1–4 players. Shared
+  left/right/up/down arrows have 800ms warning, 1200ms Go and 400ms rest windows.
+  Fresh directional movement of at least 18% of a lane earns +10 once per cue;
+  holding a position or moving during warning/rest cannot score. Small continuous
+  movements accumulate while gaps, invalid tracking and interruptions clear anchors.
+- Kept scores, motion anchors, matches and feedback isolated by player. Added
+  timestamp/confidence/coordinate validation, stale/duplicate rejection, exclusive
+  timing endpoints, countdown/results/replay and manual/tab/camera recovery.
+- Added transparent crayon arrows and motion-center stars on camera-aligned lanes,
+  visible text cues, screen-reader cue announcements, focused results/replay,
+  pointer/touch input and deliberate arrow-key simulation. Game code consumes
+  generic input only; CameraSetup performs the motion-center BODY_MOVE adaptation.
+- Recorded implementation availability while preserving the checkout's existing
+  public refinement set. Catalog/Quick Play and legacy game/camera URLs keep Dance
+  Challenge hidden. No practice screen was added: current spec requires direct countdown.
+- Added 32 model cases, seven rendered component cases, two setup cases and two
+  route-gating browser cases. Tests cover all directions, 1–4 player isolation,
+  mirrored synthetic camera movement, timing/distance boundaries, render cadence,
+  fresh/invalid/missing input, pause/recovery, keyboard/pointer, StrictMode and replay.
+- Final checks: **568 unit/component tests across 63 files passed**; typecheck,
+  lint, production build and whitespace checks passed. Full Chromium regression:
+  **34 passed, 37 intentionally skipped** for hidden games. The final screen-reader
+  cue markup was added after that run; rebuilt and repeated the full unit suite,
+  then reran the full Chromium suite against the final build with the same results.
+- Built a temporary isolated four-player browser preview without exposing a public
+  route. Direct npx launch was blocked by macOS Mach-port permission denial (1100);
+  rerunning through the npm browser script succeeded. A targeted final route run
+  also hit the same launch restriction; the full npm browser rerun passed. Keyboard scoring and pause
+  passed, and desktop (1280×720) / narrow (640×360) screenshots were inspected.
+  Removed the temporary test; preview artifacts remain under /tmp only.
+- Physical webcam behavior, movement feel/latency and Safari remain unverified.
+  Hardware validation flags stay true/false respectively. No deployment, external
+  upload, dependency change or commit was performed.
+
+T25O implementation is complete under the current hidden-game refinement scope.

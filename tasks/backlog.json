@@ -509,9 +509,9 @@
     "id": "T25O",
     "title": "Implement and test Dance Challenge using generic BODY_MOVE input",
     "depends_on": ["T25N"],
-    "status": "pending",
-    "attempts": 0,
-    "notes": "Acceptance: deterministic 1-4 player cue-matching model, timing/scoring/isolation tests, rendered simulation, practice/setup/catalog routing, fallback controls, honest availability gating, and no claim of pose tracking.",
+    "status": "done",
+    "attempts": 1,
+    "notes": "Implemented deterministic competitive 1–4 player Dance Challenge consuming generic BODY_MOVE only. Shared left/right/up/down cues use warning, Go and rest windows; fresh directional travel earns +10 once per cue. Countdown, timing boundaries, confidence/range checks, duplicate/stale packets, gaps, player isolation, pause/recovery and replay are tested. Transparent crayon arrows/markers overlay camera-aligned lanes with pointer/touch and deliberate keyboard fallback. CameraSetup adapts motion centers without pose claims. Implementation metadata is available; existing public refinement set and Quick Play remain unchanged, and both legacy URLs stay gated. Current direct-countdown specification supersedes old practice acceptance. Added 39 model/component tests, two setup cases and two Chromium route-gating cases. Final unit suite: 568 passed across 63 files; typecheck, lint, production build and whitespace checks passed. Full Chromium regression: 34 passed, 37 intentionally skipped; final-build full Chromium rerun also passed. Temporary isolated four-player browser preview passed keyboard scoring, pause and desktop/narrow screenshots; temporary harness/test removed. A direct npx preview launch and a targeted route rerun were denied by macOS Mach-port permissions; npm-script preview and full regression reruns subsequently passed. Physical webcam, motion feel and Safari remain unverified; no deployment, upload, dependency change or commit.",
     "needs_hardware_validation": true,
     "hardware_verified": false
   },

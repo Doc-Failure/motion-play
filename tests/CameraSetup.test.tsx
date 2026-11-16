@@ -11,7 +11,7 @@ describe('simple camera flow', () => {
     ['paint-splash', 'Paint Splash'], ['meteor-smash', 'Meteor Smash'],
     ['balloon-panic', 'Balloon Panic'], ['gold-rush', 'Gold Rush'],
     ['simon-says', 'Simon Says'], ['fruit-catcher', 'Fruit Catcher'],
-    ['laser-escape', 'Laser Escape'], ['dodgeball', 'Dodgeball'], ['air-pong', 'Air Pong'], ['goalkeeper', 'Goalkeeper'], ['tower-builder', 'Tower Builder'],
+    ['dance-challenge', 'Dance Challenge'], ['laser-escape', 'Laser Escape'], ['dodgeball', 'Dodgeball'], ['air-pong', 'Air Pong'], ['goalkeeper', 'Goalkeeper'], ['tower-builder', 'Tower Builder'],
   ] as const)('keeps %s paused through denial and requires resume after recovery', async (game, title) => {
     const source = controller()
     vi.mocked(source.start)
@@ -183,6 +183,17 @@ describe('simple camera flow', () => {
     for (const id of [1, 2, 3, 4]) expect(screen.getByLabelText(`Player ${id} Star Collector play area`)).toBeVisible()
     fireEvent.click(screen.getByRole('button', { name: 'Exit game' }))
     expect(screen.getByRole('button', { name: 'Play Star Collector' })).toBeEnabled()
+  })
+  it('routes Dance Challenge directly into four-player gameplay and setup', async () => {
+    const source = controller()
+    render(<CameraSetup source={source} initialGame="dance-challenge" />)
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Play Dance Challenge' })).toBeEnabled())
+    fireEvent.click(screen.getByRole('button', { name: '4 players' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Play Dance Challenge' }))
+    expect(screen.getByRole('heading', { name: 'Dance Challenge' })).toBeVisible()
+    for (const id of [1, 2, 3, 4]) expect(screen.getByLabelText(`Player ${id} Dance Challenge play area`)).toBeVisible()
+    fireEvent.click(screen.getByRole('button', { name: 'Exit game' }))
+    expect(screen.getByRole('button', { name: 'Play Dance Challenge' })).toBeEnabled()
   })
   it('routes Treasure Grab directly into four-player gameplay and setup', async () => {
     const source = controller()
