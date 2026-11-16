@@ -4,16 +4,17 @@ Status on 2026-11-16: **not cleared for public release**. This is a local releas
 candidate and a repeatable review procedure. No deployment is authorized by this
 checklist. Automated camera fixtures do not validate a physical webcam.
 
-Latest local snapshot: `81a1e9d9edc2a9314e84`. All **891 unit/component tests**
-and **12 packaging tests** pass, along with lint, typecheck, build and artifact
-integrity. Current three-engine checks are blocked at browser launch; offline
-integration is blocked by loopback permissions; dependency audit is blocked by
-registry DNS. These are unresolved gates. Earlier successful focused diagnostic
-and offline runs are historical evidence, not passes for this review.
+Latest local snapshot: `4b98994e70ca1d43e808`. All **922 unit/component tests**
+and **14 packaging tests** pass, along with lint, typecheck, build and artifact
+integrity. Full Chromium regression: **56 permanent passes / 39 intentional
+hidden-game skips**, including keyboard gameplay, privacy and synthetic cadence.
+The three-engine attempt failed at browser launch; offline integration is blocked
+by loopback permissions and dependency audit by registry DNS. Firefox/WebKit,
+offline, security audit and human review gates remain open.
 
-The public selection is Bubble Battle, Window Wipe, Whack-a-Mole, Fruit Catcher
-and Paper Dojo. Other implementations remain hidden. Fruit Catcher uses a
-motion-center alternative, not an implemented hand-landmark tracker. Paper Dojo
+The public selection is Rocket Rumble, Paper Dojo, Bubble Battle, Window Wipe
+and Whack-a-Mole. Other implementations remain hidden. Rocket Rumble uses
+normalized motion hits for matching rockets and triggering fireworks. Paper Dojo
 avoidance uses observed movement areas, not full-body pose recognition.
 
 ## Reproduce the automated review
@@ -49,7 +50,7 @@ Hidden-game skips are intentional and do not certify those implementations.
 
 - `npm run build` produces a static root-hosted `dist/` directory. No runtime
   application server, API, accounts, remote model downloads or credentials are needed.
-  The optional body-tracking diagnostic reads its bundled model and WASM locally.
+  The local body-tracking diagnostic reads its bundled model and WASM locally.
   Serve over HTTPS in production; opening `index.html` with `file://` is unsupported.
   Subdirectory hosting is not certified by this build.
 - `dist/release-report.json` records a deterministic release ID, per-file SHA-256,
@@ -67,6 +68,11 @@ Hidden-game skips are intentional and do not certify those implementations.
   Only that document receives the same-origin fetch/WASM exception; other HTML
   documents require the main app policy. Packaging and integrity checks both
   reject a missing, weakened, commented-out or late diagnostic policy.
+- Both packaging and integrity checks require nonempty diagnostic entry/runtime,
+  model, SIMD and non-SIMD WASM loaders/binaries, license, model card and provenance
+  files. These JavaScript-loaded dependencies are not discoverable by HTML/CSS
+  link checks. Regression coverage removes and empties each required file. This
+  establishes bundle completeness, not model inference or browser compatibility.
 - Packaging also checks the install manifest: start/shortcut URLs must launch
   the root-hosted hash-route app, scope must be the hosting root, and icons,
   screenshots and shortcut icons must be local files included in the artifact.
@@ -100,7 +106,9 @@ Hidden-game skips are intentional and do not certify those implementations.
   claims the page. Disabling caching unregisters this worker and removes only
   `motion-play-` caches. Browser storage eviction can still remove offline data.
   If recaching fails because storage quota is exhausted, the worker still returns
-  the successfully fetched online response. The Node harness covers this path.
+  the successfully fetched online response. Cache open/read errors also fall back
+  to the packaged asset's network URL; network failures still propagate. The Node
+  harness covers these paths and preserves the packaged-GET-only boundary.
 - Before a later authorized deployment, review host MIME types, HTTPS, compression,
   and cache headers. Use revalidation for HTML/worker/report and long-lived immutable
   caching only for hashed assets. Confirm manifest/icon delivery on the actual
@@ -119,10 +127,13 @@ Hidden-game skips are intentional and do not certify those implementations.
   local/data/blob images, local/blob media, no objects or form submission. Inline
   styles remain allowed for React positioning and crayon effects. Development
   retains Vite's normal HMR behavior; development is not a privacy release test.
-- The optional diagnostic loads a separate local iframe with its own CSP allowing
-  same-origin connections and WASM compilation. The main document's blocked POST
-  probes do not certify this iframe. Review and test that opt-in runtime's requests
-  separately before clearing the privacy gate; it does not feed game scoring.
+- The diagnostic loads a separate local iframe with its own CSP allowing
+  same-origin connections and WASM compilation. During the current test phase,
+  tracking starts enabled after camera readiness; Hide wireframe disables it.
+  Its roughly 28.5 MB local model/runtime can therefore load on entering a camera
+  view, rather than requiring a separate diagnostic click. Home does not load it.
+  The main document's blocked POST probes do not certify this iframe. Review its
+  requests and performance separately; it does not feed game scoring.
 - The synthetic release scenario checks local GET requests, no microphone request,
   no default worker registration, storage keys and blocked same-origin/external
   POST probes. It does not inspect browser-vendor traffic or OS camera behavior.
@@ -135,7 +146,11 @@ Hidden-game skips are intentional and do not certify those implementations.
 The release scenario attaches `synthetic-four-player-frame-cadence.json` to its
 Playwright result. It samples 90 animation-frame intervals during four-player
 Paper Dojo with a 320×240 canvas camera. Median/p95 intervals are diagnostics,
-not hardware latency or a 60 FPS certification. Current capture processes at
+not hardware latency or a 60 FPS certification. This review's Chromium sample
+recorded 16.7 ms median and 17.5 ms p95 across 90 intervals at 1280×720; the JSON
+is retained at `/tmp/motion-play-release-review/chromium-synthetic-four-player-frame-cadence.json`.
+The user agent is Playwright's desktop emulation, not evidence of a physical
+Windows device. Current capture processes at
 most one new decoded frame per 50 ms timer plus processing time; adaptive FPS is
 not implemented. Do not describe this as a measured 20–30 FPS hardware result.
 
@@ -152,11 +167,20 @@ Regression coverage checks both the catalog and an active synthetic camera game,
 including stream continuity. This is partial keyboard coverage, not a completed
 accessibility review.
 
+Bubble Battle, Window Wipe and Whack-a-Mole now offer a stable keyboard focus
+target per player. Arrows move a bounded cursor; Space/Enter emit normalized
+hit/brush events through the existing game models. Only keyboard focus reveals
+the cursor and control reminder. Countdown, pause, recovery and results block
+keyboard actions. Their results headings receive focus, and replay returns focus
+to Pause. Games already managing their own replay focus retain that behavior.
+This closes a missing keyboard fallback, but does not clear the broader
+accessibility/usability gate.
+
 ## Outstanding human gates
 
 | Gate | Required evidence | Current status |
 | --- | --- | --- |
-| Chromium production regression | Synthetic navigation, scoring, recovery, audio scheduling, layout | Earlier full regression: 48 passed / 37 skips; later diagnostic integration: 9 focused passes. Current review blocked at launch by Mach-port permission denial |
+| Chromium production regression | Synthetic navigation, scoring, recovery, audio scheduling, layout | Passed this review: 56 permanent cases / 39 intentional hidden-game skips. Earlier launch failures are retained below |
 | Offline integration | Genuine worker, offline art/fonts/play and opt-out cleanup | Earlier scenario passed including diagnostic document/runtime; current run blocked by loopback listen EPERM |
 | Firefox and WebKit | Same regression in engines that successfully launch | Open: attempted launches aborted before assertions in this environment |
 | Safari on a Mac | Real permission flow, camera video, audio unlock, reconnect and tab recovery | Open |
@@ -173,6 +197,73 @@ failures/fixes and evidence before changing its status. Keep
 hardware testing has occurred.
 
 ## Latest local review (2026-11-16)
+
+### Public keyboard controls and results focus
+
+Bubble Battle, Window Wipe and Whack-a-Mole lacked keyboard gameplay controls.
+Added one focusable play area per player, arrow-key aiming and Space/Enter
+hit/brush actions, with a visible cursor and keyboard-only control reminder.
+The reminder spans the viewport rather than a narrow player lane. Integer cursor
+steps clamp positions to [0,1]; browser modifier shortcuts pass through. Existing
+normalized input, scoring, player isolation and camera boundaries are preserved.
+Countdown, pause, recovery and results block keyboard movement/actions.
+
+Results focus now moves to these games' headings, and replay returns it to Pause.
+The shared handler only owns results/replay focus when a game attaches its results
+ref. The first full test run caught nine conflicts with games owning replay focus;
+scoped ownership fixed them, and full reruns passed.
+
+Added **17 unit/component cases** and **three permanent browser scenarios** for
+keyboard scoring in 1–4 player lanes, bounds, shortcut preservation, recovery and
+focus. The final **922 tests in 78 files** also include the concurrent diagnostic
+updates. **14 packaging tests**, lint, typecheck, build and integrity pass. Final
+snapshot `4b98994e70ca1d43e808` has 39 payload files: 2,647,331 core bytes plus
+28,456,010 pose bytes, 31,103,341 total. All existing byte budgets pass. These sizes
+do not measure FPS.
+
+Three focused Chromium keyboard cases passed before/after a responsive-help fix;
+reviewed final 1280×720 and 390×844 screenshots under
+`/tmp/motion-play-keyboard-final`. Camera-denied simulation is not a webcam test.
+A subsequent full Chromium run passed **56 permanent cases / 39 intentional
+hidden-game skips**, including camera recovery, all five public games, audio,
+privacy and the synthetic cadence sample above. The runner reported 57 passes
+because it also collected one concurrent temporary localhost diagnostic; that
+harness has since been removed. The full run used `8368e7bd9de3759fa74e`; a later
+diagnostic-provenance rebuild produced the final ID with identical core JS/CSS.
+
+Earlier privacy-only and 12-case privacy/keyboard three-engine attempts failed at
+engine launch: Chromium Mach-port permission denial (1100), Firefox SIGABRT and
+WebKit Abort trap 6. Later Chromium successes supersede its launch failure; they
+do not clear Firefox/WebKit. Offline integration failed loopback `listen EPERM`;
+the dependency audit failed registry DNS ENOTFOUND. No cross-browser certification,
+physical-webcam, hardware-performance or dependency-security pass is claimed.
+T26 remains pending. No deployment, upload, dependency changes or commit.
+
+### Cache storage recovery and diagnostic bundle completeness
+
+Read SPEC.md/AGENTS.md and inspected navigation, camera/diagnostic lifecycle,
+release policies, worker and browser fixtures. Fixed online play failing when an
+installed worker cannot open or read Cache Storage. Added network recovery without
+intercepting arbitrary runtime requests or masking genuine network failures.
+Closed a packaging gap where removing the JavaScript-loaded model or WASM files
+could still produce a passing artifact. Both packaging and integrity now require
+the complete nonempty optional diagnostic bundle and its notices.
+
+Passed **901 unit/component tests in 77 files**, **14 packaging tests**, lint,
+typecheck, production build and artifact integrity. The two new packaging cases
+exercise open/read failures and missing/empty diagnostic files. Snapshot
+`d04e56e8c3872539696b` contains 39 payload files: 2,643,121 core bytes and
+28,455,777 optional pose bytes, 31,098,898 total. All budgets pass. Payload ID
+excludes the worker/report; worker integrity is checked separately.
+
+The focused production privacy/cadence scenario failed before app assertions in
+Chromium (Mach-port permission denial 1100), Firefox (SIGABRT) and WebKit
+(Abort trap 6). Offline integration failed at loopback `listen EPERM`.
+`npm audit --fetch-retries=0 --fetch-timeout=15000` failed registry DNS ENOTFOUND.
+No fresh browser, visual, performance, dependency-security or physical-webcam
+pass is claimed. Earlier Rocket Rumble and gameplay-wireframe focused browser
+passes are recorded in tasks/progress.md; they do not clear these gates.
+T26 stays pending. No deployment, upload or commit performed.
 
 ### Diagnostic policy packaging review
 

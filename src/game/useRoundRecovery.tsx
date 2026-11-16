@@ -21,8 +21,10 @@ export function useRoundRecovery<S extends GameSessionSnapshot>({
   const phase = useRef(snapshot.phase)
   phase.current = snapshot.phase
   const heading = useRef<HTMLHeadingElement>(null)
+  const resultsHeading = useRef<HTMLHeadingElement>(null)
   const button = useRef<HTMLButtonElement>(null)
   const wasPaused = useRef(false)
+  const ownedResults = useRef(false)
   const cameraBlocked = useRef(false)
   const pause = useCallback((message: string) => {
     if (phase.current !== 'playing' && phase.current !== 'countdown') return
@@ -50,12 +52,16 @@ export function useRoundRecovery<S extends GameSessionSnapshot>({
   }, [pause])
   useEffect(() => {
     if (snapshot.phase === 'paused') heading.current?.focus()
-    else if (wasPaused.current) button.current?.focus()
+    else if (snapshot.phase === 'results') resultsHeading.current?.focus()
+    else if (wasPaused.current || ownedResults.current) button.current?.focus()
     wasPaused.current = snapshot.phase === 'paused'
+    // Games with their own results/replay focus retain ownership of that focus.
+    ownedResults.current = snapshot.phase === 'results' && Boolean(resultsHeading.current)
   }, [snapshot.phase])
 
   const blocked = Boolean(externalPauseReason) || hidden
   return {
+    resultsHeading,
     pauseButton: <button ref={button} className="text-button" type="button" disabled={snapshot.phase !== 'playing' && snapshot.phase !== 'countdown'} onClick={() => pause('Take a breather!')}>Pause</button>,
     pauseDialog: snapshot.phase === 'paused' && <div className="battle-results" role="dialog" aria-label={`${title} paused`}>
       <h2 ref={heading} tabIndex={-1}>Round paused</h2>

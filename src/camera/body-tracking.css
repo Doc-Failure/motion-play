@@ -20,3 +20,10 @@
 .game-wireframe-toggle[aria-pressed="true"] { background:#ffe17a; }
 .game-wireframe-toggle:focus-visible { outline:3px solid #ffe17a; outline-offset:3px; }
 @media(max-width:600px) { .game-wireframe-toggle { font-size:.6rem; } .camera-play .body-test--game .body-test__status { font-size:.55rem; } .camera-play .body-test--game .body-test__status small { font-size:.45rem; } }
+
+/* Make the human skeleton unambiguous while verifying movement. */
+.body-test__sticks { filter:drop-shadow(0 0 2px #10232c) drop-shadow(0 0 1px #10232c); }
+.camera-play .camera-arena:has(.body-test[data-tracked="true"]) :is(.sky-rocket,.rocket-switch,.fireworks-canvas,.rocket-threads,.dojo-ninja,.dojo-tower,.dojo-obstacle,.dojo-effect,.battle-target,.mole-target) { opacity:.2; }
+.camera-play .camera-arena:has(.body-test[data-tracked="true"]) .sky-rocket>svg>circle { display:none; }
+
+.camera-play .camera-arena:has(.body-test[data-tracked="true"]) [aria-label$="play area"] > :not(.game-curtain) { opacity:.2; }

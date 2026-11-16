@@ -159,8 +159,11 @@ This is a framing suggestion, not a measured distance or universal lens setting.
 The automatic countdown repeats a short distance cue, including Quick Play.
 
 An optional Test body tracking button in the lobby loads local MediaPipe Pose
-Landmarker Lite. Confident joints draw one torso stick, jointed arms and wrist
-dots over the uncropped mirrored camera. Occluded/low-confidence segments are
+Landmarker Lite. Confident joints draw a green human stick person with a head,
+torso, jointed arms, wrist dots and legs over the uncropped mirrored camera.
+Game artwork fades while the diagnostic is enabled so it cannot be confused
+with the human skeleton. Visible upper-body segments remain available when hips
+are outside the image; missing limbs are omitted. Occluded/low-confidence segments are
 omitted; stale frames clear the overlay. This diagnostic does not supply game
 input, award points or claim finger/hand-shape recognition. The enabled choice
 carries from setup into gameplay. A Show/Hide wireframe button during any game
@@ -190,3 +193,12 @@ full opacity and remains uncropped. Reduced motion uses stationary fading rings;
 shared pause/recovery freezes fuses, targets and particles. Game input remains
 normalized MOTION_HIT, with pointer and keyboard fallback. No source-game assets,
 code or audio are copied. Physical play quality remains unverified.
+
+## Automatic human tracking during the test phase (2026-11-16)
+The stick-person diagnostic now starts enabled when the camera becomes ready,
+including direct game links and Quick Play. Hide wireframe remains available.
+It previously defaulted off, which made the feature appear absent on localhost.
+Existing Vite tabs require a reload to replace retained React state. Camera-only
+model files load when the active camera view opens during this test phase;
+the homepage does not load them. In-flight runtime loads are cancelled on exit
+or disable. Artwork fades only after a human skeleton is actually detected.

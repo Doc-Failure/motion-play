@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { test } from 'node:test'
 import { runInNewContext } from 'node:vm'
-import { budgets, checkRelease, prepareRelease } from './release.mjs'
+import { budgets, checkRelease, prepareRelease, requiredPoseFiles } from './release.mjs'
 
 const policy = JSON.parse(await readFile(new URL('../config/privacy-policy.json', import.meta.url), 'utf8')).content
 const policyTag = `<meta http-equiv="Content-Security-Policy" content="${policy}">`
@@ -17,6 +17,10 @@ async function fixture(t) {
   t.after(() => rm(directory, { recursive: true, force: true }))
   await mkdir(join(directory, 'assets'))
   await mkdir(join(directory, 'pose'))
+  for (const path of requiredPoseFiles) {
+    await mkdir(join(directory, path, '..'), { recursive: true })
+    await writeFile(join(directory, path), 'synthetic packaging fixture')
+  }
   for (const [path, contents] of Object.entries({
     'index.html': `<html><head>${policyTag}</head><body></body></html>`,
     'manifest.webmanifest': JSON.stringify(manifest), 'icon.svg': '<svg/>',
@@ -73,6 +77,22 @@ test('manifest launches only the packaged app and includes local install artwork
     await writeFile(join(directory, 'manifest.webmanifest'), JSON.stringify(value))
     await assert.rejects(prepareRelease(directory), /manifest/i, JSON.stringify(value))
   }
+})
+
+test('requires a complete nonempty diagnostic runtime, model, WASM variants and notices', async (t) => {
+  const directory = await fixture(t)
+  await prepareRelease(directory)
+  for (const path of requiredPoseFiles) {
+    const contents = await readFile(join(directory, path))
+    await rm(join(directory, path))
+    await assert.rejects(prepareRelease(directory), { message: `Missing release file: ${path}` })
+    await assert.rejects(checkRelease(directory), { message: `Missing release file: ${path}` })
+    await writeFile(join(directory, path), '')
+    await assert.rejects(prepareRelease(directory), { message: `Empty release file: ${path}` })
+    await assert.rejects(checkRelease(directory), { message: `Empty release file: ${path}` })
+    await writeFile(join(directory, path), contents)
+  }
+  await checkRelease(directory)
 })
 
 test('rejects oversized scripts, accidentally shipped secrets and absent privacy policy', async (t) => {
@@ -227,6 +247,37 @@ test('worker returns online assets when storage quota prevents recaching', async
   fetchHandler({ request: { method: 'GET', url: 'https://motion-play.test/assets/font.ttf' }, respondWith: (value) => { pending = value } })
   assert.equal(await pending, response)
   assert.equal(writes, 1)
+})
+
+test('worker recovers online when cache storage cannot be opened or read', async (t) => {
+  const directory = await fixture(t)
+  await prepareRelease(directory)
+  for (const failure of ['open', 'match']) {
+    let fetchHandler, pending, networkError
+    const requests = [], stored = []
+    const response = { ok: true, clone: () => 'copied response' }
+    runInNewContext(await readFile(join(directory, 'sw.js'), 'utf8'), {
+      URL, self: { registration: { scope: 'https://motion-play.test/' }, location: { origin: 'https://motion-play.test' }, addEventListener: (type, handler) => { if (type === 'fetch') fetchHandler = handler } },
+      fetch: async (url) => {
+        requests.push(url)
+        if (networkError) throw networkError
+        return response
+      },
+      caches: { open: async () => {
+        if (failure === 'open') throw new Error('Storage unavailable')
+        return { match: async () => { throw new Error('Cache read failed') }, put: async (...args) => stored.push(args) }
+      } },
+    })
+    const request = { method: 'GET', mode: 'navigate', url: 'https://motion-play.test/?launch=1' }
+    fetchHandler({ request, respondWith: (value) => { pending = value } })
+    assert.equal(await pending, response)
+    assert.deepEqual(requests, ['https://motion-play.test/index.html'])
+    assert.deepEqual(stored, failure === 'open' ? [] : [['https://motion-play.test/index.html', 'copied response']])
+    fetchHandler({ request: { method: 'GET', url: 'https://motion-play.test/private-data' }, respondWith: () => assert.fail('Unknown runtime data intercepted') })
+    networkError = new Error('Network unavailable')
+    fetchHandler({ request, respondWith: (value) => { pending = value } })
+    await assert.rejects(pending, networkError)
+  }
 })
 
 

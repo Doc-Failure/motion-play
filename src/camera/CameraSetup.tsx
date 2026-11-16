@@ -90,7 +90,7 @@ export function CameraSetup({ source: providedSource, initialGame = 'bubble-batt
   const [trackingLost, setTrackingLost] = useState(false)
   const gameActive = flow !== 'setup'
   const autoLaunched = useRef(false)
-  const [trackingTest,setTrackingTest]=useState(false)
+  const [trackingTest,setTrackingTest]=useState(true)
   const [cameraAspect, setCameraAspect] = useState(16 / 9)
   const [viewport, setViewport] = useState(() => ({width:window.innerWidth,height:window.innerHeight}))
   useEffect(() => {

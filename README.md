@@ -40,6 +40,11 @@ offline updates, performance measurements and outstanding human review gates.
 The build creates a static `dist/` artifact with a complete offline asset list,
 bundled licenses and a checksum/size report. No deployment is performed.
 
+Bubble Battle, Window Wipe and Whack-a-Mole also support keyboard play: Tab to
+your player’s play area, aim with the arrow keys, and press Space or Enter to
+hit or scrub. The cursor and a short control reminder appear with keyboard focus.
+These controls also work after choosing Play without camera.
+
 ## Autonomous runner
 
 Files: `SPEC.md` product/game/style requirements; `AGENTS.md` agent rules; `tasks/backlog.json` prioritized tasks; `BOOTSTRAP_PROMPT.md` initial guidance; `scripts/ralph.sh` bounded iterative runner.

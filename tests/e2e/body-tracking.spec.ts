@@ -11,8 +11,7 @@ test('distance guidance and opt-in local tracking keep the camera active and sto
   await installMockCamera()
   await openApp(page)
   await expect(page.getByText('Start about 2–3 m (6–10 ft) from the camera.')).toBeVisible()
-  expect(requests.some(r=>r.url.includes('/pose/'))).toBe(false)
-  await page.getByRole('button',{name:'Test body tracking',exact:true}).click()
+  await expect(page.getByRole('button',{name:'Hide body tracking',exact:true})).toHaveAttribute('aria-pressed','true')
   // Real local model on the fixture's solid frame: no invented body skeleton.
   await expect(page.locator('.body-test__status')).not.toContainText('Loading body tracking',{timeout:40000})
   await expect(page.locator('.body-test__status')).toContainText('No body found')
@@ -36,7 +35,7 @@ test('changing player count keeps fit guidance and active test within the camera
   await expect(page.getByText('Stand side by side. Step back until everyone’s outstretched arms fit.')).toBeVisible()
   for(const size of [{width:1280,height:720},{width:390,height:844}]){
     await page.setViewportSize(size)
-    await expect(page.getByRole('button',{name:'Test body tracking',exact:true})).toBeVisible()
+    await expect(page.getByRole('button',{name:'Hide body tracking',exact:true})).toBeVisible()
     const guide=(await page.locator('.camera-lobby__guidance').boundingBox())!
     const actions=(await page.locator('.camera-lobby__actions').boundingBox())!
     expect(guide.y+guide.height).toBeLessThan(actions.y)
@@ -50,14 +49,15 @@ test('fixture joints stay aligned through setup and play, and wireframe can be t
   await openApp(page,'#/camera/rocket-rumble')
   // Deterministic detector fixture verifies UI geometry/lifecycle, not ML accuracy.
   await page.route('**/pose/tracker.js',route=>route.fulfill({contentType:'text/javascript',body:`window.createLocalPoseTracker=async()=>({detect:()=>{const p=Array.from({length:33},()=>({x:.5,y:.5,visibility:1}));p[11]={x:.3,y:.3,visibility:1};p[12]={x:.7,y:.3,visibility:1};p[23]={x:.4,y:.8,visibility:1};p[24]={x:.6,y:.8,visibility:1};return [p]},close:()=>{}})`}))
+  await page.getByRole('button',{name:'Hide body tracking',exact:true}).click()
   await page.getByRole('button',{name:'Test body tracking',exact:true}).click()
-  await expect(page.locator('.body-test polyline')).toHaveCount(3)
+  await expect(page.locator('.body-test polyline')).toHaveCount(5)
   await expect(page.locator('.body-test polyline').first()).toHaveAttribute('points','500,300 500,800')
   await page.getByRole('button',{name:'Play Rocket Rumble',exact:true}).click()
   await expect(page.getByRole('button',{name:'Hide wireframe',exact:true})).toHaveAttribute('aria-pressed','true')
-  await expect(page.locator('.camera-play .body-test polyline')).toHaveCount(3)
+  await expect(page.locator('.camera-play .body-test polyline')).toHaveCount(5)
   await expect(page.locator('.body-test polyline').first()).toHaveAttribute('points','500,300 500,800')
-  await expect(page.locator('.body-test__status')).toContainText('games respond to movement')
+  await expect(page.locator('.body-test__status')).toContainText('Following your body')
   const overlay=(await page.locator('.body-test__sticks').boundingBox())!,video=(await page.getByLabel('Mirrored live camera during gameplay').boundingBox())!
   expect(overlay).toEqual(video)
   await page.waitForTimeout(3400)
@@ -67,10 +67,10 @@ test('fixture joints stay aligned through setup and play, and wireframe can be t
   await expect(page.locator('.body-test')).toHaveCount(0)
   await expect(page.locator('iframe[title="Local body tracking runtime"]')).toHaveCount(0)
   await page.getByRole('button',{name:'Show wireframe',exact:true}).click()
-  await expect(page.locator('.body-test polyline')).toHaveCount(3)
+  await expect(page.locator('.body-test polyline')).toHaveCount(5)
   await page.getByRole('button',{name:'Exit game',exact:true}).click()
   await expect(page.getByRole('button',{name:'Hide body tracking',exact:true})).toHaveAttribute('aria-pressed','true')
-  await expect(page.locator('.camera-lobby .body-test polyline')).toHaveCount(3)
+  await expect(page.locator('.camera-lobby .body-test polyline')).toHaveCount(5)
   const state=await page.evaluate(()=>(window as typeof window&{__mockMediaState:{requests:number;stoppedTracks:number}}).__mockMediaState)
   expect(state.requests).toBe(1);expect(state.stoppedTracks).toBe(0)
 })

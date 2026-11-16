@@ -38,13 +38,19 @@ self.addEventListener('fetch', (event) => {
   // Only packaged static files are read, never camera data or runtime responses.
   if (!assetUrls.has(target)) return
   event.respondWith((async () => {
-    const cache = await caches.open(CACHE_NAME)
-    const cached = await cache.match(target)
-    if (cached) return cached
+    let cache
+    try {
+      cache = await caches.open(CACHE_NAME)
+      const cached = await cache.match(target)
+      if (cached) return cached
+    } catch {
+      // Browser storage can become unavailable after an opt-in installation.
+      // Keep online play usable even when opening or reading the cache fails.
+    }
     // Storage eviction must not strand an online app behind an empty cache.
     const response = await fetch(target)
     // Quota/eviction failures must not discard a successfully fetched asset.
-    if (response.ok) await cache.put(target, response.clone()).catch(() => undefined)
+    if (response.ok && cache) await cache.put(target, response.clone()).catch(() => undefined)
     return response
   })())
 })

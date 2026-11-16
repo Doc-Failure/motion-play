@@ -2527,3 +2527,159 @@ T25V implementation is complete; physical hardware and release gates remain open
   /tmp/rocket-boundary-browser and multiplayer images under /tmp/rocket-final-browser.
 - No physical webcam response, speaker listening, four real players or Safari
   gameplay verification. No deployment, upload or commit performed.
+
+## Body wireframe during gameplay (2026-11-16)
+
+- Inspected SPEC and the existing local pose diagnostic. The earlier overlay was
+  limited to setup and reset on Play, making it unavailable during actual games.
+- Added Show/Hide wireframe above the sound control in every live-camera game.
+  Enabling tracking in setup now carries into gameplay; the same choice carries
+  back on Exit. Disabled diagnostics do not load a runtime. Camera loss, leaving
+  the active view and hiding the overlay dispose it without stopping the stream.
+- Reused the real local pose detector and confidence-filtered mirrored geometry:
+  torso, jointed arms and wrist dots. The noninteractive overlay sits above targets
+  and below game dialogs/header, with a compact body count. Its label explicitly
+  distinguishes joint diagnostics from the motion events used for game scoring.
+- Updated specification/provenance notes and added a rendered compact-status case
+  plus a browser integration covering normalized SVG coordinates, camera bounds,
+  toggling during play, setup/play/exit continuity, no diagnostic score awards,
+  runtime cleanup and one uninterrupted camera request. The geometry/lifecycle
+  browser case uses fixture landmarks and is not a detector-accuracy claim.
+- Validation: 49 CameraSetup cases and eight BodyTrackingTest cases passed. Three
+  Chromium body-tracking tests passed, including the existing actual local-model
+  empty-frame check. Reviewed gameplay overlay placement in
+  /tmp/game-wireframe-browser. Lint, typecheck/build and whitespace checks passed.
+  No new physical webcam, multi-person or pose-controlled gameplay validation.
+  No uploads, deployment or commit.
+
+
+## T26 cache storage recovery and diagnostic bundle completeness (2026-11-16)
+
+- Read SPEC.md/AGENTS.md and inspected the current navigation, camera/diagnostic
+  lifecycle, production policies, service worker, packaging and browser fixtures.
+  Preserved the existing gameplay-wireframe progress entry added during review.
+- Fixed installed workers blocking online play when Cache Storage open/read fails.
+  Packaged GET assets fall back to the network; arbitrary runtime requests remain
+  unintercepted and genuine network failures still reject. Existing cache-write
+  quota recovery is retained.
+- Packaging/integrity now require nonempty optional diagnostic entry/runtime,
+  model, both SIMD/non-SIMD WASM loaders/binaries, license, model card and provenance.
+  Missing JavaScript-loaded model/WASM files previously escaped HTML/CSS checks.
+  Added two packaging regressions for storage failures and missing/empty files.
+- Passed 901 unit/component tests in 77 files, 14 packaging tests, lint, typecheck,
+  production build and artifact integrity. Snapshot d04e56e8c3872539696b has 39
+  payload files: 2,643,121 core plus 28,455,777 optional pose bytes, 31,098,898 total.
+  All budgets pass; worker integrity is checked separately from the payload ID.
+- Three focused production privacy/cadence scenarios failed before app assertions:
+  Chromium Mach-port permission denial 1100, Firefox SIGABRT, WebKit Abort trap 6.
+  Offline integration failed loopback listen EPERM; current npm audit failed
+  registry DNS ENOTFOUND. No fresh browser, visual, measured-performance,
+  dependency-security or physical-webcam pass is claimed.
+- Updated the checklist's public five and current evidence, and consolidated T26
+  notes with links to retained historical records. T26 stays pending with
+  hardware_verified false. No deployment, upload or commit performed.
+
+## Human-attached stick person clarification (2026-11-16)
+
+- Read SPEC/current tracker. Extended the camera-only diagnostic from torso/arms
+  into a recognizable green human stick person: head, torso, articulated arms,
+  wrists and visible hips/knees/ankles. The head circle accounts for camera aspect.
+  Partial upper bodies no longer disappear solely because hips are offscreen.
+- Kept confidence filtering and single mirroring; omitted joints stay omitted.
+  Increased the diagnostic polling target from 150 to 80ms (not an FPS claim).
+  Game artwork fades and rocket fuse outlines disappear while tracking is shown,
+  distinguishing the person skeleton from decorative game graphics. The camera
+  itself retains full opacity. No game-object positions enter the pose detector.
+- Added moving-human coordinate and partial-leg regression coverage; updated
+  rendered/browser expectations for the full skeleton. Nine body-tracking cases
+  and 49 CameraSetup cases passed. Three permanent Chromium cases passed.
+- Separately ran the actual local model on the official temporary MediaPipe photo:
+  detected a full skeleton, followed a 60px translation in the correctly mirrored
+  direction, and removed all skeleton segments when replaced by a blank image
+  while rockets remained onscreen. Reviewed /tmp/human-stick-actual.png. This is
+  photo/inference validation, not live-webcam or human-motion hardware validation.
+  Removed the temporary photo test; no sample image added to the repository.
+- Lint, typecheck/build and whitespace checks passed. No upload/deploy/commit.
+
+
+## T26 public keyboard controls and results focus (2026-11-16)
+
+- Read SPEC.md/AGENTS.md and inspected current routes, public games, camera/input
+  lifecycle, privacy policies, offline worker, packaging and release tests.
+  Preserved existing uncommitted diagnostic/cache/packaging changes and records.
+- Found missing keyboard gameplay in public Bubble Battle, Window Wipe and
+  Whack-a-Mole. Added shared focusable per-player play areas: arrows aim a bounded
+  cursor and Space/Enter emit existing normalized hit/brush input. Integer steps
+  prevent drift, modifier shortcuts pass through, and countdown/pause/recovery/
+  results block movement/actions. Pointer/camera input still uses existing models.
+- Added a crayon cursor and keyboard-only instruction reminder; screenshot review
+  caught cramped portrait four-player instructions, now shown across the viewport.
+  Wipe still renders exactly 60 smudge cells; added affordances are out of the grid.
+- Results headings receive focus and replay returns to Pause in these three games.
+  The initial full regression found nine conflicts with games owning replay focus;
+  shared results ownership is now opt-in, all nine regressions resolved.
+- Added 17 unit/component cases and three permanent Playwright cases. Final full
+  unit/component run: **919 passed in 78 files**. **14 packaging tests** passed;
+  lint, typecheck, build, artifact integrity and whitespace checks passed. Final
+  snapshot **8368e7bd9de3759fa74e**: 39 payload files, 2,647,331 core bytes plus
+  28,455,923 optional pose bytes, 31,103,254 total. All existing budgets pass.
+- Three focused Chromium keyboard cases passed before/after the responsive-help
+  refinement, covering four-player scoring/isolation, pause, results/replay focus,
+  no page overflow and desktop/narrow screenshots. Reviewed final images under
+  /tmp/motion-play-keyboard-final. Camera-denied simulation is not webcam validation.
+- Earlier three-engine privacy-only checks and a later 12-case privacy/keyboard
+  attempt failed before app assertions (Chromium Mach-port denial 1100, Firefox
+  SIGABRT, WebKit Abort trap 6). Offline integration failed loopback listen EPERM;
+  npm audit failed registry DNS ENOTFOUND. No cross-browser certification, current
+  privacy/cadence, dependency-security or physical-camera pass claimed.
+- Updated README, release checklist and T26 notes; T26 remains pending with
+  hardware_verified false. No deployment, upload, dependency changes or commit.
+
+## Localhost wireframe absent — automatic test-phase activation (2026-11-16)
+
+- Confirmed the running Vite PID serves this workspace at localhost:5173, the active
+  Chrome tab is a Paper Dojo camera route, and served source includes the latest
+  wireframe code. Found trackingTest still defaulted false. Changed the test-phase
+  default to true so the human overlay starts with camera readiness without a
+  hidden activation step. Existing Vite tabs need a reload to discard saved state.
+- Made local runtime loading abortable, including disposal during pending model
+  initialization and idempotent closing. Default activation now cleans up promptly
+  during StrictMode setup/cleanup, disable, route exit and camera transitions.
+  Artwork dims only when confident human joints exist, not while loading or failing.
+- Twelve body-tracking cases and 49 CameraSetup cases passed. Three permanent
+  Chromium diagnostic cases passed after updating default-on expectations. Lint,
+  typecheck/build and whitespace validation passed.
+- Verified actual localhost:5173 (not the built-artifact route fixture) in Chromium
+  using a photo-fed synthetic camera: tracking starts automatically, draws all
+  five full-body segments, and remains active into gameplay with no page errors.
+  Screenshot: /tmp/localhost-human-wireframe.png. This is a local-server/inference
+  check, not physical webcam validation. The initial test fixture reused one
+  stream across StrictMode's two requests and stalled; using fresh capture streams
+  per request matched getUserMedia semantics and the localhost check passed.
+  Removed the temporary localhost/photo test; no sample photo was added to the app.
+- No changes to the user's browser security settings. No upload/deploy/commit.
+
+
+### T26 final regression follow-up (2026-11-16)
+
+- Finished a full Chromium run on 8368e7bd9de3759fa74e: **56 permanent tests
+  passed / 39 intentional hidden-game skips**. The runner reported 57 passes
+  because it also collected a concurrent temporary localhost diagnostic, since
+  removed. No permanent scenario failed. Coverage includes public gameplay,
+  keyboard controls, audio, recovery, layout, model diagnostic and privacy.
+- The privacy case passed local-GET, no-microphone, local storage/default-worker
+  and blocked POST checks. Its synthetic 90-frame sample recorded median 16.7 ms
+  and p95 17.5 ms at 1280×720. Saved the JSON under
+  /tmp/motion-play-release-review. This is render cadence with a synthetic fixture,
+  not physical camera latency, thermal performance or a 60 FPS certification.
+- Preserved additional concurrent diagnostic lifecycle/default-on work. Latest
+  full unit/component rerun: **922 passed in 78 files**, including 12 diagnostic
+  cases. Lint, typecheck, production build and artifact integrity passed again.
+- The final diagnostic-provenance rebuild is **4b98994e70ca1d43e808**, with identical
+  core JS/CSS to the full Chromium run: 39 payload files, 2,647,331 core bytes and
+  28,456,010 pose bytes, 31,103,341 total. All existing budgets pass. Updated the
+  current checklist to reflect test-phase automatic tracking after camera readiness.
+- Later Chromium success supersedes its earlier launch failures. Firefox/WebKit
+  remain unverified after launch failures; offline integration remains blocked by
+  loopback EPERM and audit by registry DNS. Hardware and human release gates remain
+  open. T26 stays pending with hardware_verified false. No deploy/upload/commit.

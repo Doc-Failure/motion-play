@@ -10,6 +10,16 @@ const digest = (value) => createHash('sha256').update(value).digest('hex')
 // Raw-byte regression guards, not claims about download speed or FPS.
 export const budgets = { javascript: 550_000, css: 160_000, total: 33_000_000, core: 3_000_000, pose: 30_000_000 }
 
+// These runtime dependencies are loaded from JavaScript, so the HTML/CSS asset
+// checks cannot discover a missing model or a missing browser-specific WASM path.
+export const requiredPoseFiles = [
+  'pose/tracker.html', 'pose/tracker.js', 'pose/vision_bundle.mjs',
+  'pose/pose_landmarker_lite.task',
+  'pose/wasm/vision_wasm_internal.js', 'pose/wasm/vision_wasm_internal.wasm',
+  'pose/wasm/vision_wasm_nosimd_internal.js', 'pose/wasm/vision_wasm_nosimd_internal.wasm',
+  'pose/LICENSE.txt', 'pose/MODEL-CARD.txt', 'pose/README.txt',
+]
+
 async function checkPrivacyPolicy(html, path) {
   const policies = JSON.parse(await readFile(join(root, 'config/privacy-policy.json'), 'utf8'))
   // Only the opt-in diagnostic may fetch local model/WASM files or compile WASM.
@@ -74,12 +84,13 @@ async function checkManifest(directory, paths) {
 
 async function describeRelease(directory) {
   const paths = (await listFiles(directory)).filter((path) => !['sw.js', 'release-report.json'].includes(path))
-  for (const required of ['index.html', 'pose/tracker.html', 'manifest.webmanifest', 'icon.svg', 'licenses/Short-Stack.txt']) {
+  for (const required of ['index.html', 'manifest.webmanifest', 'icon.svg', 'licenses/Short-Stack.txt', ...requiredPoseFiles]) {
     if (!paths.includes(required)) throw new Error(`Missing release file: ${required}`)
   }
   const files = await Promise.all(paths.map(async (path) => {
     if (/(?:^|\/)(?:\.env[^/]*|.*\.(?:map|pem|key)|.*\.(?:test|spec)\.[^/]+)$/.test(path)) throw new Error(`Unexpected release file: ${path}`)
     const bytes = await readFile(join(directory, path))
+    if (requiredPoseFiles.includes(path) && !bytes.length) throw new Error(`Empty release file: ${path}`)
     if (/\.(?:html|css)$/.test(path)) {
       const pattern = path.endsWith('.css') ? /url\(\s*(?:"([^"]*)"|'([^']*)'|([^\s)]+))\s*\)/g : /(?:src|href)="([^"#]+)"/g
       for (const match of bytes.toString().matchAll(pattern)) {
