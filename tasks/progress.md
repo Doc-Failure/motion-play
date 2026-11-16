@@ -2356,3 +2356,114 @@ T25V implementation is complete; physical hardware and release gates remain open
   The configured Desktop Chrome user-agent is emulated and must not be used to
   infer the host operating system. These are animation callback intervals, not
   physical webcam processing/input-latency or sustained-performance evidence.
+
+## T26 follow-up — packaging and recovery review (2026-11-16)
+
+- Read SPEC.md/AGENTS.md and inspected app navigation, camera fixtures, release
+  tooling and offline lifecycle. Preserved existing working-tree changes for
+  skip-link route preservation and canonical CSP enforcement; verified their
+  unit/packaging regressions without claiming their browser cases passed.
+- Fixed an additional offline defect: recaching an evicted asset could reject a
+  successful network response when cache.put exceeded storage quota. The worker
+  now returns that response even when recaching fails. Added a Node worker case.
+- Passed 884 unit/component tests in 75 files, eight packaging tests, typecheck,
+  lint, production build, checksum/worker integrity and whitespace checks.
+  Reviewed payload ID 824cdc462ab1cb06de64: 28 files, 2,617,869 bytes; all budgets
+  pass. This ID excludes worker/report; worker integrity is checked separately.
+- Current Chromium regression was interrupted after repeated startup failures:
+  24 failed, two interrupted, 60 not run. Launch logs show macOS Mach-port
+  registration permission denial (1100), before application assertions. Focused
+  Firefox/WebKit release cases both failed at launch (SIGABRT / Abort trap 6).
+  Offline integration failed at loopback listen EPERM. npm audit again failed
+  registry DNS ENOTFOUND. No current browser, visual, cadence, dependency-security
+  or physical-camera pass is claimed. T26 stays pending; updated release checklist.
+- Package manifest/lockfile and public/pose assets appeared concurrently after
+  this review's build/tests. Those changes were not made by this task and were
+  preserved. The reviewed artifact and results do not certify that separate pose
+  integration; rebuild/revalidate once that work is complete.
+- No deployment, uploads, commit or physical webcam testing performed.
+
+## T26 manifest packaging follow-up (2026-11-16)
+
+- Read SPEC.md/AGENTS.md and inspected the current navigation, camera lifecycle,
+  production CSP, worker, browser fixtures and packaging checks. Preserved all
+  existing and concurrently changing pose-tracking work.
+- Added install-manifest validation to packaging and integrity checks: start and
+  shortcut URLs launch the packaged root/hash app, scope is the hosting root,
+  icons/screenshots/shortcut icons are local packaged files. Added regression
+  cases for external/credentialed URLs, missing artwork and malformed collections.
+- Final observed checks: 891 unit/component tests in 76 files, nine packaging
+  tests, lint, typecheck, build, integrity and whitespace checks passed. An earlier
+  run passed 884 tests; an intermediate run failed one newly added stale-frame
+  diagnostic test (890 passed), corrected concurrently before the final run.
+- Initial lint failed on vendor assets and the initial build exceeded the prior
+  byte budget. Concurrent integration corrected lint configuration and introduced
+  separate core/pose budgets. Built snapshot 860529c8bde09c27a1aa: 38 files,
+  31,077,067 bytes, of which 28,453,772 are optional pose assets. No claim of pose
+  runtime browser, privacy, offline or hardware validation follows from these checks.
+- Three focused browser cases failed before assertions: Chromium Mach-port
+  registration permission denial, Firefox SIGABRT and WebKit Abort trap 6.
+  Online audit failed registry DNS ENOTFOUND. Offline audit returned zero but is
+  not accepted as current security evidence. Offline browser integration not rerun.
+- Updated release checklist for manifest checks and the changed optional runtime
+  privacy/cache/byte boundaries. T26 stays pending with hardware_verified false.
+  No deployment, upload, commit or physical webcam testing performed.
+
+## T26 offline document routing follow-up (2026-11-16)
+
+- Read SPEC.md/AGENTS.md and inspected navigation, camera setup, the optional
+  body-tracking runtime, worker, browser fixtures and packaging. Preserved all
+  existing working-tree changes.
+- Fixed service-worker navigation routing: only the root/index document receives
+  the app shell. The optional pose iframe previously received index.html instead
+  of its own runtime document. Packaged subdocuments now retain their HTML and
+  policy; unknown document paths pass through to the host.
+- Extended Node worker assertions for iframe/root-query/unknown navigations and
+  optional asset exclusion from initial precaching. Extended the genuine offline
+  browser scenario to inspect a controlled iframe document/runtime without
+  inference; added module/WASM MIME types to its static server.
+- Passed 891 unit/component tests in 76 files, nine packaging tests, typecheck,
+  lint, build and artifact integrity. Snapshot 6095513601c2d92fa116: 39 payload
+  files, 2,623,342 core bytes, 28,455,471 optional pose bytes, 31,078,813 total.
+  All byte budgets pass; payload ID excludes worker/report, checked separately.
+- Three focused production privacy cases failed before app assertions: Chromium
+  Mach-port permission denial (1100), Firefox SIGABRT and WebKit Abort trap 6.
+  Updated offline browser test blocked by loopback listen EPERM. Current audit
+  failed registry DNS ENOTFOUND. No new browser, visual, inference, performance,
+  dependency-security or physical-camera pass is claimed.
+- Updated release checklist; T26 remains pending with hardware_verified false.
+  No deployment, upload, dependency change or commit performed.
+
+## Camera-distance guidance and test-only body wireframe (2026-11-16)
+
+- Read the current spec/application, then added an approximate 2–3 m (6–10 ft)
+  starting guide to the centered lobby and all automatic countdowns. Framing,
+  rather than an invented distance measurement, determines how far to step back;
+  multiplayer guidance asks everyone to stand side by side with arms in frame.
+- Added opt-in Test body tracking in setup. Local MediaPipe Pose Landmarker Lite
+  draws a single torso line, articulated arms and wrist dots from confident
+  landmarks. It mirrors exactly once, omits uncertain/offscreen segments and
+  clears stale images. The diagnostic stops before gameplay or when disabled;
+  games continue receiving their existing normalized input independently.
+- Bundled the pinned 0.10.32 SDK/WASM and version-1 lite model with Apache license,
+  model card and provenance. The ~28.5 MB optional files load only on request;
+  core assets retain their 3 MB budget. Updated release budget checks and worker
+  tests to exclude optional pose assets from initial offline precaching.
+- Used an isolated same-origin runtime document so the main application keeps
+  connect-src none. Actual model browser requests were same-origin GET only;
+  camera stream continuity and main-app blocked POST/privacy probes passed.
+- Final checks: typecheck, lint, production build and whitespace checks passed.
+  Full unit/component suite: **891 passed in 76 files**. Packaging: **10 passed**.
+  Focused Chromium regression: **9 passed**, covering the actual detector on an
+  empty fixture, diagnostic shutdown, camera continuity, layout, privacy, Quick
+  Play and Paper Dojo. Offline cache/runtime-document test: **1 passed**.
+- Separately tested the actual local model on the official MediaPipe sample
+  photograph from storage.googleapis.com/mediapipe-assets/pose.jpg: detected one
+  body, three polylines and two wrist dots; reviewed mirrored alignment in
+  /tmp/body-test-photo.png. The temporary photo test was removed, and the sample
+  photo stays under /tmp. Desktop/narrow guide screenshots were also reviewed.
+- Initial headless inference failed because WebGL was unavailable. The dedicated
+  pose browser tests now enable software WebGL for preprocessing; CPU inference
+  passes. Unsupported runtime failures remain visible without blocking Play.
+  No physical webcam, live latency, four real people or Safari pose verification
+  was performed. No deployment, camera upload or commit.

@@ -46,6 +46,16 @@ describe('App navigation', () => {
     expect(screen.getAllByRole('link',{name:/^Play /})).toHaveLength(5)
     expect(screen.queryByLabelText('Motion Play')).not.toBeInTheDocument()
   })
+  it('skips to main content without changing the catalog route', async () => {
+    visit('#/catalog')
+    render(<App />)
+    const skip = screen.getByRole('link', { name: 'Skip to main content' })
+    skip.focus()
+    fireEvent.click(skip)
+    await waitFor(() => expect(screen.getByRole('main')).toHaveFocus())
+    expect(window.location.hash).toBe('#/catalog')
+    expect(screen.getByRole('heading', { name: 'Game Catalog' })).toBeVisible()
+  })
   it.each(['#/camera/magic-duel','#/games/magic-duel','#/camera/basketball-blitz','#/games/basketball-blitz','#/camera/punch-arena','#/games/punch-arena','#/camera/fruit-slash','#/games/fruit-slash','#/camera/meteor-smash','#/games/pizza-maker','#/camera/freeze','#/games/freeze','#/camera/jump-rush','#/games/jump-rush'])('keeps deferred game URL %s in the catalog', hash => {
     visit(hash)
     render(<App />)

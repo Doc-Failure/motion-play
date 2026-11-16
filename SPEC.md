@@ -151,3 +151,24 @@ Gameplay keeps only compact scores/time, player labels, a short action cue and
 pause/exit/sound controls over the camera. Detailed statistics appear in results.
 The pack supplies lettering reference images rather than a font binary. The local
 OFL Short Stack font is used throughout as a visual match, with no runtime download.
+
+## Camera fit guidance and diagnostic body sticks (2026-11-16)
+Camera setup suggests starting approximately 2–3 m (6–10 ft) away and stepping
+back until head, hips and outstretched arms fit. Groups stand side by side.
+This is a framing suggestion, not a measured distance or universal lens setting.
+The automatic countdown repeats a short distance cue, including Quick Play.
+
+An optional Test body tracking button in the lobby loads local MediaPipe Pose
+Landmarker Lite. Confident joints draw one torso stick, jointed arms and wrist
+dots over the uncropped mirrored camera. Occluded/low-confidence segments are
+omitted; stale frames clear the overlay. This diagnostic does not supply game
+input, award points or claim finger/hand-shape recognition. Starting play,
+leaving setup or disabling it releases the diagnostic while retaining the camera.
+
+The optional local model/runtime is about 28.5 MB and loads only on request.
+It uses a separate local document with its own restrictive policy, preserving
+the main app’s blocked data connections. No camera uploads, external CDN fetches
+or recordings are introduced. Offline shell installation excludes optional pose
+files; when offline caching is enabled they are cached after first use. The
+existing 3 MB core budget remains separate. Browser and photograph checks do
+not establish physical-webcam or four-person pose quality.

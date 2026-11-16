@@ -1,5 +1,6 @@
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
+import privacyPolicy from './config/privacy-policy.json'
 
 export default defineConfig({
   plugins: [react(), {
@@ -9,7 +10,7 @@ export default defineConfig({
       tag: 'meta',
       attrs: {
         'http-equiv': 'Content-Security-Policy',
-        content: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; media-src 'self' blob:; connect-src 'none'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'",
+        content: privacyPolicy.content,
       },
       injectTo: 'head-prepend',
     }],

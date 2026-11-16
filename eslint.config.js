@@ -5,9 +5,10 @@ import globals from 'globals'
 import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
-  { ignores: ['dist', 'coverage'] },
+  { ignores: ['dist', 'coverage', 'public/pose/wasm', 'public/pose/vision_bundle.mjs'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
+  { files: ['public/pose/tracker.js'], languageOptions: { globals: globals.browser } },
   { files: ['scripts/*.mjs'], languageOptions: { globals: globals.node } },
   {
     files: ['**/*.{ts,tsx}'],

@@ -1,6 +1,28 @@
 import { expect, openApp, test } from './fixtures'
 import { visibleCatalogGames } from '../../src/app/catalog'
 
+test('keyboard skip link preserves catalog and active camera routes', async ({ page, installMockCamera }) => {
+  await installMockCamera({ person: true })
+  await openApp(page, '#/catalog')
+  const skip = page.getByRole('link', { name: 'Skip to main content' })
+  await skip.focus()
+  await page.keyboard.press('Enter')
+  await expect(page.getByRole('main')).toBeFocused()
+  await expect(page).toHaveURL(/#\/catalog$/)
+  await expect(page.getByRole('heading', { name: 'Game Catalog', exact: true })).toBeVisible()
+  await page.getByRole('link', { name: 'Play Paper Dojo', exact: true }).click()
+  await page.getByRole('button', { name: 'Play Paper Dojo', exact: true }).click()
+  await expect(page.locator('.dojo-game')).toBeVisible()
+  await skip.focus()
+  await page.keyboard.press('Enter')
+  await expect(page.getByRole('main')).toBeFocused()
+  await expect(page).toHaveURL(/#\/camera\/ninja-training$/)
+  await expect(page.locator('.dojo-game')).toBeVisible()
+  expect(await page.evaluate(() => (window as typeof window & {
+    __mockMediaState: { requests: number; stoppedTracks: number }
+  }).__mockMediaState)).toMatchObject({ requests: 1, stoppedTracks: 0 })
+})
+
 test('catalog uses compact homepage stickers and Play starts without confirmation',async ({page,installMockCamera}) => {
   await installMockCamera({person:true})
   await openApp(page,'#/catalog')

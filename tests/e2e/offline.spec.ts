@@ -16,7 +16,7 @@ test.beforeAll(async () => {
     const path = pathname === '/' ? '/index.html' : pathname
     if (!files.has(path)) { response.writeHead(404).end(); return }
     const extension = path.split('.').pop()!
-    const mime: Record<string, string> = { js: 'text/javascript', css: 'text/css', svg: 'image/svg+xml', webp: 'image/webp', ttf: 'font/ttf', webmanifest: 'application/manifest+json', txt: 'text/plain', html: 'text/html' }
+    const mime: Record<string, string> = { js: 'text/javascript', mjs: 'text/javascript', wasm: 'application/wasm', css: 'text/css', svg: 'image/svg+xml', webp: 'image/webp', ttf: 'font/ttf', webmanifest: 'application/manifest+json', txt: 'text/plain', html: 'text/html' }
     void readFile(resolve('dist', path.slice(1))).then(bytes => {
       response.writeHead(200, { 'Content-Type': mime[extension] ?? 'application/octet-stream', 'Cache-Control': 'no-store' }).end(bytes)
     }).catch(() => response.writeHead(500).end())
@@ -42,6 +42,26 @@ test('opted-in production shell reloads offline with art/fonts and removes only 
     if (!navigator.serviceWorker.controller) await new Promise<void>(resolve => navigator.serviceWorker.addEventListener('controllerchange', () => resolve(), { once: true }))
     await caches.open('another-app')
   })
+  // A controlled iframe navigation must load its own document, not index.html.
+  // Load only the runtime here; this does not run inference or certify tracking.
+  expect(await page.evaluate(async () => {
+    const keys = await caches.keys()
+    const shell = await caches.open(keys.find(key => key.startsWith('motion-play-shell-'))!)
+    const precached = await shell.keys()
+    if (precached.some(request => new URL(request.url).pathname.startsWith('/pose/'))) return false
+    const frame = document.createElement('iframe')
+    frame.src = './pose/tracker.html'
+    try {
+      await new Promise<void>((resolve, reject) => {
+        frame.onload = () => resolve()
+        frame.onerror = () => reject(new Error('Local runtime document did not load'))
+        document.body.append(frame)
+      })
+      const runtime = frame.contentWindow as (Window & { createLocalPoseTracker?: unknown }) | null
+      return frame.contentDocument?.title === 'Local body tracking runtime'
+        && typeof runtime?.createLocalPoseTracker === 'function'
+    } finally { frame.remove() }
+  })).toBe(true)
   await context.setOffline(true)
   await page.reload()
   await expect(page.getByRole('heading', { name: 'Motion Play!' })).toBeVisible()

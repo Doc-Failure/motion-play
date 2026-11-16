@@ -65,6 +65,7 @@ export function GameFeedback({ snapshot, theme, musicPaused = false }: { snapsho
     return () => window.clearTimeout(timer)
   }, [bursts])
   return <>
+    {snapshot.phase==='countdown'&&<div className="camera-distance-cue">Start about 2–3 m (6–10 ft) back · keep outstretched arms in view</div>}
     <div className="game-tools"><span className="game-live-label">✦ Move. Play. Smile.</span><button className="sound-toggle" type="button" aria-label={sound ? 'Mute game sound' : 'Enable game sound'} aria-pressed={!sound} onClick={() => {gameAudio.setEnabled(!sound); setSound(!sound)}}>{sound ? '♫ Sound on' : '♫ Sound off'}</button></div>
     <div className={`round-track${seconds <= 10 ? ' round-track--ending' : ''}`} aria-hidden="true"><span style={{width:`${Math.min(100, snapshot.roundRemainingMs / duration.current * 100)}%`}} /></div>
     <div className="score-bursts" aria-hidden="true">{bursts.map(burst => <span key={`${burst.playerId}-${burst.id}`} style={{left:`${burst.x * 100}%`,top:`${burst.y * 100}%`}} className={burst.amount < 0 ? 'score-burst score-burst--miss' : 'score-burst'}>P{burst.playerId} {burst.amount > 0 ? '+' : '−'}{Math.abs(burst.amount)} {burst.amount > 0 ? '✦' : 'Oops!'}</span>)}</div>

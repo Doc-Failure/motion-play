@@ -1,3 +1,4 @@
+import { BodyTrackingTest } from './BodyTrackingTest'
 import { MagicDuel } from '../minigames/magic-duel/MagicDuel'
 import { BasketballBlitz } from '../minigames/basketball-blitz/BasketballBlitz'
 import { PunchArena } from '../minigames/punch-arena/PunchArena'
@@ -88,6 +89,7 @@ export function CameraSetup({ source: providedSource, initialGame = 'bubble-batt
   const [trackingLost, setTrackingLost] = useState(false)
   const gameActive = flow !== 'setup'
   const autoLaunched = useRef(false)
+  const [trackingTest,setTrackingTest]=useState(false)
   const [cameraAspect, setCameraAspect] = useState(16 / 9)
   const [viewport, setViewport] = useState(() => ({width:window.innerWidth,height:window.innerHeight}))
   useEffect(() => {
@@ -97,6 +99,7 @@ export function CameraSetup({ source: providedSource, initialGame = 'bubble-batt
   }, [])
   const cameraFrame = containCameraFrame(viewport.width, viewport.height, cameraAspect)
   const beginGame = useCallback(() => {
+    setTrackingTest(false)
     autoLaunched.current = true
     if (tournament && !tournamentSession.current) {
       tournamentSession.current = new TournamentSession(playerCount, tournamentLength)
@@ -263,6 +266,8 @@ export function CameraSetup({ source: providedSource, initialGame = 'bubble-batt
     <div className="camera-lobby__frame" style={cameraFrame}>
       <video ref={videoRef} onLoadedMetadata={event => {const video = event.currentTarget; if(video.videoWidth && video.videoHeight) setCameraAspect(video.videoWidth / video.videoHeight)}} muted playsInline aria-label="Mirrored camera preview" />
       <canvas ref={captureCanvasRef} hidden />
+      <div className="camera-lobby__guidance"><p>Start about 2–3 m (6–10 ft) from the camera.<small>{playerCount>1?'Stand side by side. Step back until everyone’s outstretched arms fit.':'Step back until your head, hips and outstretched arms fit on screen.'}</small></p>{status==='ready'&&<button className="camera-lobby__test" type="button" aria-pressed={trackingTest} onClick={()=>setTrackingTest(value=>!value)}>{trackingTest?'Hide body tracking':'Test body tracking'}</button>}</div>
+      {active&&!gameActive&&status==='ready'&&trackingTest&&<BodyTrackingTest videoRef={videoRef} players={playerCount}/>}
       {status !== 'ready' && <div className="camera-lobby__placeholder" role="status">{status === 'requesting' ? 'Opening camera…' : status === 'simulation' ? 'Playing without camera' : 'Ready to play?'}</div>}
       <div className="camera-lobby__zones" aria-label="Player camera zones">{zones.map(zone => <div key={zone.playerId} style={{left:`${zone.x * 100}%`,width:`${zone.width * 100}%`}}>{playerCount > 1 && <span>Player {zone.playerId}</span>}</div>)}</div>
       <header className="camera-lobby__top"><a className="camera-lobby__back" href="#/catalog" aria-label="Back to games">← Games</a><h1 id="camera-title">{tournament ? 'Tournament' : selectedTitle}</h1>{status === 'ready' && <span className="camera-lobby__live">● Camera on</span>}</header>

@@ -53,7 +53,7 @@
     ],
     "status": "done",
     "attempts": 1,
-    "notes": "Added 1–4 player selection, independently configurable normalized camera zones, separate specified game viewport layouts, consistent mirrored camera-to-player coordinate mapping, accessible zone overlays/controls, and synthetic coordinate/UI tests. Verified npm run typecheck, lint, test (15 passing), and build on 2026-11-14. Physical multi-person framing and webcam behavior remain unverified and require hardware validation.",
+    "notes": "Added 1\u20134 player selection, independently configurable normalized camera zones, separate specified game viewport layouts, consistent mirrored camera-to-player coordinate mapping, accessible zone overlays/controls, and synthetic coordinate/UI tests. Verified npm run typecheck, lint, test (15 passing), and build on 2026-11-14. Physical multi-person framing and webcam behavior remain unverified and require hardware validation.",
     "needs_hardware_validation": true,
     "hardware_verified": false
   },
@@ -77,7 +77,7 @@
     ],
     "status": "done",
     "attempts": 1,
-    "notes": "Added a deterministic shared GameSession state machine with configurable countdown/round timing, pause/resume, results/replay transitions, and isolated 1–4 player scores. Verified npm run typecheck, lint, test (24 passing), and build on 2026-11-14.",
+    "notes": "Added a deterministic shared GameSession state machine with configurable countdown/round timing, pause/resume, results/replay transitions, and isolated 1\u20134 player scores. Verified npm run typecheck, lint, test (24 passing), and build on 2026-11-14.",
     "needs_hardware_validation": false,
     "hardware_verified": false
   },
@@ -187,7 +187,7 @@
     ],
     "status": "done",
     "attempts": 1,
-    "notes": "Implemented Window Wipe for 1–4 players with generic MOTION_BRUSH input, isolated 10x6 cleaning grids, newly-cleaned-cell scoring, progress/results/replay, pointer fallback, game-specific practice and direct catalog setup routing. Verified typecheck, lint, 49 tests, build, and 7 Playwright scenarios including deterministic cleaning on 2026-11-15.",
+    "notes": "Implemented Window Wipe for 1\u20134 players with generic MOTION_BRUSH input, isolated 10x6 cleaning grids, newly-cleaned-cell scoring, progress/results/replay, pointer fallback, game-specific practice and direct catalog setup routing. Verified typecheck, lint, 49 tests, build, and 7 Playwright scenarios including deterministic cleaning on 2026-11-15.",
     "needs_hardware_validation": false,
     "hardware_verified": false
   },
@@ -197,9 +197,9 @@
     "depends_on": [
       "T14"
     ],
-  "status": "done",
-  "attempts": 1,
-  "notes": "Implemented a deterministic camera-independent 3x3 Whack-a-Mole game for 1-4 players using generic HIT events, independent boards and scores, timed rounds, pointer fallback, catalog/setup routing, and practice guidance. Automated model, UI, and browser simulation acceptance passed; physical webcam play remains unverified.",
+    "status": "done",
+    "attempts": 1,
+    "notes": "Implemented a deterministic camera-independent 3x3 Whack-a-Mole game for 1-4 players using generic HIT events, independent boards and scores, timed rounds, pointer fallback, catalog/setup routing, and practice guidance. Automated model, UI, and browser simulation acceptance passed; physical webcam play remains unverified.",
     "needs_hardware_validation": false,
     "hardware_verified": false
   },
@@ -209,9 +209,9 @@
     "depends_on": [
       "T15"
     ],
-  "status": "done",
-  "attempts": 1,
-  "notes": "Implemented deterministic Balloon Panic for 1-4 players using generic MOTION_HIT events, called-color matching, wrong-color penalties, independent boards/scores, pointer fallback, practice/catalog/setup routing, and simulation tests. Automated acceptance passed; real webcam motion remains unverified and the user-reported capture failure requires a dedicated backlog task.",
+    "status": "done",
+    "attempts": 1,
+    "notes": "Implemented deterministic Balloon Panic for 1-4 players using generic MOTION_HIT events, called-color matching, wrong-color penalties, independent boards/scores, pointer fallback, practice/catalog/setup routing, and simulation tests. Automated acceptance passed; real webcam motion remains unverified and the user-reported capture failure requires a dedicated backlog task.",
     "needs_hardware_validation": false,
     "hardware_verified": false
   },
@@ -326,7 +326,9 @@
   {
     "id": "T25A",
     "title": "Implement and test Meteor Smash using generic MOTION_HIT input",
-    "depends_on": ["T25"],
+    "depends_on": [
+      "T25"
+    ],
     "status": "done",
     "attempts": 1,
     "notes": "Implemented deterministic Meteor Smash for 1-4 players using generic MOTION_HIT events, falling meteors, smash rewards, base-impact penalties, isolated scores/impacts, pointer fallback, practice/setup/catalog routing, and rendered simulation coverage. Verified typecheck, lint, 109 unit/component tests, build, and git diff --check on 2026-11-15. Physical webcam play remains unverified.",
@@ -335,18 +337,22 @@
   },
   {
     "id": "T25B",
-    "title": "Implement and test Piñata Party using generic MOTION_HIT input",
-    "depends_on": ["T25A"],
+    "title": "Implement and test Pi\u00f1ata Party using generic MOTION_HIT input",
+    "depends_on": [
+      "T25A"
+    ],
     "status": "done",
     "attempts": 1,
-    "notes": "Implemented deterministic 1-4 player Piñata Party with generic MOTION_HIT input, three-hit breaks, per-player cooldowns/contributions, shared candy goal, respawn, countdown/results/replay, pause and camera recovery, crayon SVG art, keyboard/pointer controls, and practice/setup/catalog routing. Typecheck, lint, 103 unit/component tests, build and diff checks passed on 2026-11-15; focused model checks also cover delayed input after countdown/resume. Chromium E2E launch was blocked by macOS sandbox Mach-port permission denial, so browser/layout checks remain unverified. No physical webcam validation.",
+    "notes": "Implemented deterministic 1-4 player Pi\u00f1ata Party with generic MOTION_HIT input, three-hit breaks, per-player cooldowns/contributions, shared candy goal, respawn, countdown/results/replay, pause and camera recovery, crayon SVG art, keyboard/pointer controls, and practice/setup/catalog routing. Typecheck, lint, 103 unit/component tests, build and diff checks passed on 2026-11-15; focused model checks also cover delayed input after countdown/resume. Chromium E2E launch was blocked by macOS sandbox Mach-port permission denial, so browser/layout checks remain unverified. No physical webcam validation.",
     "needs_hardware_validation": true,
     "hardware_verified": false
   },
   {
     "id": "T25C",
     "title": "Implement and test Monster Defense using generic MOTION_HIT input",
-    "depends_on": ["T25B"],
+    "depends_on": [
+      "T25B"
+    ],
     "status": "done",
     "attempts": 2,
     "notes": "Implemented deterministic 1-4 player cooperative Monster Defense using normalized MOTION_HIT events, approaching lane targets, shared score/goal, player-local contributions and breach penalties, bounded waves, countdown/results/replay, pause/tab visibility/camera recovery, original crayon SVG monsters, keyboard/pointer controls, and practice/setup/catalog routing. Follow-up review fixed capture-time collision detection for delayed events and rejected unknown players before clock advancement. Added mirrored synthetic-frame-to-score coverage for 1-4 players. Current verification on 2026-11-15: typecheck, lint, 129 unit/component tests, production build and diff whitespace checks passed. All 5 Chromium E2E tests were blocked before execution by macOS sandbox launch denial (MachPortRendezvousServer Permission denied); earlier browser/screenshot claims were not reverified in this invocation. No physical webcam validation or deployment.",
@@ -356,7 +362,9 @@
   {
     "id": "T25D",
     "title": "Implement and test Supermarket Rush using generic MOTION_HIT input",
-    "depends_on": ["T25C"],
+    "depends_on": [
+      "T25C"
+    ],
     "status": "done",
     "attempts": 1,
     "notes": "Implemented deterministic 1-4 player Supermarket Rush using normalized MOTION_HIT events, moving conveyors, independent apple/bread/milk orders, scoring and penalties, cooldowns, expiry, countdown/results/replay, pause and camera recovery, local SVG art, keyboard/pointer controls and catalog/setup/practice routing. Follow-up adds per-player live pick feedback and keyboard focus restoration. Verified on 2026-11-15: typecheck, lint, 154 unit/component tests across 33 files, production build, all six Chromium E2E scenarios and diff checks passed. Browser tests cover four-player shopping, keyboard and pointer picks, wrong-pick penalties, feedback, pause/resume, results/replay and narrow-screen overflow; inspected desktop and narrow screenshots. Fixed moving-target pointer tests in Monster Defense and Supermarket Rush. Earlier sandbox browser-launch limitation did not recur. Physical webcam play remains unverified. No deployment.",
@@ -366,7 +374,9 @@
   {
     "id": "T25E",
     "title": "Implement and test Star Collector using generic MOTION_HIT input",
-    "depends_on": ["T25D"],
+    "depends_on": [
+      "T25D"
+    ],
     "status": "done",
     "attempts": 1,
     "notes": "Implemented deterministic 1-4 player Star Collector using generic MOTION_HIT events, short-lived stars, lifetime rings, isolated scoring/cooldowns, expiry without penalties, countdown/results/replay, pause and camera recovery, crayon SVG art, keyboard/pointer controls, and catalog/setup/practice routing. Verified on 2026-11-15: typecheck, lint, 178 unit/component tests across 35 files, production build, all seven Chromium E2E scenarios and diff checks. After correcting SVG aspect ratio, rebuilt and reran the Star Collector browser scenario successfully; inspected desktop and narrow screenshots. One direct npx browser launch was denied by the macOS sandbox; retry through npm succeeded. No physical webcam validation, deployment or commit.",
@@ -381,7 +391,7 @@
     ],
     "status": "done",
     "attempts": 1,
-    "notes": "Implemented deterministic 1–4 player Treasure Grab consuming generic normalized MOTION_HIT events, paired gold chests (+10) and marked curses (−10), isolated scores/feedback/cooldowns, expiry without penalties, bounded targets, countdown/results/replay, pause and camera recovery, crayon SVG art, keyboard/pointer controls and catalog/setup/practice routing. Verified on 2026-11-15: typecheck, lint, 205 unit/component tests across 37 files, production build and diff checks passed. Added four-player Chromium acceptance; all eight E2E scenarios were blocked before execution by macOS Chromium MachPortRendezvousServer registration denial (1100). No browser layout/screenshot or physical webcam validation claimed. No deployment or commit. Follow-up review on 2026-11-15: separated overlapping chest/curse waves with a full-round regression, corrected the browser catalog count to 16, and fixed clipped value labels with narrow-screen bounds assertions. All 206 unit/component tests across 37 files, typecheck, lint, production build, all eight Chromium scenarios and diff checks passed; inspected desktop/narrow Treasure Grab screenshots. One targeted browser launch was denied by macOS MachPortRendezvousServer registration (1100); a subsequent full-suite run passed on the final build. This supersedes the earlier browser-validation limitation. Physical webcam validation remains outstanding.",
+    "notes": "Implemented deterministic 1\u20134 player Treasure Grab consuming generic normalized MOTION_HIT events, paired gold chests (+10) and marked curses (\u221210), isolated scores/feedback/cooldowns, expiry without penalties, bounded targets, countdown/results/replay, pause and camera recovery, crayon SVG art, keyboard/pointer controls and catalog/setup/practice routing. Verified on 2026-11-15: typecheck, lint, 205 unit/component tests across 37 files, production build and diff checks passed. Added four-player Chromium acceptance; all eight E2E scenarios were blocked before execution by macOS Chromium MachPortRendezvousServer registration denial (1100). No browser layout/screenshot or physical webcam validation claimed. No deployment or commit. Follow-up review on 2026-11-15: separated overlapping chest/curse waves with a full-round regression, corrected the browser catalog count to 16, and fixed clipped value labels with narrow-screen bounds assertions. All 206 unit/component tests across 37 files, typecheck, lint, production build, all eight Chromium scenarios and diff checks passed; inspected desktop/narrow Treasure Grab screenshots. One targeted browser launch was denied by macOS MachPortRendezvousServer registration (1100); a subsequent full-suite run passed on the final build. This supersedes the earlier browser-validation limitation. Physical webcam validation remains outstanding.",
     "needs_hardware_validation": true,
     "hardware_verified": false
   },
@@ -393,27 +403,31 @@
     ],
     "status": "done",
     "attempts": 1,
-    "notes": "Implemented deterministic 1–4 player cooperative Car Wash using normalized MOTION_BRUSH events. Vehicle-shaped mud patches accumulate once, independent player progress/scores contribute to one team goal, and all cars must be clean to finish early. Added local crayon SVG art, pointer drag/touch capture and keyboard brush controls, catalog/setup/practice routing, countdown/results/replay, pause/tab visibility/camera recovery and focus restoration. Added 21 model/component cases plus setup and Chromium acceptance; synthetic mirrored MotionProcessor fixtures cover every player count. Typecheck, lint, 230 unit/component tests across 40 files and production build passed on 2026-11-15. All 12 Chromium scenarios passed on the final build, including Car Wash and concurrently added shared polish checks; inspected desktop/narrow screenshots. One targeted browser launch was blocked by macOS MachPortRendezvousServer permission denial (1100); subsequent full-suite verification passed. Hardware validation remains outstanding; no deployment or commit. Follow-up review on 2026-11-15: preserved the existing implementation and shared polish changes, added visible short-lived brush traces for accepted normalized input without requiring keyboard focus, cleared traces on pause/replay, and reused the model brush radius in the view. Added model/view regressions for trace isolation, expiry and snapshot ownership plus two-player Chromium completion coverage proving one clean car cannot finish the team round. Final checks passed: typecheck, lint, 233 unit/component tests across 41 files, production build, all 13 Chromium scenarios and git diff --check. Inspected desktop/narrow screenshots. Physical webcam validation remains outstanding; no deployment or commit.",
+    "notes": "Implemented deterministic 1\u20134 player cooperative Car Wash using normalized MOTION_BRUSH events. Vehicle-shaped mud patches accumulate once, independent player progress/scores contribute to one team goal, and all cars must be clean to finish early. Added local crayon SVG art, pointer drag/touch capture and keyboard brush controls, catalog/setup/practice routing, countdown/results/replay, pause/tab visibility/camera recovery and focus restoration. Added 21 model/component cases plus setup and Chromium acceptance; synthetic mirrored MotionProcessor fixtures cover every player count. Typecheck, lint, 230 unit/component tests across 40 files and production build passed on 2026-11-15. All 12 Chromium scenarios passed on the final build, including Car Wash and concurrently added shared polish checks; inspected desktop/narrow screenshots. One targeted browser launch was blocked by macOS MachPortRendezvousServer permission denial (1100); subsequent full-suite verification passed. Hardware validation remains outstanding; no deployment or commit. Follow-up review on 2026-11-15: preserved the existing implementation and shared polish changes, added visible short-lived brush traces for accepted normalized input without requiring keyboard focus, cleared traces on pause/replay, and reused the model brush radius in the view. Added model/view regressions for trace isolation, expiry and snapshot ownership plus two-player Chromium completion coverage proving one clean car cannot finish the team round. Final checks passed: typecheck, lint, 233 unit/component tests across 41 files, production build, all 13 Chromium scenarios and git diff --check. Inspected desktop/narrow screenshots. Physical webcam validation remains outstanding; no deployment or commit.",
     "needs_hardware_validation": true,
     "hardware_verified": false
   },
   {
     "id": "T25H",
     "title": "Implement and test Pizza Maker using generic MOTION_HIT input",
-    "depends_on": ["T25G"],
+    "depends_on": [
+      "T25G"
+    ],
     "status": "done",
     "attempts": 1,
-    "notes": "Implemented deterministic 1–4 player cooperative Pizza Maker with normalized MOTION_HIT input, unordered two-topping recipes, per-player correctness/duplicate penalties and cooldowns, serving delay, isolated scores/orders and a shared pizza goal with early completion. Integrated catalog/setup/practice routing, local crayon SVG pizza and ingredients, pointer/native keyboard fallbacks, shared audiovisual feedback, countdown/results/replay, pause/tab visibility/camera recovery and focus restoration. Added 22 model/component cases, catalog navigation coverage and two Chromium scenarios, plus all-game sweep coverage. Final typecheck, lint, 256 unit/component tests across 43 files and production build passed on 2026-11-15. All 15 Chromium scenarios passed; after screenshot-driven narrow-label and order-feedback fixes, both affected Pizza Maker scenarios passed again with label-containment assertions. Inspected desktop and narrow screenshots. An initial motion fixture was below the configured pixel-activity threshold and was corrected; an earlier browser run lost two asset reads during a concurrent rebuild, then the full stable-build run passed. Physical webcam validation remains outstanding; hardware_verified remains false. No deployment or commit.",
+    "notes": "Implemented deterministic 1\u20134 player cooperative Pizza Maker with normalized MOTION_HIT input, unordered two-topping recipes, per-player correctness/duplicate penalties and cooldowns, serving delay, isolated scores/orders and a shared pizza goal with early completion. Integrated catalog/setup/practice routing, local crayon SVG pizza and ingredients, pointer/native keyboard fallbacks, shared audiovisual feedback, countdown/results/replay, pause/tab visibility/camera recovery and focus restoration. Added 22 model/component cases, catalog navigation coverage and two Chromium scenarios, plus all-game sweep coverage. Final typecheck, lint, 256 unit/component tests across 43 files and production build passed on 2026-11-15. All 15 Chromium scenarios passed; after screenshot-driven narrow-label and order-feedback fixes, both affected Pizza Maker scenarios passed again with label-containment assertions. Inspected desktop and narrow screenshots. An initial motion fixture was below the configured pixel-activity threshold and was corrected; an earlier browser run lost two asset reads during a concurrent rebuild, then the full stable-build run passed. Physical webcam validation remains outstanding; hardware_verified remains false. No deployment or commit.",
     "needs_hardware_validation": true,
     "hardware_verified": false
   },
   {
     "id": "T25I",
     "title": "Implement and test Graffiti Race using generic MOTION_BRUSH input",
-    "depends_on": ["T25H"],
+    "depends_on": [
+      "T25H"
+    ],
     "status": "done",
     "attempts": 1,
-    "notes": "Implemented deterministic 1–4 player competitive Graffiti Race consuming normalized MOTION_BRUSH events, fresh-patch scoring, isolated murals/progress, first-complete early finish and timed score/tie results. Added original crayon SVG mural, recent brush traces, pointer drag/touch capture, keyboard controls, catalog/setup/practice routing, countdown/results/replay, pause/tab visibility/camera recovery and focus restoration. Added 25 model/component cases plus catalog navigation and two Chromium scenarios, including mirrored synthetic input for every player count. Verified on 2026-11-15: typecheck, lint, 282 unit/component tests across 45 files, production build, all 17 Chromium scenarios and diff checks. Inspected desktop, narrow and completed-mural screenshots. Physical webcam tracking, motion feel and latency remain unverified; hardware_verified stays false. No deployment or commit.",
+    "notes": "Implemented deterministic 1\u20134 player competitive Graffiti Race consuming normalized MOTION_BRUSH events, fresh-patch scoring, isolated murals/progress, first-complete early finish and timed score/tie results. Added original crayon SVG mural, recent brush traces, pointer drag/touch capture, keyboard controls, catalog/setup/practice routing, countdown/results/replay, pause/tab visibility/camera recovery and focus restoration. Added 25 model/component cases plus catalog navigation and two Chromium scenarios, including mirrored synthetic input for every player count. Verified on 2026-11-15: typecheck, lint, 282 unit/component tests across 45 files, production build, all 17 Chromium scenarios and diff checks. Inspected desktop, narrow and completed-mural screenshots. Physical webcam tracking, motion feel and latency remain unverified; hardware_verified stays false. No deployment or commit.",
     "needs_hardware_validation": true,
     "hardware_verified": false
   },
@@ -437,7 +451,7 @@
     ],
     "status": "done",
     "attempts": 1,
-    "notes": "Implemented deterministic competitive 1–4 player Fish Frenzy consuming normalized HAND_POSITION events only. Three swimming fish kinds award 5/10/20 points; misses cost nothing. Added isolated scores/catch/miss counts, render-cadence-independent spawning, fresh-input-only catches, malformed/stale/duplicate rejection and pause-safe clocks. Integrated original local crayon SVG art, pointer/touch and keyboard controls, practice/countdown/results/replay, catalog/direct setup, manual/tab/camera recovery and focus restoration. Camera adapter uses motion centroids, explicitly disclosed as moving regions rather than hand tracking; camera-free fallback works after denial and camera activation is explicit for Fish Frenzy. Added 21 model/component cases, two setup cases, catalog navigation, and two browser scenarios. On 2026-11-15, all 327 unit/component tests across 49 files, typecheck, lint, build and diff checks passed. Initial rendered tests exposed a missing injected random prop, fixed; a route-title test race was corrected to await its actual heading. Chromium scenarios could not execute: macOS denied MachPortRendezvousServer startup (1100), including a single-worker retry. Initial six browser scenarios and desktop/narrow visual review passed in follow-up; T25K-browser is now complete with 11 passing scenarios, including four added synthetic camera-pipeline catches, and reviewed desktop/portrait/camera screenshots; see the follow-up progress entry for verification details. Physical webcam tracking and motion feel remain unverified; hardware_verified stays false. No deployment, external upload or commit.",
+    "notes": "Implemented deterministic competitive 1\u20134 player Fish Frenzy consuming normalized HAND_POSITION events only. Three swimming fish kinds award 5/10/20 points; misses cost nothing. Added isolated scores/catch/miss counts, render-cadence-independent spawning, fresh-input-only catches, malformed/stale/duplicate rejection and pause-safe clocks. Integrated original local crayon SVG art, pointer/touch and keyboard controls, practice/countdown/results/replay, catalog/direct setup, manual/tab/camera recovery and focus restoration. Camera adapter uses motion centroids, explicitly disclosed as moving regions rather than hand tracking; camera-free fallback works after denial and camera activation is explicit for Fish Frenzy. Added 21 model/component cases, two setup cases, catalog navigation, and two browser scenarios. On 2026-11-15, all 327 unit/component tests across 49 files, typecheck, lint, build and diff checks passed. Initial rendered tests exposed a missing injected random prop, fixed; a route-title test race was corrected to await its actual heading. Chromium scenarios could not execute: macOS denied MachPortRendezvousServer startup (1100), including a single-worker retry. Initial six browser scenarios and desktop/narrow visual review passed in follow-up; T25K-browser is now complete with 11 passing scenarios, including four added synthetic camera-pipeline catches, and reviewed desktop/portrait/camera screenshots; see the follow-up progress entry for verification details. Physical webcam tracking and motion feel remain unverified; hardware_verified stays false. No deployment, external upload or commit.",
     "needs_hardware_validation": true,
     "hardware_verified": false
   },
@@ -449,7 +463,7 @@
     ],
     "status": "done",
     "attempts": 4,
-    "notes": "Completed browser acceptance on 2026-11-15. All 11 Fish Frenzy Chromium scenarios pass, including four new real-video-pipeline synthetic camera catches for 1–4 players, mirrored lane alignment, artwork/input coordinate alignment, score isolation and expired input feedback. Fixed fish artwork offset in tall lanes, centered the net on its catch ellipse, kept value labels near fish, waited for resize layout before measuring, and moved portrait controls/rules into letterbox margins with regression assertions. Reviewed desktop, 390px portrait and synthetic-camera screenshots. Intermittent macOS Chromium MachPort launch denial (1100) occurred; subsequent runs executed and passed. Broader regression results are recorded in progress.md. Synthetic fixtures do not establish physical webcam tracking, latency or motion feel. No deployment, external upload or commit.",
+    "notes": "Completed browser acceptance on 2026-11-15. All 11 Fish Frenzy Chromium scenarios pass, including four new real-video-pipeline synthetic camera catches for 1\u20134 players, mirrored lane alignment, artwork/input coordinate alignment, score isolation and expired input feedback. Fixed fish artwork offset in tall lanes, centered the net on its catch ellipse, kept value labels near fish, waited for resize layout before measuring, and moved portrait controls/rules into letterbox margins with regression assertions. Reviewed desktop, 390px portrait and synthetic-camera screenshots. Intermittent macOS Chromium MachPort launch denial (1100) occurred; subsequent runs executed and passed. Broader regression results are recorded in progress.md. Synthetic fixtures do not establish physical webcam tracking, latency or motion feel. No deployment, external upload or commit.",
     "needs_hardware_validation": false,
     "hardware_verified": false
   },
@@ -478,60 +492,72 @@
   {
     "id": "T25L",
     "title": "Implement and test Tower Builder using generic HAND_POSITION input",
-    "depends_on": ["T25K"],
+    "depends_on": [
+      "T25K"
+    ],
     "status": "done",
     "attempts": 1,
-    "notes": "Implemented deterministic 1–4 player cooperative Tower Builder using normalized HAND_POSITION events only. Continuous 800ms stable holds place +10 blocks; six-block towers add +30, and off-balance holds reset only the owning tower without erasing points. Rejects malformed/stale/duplicate/low-confidence input; missing samples, explicit simulator release and pauses break hold continuity. Added transparent crayon overlays, pointer/touch and keyboard hold simulation, shared manual/tab/camera recovery, countdown/results/replay and camera-setup integration. Current product scope supersedes the old practice requirement: starts countdown immediately and remains hidden from public catalog, Quick Play and legacy routes. Availability metadata records the tested implementation; physical webcam stable-position control remains unverified because the camera backend supplies motion centroids, not landmarks. Added 24 model/component cases, two setup cases, catalog availability coverage and two Chromium route-gating cases. Full Chromium regression run passed 25 scenarios with 37 intentional hidden-game skips; Tower browser cases validate gating only. Full unit/component suite passed 439 tests; typecheck, lint, production build and whitespace checks passed. No physical webcam or Safari validation, deployment, upload, dependencies or commit. Separate concurrent Paper Dojo/catalog/audio/typography edits were preserved. Follow-up robustness review: rejected samples now retain their timestamp so reordered packets cannot restore lost tracking; block placement requires the full shared-width block to fit inside its lane; focused keyboard controls preview position before a hold. Added four regression cases. Follow-up verification: 446 unit/component tests, typecheck, lint, build and whitespace checks passed. Chromium full run: 27 passed, 37 skipped, one existing Paper Dojo bonus timing assertion failed; fixed its clock advance and the targeted rerun passed (one intervening macOS browser-launch denial). Full suite was not repeated after the test-only fix. See the follow-up progress entry.",
+    "notes": "Implemented deterministic 1\u20134 player cooperative Tower Builder using normalized HAND_POSITION events only. Continuous 800ms stable holds place +10 blocks; six-block towers add +30, and off-balance holds reset only the owning tower without erasing points. Rejects malformed/stale/duplicate/low-confidence input; missing samples, explicit simulator release and pauses break hold continuity. Added transparent crayon overlays, pointer/touch and keyboard hold simulation, shared manual/tab/camera recovery, countdown/results/replay and camera-setup integration. Current product scope supersedes the old practice requirement: starts countdown immediately and remains hidden from public catalog, Quick Play and legacy routes. Availability metadata records the tested implementation; physical webcam stable-position control remains unverified because the camera backend supplies motion centroids, not landmarks. Added 24 model/component cases, two setup cases, catalog availability coverage and two Chromium route-gating cases. Full Chromium regression run passed 25 scenarios with 37 intentional hidden-game skips; Tower browser cases validate gating only. Full unit/component suite passed 439 tests; typecheck, lint, production build and whitespace checks passed. No physical webcam or Safari validation, deployment, upload, dependencies or commit. Separate concurrent Paper Dojo/catalog/audio/typography edits were preserved. Follow-up robustness review: rejected samples now retain their timestamp so reordered packets cannot restore lost tracking; block placement requires the full shared-width block to fit inside its lane; focused keyboard controls preview position before a hold. Added four regression cases. Follow-up verification: 446 unit/component tests, typecheck, lint, build and whitespace checks passed. Chromium full run: 27 passed, 37 skipped, one existing Paper Dojo bonus timing assertion failed; fixed its clock advance and the targeted rerun passed (one intervening macOS browser-launch denial). Full suite was not repeated after the test-only fix. See the follow-up progress entry.",
     "needs_hardware_validation": true,
     "hardware_verified": false
   },
   {
     "id": "T25M",
     "title": "Implement and test Dodgeball using generic BODY_MOVE input",
-    "depends_on": ["T25L"],
+    "depends_on": [
+      "T25L"
+    ],
     "status": "done",
     "attempts": 1,
-    "notes": "Implemented deterministic 1–4 player Dodgeball using generic BODY_MOVE events only: horizontal motion-center marker alternative, telegraphed timed balls, +10 dodges, −5 collisions, isolated scores and neutral missing/stale tracking. Rejects malformed, duplicate, reordered and low-confidence input; resolves impacts before later samples and handles coarse updates and round boundaries. Transparent crayon overlays, pointer/touch and keyboard simulation, shared manual/tab/camera recovery, focused results/replay, immediate countdown and CameraSetup adapter/dispatch are integrated. Current refinement scope supersedes practice-screen acceptance: stays hidden from catalog, Quick Play and public legacy routes; implementation availability is true. Added 35 model/component cases, two setup cases and two browser route-gating cases. Final verification: 483 unit/component tests across 59 files passed; typecheck, lint, production build and whitespace checks passed. Full Chromium run could not launch browsers (51 startup failures, 16 intentional skips); targeted two-case retry also failed before execution with macOS Mach-port permission denial (1100). No browser gameplay, visual, physical webcam or Safari pass claimed. No deployment, uploads, dependency changes or commit.",
+    "notes": "Implemented deterministic 1\u20134 player Dodgeball using generic BODY_MOVE events only: horizontal motion-center marker alternative, telegraphed timed balls, +10 dodges, \u22125 collisions, isolated scores and neutral missing/stale tracking. Rejects malformed, duplicate, reordered and low-confidence input; resolves impacts before later samples and handles coarse updates and round boundaries. Transparent crayon overlays, pointer/touch and keyboard simulation, shared manual/tab/camera recovery, focused results/replay, immediate countdown and CameraSetup adapter/dispatch are integrated. Current refinement scope supersedes practice-screen acceptance: stays hidden from catalog, Quick Play and public legacy routes; implementation availability is true. Added 35 model/component cases, two setup cases and two browser route-gating cases. Final verification: 483 unit/component tests across 59 files passed; typecheck, lint, production build and whitespace checks passed. Full Chromium run could not launch browsers (51 startup failures, 16 intentional skips); targeted two-case retry also failed before execution with macOS Mach-port permission denial (1100). No browser gameplay, visual, physical webcam or Safari pass claimed. No deployment, uploads, dependency changes or commit.",
     "needs_hardware_validation": true,
     "hardware_verified": false
   },
   {
     "id": "T25N",
     "title": "Implement and test Laser Escape using generic BODY_MOVE input",
-    "depends_on": ["T25M"],
+    "depends_on": [
+      "T25M"
+    ],
     "status": "done",
     "attempts": 1,
-    "notes": "Implemented deterministic competitive 1–4 player Laser Escape consuming generic BODY_MOVE only. Alternating telegraphed laser sweeps use continuous segment collision, +10 for fully tracked escapes and −5 once per touched sweep. Missing/expired/invalid tracking cannot earn escapes; stale, duplicate and reordered packets are rejected. Integrated transparent crayon overlays, pointer/touch and keyboard simulation, immediate countdown, isolated scores, results/replay/focus and shared manual/tab/camera recovery. CameraSetup adapts motion centers, not body outlines; webcam control is explicitly unverified. Implementation availability is recorded while current catalog/Quick Play/legacy route visibility remains unchanged. Current spec supersedes old practice-screen acceptance. Added 42 model/component cases, two setup cases and two Chromium route-gating cases. Final unit/component suite: 527 tests across 61 files passed; lint, typecheck, production build and whitespace checks passed. Full Chromium regression: 32 passed, 37 intentionally skipped. Laser Escape browser tests cover route gating, not gameplay. Separate isolated desktop/narrow screenshot review attempts failed before execution with macOS Chromium Mach-port permission denial (1100); no visual review pass claimed. Physical webcam and Safari validation remain unverified. No deployment, upload, dependency changes or commit.",
+    "notes": "Implemented deterministic competitive 1\u20134 player Laser Escape consuming generic BODY_MOVE only. Alternating telegraphed laser sweeps use continuous segment collision, +10 for fully tracked escapes and \u22125 once per touched sweep. Missing/expired/invalid tracking cannot earn escapes; stale, duplicate and reordered packets are rejected. Integrated transparent crayon overlays, pointer/touch and keyboard simulation, immediate countdown, isolated scores, results/replay/focus and shared manual/tab/camera recovery. CameraSetup adapts motion centers, not body outlines; webcam control is explicitly unverified. Implementation availability is recorded while current catalog/Quick Play/legacy route visibility remains unchanged. Current spec supersedes old practice-screen acceptance. Added 42 model/component cases, two setup cases and two Chromium route-gating cases. Final unit/component suite: 527 tests across 61 files passed; lint, typecheck, production build and whitespace checks passed. Full Chromium regression: 32 passed, 37 intentionally skipped. Laser Escape browser tests cover route gating, not gameplay. Separate isolated desktop/narrow screenshot review attempts failed before execution with macOS Chromium Mach-port permission denial (1100); no visual review pass claimed. Physical webcam and Safari validation remain unverified. No deployment, upload, dependency changes or commit.",
     "needs_hardware_validation": true,
     "hardware_verified": false
   },
   {
     "id": "T25O",
     "title": "Implement and test Dance Challenge using generic BODY_MOVE input",
-    "depends_on": ["T25N"],
+    "depends_on": [
+      "T25N"
+    ],
     "status": "done",
     "attempts": 1,
-    "notes": "Implemented deterministic competitive 1–4 player Dance Challenge consuming generic BODY_MOVE only. Shared left/right/up/down cues use warning, Go and rest windows; fresh directional travel earns +10 once per cue. Countdown, timing boundaries, confidence/range checks, duplicate/stale packets, gaps, player isolation, pause/recovery and replay are tested. Transparent crayon arrows/markers overlay camera-aligned lanes with pointer/touch and deliberate keyboard fallback. CameraSetup adapts motion centers without pose claims. Implementation metadata is available; existing public refinement set and Quick Play remain unchanged, and both legacy URLs stay gated. Current direct-countdown specification supersedes old practice acceptance. Added 39 model/component tests, two setup cases and two Chromium route-gating cases. Final unit suite: 568 passed across 63 files; typecheck, lint, production build and whitespace checks passed. Full Chromium regression: 34 passed, 37 intentionally skipped; final-build full Chromium rerun also passed. Temporary isolated four-player browser preview passed keyboard scoring, pause and desktop/narrow screenshots; temporary harness/test removed. A direct npx preview launch and a targeted route rerun were denied by macOS Mach-port permissions; npm-script preview and full regression reruns subsequently passed. Physical webcam, motion feel and Safari remain unverified; no deployment, upload, dependency change or commit.",
+    "notes": "Implemented deterministic competitive 1\u20134 player Dance Challenge consuming generic BODY_MOVE only. Shared left/right/up/down cues use warning, Go and rest windows; fresh directional travel earns +10 once per cue. Countdown, timing boundaries, confidence/range checks, duplicate/stale packets, gaps, player isolation, pause/recovery and replay are tested. Transparent crayon arrows/markers overlay camera-aligned lanes with pointer/touch and deliberate keyboard fallback. CameraSetup adapts motion centers without pose claims. Implementation metadata is available; existing public refinement set and Quick Play remain unchanged, and both legacy URLs stay gated. Current direct-countdown specification supersedes old practice acceptance. Added 39 model/component tests, two setup cases and two Chromium route-gating cases. Final unit suite: 568 passed across 63 files; typecheck, lint, production build and whitespace checks passed. Full Chromium regression: 34 passed, 37 intentionally skipped; final-build full Chromium rerun also passed. Temporary isolated four-player browser preview passed keyboard scoring, pause and desktop/narrow screenshots; temporary harness/test removed. A direct npx preview launch and a targeted route rerun were denied by macOS Mach-port permissions; npm-script preview and full regression reruns subsequently passed. Physical webcam, motion feel and Safari remain unverified; no deployment, upload, dependency change or commit.",
     "needs_hardware_validation": true,
     "hardware_verified": false
   },
   {
     "id": "T25P",
     "title": "Implement and test Freeze! using generic FREEZE input",
-    "depends_on": ["T25O"],
+    "depends_on": [
+      "T25O"
+    ],
     "status": "done",
     "attempts": 1,
-    "notes": "Implemented competitive 1–4 player Freeze! with generic FREEZE activity samples, shared Move/Ready/Freeze cues, participation, 1200ms observed stillness for +10 and one false-move penalty per cue. Missing, uncertain, stale or reordered samples cannot earn stillness. Includes pointer/Space simulation, transparent crayon cues, countdown/results/replay, pause/tab/camera recovery and music stopping during Ready/Freeze. Continuous activity observations remain separate from debounced hits; cached decoder frames are rejected. Follow-up audit preserves final results against later rendering, late input and focus loss, and clamps skipped rendering to the round boundary. Public visibility remains unchanged; Freeze stays hidden. Camera browser fixture now draws continuously to model live frame delivery. Checks: 620 unit/component tests in 65 files passed; lint, typecheck, build and whitespace passed; final full Chromium suite 36 passed, 37 intentionally skipped. Initial browser run exposed the static fixture mismatch; fixed and reran successfully. No physical webcam or Safari validation, deployment, upload, dependency change or commit.",
+    "notes": "Implemented competitive 1\u20134 player Freeze! with generic FREEZE activity samples, shared Move/Ready/Freeze cues, participation, 1200ms observed stillness for +10 and one false-move penalty per cue. Missing, uncertain, stale or reordered samples cannot earn stillness. Includes pointer/Space simulation, transparent crayon cues, countdown/results/replay, pause/tab/camera recovery and music stopping during Ready/Freeze. Continuous activity observations remain separate from debounced hits; cached decoder frames are rejected. Follow-up audit preserves final results against later rendering, late input and focus loss, and clamps skipped rendering to the round boundary. Public visibility remains unchanged; Freeze stays hidden. Camera browser fixture now draws continuously to model live frame delivery. Checks: 620 unit/component tests in 65 files passed; lint, typecheck, build and whitespace passed; final full Chromium suite 36 passed, 37 intentionally skipped. Initial browser run exposed the static fixture mismatch; fixed and reran successfully. No physical webcam or Safari validation, deployment, upload, dependency change or commit.",
     "needs_hardware_validation": true,
     "hardware_verified": false
   },
   {
     "id": "T25Q",
     "title": "Implement and test Jump Rush using generic BODY_MOVE input",
-    "depends_on": ["T25P"],
+    "depends_on": [
+      "T25P"
+    ],
     "status": "done",
     "attempts": 1,
-    "notes": "Implemented deterministic competitive 1–4 player Jump Rush using generic BODY_MOVE only. Fresh upward motion-center travel triggers a 650ms hop; lowering rearms it. Shared 2400ms hurdle cycles award +10 for a tracked hop at impact or −5 for a tracked bump, once per hurdle. Missing, invalid, stale, duplicate or reordered input cannot earn clears. Includes camera-center adaptation, transparent crayon hurdle/star overlays, pointer/touch and Down/Up keyboard simulation, immediate countdown, isolated scores, results/replay/focus and shared manual/tab/camera recovery. Current direct-countdown specification supersedes old practice-screen acceptance. Implementation metadata is available, while existing public catalog/Quick Play visibility and legacy URL gating remain unchanged. Added 29 model tests, seven rendered component cases, two CameraSetup cases, two App route cases and two Chromium gating cases. Synthetic frame-difference tests verify rising motion isolation for all player counts. Final unit/component suite: 660 passed across 67 files; lint, typecheck, production build and whitespace checks passed. First full Chromium run: 38 passed, 37 intentionally skipped. Following the final SVG/CSS refinement, isolated preview and full browser rerun were blocked before assertions by macOS Mach-port permission denial (1100); the latter had 60 startup failures and 16 skips, including a temporary preview test. Local preview server was also denied with listen EPERM. Temporary harness removed; no Jump Rush browser gameplay or visual pass claimed. Physical webcam behavior, motion feel and Safari remain unverified; hardware_verified stays false. No deployment, external upload, dependency changes or commit.",
+    "notes": "Implemented deterministic competitive 1\u20134 player Jump Rush using generic BODY_MOVE only. Fresh upward motion-center travel triggers a 650ms hop; lowering rearms it. Shared 2400ms hurdle cycles award +10 for a tracked hop at impact or \u22125 for a tracked bump, once per hurdle. Missing, invalid, stale, duplicate or reordered input cannot earn clears. Includes camera-center adaptation, transparent crayon hurdle/star overlays, pointer/touch and Down/Up keyboard simulation, immediate countdown, isolated scores, results/replay/focus and shared manual/tab/camera recovery. Current direct-countdown specification supersedes old practice-screen acceptance. Implementation metadata is available, while existing public catalog/Quick Play visibility and legacy URL gating remain unchanged. Added 29 model tests, seven rendered component cases, two CameraSetup cases, two App route cases and two Chromium gating cases. Synthetic frame-difference tests verify rising motion isolation for all player counts. Final unit/component suite: 660 passed across 67 files; lint, typecheck, production build and whitespace checks passed. First full Chromium run: 38 passed, 37 intentionally skipped. Following the final SVG/CSS refinement, isolated preview and full browser rerun were blocked before assertions by macOS Mach-port permission denial (1100); the latter had 60 startup failures and 16 skips, including a temporary preview test. Local preview server was also denied with listen EPERM. Temporary harness removed; no Jump Rush browser gameplay or visual pass claimed. Physical webcam behavior, motion feel and Safari remain unverified; hardware_verified stays false. No deployment, external upload, dependency changes or commit.",
     "needs_hardware_validation": true,
     "hardware_verified": false
   },
@@ -543,47 +569,55 @@
     ],
     "status": "done",
     "attempts": 1,
-    "notes": "Implemented deterministic 1–4 player Fruit Slash using generic HAND_SWIPE segments. Reusable adapter validates confidence, freshness, distance and derived speed, accumulating small high-rate samples. Segment collisions score +10 per fruit and −15 per bomb once, with player isolation, deterministic spawning, pause-safe clocks and replay. Transparent crayon art, pointer/touch and directional keyboard simulation, direct countdown, scores, results focus and shared recovery are integrated. Camera permission requires interaction for this game. Frame differencing intentionally emits no hand swipes; hand tracking is unavailable and labeled honestly. Existing public catalog/Quick Play visibility and legacy URL gating are preserved. Direct countdown supersedes old practice wording. Added 38 model/input tests, eight component cases, two CameraSetup cases, two App URL cases and two Chromium gating cases. Final checks: 710 unit/component tests across 69 files passed; lint, typecheck, build and whitespace checks passed. Full Chromium regression: 40 passed, 37 intentionally skipped. Separate temporary hidden-game preview failed before assertions with macOS Mach-port permission denial (1100); harness removed. No Fruit Slash visual/browser-gameplay pass or physical webcam validation claimed. Hardware validation remains required and hardware_verified false. No deployment, upload, dependency changes or commit. See tasks/progress.md for details.",
+    "notes": "Implemented deterministic 1\u20134 player Fruit Slash using generic HAND_SWIPE segments. Reusable adapter validates confidence, freshness, distance and derived speed, accumulating small high-rate samples. Segment collisions score +10 per fruit and \u221215 per bomb once, with player isolation, deterministic spawning, pause-safe clocks and replay. Transparent crayon art, pointer/touch and directional keyboard simulation, direct countdown, scores, results focus and shared recovery are integrated. Camera permission requires interaction for this game. Frame differencing intentionally emits no hand swipes; hand tracking is unavailable and labeled honestly. Existing public catalog/Quick Play visibility and legacy URL gating are preserved. Direct countdown supersedes old practice wording. Added 38 model/input tests, eight component cases, two CameraSetup cases, two App URL cases and two Chromium gating cases. Final checks: 710 unit/component tests across 69 files passed; lint, typecheck, build and whitespace checks passed. Full Chromium regression: 40 passed, 37 intentionally skipped. Separate temporary hidden-game preview failed before assertions with macOS Mach-port permission denial (1100); harness removed. No Fruit Slash visual/browser-gameplay pass or physical webcam validation claimed. Hardware validation remains required and hardware_verified false. No deployment, upload, dependency changes or commit. See tasks/progress.md for details.",
     "needs_hardware_validation": true,
     "hardware_verified": false
   },
   {
     "id": "T25S",
     "title": "Implement and test Punch Arena using generic HAND_SWIPE input",
-    "depends_on": ["T25R"],
+    "depends_on": [
+      "T25R"
+    ],
     "status": "done",
     "attempts": 1,
-    "notes": "Implemented deterministic 1–4 player Punch Arena using generic HAND_SWIPE input. Fast strokes must end on pads and match one of four direction arrows: +10 matching, −5 incorrect, once per pad. Includes confidence/velocity validation, player isolation, timed expiry, deterministic spawning, stale/duplicate rejection, pause-safe lifecycle and replay. Transparent crayon pads, pointer/touch and keyboard simulation, direct countdown, scores, results focus, camera setup and shared recovery are integrated. Camera activation requires interaction. Motion masks produce no hand swipes; UI states hand tracking is unavailable. Existing public catalog/Quick Play visibility and legacy URL gating are preserved; direct countdown supersedes practice wording. Added 36 model tests, eight component cases, two CameraSetup cases, two App URL cases and two Chromium gating cases. Final checks: 758 unit/component tests in 71 files passed; lint, typecheck, build and whitespace checks passed. Full Chromium regression: 42 passed, 37 intentionally skipped. Separate temporary preview build succeeded, but browser launch failed before assertions with macOS Mach-port permission denial (1100); temporary repository harness removed. No Punch Arena browser-gameplay, visual or physical webcam validation claimed. Hardware validation remains required and hardware_verified false. No deployment, uploads, dependencies or commit. See tasks/progress.md.",
+    "notes": "Implemented deterministic 1\u20134 player Punch Arena using generic HAND_SWIPE input. Fast strokes must end on pads and match one of four direction arrows: +10 matching, \u22125 incorrect, once per pad. Includes confidence/velocity validation, player isolation, timed expiry, deterministic spawning, stale/duplicate rejection, pause-safe lifecycle and replay. Transparent crayon pads, pointer/touch and keyboard simulation, direct countdown, scores, results focus, camera setup and shared recovery are integrated. Camera activation requires interaction. Motion masks produce no hand swipes; UI states hand tracking is unavailable. Existing public catalog/Quick Play visibility and legacy URL gating are preserved; direct countdown supersedes practice wording. Added 36 model tests, eight component cases, two CameraSetup cases, two App URL cases and two Chromium gating cases. Final checks: 758 unit/component tests in 71 files passed; lint, typecheck, build and whitespace checks passed. Full Chromium regression: 42 passed, 37 intentionally skipped. Separate temporary preview build succeeded, but browser launch failed before assertions with macOS Mach-port permission denial (1100); temporary repository harness removed. No Punch Arena browser-gameplay, visual or physical webcam validation claimed. Hardware validation remains required and hardware_verified false. No deployment, uploads, dependencies or commit. See tasks/progress.md.",
     "needs_hardware_validation": true,
     "hardware_verified": false
   },
   {
     "id": "T25T",
     "title": "Implement and test Basketball Blitz using generic HAND_SWIPE input",
-    "depends_on": ["T25S"],
+    "depends_on": [
+      "T25S"
+    ],
     "status": "done",
     "attempts": 1,
-    "notes": "Implemented deterministic 1–4 player Basketball Blitz using generic HAND_SWIPE input. Upward strokes start in a launch circle and project aim onto the rim; baskets resolve after a 650 ms flight for +2, misses score zero. Includes independent attempts/baskets, cooldowns, confidence/speed validation, stale/duplicate rejection, deterministic sparse-frame results, pause-safe flight and replay. Transparent crayon hoops, ball arcs, pointer/touch and Arrow Up simulation, direct countdown, results focus, camera setup and shared recovery are integrated. Motion masks never produce hand swipes; UI explicitly states hand tracking is unavailable. Public catalog/Quick Play set and legacy URL gating are preserved. Direct countdown supersedes old practice acceptance wording. Added 33 model tests, eight component cases, two CameraSetup cases, two App URL cases and two Chromium gating cases. Full unit suite: 803 passed across 73 files. A temporary Chromium preview passed four-player keyboard/pointer scoring and desktop/narrow screenshots; harness removed. Final lint, typecheck, build, whitespace and JSON checks passed; full Chromium regression: 44 passed, 37 intentionally skipped. Initial concurrent build/browser run had two missing-asset failures, resolved by running browsers after build. Details in tasks/progress.md. Physical webcam behavior and Safari remain unverified; hardware validation required and hardware_verified false. No deployment, upload, dependency changes or commit.",
+    "notes": "Implemented deterministic 1\u20134 player Basketball Blitz using generic HAND_SWIPE input. Upward strokes start in a launch circle and project aim onto the rim; baskets resolve after a 650 ms flight for +2, misses score zero. Includes independent attempts/baskets, cooldowns, confidence/speed validation, stale/duplicate rejection, deterministic sparse-frame results, pause-safe flight and replay. Transparent crayon hoops, ball arcs, pointer/touch and Arrow Up simulation, direct countdown, results focus, camera setup and shared recovery are integrated. Motion masks never produce hand swipes; UI explicitly states hand tracking is unavailable. Public catalog/Quick Play set and legacy URL gating are preserved. Direct countdown supersedes old practice acceptance wording. Added 33 model tests, eight component cases, two CameraSetup cases, two App URL cases and two Chromium gating cases. Full unit suite: 803 passed across 73 files. A temporary Chromium preview passed four-player keyboard/pointer scoring and desktop/narrow screenshots; harness removed. Final lint, typecheck, build, whitespace and JSON checks passed; full Chromium regression: 44 passed, 37 intentionally skipped. Initial concurrent build/browser run had two missing-asset failures, resolved by running browsers after build. Details in tasks/progress.md. Physical webcam behavior and Safari remain unverified; hardware validation required and hardware_verified false. No deployment, upload, dependency changes or commit.",
     "needs_hardware_validation": true,
     "hardware_verified": false
   },
   {
     "id": "T25U",
     "title": "Implement and test Magic Duel using generic HAND_SWIPE input",
-    "depends_on": ["T25T"],
+    "depends_on": [
+      "T25T"
+    ],
     "status": "done",
     "attempts": 1,
-    "notes": "Implemented deterministic 1–4 player Magic Duel using generic HAND_SWIPE events. Ordered Valley, Corner and Triangle traces support segmented strokes, spatial continuity, direction, timeout, confidence/speed validation, stale/duplicate rejection and player isolation. Each completed pattern awards +20 once; prompts rotate every five seconds. Transparent numbered crayon paths, pointer/touch and per-edge Enter simulation, direct countdown, results/replay, shared pause/recovery and camera setup are integrated. Camera activation requires interaction; motion masks produce no hand swipes and UI explicitly states hand tracking is unavailable. Existing five-game public catalog, Quick Play and legacy URL gating are preserved. Direct countdown supersedes practice wording. Added 36 model tests, nine component cases, two CameraSetup cases, two App URL cases and two Chromium gating cases. Full unit/component suite: 852 passed in 75 files. Lint, typecheck, build, JSON and whitespace checks passed; full Chromium regression: 46 passed, 37 intentionally skipped. Temporary preview build succeeded, but direct and Playwright-runner browser launches failed before assertions with macOS Mach-port permission denial (1100); repository harness removed. No Magic Duel browser-gameplay, visual or physical webcam pass claimed. Hardware validation remains required and hardware_verified false. No deployment, uploads, new dependencies or commit. See tasks/progress.md for validation details.",
+    "notes": "Implemented deterministic 1\u20134 player Magic Duel using generic HAND_SWIPE events. Ordered Valley, Corner and Triangle traces support segmented strokes, spatial continuity, direction, timeout, confidence/speed validation, stale/duplicate rejection and player isolation. Each completed pattern awards +20 once; prompts rotate every five seconds. Transparent numbered crayon paths, pointer/touch and per-edge Enter simulation, direct countdown, results/replay, shared pause/recovery and camera setup are integrated. Camera activation requires interaction; motion masks produce no hand swipes and UI explicitly states hand tracking is unavailable. Existing five-game public catalog, Quick Play and legacy URL gating are preserved. Direct countdown supersedes practice wording. Added 36 model tests, nine component cases, two CameraSetup cases, two App URL cases and two Chromium gating cases. Full unit/component suite: 852 passed in 75 files. Lint, typecheck, build, JSON and whitespace checks passed; full Chromium regression: 46 passed, 37 intentionally skipped. Temporary preview build succeeded, but direct and Playwright-runner browser launches failed before assertions with macOS Mach-port permission denial (1100); repository harness removed. No Magic Duel browser-gameplay, visual or physical webcam pass claimed. Hardware validation remains required and hardware_verified false. No deployment, uploads, new dependencies or commit. See tasks/progress.md for validation details.",
     "needs_hardware_validation": true,
     "hardware_verified": false
   },
   {
     "id": "T25V",
     "title": "Implement and test Ninja Training using generic MIXED input events",
-    "depends_on": ["T25U"],
+    "depends_on": [
+      "T25U"
+    ],
     "status": "done",
     "attempts": 1,
-    "notes": "Completed the existing Paper Dojo implementation with deterministic 1–4 player hit-and-avoid mechanics. MIXED capability consumes normalized MOTION_HIT strikes and BODY_MOVE movement-center observations; no raw media or pose tracking. Marked obstacles warn for 700 ms, become active for 1100 ms, and charge -10 once per player while clearing streaks. Added aspect-correct collision bounds, contact feedback/results, stale/duplicate guards and camera adapter integration while preserving current public selection and concurrent compact UI refinements. Added 22 model cases, two component cases, two camera integration/recovery cases and one Chromium obstacle case; fixed an asynchronous recovery-test assertion. Final checks: 879 unit/component tests passed across 75 files; lint, typecheck, production build, JSON and whitespace checks passed. Full Chromium: 47 passed, 37 intentional hidden-game skips. Synthetic camera tests are not physical validation; hardware_verified remains false. Direct countdown supersedes old practice acceptance wording. No deployment, uploads, dependency additions or commit. See tasks/progress.md.",
+    "notes": "Completed the existing Paper Dojo implementation with deterministic 1\u20134 player hit-and-avoid mechanics. MIXED capability consumes normalized MOTION_HIT strikes and BODY_MOVE movement-center observations; no raw media or pose tracking. Marked obstacles warn for 700 ms, become active for 1100 ms, and charge -10 once per player while clearing streaks. Added aspect-correct collision bounds, contact feedback/results, stale/duplicate guards and camera adapter integration while preserving current public selection and concurrent compact UI refinements. Added 22 model cases, two component cases, two camera integration/recovery cases and one Chromium obstacle case; fixed an asynchronous recovery-test assertion. Final checks: 879 unit/component tests passed across 75 files; lint, typecheck, production build, JSON and whitespace checks passed. Full Chromium: 47 passed, 37 intentional hidden-game skips. Synthetic camera tests are not physical validation; hardware_verified remains false. Direct countdown supersedes old practice acceptance wording. No deployment, uploads, dependency additions or commit. See tasks/progress.md.",
     "needs_hardware_validation": true,
     "hardware_verified": false
   },
@@ -606,8 +640,8 @@
       "T26A"
     ],
     "status": "pending",
-    "attempts": 1,
-    "notes": "Automatable hardening and review tooling split into completed T26A. Release remains uncleared: real Mac/Safari camera behavior, one/two/four-person tracking and latency, sustained hardware performance, accessibility/user review, artwork distribution rights, host packaging/install behavior and current dependency audit remain open. Firefox/WebKit and a wider three-engine run aborted at browser launch in this environment; npm audit failed registry DNS lookup. Keep pending until the remaining evidence is recorded in docs/RELEASE-CHECKLIST.md. No deployment authorized or performed.",
+    "attempts": 4,
+    "notes": "Automatable hardening and review tooling split into completed T26A. Release remains uncleared: real Mac/Safari camera behavior, one/two/four-person tracking and latency, sustained hardware performance, accessibility/user review, artwork distribution rights, host packaging/install behavior and current dependency audit remain open. Firefox/WebKit and a wider three-engine run aborted at browser launch in this environment; npm audit failed registry DNS lookup. Keep pending until the remaining evidence is recorded in docs/RELEASE-CHECKLIST.md. No deployment authorized or performed. Follow-up review: verified existing skip-link route-preservation and canonical CSP packaging changes; fixed worker recache quota failure with a Node regression. 884 unit/component and 8 packaging tests pass, plus typecheck, lint, build and integrity. Current Chromium regression interrupted after launch failures (24 failed, 2 interrupted, 60 not run); focused Firefox/WebKit also aborted at launch; offline blocked by listen EPERM and audit by registry DNS. No current browser or physical-camera pass. See latest review in docs/RELEASE-CHECKLIST.md. Manifest follow-up (2026-11-16): added enforced root launch/scope and local icon/screenshot/shortcut asset checks with regression coverage. Latest workspace checks passed 891 unit/component tests, 9 packaging tests, lint, typecheck, build and integrity. Preserved concurrent pose work; initial build/lint failures resolved during that integration. Latest built snapshot 860529c8bde09c27a1aa includes 28,453,772 optional pose bytes (31,077,067 total); optional iframe privacy/offline/performance needs separate review. Three focused browser cases failed before assertions at engine launch; online npm audit failed ENOTFOUND. T26 remains pending, no physical-camera validation or deployment. Offline document routing follow-up (2026-11-16): fixed worker navigation rewriting the optional diagnostic iframe to the app shell; only root/index navigations now use index.html. Extended Node routing/precache assertions and the genuine offline scenario, including module/WASM MIME types. Passed 891 unit/component tests, 9 packaging tests, typecheck, lint, build and artifact integrity; snapshot 6095513601c2d92fa116 (39 files, 31,078,813 bytes), all budgets pass. Three focused browser cases failed at engine launch; offline blocked by listen EPERM and audit by registry DNS ENOTFOUND. No new browser or physical-camera pass; T26 remains pending. Existing work preserved; no deployment or commit.",
     "needs_hardware_validation": true,
     "hardware_verified": false
   }

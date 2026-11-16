@@ -9,7 +9,7 @@ self.addEventListener('install', (event) => {
     if (!RELEASE) throw new Error('Build the release before enabling offline play.')
     const cache = await caches.open(CACHE_NAME)
     // Missing files fail installation; CSS images/fonts belong to the shell too.
-    await cache.addAll([...assetUrls])
+    await cache.addAll([...assetUrls].filter(url => !new URL(url).pathname.includes('/pose/')))
   })())
   // Updates wait for the previous app's tabs to close so active games retain
   // their matching HTML and assets. Do not force skipWaiting here.
@@ -28,9 +28,13 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET') return
   const url = new URL(request.url)
   if (url.origin !== self.location.origin) return
-  const target = request.mode === 'navigate'
-    ? new URL('./index.html', self.registration.scope).href
-    : url.href
+  const shell = new URL('./index.html', self.registration.scope)
+  const root = new URL('./', self.registration.scope)
+  // Hash routes navigate within the root document. Other documents (including
+  // the optional pose iframe) must retain their own HTML and privacy policy.
+  const isShellNavigation = request.mode === 'navigate'
+    && (url.pathname === root.pathname || url.pathname === shell.pathname)
+  const target = isShellNavigation ? shell.href : url.href
   // Only packaged static files are read, never camera data or runtime responses.
   if (!assetUrls.has(target)) return
   event.respondWith((async () => {
@@ -39,7 +43,8 @@ self.addEventListener('fetch', (event) => {
     if (cached) return cached
     // Storage eviction must not strand an online app behind an empty cache.
     const response = await fetch(target)
-    if (response.ok) await cache.put(target, response.clone())
+    // Quota/eviction failures must not discard a successfully fetched asset.
+    if (response.ok) await cache.put(target, response.clone()).catch(() => undefined)
     return response
   })())
 })

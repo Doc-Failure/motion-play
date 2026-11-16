@@ -41,7 +41,8 @@ Hidden-game skips are intentional and do not certify those implementations.
 ## Packaging and offline behavior
 
 - `npm run build` produces a static root-hosted `dist/` directory. No runtime
-  application server, API, accounts, model downloads or credentials are needed.
+  application server, API, accounts, remote model downloads or credentials are needed.
+  The optional body-tracking diagnostic reads its bundled model and WASM locally.
   Serve over HTTPS in production; opening `index.html` with `file://` is unsupported.
   Subdirectory hosting is not certified by this build.
 - `dist/release-report.json` records a deterministic release ID, per-file SHA-256,
@@ -49,8 +50,21 @@ Hidden-game skips are intentional and do not certify those implementations.
   missing or extra files, a mismatched worker, external/missing HTML/CSS assets,
   source maps, common secret-file extensions and budget overruns. This is not a
   general-purpose secret scanner or dependency vulnerability audit.
-- Current raw payload budgets: JavaScript 550,000 bytes, CSS 160,000 bytes, total
-  3,000,000 bytes. Payload totals exclude the generated worker/report themselves.
+- Packaging requires the complete canonical CSP from `config/privacy-policy.json`
+  as the first head element, before resource loads. Vite uses the same source.
+  A partial policy, a commented/template/body tag, or a policy inserted after a
+  script fails packaging. This checks the generated HTML contract; it is not a
+  general-purpose HTML sanitizer.
+- Packaging also checks the install manifest: start/shortcut URLs must launch
+  the root-hosted hash-route app, scope must be the hosting root, and icons,
+  screenshots and shortcut icons must be local files included in the artifact.
+  External URLs, absent artwork and malformed manifest collections fail the
+  build and integrity check. This does not certify browser installation behavior.
+- Current raw payload budgets: core JavaScript 550,000 bytes, CSS 160,000 bytes,
+  core payload 3,000,000 bytes, optional pose assets 30,000,000 bytes and total
+  33,000,000 bytes. The separate pose allowance was introduced by the concurrent
+  diagnostic integration; its download/performance implications need review.
+  Payload totals exclude the generated worker/report themselves.
   Gzip measurements describe individual files, not assumed server compression.
   Do not raise budgets without reviewing the regression.
 - Bundled Short Stack and React/React DOM/Scheduler licenses are copied into
@@ -61,12 +75,19 @@ Hidden-game skips are intentional and do not certify those implementations.
 - Offline caching is off by default. There is no public settings/install flow in
   this refinement phase; the persisted legacy `offlineCaching` setting remains
   supported and is exercised by the offline browser test.
-- Opt-in installs the complete packaged asset list, including CSS images/fonts.
+- Opt-in installs the core packaged assets, including CSS images/fonts. The
+  optional `pose/` diagnostic is excluded from installation precaching; its
+  offline behavior is not certified.
+  Root/index navigations use the app shell; other packaged documents retain
+  their own HTML. The diagnostic iframe must load `pose/tracker.html` and its
+  separate privacy policy. Unknown document paths are left to the host.
   Missing files reject installation. Only packaged GET assets enter the cache;
   arbitrary runtime responses are never stored. Each build has its own cache.
   An update waits for old app tabs to close before activation; first installation
   claims the page. Disabling caching unregisters this worker and removes only
   `motion-play-` caches. Browser storage eviction can still remove offline data.
+  If recaching fails because storage quota is exhausted, the worker still returns
+  the successfully fetched online response. The Node harness covers this path.
 - Before a later authorized deployment, review host MIME types, HTTPS, compression,
   and cache headers. Use revalidation for HTML/worker/report and long-lived immutable
   caching only for hashed assets. Confirm manifest/icon delivery on the actual
@@ -85,6 +106,10 @@ Hidden-game skips are intentional and do not certify those implementations.
   local/data/blob images, local/blob media, no objects or form submission. Inline
   styles remain allowed for React positioning and crayon effects. Development
   retains Vite's normal HMR behavior; development is not a privacy release test.
+- The optional diagnostic loads a separate local iframe with its own CSP allowing
+  same-origin connections and WASM compilation. The main document's blocked POST
+  probes do not certify this iframe. Review and test that opt-in runtime's requests
+  separately before clearing the privacy gate; it does not feed game scoring.
 - The synthetic release scenario checks local GET requests, no microphone request,
   no default worker registration, storage keys and blocked same-origin/external
   POST probes. It does not inspect browser-vendor traffic or OS camera behavior.
@@ -109,11 +134,16 @@ extra capture streams. Review keyboard focus, visible controls at narrow/desktop
 sizes and browser zoom, operating-system reduced motion, mute persistence,
 readable text/contrast, and results/replay with users of different ages.
 
+The keyboard skip link focuses the main content without changing the hash route.
+Regression coverage checks both the catalog and an active synthetic camera game,
+including stream continuity. This is partial keyboard coverage, not a completed
+accessibility review.
+
 ## Outstanding human gates
 
 | Gate | Required evidence | Current status |
 | --- | --- | --- |
-| Chromium production regression | Synthetic navigation, scoring, recovery, audio scheduling, layout | 48 passed / 37 intentional hidden-game skips on final artifact |
+| Chromium production regression | Synthetic navigation, scoring, recovery, audio scheduling, layout | Earlier artifact: 48 passed / 37 skips. Current review blocked at launch by Mach-port permission denial |
 | Offline integration | Genuine worker, offline art/fonts/play and opt-out cleanup | Earlier scenario passed; final separate run blocked by loopback listen EPERM |
 | Firefox and WebKit | Same regression in engines that successfully launch | Open: attempted launches aborted before assertions in this environment |
 | Safari on a Mac | Real permission flow, camera video, audio unlock, reconnect and tab recovery | Open |
@@ -128,3 +158,75 @@ For each human gate, append reviewer, date, exact environment, observations,
 failures/fixes and evidence before changing its status. Keep
 `needs_hardware_validation: true` and `hardware_verified: false` until real human
 hardware testing has occurred.
+
+## Latest local review (2026-11-16)
+
+Reviewed the existing skip-link and canonical CSP changes and added recovery for
+service-worker recache quota failures. Unit/component checks passed **884 tests
+in 75 files**; all **8 packaging tests**, typecheck, lint, build and artifact
+integrity passed. Payload ID `824cdc462ab1cb06de64` contains 28 files totaling
+2,617,869 bytes; all byte budgets pass. The ID describes payload files; worker
+integrity is checked separately against the current source template.
+
+The current Chromium run was stopped after repeated browser startup failures:
+24 failed, 2 interrupted, 60 not run. macOS denied Chromium Mach-port registration
+(1100), before app assertions. Focused Firefox and WebKit release scenarios both
+failed at launch (SIGABRT / Abort trap 6). The separate offline scenario failed
+before assertions with loopback `listen EPERM`. No current browser, screenshot,
+cadence or physical-camera pass is claimed. Dependency audit again failed with
+registry DNS `ENOTFOUND`. T26 remains pending.
+
+Concurrent MediaPipe dependency and `public/pose` additions appeared after these
+checks. They were preserved and are outside this reviewed artifact; rebuild and
+repeat validation after that integration is complete.
+
+## Manifest packaging follow-up (2026-11-16)
+
+Added manifest validation for root-hosted launch/scope, local install artwork,
+screenshots and shortcuts. Regression cases reject external/credentialed URLs,
+unpackaged launch paths, missing files and malformed collections. Both packaging
+and integrity verification enforce the same checks.
+
+Latest checks passed **891 unit/component tests in 76 files**, **9 packaging
+tests**, lint, typecheck, build, artifact integrity and whitespace checks. An
+intermediate full run had one failing diagnostic stale-frame test; its concurrent
+fake-clock correction was present in the subsequent passing run. Initial vendor
+lint and byte-budget failures were also resolved by the concurrent integration.
+
+Built snapshot `860529c8bde09c27a1aa`: 38 payload files, 31,077,067 bytes total,
+including 28,453,772 optional pose bytes and 2,623,295 core bytes. This snapshot
+includes concurrent diagnostic changes, which were preserved. Passing byte
+budgets does not certify that runtime's privacy, offline behavior or performance.
+Further source changes require a fresh build and integrity check.
+
+Focused Chromium/Firefox/WebKit privacy cases all failed before assertions at
+engine launch (Mach-port permission denial / SIGABRT / Abort trap 6). No browser,
+visual or physical-camera pass is claimed. Offline browser integration was not
+rerun in this follow-up. Online `npm audit` failed registry DNS ENOTFOUND; an
+offline audit's zero result is not current vulnerability evidence. T26 remains
+pending. No deployment, upload, commit or physical webcam testing was performed.
+
+## Offline document routing follow-up (2026-11-16)
+
+Fixed a service-worker integration defect found by inspecting the current app:
+all navigations, including the opt-in diagnostic iframe, previously received
+`index.html`. The worker now rewrites only root/index navigations. Packaged
+subdocuments load their own HTML; unknown paths pass through. Extended the Node
+worker harness to check the iframe document, root query handling, unknown paths
+and exclusion of optional pose assets from installation precaching. Extended the
+genuine offline browser scenario to inspect the controlled iframe's title/runtime
+before going offline; its static server now supplies module/WASM MIME types.
+This scenario loads the runtime only, without inference or physical tracking.
+
+Passed **891 unit/component tests in 76 files**, **9 packaging tests**, typecheck,
+lint, production build and artifact integrity. Snapshot `6095513601c2d92fa116`
+contains 39 payload files: 2,623,342 core bytes plus 28,455,471 optional pose bytes
+(31,078,813 total). All budgets pass. The payload ID excludes the worker/report;
+worker integrity is checked separately. Existing working-tree changes were preserved.
+
+Three focused production privacy cases failed before assertions: Chromium Mach-port
+permission denial (1100), Firefox SIGABRT and WebKit Abort trap 6. The updated
+offline browser scenario could not start its loopback server (`listen EPERM`).
+`npm audit --fetch-retries=0 --fetch-timeout=15000` failed registry DNS ENOTFOUND.
+No new browser, visual, inference, dependency-security, performance or physical
+webcam pass is claimed. T26 remains pending. No deployment, upload or commit.

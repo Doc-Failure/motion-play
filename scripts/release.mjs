@@ -8,7 +8,19 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const workerMarker = 'null /* motion-play-release */'
 const digest = (value) => createHash('sha256').update(value).digest('hex')
 // Raw-byte regression guards, not claims about download speed or FPS.
-export const budgets = { javascript: 550_000, css: 160_000, total: 3_000_000 }
+export const budgets = { javascript: 550_000, css: 160_000, total: 33_000_000, core: 3_000_000, pose: 30_000_000 }
+
+async function checkPrivacyPolicy(html) {
+  const policy = JSON.parse(await readFile(join(root, 'config/privacy-policy.json'), 'utf8')).content
+  // Verify the canonical tag emitted by Vite, including placement before loads.
+  // Substrings elsewhere (or in comments) do not establish an enforced policy.
+  const markup = html.replace(/<!--[\s\S]*?-->/g, '')
+  const head = markup.match(/<head\b[^>]*>([\s\S]*?)<\/head\s*>/i)?.[1] ?? ''
+  const expected = `<meta http-equiv="Content-Security-Policy" content="${policy}">`
+  if (!head.trimStart().startsWith(expected)) {
+    throw new Error('Missing or misplaced production privacy policy')
+  }
+}
 
 async function listFiles(directory, prefix = '') {
   const entries = await readdir(join(directory, prefix), { withFileTypes: true })
@@ -18,6 +30,43 @@ async function listFiles(directory, prefix = '') {
     return entry.isDirectory() ? listFiles(directory, path) : [path]
   }))
   return groups.flat().sort()
+}
+
+async function checkManifest(directory, paths) {
+  const manifest = JSON.parse(await readFile(join(directory, 'manifest.webmanifest'), 'utf8'))
+  if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)) throw new Error('Invalid release manifest')
+  const base = new URL('https://motion-play.invalid/manifest.webmanifest')
+  const localUrl = (reference) => {
+    if (typeof reference !== 'string' || !reference.trim()) throw new Error('Invalid manifest URL')
+    const target = new URL(reference, base)
+    if (target.origin !== base.origin || target.username || target.password) throw new Error(`External manifest URL: ${reference}`)
+    return target
+  }
+  const launchUrl = (reference) => {
+    const target = localUrl(reference)
+    // This build uses hash routes and is packaged for root hosting only.
+    if (!['/', '/index.html'].includes(target.pathname) || target.search) throw new Error(`Unsupported manifest launch URL: ${reference}`)
+    return target
+  }
+  launchUrl(manifest.start_url)
+  if (localUrl(manifest.scope).href !== base.origin + '/') throw new Error('Manifest scope must be the hosting root')
+  const checkImages = (images) => {
+    if (!Array.isArray(images)) throw new Error('Invalid manifest images')
+    for (const image of images) {
+      const target = localUrl(image?.src)
+      if (!paths.includes(decodeURIComponent(target.pathname.slice(1)))) throw new Error(`Missing manifest asset: ${image.src}`)
+    }
+  }
+  if (!manifest.icons?.length) throw new Error('Missing manifest icons')
+  checkImages(manifest.icons)
+  if (manifest.screenshots !== undefined) checkImages(manifest.screenshots)
+  if (manifest.shortcuts !== undefined) {
+    if (!Array.isArray(manifest.shortcuts)) throw new Error('Invalid manifest shortcuts')
+    for (const shortcut of manifest.shortcuts) {
+      launchUrl(shortcut?.url)
+      if (shortcut.icons !== undefined) checkImages(shortcut.icons)
+    }
+  }
 }
 
 async function describeRelease(directory) {
@@ -41,15 +90,18 @@ async function describeRelease(directory) {
     return { path, bytes: bytes.length, gzipBytes: gzipSync(bytes).length, sha256: digest(bytes) }
   }))
   const totals = {
-    javascript: files.filter((file) => file.path.endsWith('.js')).reduce((sum, file) => sum + file.bytes, 0),
+    javascript: files.filter((file) => file.path.endsWith('.js') && !file.path.startsWith('pose/')).reduce((sum, file) => sum + file.bytes, 0),
     css: files.filter((file) => file.path.endsWith('.css')).reduce((sum, file) => sum + file.bytes, 0),
+    core: files.filter(file => !file.path.startsWith('pose/')).reduce((sum,file) => sum+file.bytes,0),
+    pose: files.filter(file => file.path.startsWith('pose/')).reduce((sum,file) => sum+file.bytes,0),
     total: files.reduce((sum, file) => sum + file.bytes, 0),
   }
   for (const [name, limit] of Object.entries(budgets)) {
     if (totals[name] > limit) throw new Error(`${name} budget exceeded: ${totals[name]} > ${limit} bytes`)
   }
   const html = await readFile(join(directory, 'index.html'), 'utf8')
-  if (!html.includes('http-equiv="Content-Security-Policy"') || !html.includes("connect-src 'none'")) throw new Error('Missing production privacy policy')
+  await checkPrivacyPolicy(html)
+  await checkManifest(directory, paths)
   const version = digest(JSON.stringify(files)).slice(0, 20)
   return { version, totals, budgets, files }
 }
