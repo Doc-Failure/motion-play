@@ -551,9 +551,9 @@
     "id": "T25S",
     "title": "Implement and test Punch Arena using generic HAND_SWIPE input",
     "depends_on": ["T25R"],
-    "status": "pending",
-    "attempts": 0,
-    "notes": "Acceptance: deterministic 1-4 player gesture/velocity model, target/scoring/isolation tests, rendered simulation, practice/setup/catalog routing, pointer fallback, honest availability gating, and no claim of hand tracking.",
+    "status": "done",
+    "attempts": 1,
+    "notes": "Implemented deterministic 1–4 player Punch Arena using generic HAND_SWIPE input. Fast strokes must end on pads and match one of four direction arrows: +10 matching, −5 incorrect, once per pad. Includes confidence/velocity validation, player isolation, timed expiry, deterministic spawning, stale/duplicate rejection, pause-safe lifecycle and replay. Transparent crayon pads, pointer/touch and keyboard simulation, direct countdown, scores, results focus, camera setup and shared recovery are integrated. Camera activation requires interaction. Motion masks produce no hand swipes; UI states hand tracking is unavailable. Existing public catalog/Quick Play visibility and legacy URL gating are preserved; direct countdown supersedes practice wording. Added 36 model tests, eight component cases, two CameraSetup cases, two App URL cases and two Chromium gating cases. Final checks: 758 unit/component tests in 71 files passed; lint, typecheck, build and whitespace checks passed. Full Chromium regression: 42 passed, 37 intentionally skipped. Separate temporary preview build succeeded, but browser launch failed before assertions with macOS Mach-port permission denial (1100); temporary repository harness removed. No Punch Arena browser-gameplay, visual or physical webcam validation claimed. Hardware validation remains required and hardware_verified false. No deployment, uploads, dependencies or commit. See tasks/progress.md.",
     "needs_hardware_validation": true,
     "hardware_verified": false
   },

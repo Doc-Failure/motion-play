@@ -2064,3 +2064,42 @@ T25Q implementation is complete within the current hidden-game refinement scope.
   commit.
 
 T25R implementation is complete within the current hidden-game refinement scope.
+
+
+## T25S — Punch Arena (2026-11-16)
+
+- Read SPEC.md and AGENTS.md and inspected the current input contract, game models,
+  camera setup, recovery controls, public routing and camera-first overlay styles.
+- Implemented deterministic 1–4 player directional pads using generic HAND_SWIPE
+  events. Swipes must satisfy the shared speed/distance/confidence checks, end on
+  a pad, and follow its arrow. Matching punches score +10; wrong directions score
+  −5. Each pad scores once and expires after one second; players remain isolated.
+- Added normalized crayon pads and short trails over transparent camera-aligned
+  lanes, pointer/touch and arrow-key simulation, immediate countdown, shared clock,
+  results/replay focus and manual/tab/camera recovery. No camera/media libraries
+  are accessed by the game. Camera activation requires interaction; frame
+  differencing never manufactures hand swipes. Hand tracking remains unavailable
+  and is explicitly labeled in the UI.
+- Integrated implementation metadata, setup and route dispatch while preserving
+  the existing public catalog and Quick Play set. Punch Arena stays hidden and
+  both public legacy URLs return to the catalog. Direct countdown follows the
+  current specification and supersedes older practice-screen acceptance wording.
+- Added 36 model tests covering four directions, endpoint collisions, velocity,
+  malformed/uncertain/stale/duplicate inputs, independent scoring, deterministic
+  spawn cadence, expiry, countdown/pause/replay boundaries and detached snapshots.
+  Eight component cases cover 1–4 lanes, normalized pointer input, keyboard input,
+  StrictMode event replay, results focus and recovery. Added two CameraSetup cases,
+  two App routing cases and two Chromium gating cases. A missing newline in a new
+  test initially blocked transformation and was corrected before the full run.
+- Final checks: **758 unit/component tests across 71 files passed**; lint,
+  typecheck, production build and whitespace checks passed. Full Chromium
+  regression: **42 passed, 37 intentionally skipped** for hidden games.
+- A separate temporary local preview compiled successfully but Chromium launch
+  failed before assertions with macOS Mach-port registration permission denial
+  (1100). Temporary repository entry files were removed. No Punch Arena browser
+  gameplay or visual pass is claimed; rendered simulation coverage is from
+  component tests. Physical webcam behavior, motion feel and Safari remain
+  unverified. Hardware validation remains required and hardware_verified false.
+- No deployment, external uploads, dependency changes or commit.
+
+T25S implementation is complete within the current hidden-game refinement scope.

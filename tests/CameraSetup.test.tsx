@@ -12,7 +12,7 @@ describe('simple camera flow', () => {
     ['paint-splash', 'Paint Splash'], ['meteor-smash', 'Meteor Smash'],
     ['balloon-panic', 'Balloon Panic'], ['gold-rush', 'Gold Rush'],
     ['simon-says', 'Simon Says'], ['fruit-catcher', 'Fruit Catcher'],
-    ['fruit-slash', 'Fruit Slash'], ['jump-rush', 'Jump Rush'], ['freeze', 'Freeze!'], ['dance-challenge', 'Dance Challenge'], ['laser-escape', 'Laser Escape'], ['dodgeball', 'Dodgeball'], ['air-pong', 'Air Pong'], ['goalkeeper', 'Goalkeeper'], ['tower-builder', 'Tower Builder'],
+    ['punch-arena', 'Punch Arena'], ['fruit-slash', 'Fruit Slash'], ['jump-rush', 'Jump Rush'], ['freeze', 'Freeze!'], ['dance-challenge', 'Dance Challenge'], ['laser-escape', 'Laser Escape'], ['dodgeball', 'Dodgeball'], ['air-pong', 'Air Pong'], ['goalkeeper', 'Goalkeeper'], ['tower-builder', 'Tower Builder'],
   ] as const)('keeps %s paused through denial and requires resume after recovery', async (game, title) => {
     const source = controller()
     vi.mocked(source.start)
@@ -20,7 +20,7 @@ describe('simple camera flow', () => {
       .mockRejectedValueOnce(new DOMException('denied', 'NotAllowedError'))
       .mockResolvedValueOnce({} as MediaStream)
     render(<CameraSetup source={source} initialGame={game} />)
-    if (game === 'fruit-slash') fireEvent.click(screen.getByRole('button', { name: 'Activate camera & play' }))
+    if (game === 'fruit-slash' || game === 'punch-arena') fireEvent.click(screen.getByRole('button', { name: 'Activate camera & play' }))
     else {
       await waitFor(() => expect(screen.getByRole('button', { name: `Play ${title}` })).toBeEnabled())
       fireEvent.click(screen.getByRole('button', { name: `Play ${title}` }))
@@ -49,6 +49,21 @@ describe('simple camera flow', () => {
     expect(screen.queryByRole('button', { name: 'Start round now' })).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Exit game' }))
     expect(screen.getByRole('button', { name: 'Play Fruit Slash' })).toBeEnabled()
+    expect(source.start).not.toHaveBeenCalled()
+  })
+
+  it('integrates hidden Punch Arena as four-player simulation with direct countdown', () => {
+    const source = controller()
+    render(<CameraSetup source={source} initialGame="punch-arena" />)
+    expect(source.start).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('button', { name: '4 players' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Play without camera' }))
+    expect(screen.getByRole('heading', { name: 'Punch Arena' })).toBeVisible()
+    expect(screen.getAllByRole('group', { name: /Punch Arena play area/ })).toHaveLength(4)
+    expect(screen.getByText(/hand tracking unavailable/)).toBeVisible()
+    expect(screen.queryByRole('button', { name: 'Start round now' })).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Exit game' }))
+    expect(screen.getByRole('button', { name: 'Play Punch Arena' })).toBeEnabled()
     expect(source.start).not.toHaveBeenCalled()
   })
   it('keeps the round paused after a failed camera reconnect and allows another retry', async () => {

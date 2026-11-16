@@ -1,0 +1,14 @@
+.punch-game { position: relative; }
+.punch-boards { display: grid; grid-template-columns: repeat(auto-fit,minmax(160px,1fr)); gap: .75rem; }
+.punch-player h2 { font-size: 1.1rem; }
+.punch-player h2 span { display: block; font-size: .9rem; }
+.punch-board { position: relative; height: 400px; overflow: hidden; touch-action: none; border: 3px solid #29313c; border-radius: 1.2rem .6rem 1rem .7rem; background: #fff9e922; }
+.punch-board:focus-visible { outline: 4px dashed #ffe17a; outline-offset: -5px; box-shadow: inset 0 0 0 7px #29313c; }
+.punch-target { position: absolute; width: 24%; height: 24%; translate: -50% -50%; pointer-events: none; }
+.punch-target svg { display: block; width: 100%; height: 100%; }
+.punch-trails { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.punch-rules,.punch-help { line-height: 1.5; }
+@media (prefers-reduced-motion: reduce) { .punch-trails { display: none; } }
+.reduce-motion .punch-trails { display: none; }
+
+.punch-target strong { position: absolute; inset: 0; display: grid; place-items: center; color: #29313c; font: bold clamp(1.5rem, 4vw, 3rem)/1 sans-serif; }
