@@ -11,7 +11,7 @@ export const catalogGames: readonly CatalogGame[] = [
   game(1, 'bubble-battle', 'Bubble Battle', 'Pop floating bubbles and keep clear of the bombs.', 'Hit & Destroy', 'MOTION_HIT', 'Easy', 'Competitive', ['#66c7df', '#ee654f'], true),
   game(2, 'whack-a-mole', 'Whack-a-Mole', 'Strike each mole before it ducks back underground.', 'Hit & Destroy', 'MOTION_HIT', 'Easy', 'Competitive', ['#72b779', '#9b6b43'], true),
   game(3, 'meteor-smash', 'Meteor Smash', 'Smash meteors before they crash into your base.', 'Hit & Destroy', 'MOTION_HIT', 'Normal', 'Competitive', ['#7557a8', '#f28c46'], true),
-  game(4, 'fruit-slash', 'Fruit Slash', 'Swipe the fruit, but do not slice the bombs.', 'Hit & Destroy', 'HAND_SWIPE', 'Normal', 'Competitive', ['#ee654f', '#72b779']),
+  game(4, 'fruit-slash', 'Fruit Slash', 'Swipe the fruit, but do not slice the bombs.', 'Hit & Destroy', 'HAND_SWIPE', 'Normal', 'Competitive', ['#ee654f', '#72b779'], true),
   game(5, 'punch-arena', 'Punch Arena', 'Punch the matching targets as they spring into view.', 'Hit & Destroy', 'HAND_SWIPE', 'Hard', 'Competitive', ['#f28c46', '#4c9ed9']),
   game(6, 'pinata-party', 'Piñata Party', 'Land repeated hits to shower the party with candy.', 'Hit & Destroy', 'MOTION_HIT', 'Easy', 'Cooperative', ['#e45b9d', '#f5c847'], true),
   game(7, 'monster-defense', 'Monster Defense', 'Stop the silly monsters before they reach the gate.', 'Hit & Destroy', 'MOTION_HIT', 'Normal', 'Cooperative', ['#72b779', '#7557a8'], true),

@@ -3,7 +3,10 @@ import { mapCameraPoint, type PlayerCameraZone, type PlayerId } from './PlayerZo
 export interface MotionFrame { width: number; height: number; data: Uint8ClampedArray }
 /** FREEZE requires activity in [0,1]: observed changing fraction of a player zone.
  * Zero is a measured still frame; absent/uncertain frames must not imply stillness. */
-export interface MotionInputEvent { playerId: PlayerId; kind: 'MOTION_HIT' | 'MOTION_BRUSH' | 'HAND_POSITION' | 'BODY_MOVE' | 'FREEZE'; x: number; y: number; confidence: number; timestamp: number; activity?: number }
+/** HAND_SWIPE ends at (x,y); swipe supplies its player-local origin and elapsed
+ * milliseconds. Velocity is derived from this segment, never trusted from callers.
+ * Frame differencing cannot produce hand swipes. */
+export interface MotionInputEvent { playerId: PlayerId; kind: 'MOTION_HIT' | 'MOTION_BRUSH' | 'HAND_POSITION' | 'HAND_SWIPE' | 'BODY_MOVE' | 'FREEZE'; x: number; y: number; confidence: number; timestamp: number; activity?: number; swipe?: { fromX: number; fromY: number; durationMs: number } }
 export interface ZoneMotion { playerId: PlayerId; activePixels: number; activity: number; centroid: { x: number; y: number } | null }
 export interface MotionResult { mask: Uint8ClampedArray; width: number; height: number; threshold: number; zones: ZoneMotion[]; events: MotionInputEvent[]; positions?: MotionInputEvent[]; freezeSamples?: MotionInputEvent[] }
 export interface MotionOptions { spatialSampling?: boolean; sensitivity?: number; smoothing?: number; minimumNeighbors?: number; minimumZoneActivity?: number; debounceMs?: number }

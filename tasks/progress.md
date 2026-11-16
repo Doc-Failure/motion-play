@@ -2026,3 +2026,41 @@ T25P implementation is complete under the current hidden-game refinement scope.
   false. No deployment, external upload, dependency changes or commit.
 
 T25Q implementation is complete within the current hidden-game refinement scope.
+
+
+## T25R — Fruit Slash (2026-11-16)
+
+- Read SPEC.md and AGENTS.md and inspected the application, input pipeline,
+  lifecycle, camera overlays and public refinement gating.
+- Added generic HAND_SWIPE segments with normalized origin/end coordinates and
+  elapsed milliseconds. The reusable adapter derives velocity, validates
+  confidence/range/freshness, accumulates small fast samples and breaks continuity
+  after loss, release or long gaps. Motion masks never become hand swipes.
+- Implemented deterministic 1–4 player Fruit Slash: timed fruit/bomb arcs, segment
+  collisions, +10 per fruit, −15 per bomb, once per object and isolated by player.
+  Tests cover speed/distance thresholds, malformed/stale/duplicate events,
+  countdown and pause boundaries, rendering cadence, results and replay.
+- Added transparent crayon fruit, distinct × bombs, short slash trails, pointer/touch
+  and directional keyboard simulation, immediate countdown, scores, results focus
+  and shared manual/tab/camera recovery. Camera permission requires interaction for
+  this game. Camera dispatch intentionally supplies no hand swipes until a real
+  tracking backend exists. The UI states that hand tracking is unavailable.
+- Preserved the existing public game set. Fruit Slash stays hidden from catalog
+  and Quick Play; both legacy URLs return to the catalog. Implementation metadata
+  is available. Direct countdown supersedes backlog practice-screen wording.
+- Added 38 model/input tests, eight rendered component cases, two CameraSetup cases,
+  two App route cases and two Chromium gating cases. Initial integration testing
+  exposed an incorrect camera-activation assumption; fixed the new setup path to
+  require interaction and verified recovery after activation.
+- Final checks: **710 unit/component tests across 69 files passed**; lint,
+  typecheck, production build and whitespace checks passed. Full Chromium
+  regression: **40 passed, 37 intentionally skipped** for hidden games.
+- A separate temporary hidden-game browser preview failed before assertions with
+  macOS Mach-port registration permission denial (1100). The harness was removed.
+  No Fruit Slash visual or browser-gameplay validation is claimed; rendered
+  simulation validation comes from component tests. Physical webcam behavior and
+  Safari remain unverified. Hardware validation stays required and
+  hardware_verified false. No deployment, external upload, dependency changes or
+  commit.
+
+T25R implementation is complete within the current hidden-game refinement scope.

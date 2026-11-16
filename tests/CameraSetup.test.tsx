@@ -12,7 +12,7 @@ describe('simple camera flow', () => {
     ['paint-splash', 'Paint Splash'], ['meteor-smash', 'Meteor Smash'],
     ['balloon-panic', 'Balloon Panic'], ['gold-rush', 'Gold Rush'],
     ['simon-says', 'Simon Says'], ['fruit-catcher', 'Fruit Catcher'],
-    ['jump-rush', 'Jump Rush'], ['freeze', 'Freeze!'], ['dance-challenge', 'Dance Challenge'], ['laser-escape', 'Laser Escape'], ['dodgeball', 'Dodgeball'], ['air-pong', 'Air Pong'], ['goalkeeper', 'Goalkeeper'], ['tower-builder', 'Tower Builder'],
+    ['fruit-slash', 'Fruit Slash'], ['jump-rush', 'Jump Rush'], ['freeze', 'Freeze!'], ['dance-challenge', 'Dance Challenge'], ['laser-escape', 'Laser Escape'], ['dodgeball', 'Dodgeball'], ['air-pong', 'Air Pong'], ['goalkeeper', 'Goalkeeper'], ['tower-builder', 'Tower Builder'],
   ] as const)('keeps %s paused through denial and requires resume after recovery', async (game, title) => {
     const source = controller()
     vi.mocked(source.start)
@@ -20,8 +20,12 @@ describe('simple camera flow', () => {
       .mockRejectedValueOnce(new DOMException('denied', 'NotAllowedError'))
       .mockResolvedValueOnce({} as MediaStream)
     render(<CameraSetup source={source} initialGame={game} />)
-    await waitFor(() => expect(screen.getByRole('button', { name: `Play ${title}` })).toBeEnabled())
-    fireEvent.click(screen.getByRole('button', { name: `Play ${title}` }))
+    if (game === 'fruit-slash') fireEvent.click(screen.getByRole('button', { name: 'Activate camera & play' }))
+    else {
+      await waitFor(() => expect(screen.getByRole('button', { name: `Play ${title}` })).toBeEnabled())
+      fireEvent.click(screen.getByRole('button', { name: `Play ${title}` }))
+    }
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Pause' })).toBeEnabled())
     act(() => vi.mocked(source.start).mock.calls[0][1]!())
     expect(screen.getByRole('dialog')).toHaveTextContent('The camera disconnected')
     expect(screen.getByRole('button', { name: 'Resume round' })).toBeDisabled()
@@ -32,6 +36,20 @@ describe('simple camera flow', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'Resume round' })).toBeEnabled())
     fireEvent.click(screen.getByRole('button', { name: 'Resume round' }))
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+  it('integrates hidden Fruit Slash as four-player simulation with direct countdown', () => {
+    const source = controller()
+    render(<CameraSetup source={source} initialGame="fruit-slash" />)
+    expect(source.start).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('button', { name: '4 players' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Play without camera' }))
+    expect(screen.getByRole('heading', { name: 'Fruit Slash' })).toBeVisible()
+    expect(screen.getAllByRole('group', { name: /Fruit Slash play area/ })).toHaveLength(4)
+    expect(screen.getByText(/hand tracking unavailable/)).toBeVisible()
+    expect(screen.queryByRole('button', { name: 'Start round now' })).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Exit game' }))
+    expect(screen.getByRole('button', { name: 'Play Fruit Slash' })).toBeEnabled()
+    expect(source.start).not.toHaveBeenCalled()
   })
   it('keeps the round paused after a failed camera reconnect and allows another retry', async () => {
     const source = controller()

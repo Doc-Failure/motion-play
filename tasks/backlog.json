@@ -538,10 +538,12 @@
   {
     "id": "T25R",
     "title": "Implement and test Fruit Slash using generic HAND_SWIPE input",
-    "depends_on": ["T25Q"],
-    "status": "pending",
-    "attempts": 0,
-    "notes": "Acceptance: deterministic 1-4 player swipe model, fruit/bomb/velocity/isolation tests, rendered simulation, practice/setup/catalog routing, pointer fallback, honest availability gating, and no claim of hand tracking.",
+    "depends_on": [
+      "T25Q"
+    ],
+    "status": "done",
+    "attempts": 1,
+    "notes": "Implemented deterministic 1–4 player Fruit Slash using generic HAND_SWIPE segments. Reusable adapter validates confidence, freshness, distance and derived speed, accumulating small high-rate samples. Segment collisions score +10 per fruit and −15 per bomb once, with player isolation, deterministic spawning, pause-safe clocks and replay. Transparent crayon art, pointer/touch and directional keyboard simulation, direct countdown, scores, results focus and shared recovery are integrated. Camera permission requires interaction for this game. Frame differencing intentionally emits no hand swipes; hand tracking is unavailable and labeled honestly. Existing public catalog/Quick Play visibility and legacy URL gating are preserved. Direct countdown supersedes old practice wording. Added 38 model/input tests, eight component cases, two CameraSetup cases, two App URL cases and two Chromium gating cases. Final checks: 710 unit/component tests across 69 files passed; lint, typecheck, build and whitespace checks passed. Full Chromium regression: 40 passed, 37 intentionally skipped. Separate temporary hidden-game preview failed before assertions with macOS Mach-port permission denial (1100); harness removed. No Fruit Slash visual/browser-gameplay pass or physical webcam validation claimed. Hardware validation remains required and hardware_verified false. No deployment, upload, dependency changes or commit. See tasks/progress.md for details.",
     "needs_hardware_validation": true,
     "hardware_verified": false
   },
