@@ -11,7 +11,7 @@ describe('simple camera flow', () => {
     ['paint-splash', 'Paint Splash'], ['meteor-smash', 'Meteor Smash'],
     ['balloon-panic', 'Balloon Panic'], ['gold-rush', 'Gold Rush'],
     ['simon-says', 'Simon Says'], ['fruit-catcher', 'Fruit Catcher'],
-    ['dodgeball', 'Dodgeball'], ['air-pong', 'Air Pong'], ['goalkeeper', 'Goalkeeper'], ['tower-builder', 'Tower Builder'],
+    ['laser-escape', 'Laser Escape'], ['dodgeball', 'Dodgeball'], ['air-pong', 'Air Pong'], ['goalkeeper', 'Goalkeeper'], ['tower-builder', 'Tower Builder'],
   ] as const)('keeps %s paused through denial and requires resume after recovery', async (game, title) => {
     const source = controller()
     vi.mocked(source.start)
@@ -95,6 +95,19 @@ describe('simple camera flow', () => {
     expect(screen.queryByRole('button', { name: 'Start round now' })).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Exit game' }))
     expect(screen.getByRole('button', { name: 'Play Dodgeball' })).toBeEnabled()
+  })
+  it('integrates hidden Laser Escape with four-player fallback and immediate countdown', async () => {
+    const source = controller()
+    vi.mocked(source.start).mockRejectedValue(new DOMException('denied', 'NotAllowedError'))
+    render(<CameraSetup source={source} initialGame="laser-escape" />)
+    await waitFor(() => expect(screen.getByRole('alert')).toBeVisible())
+    fireEvent.click(screen.getByRole('button', { name: '4 players' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Play without camera' }))
+    expect(screen.getByRole('heading', { name: 'Laser Escape' })).toBeVisible()
+    expect(screen.getAllByRole('group', { name: /Laser Escape play area/ })).toHaveLength(4)
+    expect(screen.queryByRole('button', { name: 'Start round now' })).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Exit game' }))
+    expect(screen.getByRole('button', { name: 'Play Laser Escape' })).toBeEnabled()
   })
   it('integrates hidden Tower Builder with four-player fallback and immediate countdown', async () => {
     const source = controller()

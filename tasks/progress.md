@@ -1837,3 +1837,51 @@ change or commit was performed in this task.
   change or commit was performed.
 
 T25M implementation is complete under the current hidden-game refinement scope.
+
+### 2026-11-16 — T25N: Laser Escape with generic BODY_MOVE
+
+- Read SPEC.md and AGENTS.md and inspected the application, Dodgeball's normalized
+  input/lifecycle pattern, camera adapter, recovery controls, layout and routing.
+- Implemented deterministic competitive 1–4 player Laser Escape. Dashed warnings
+  and direction arrows precede alternating continuous laser sweeps. A fully tracked
+  clear sweep earns +10; a laser touch costs 5 once per sweep. Each player has
+  isolated scores, tracking, escape/touch counters and feedback on a shared clock.
+- Collision checks intersect the whole traveled laser segment, including between
+  render frames. Escape rewards require fresh tracking throughout the sweep;
+  absent, expired or invalid positions cannot earn them. A known collision remains
+  recorded if tracking subsequently disappears. Duplicate, reordered and stale
+  packets cannot restore tracking. Later samples cannot rewrite earlier collisions.
+- Added transparent crayon line/star overlays, pointer/touch and keyboard simulation,
+  countdown, focused results/replay and shared manual/tab/disconnect recovery.
+  Pauses freeze sweeps/countdown and discard cached input. CameraSetup maps motion
+  centers to generic BODY_MOVE; game code never accesses pixels or media internals.
+  This marker mechanic does not establish body-outline/pose tracking, and its
+  visible rules explicitly describe webcam control as unverified.
+- Recorded implementation availability without changing the checkout's existing
+  public refinement set. Catalog/Quick Play and both legacy URLs keep Laser Escape
+  hidden. The current direct-countdown specification supersedes the backlog's
+  previous practice-screen acceptance.
+- Added 35 model cases, seven rendered simulation cases, two camera-setup cases
+  and two browser route-gating cases. Coverage includes 1–4 player isolation,
+  mirrored synthetic motion centers, continuous collision boundaries, reverse
+  sweeps, tracking gaps/loss, coarse rendering, malformed input, countdown/endpoints,
+  pause/recovery, keyboard/pointer release, StrictMode, results and replay.
+- Final checks: **527 unit/component tests across 61 files passed**; lint,
+  typecheck, production build and whitespace checks passed. Full Chromium regression
+  completed with **32 passed, 37 intentionally skipped**. The final visible-rule
+  wording and two extra model regressions were added during browser execution;
+  rebuilt and repeated the full unit suite, and both new route-gating browser
+  cases subsequently passed against that final build. No other runtime changes
+  followed the final build.
+- Separately built a temporary isolated Laser Escape browser simulation harness
+  for desktop/narrow screenshot inspection, without exposing a production route.
+  Two direct launch attempts and one temporary Playwright review case were blocked
+  before execution by macOS Chromium Mach-port registration denial (1100). The
+  temporary review case was removed. No Laser Escape browser gameplay or visual
+  pass is claimed; rendered gameplay is covered by component simulation only.
+- Physical webcam behavior, latency/motion feel and Safari remain unverified;
+  `needs_hardware_validation` stays true and `hardware_verified` stays false.
+  No deployment, external upload, dependency change or commit was performed.
+
+T25N implementation is complete under the current hidden-game refinement scope.
+Desktop/narrow browser visual inspection remains a follow-up validation item.

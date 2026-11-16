@@ -499,9 +499,9 @@
     "id": "T25N",
     "title": "Implement and test Laser Escape using generic BODY_MOVE input",
     "depends_on": ["T25M"],
-    "status": "pending",
-    "attempts": 0,
-    "notes": "Acceptance: deterministic 1-4 player laser/collision model, survival/penalty/isolation tests, rendered simulation, practice/setup/catalog routing, pointer fallback, honest availability gating, and no claim of pose tracking.",
+    "status": "done",
+    "attempts": 1,
+    "notes": "Implemented deterministic competitive 1–4 player Laser Escape consuming generic BODY_MOVE only. Alternating telegraphed laser sweeps use continuous segment collision, +10 for fully tracked escapes and −5 once per touched sweep. Missing/expired/invalid tracking cannot earn escapes; stale, duplicate and reordered packets are rejected. Integrated transparent crayon overlays, pointer/touch and keyboard simulation, immediate countdown, isolated scores, results/replay/focus and shared manual/tab/camera recovery. CameraSetup adapts motion centers, not body outlines; webcam control is explicitly unverified. Implementation availability is recorded while current catalog/Quick Play/legacy route visibility remains unchanged. Current spec supersedes old practice-screen acceptance. Added 42 model/component cases, two setup cases and two Chromium route-gating cases. Final unit/component suite: 527 tests across 61 files passed; lint, typecheck, production build and whitespace checks passed. Full Chromium regression: 32 passed, 37 intentionally skipped. Laser Escape browser tests cover route gating, not gameplay. Separate isolated desktop/narrow screenshot review attempts failed before execution with macOS Chromium Mach-port permission denial (1100); no visual review pass claimed. Physical webcam and Safari validation remain unverified. No deployment, upload, dependency changes or commit.",
     "needs_hardware_validation": true,
     "hardware_verified": false
   },

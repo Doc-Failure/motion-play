@@ -23,7 +23,7 @@ export const catalogGames: readonly CatalogGame[] = [
   game(13, 'star-collector', 'Star Collector', 'Touch the twinkling stars before they disappear.', 'Catch & Collect', 'MOTION_HIT', 'Easy', 'Competitive', ['#f5c847', '#7557a8'], true),
   game(14, 'treasure-grab', 'Treasure Grab', 'Grab bright treasures and avoid the cursed objects.', 'Catch & Collect', 'MOTION_HIT', 'Normal', 'Competitive', ['#f5c847', '#4c9ed9'], true),
   game(15, 'dodgeball', 'Dodgeball', 'Move your body out of the path of incoming balls.', 'Move & Survive', 'BODY_MOVE', 'Normal', 'Competitive', ['#ee654f', '#4c9ed9'], true),
-  game(16, 'laser-escape', 'Laser Escape', 'Duck and weave around the moving laser lines.', 'Move & Survive', 'BODY_MOVE', 'Hard', 'Competitive', ['#e45b9d', '#18334a']),
+  game(16, 'laser-escape', 'Laser Escape', 'Steer a motion-center marker clear of sweeping laser lines.', 'Move & Survive', 'BODY_MOVE', 'Hard', 'Competitive', ['#e45b9d', '#18334a'], true),
   game(17, 'dance-challenge', 'Dance Challenge', 'Match each simple movement cue to keep the beat.', 'Move & Survive', 'BODY_MOVE', 'Normal', 'Competitive', ['#e45b9d', '#7557a8']),
   game(18, 'freeze', 'Freeze!', 'Move with the music, then hold still when it stops.', 'Move & Survive', 'FREEZE', 'Easy', 'Competitive', ['#66c7df', '#7557a8']),
   game(19, 'ninja-training', 'Paper Dojo', 'Swat leaping paper ninjas, build a streak, and smash bamboo bundles.', 'Move & Survive', 'MOTION_HIT', 'Normal', 'Competitive', ['#477f8e', '#f3c966'], true),

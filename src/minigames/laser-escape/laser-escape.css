@@ -1,0 +1,15 @@
+.laser-game { position: relative; color: #29313c; }
+.laser-boards { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0,1fr); }
+.laser-player { min-width: 0; }
+.laser-player h2 { font-size: 1rem; }
+.laser-player h2 span { display: block; font-size: .8rem; }
+.laser-board { position: relative; height: min(65vh,36rem); border: 2px solid #29313c; border-radius: 1% 2%; touch-action: none; overflow: hidden; }
+.laser-board:focus-visible { outline: 4px solid #7557a8; outline-offset: -4px; }
+.laser-stage { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.laser-beam { stroke: #64274c; stroke-width: 2.5; stroke-dasharray: 3 2; fill: none; }
+.laser-core { stroke: #fff8e9; stroke-width: .6; stroke-dasharray: 3 2; fill: none; }
+.laser-stage.is-active .laser-beam { stroke: #c32472; stroke-dasharray: none; }
+.laser-stage.is-active .laser-core { stroke-dasharray: none; }
+.laser-cue { position: absolute; top: 30%; left: 50%; transform: translateX(-50%); padding: .2rem .5rem; border: 2px solid #64274c; border-radius: .4rem .6rem; color: #64274c; background: #fff8e9e8; font-size: .85rem; white-space: nowrap; pointer-events: none; }
+.laser-marker { position: absolute; top: 78%; transform: translate(-50%,-50%); color: #fff8e9; background: #305a89; border: 3px solid #29313c; border-radius: 43% 51% 47% 40%; width: 20%; text-align: center; font-size: 1.5rem; line-height: 1.3; pointer-events: none; }
+.laser-help, .laser-rules { font-size: .85rem; }
