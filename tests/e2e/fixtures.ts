@@ -2,6 +2,10 @@ import { expect, test as base, type Page } from '@playwright/test'
 import { readFileSync, readdirSync } from 'node:fs'
 import { resolve } from 'node:path'
 
+// A review can use an immutable build copy while another local workflow rebuilds
+// dist. Every artifact reader must use this same directory.
+export const releaseDirectory = resolve(process.env.MOTION_PLAY_DIST ?? 'dist')
+
 /* eslint-disable react-hooks/rules-of-hooks -- Playwright names its fixture callback `use`; it is not a React hook. */
 
 type MediaFixture = {
@@ -59,13 +63,13 @@ export const test = base.extend<MediaFixture>({
 export { expect }
 
 export async function openApp(page: Page, hash = '#/camera') {
-  const assets = resolve(process.cwd(), 'dist/assets')
+  const assets = resolve(releaseDirectory, 'assets')
   const script = readdirSync(assets).find((file) => file.endsWith('.js'))
   const style = readdirSync(assets).find((file) => file.endsWith('.css'))
   if (!script || !style) throw new Error('Run `npm run build` before the browser tests.')
   await page.route('http://motion-play.test/**', async route => {
     const pathname = new URL(route.request().url()).pathname
-    const file = resolve(process.cwd(), 'dist', pathname === '/' ? 'index.html' : pathname.slice(1))
+    const file = resolve(releaseDirectory, pathname === '/' ? 'index.html' : pathname.slice(1))
     const mime = (file.endsWith('.js') || file.endsWith('.mjs')) ? 'text/javascript' : file.endsWith('.css') ? 'text/css' : file.endsWith('.svg') ? 'image/svg+xml' : file.endsWith('.webp') ? 'image/webp' : file.endsWith('.ttf') ? 'font/ttf' : file.endsWith('.webmanifest') ? 'application/manifest+json' : file.endsWith('.json') ? 'application/json' : file.endsWith('.wasm') ? 'application/wasm' : file.endsWith('.task') ? 'application/octet-stream' : 'text/html'
     await route.fulfill({body:readFileSync(file),contentType:mime})
   })

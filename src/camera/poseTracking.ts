@@ -18,7 +18,10 @@ export function stickBodies(poses:PosePoint[][]):StickBody[] {
     const legs=hip?[[23,25,27],[24,26,28]].flatMap(ids=>{
       const chain=ids.map(id=>points[id]);return chain.every(visible)?[[hip,...chain.map(mirror)]]:[]
     }):[]
-    const head=visible(points[0])?mirror(points[0]):undefined
+    // Nose sits forward of the head, particularly in profile; prefer the ear midpoint.
+    const head=visible(points[7])&&visible(points[8])?mirror(midpoint(points[7],points[8]))
+      :visible(points[2])&&visible(points[5])?mirror(midpoint(points[2],points[5]))
+      :visible(points[0])?mirror(points[0]):undefined
     const headRadius=Math.max(.012,Math.min(.045,Math.abs(left.x-right.x)*.18))
     return [{neck,torso:hip?[neck,hip]:[],arms,legs,hands:[points[15],points[16]].filter(visible).map(mirror),head,headRadius,x:hip?.x??neck.x}]
 

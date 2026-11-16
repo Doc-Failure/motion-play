@@ -1,8 +1,9 @@
-import { expect, openApp, test } from './fixtures'
-import { mkdir, writeFile } from 'node:fs/promises'
-import { dirname } from 'node:path'
+import { expect, openApp, releaseDirectory, test } from './fixtures'
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { dirname, resolve } from 'node:path'
 
-test('production stays local, requests no microphone and blocks network data connections', async ({ page, installMockCamera }) => {
+test('production stays local, requests no microphone and blocks network data connections', async ({ page, browser, installMockCamera }) => {
+  const release = JSON.parse(await readFile(resolve(releaseDirectory, 'release-report.json'), 'utf8')) as { version: string }
   const requests: { url: string; method: string }[] = []
   const errors: string[] = []
   page.on('request', request => requests.push({ url: request.url(), method: request.method() }))
@@ -31,11 +32,14 @@ test('production stays local, requests no microphone and blocks network data con
     return { engine: navigator.userAgent, viewport: { width: innerWidth, height: innerHeight },
       syntheticCamera: true, sampleCount: intervals.length, medianFrameMs: intervals[45], p95FrameMs: intervals[85],
       mediaRequests: state.requests, audioRequests: state.audioRequests,
+      poseDiagnosticStatus: document.querySelector('.body-test__status')?.textContent ?? null,
+      poseRuntimePresent: Boolean(document.querySelector('iframe[title="Local body tracking runtime"]')),
       storageKeys: Object.keys(localStorage), serviceWorkers: 'serviceWorker' in navigator ? (await navigator.serviceWorker.getRegistrations()).length : 0 }
   })
+  const evidence = { ...diagnostics, releaseVersion: release.version, project: test.info().project.name, browserVersion: browser.version() }
   const diagnosticsPath = test.info().outputPath('synthetic-four-player-frame-cadence.json')
   await mkdir(dirname(diagnosticsPath), { recursive: true })
-  await writeFile(diagnosticsPath, `${JSON.stringify(diagnostics, null, 2)}\n`)
+  await writeFile(diagnosticsPath, `${JSON.stringify(evidence, null, 2)}\n`)
   await test.info().attach('synthetic-four-player-frame-cadence.json', { path: diagnosticsPath, contentType: 'application/json' })
   expect(diagnostics.mediaRequests).toBe(1)
   expect(diagnostics.audioRequests).toBe(0)
@@ -48,4 +52,38 @@ test('production stays local, requests no microphone and blocks network data con
     try { await fetch(url, { method: 'POST', body: 'synthetic-probe' }); return false } catch { return true }
   })))
   expect(blocked).toEqual([true, true])
+})
+
+test('diagnostic policy allows local assets while blocking external data connections and preserving the main policy', async ({ page, installMockCamera }) => {
+  const escapedProbes: string[] = []
+  // If a policy regresses, contain the deliberate probes inside the test too.
+  await page.route('**/privacy-probe', async route => {
+    escapedProbes.push(route.request().url())
+    await route.fulfill({ status: 200, body: 'probe should have been blocked' })
+  })
+  await installMockCamera()
+  await openApp(page, '#/')
+  await page.evaluate(async () => {
+    const frame = document.createElement('iframe')
+    frame.title = 'Release privacy diagnostic'
+    frame.src = './pose/tracker.html'
+    await new Promise<void>((resolve, reject) => {
+      frame.onload = () => resolve()
+      frame.onerror = () => reject(new Error('Diagnostic document failed to load'))
+      document.body.append(frame)
+    })
+  })
+  const runtime = page.frame({ url: /\/pose\/tracker\.html$/ })!
+  expect(await runtime.evaluate(async () => {
+    const local = await fetch('./README.txt')
+    return local.ok && (await local.text()).includes('Optional local body-tracking diagnostic')
+  })).toBe(true)
+  expect(await runtime.evaluate(async () => Promise.all(['GET', 'POST'].map(async method => {
+    try { await fetch('https://example.invalid/privacy-probe', { method }); return false } catch { return true }
+  })))).toEqual([true, true])
+  expect(await page.evaluate(async () => {
+    try { await fetch('./pose/README.txt'); return false } catch { return true }
+  })).toBe(true)
+  expect(escapedProbes).toEqual([])
+  expect(await page.evaluate(() => (window as typeof window & { __mockMediaState: { requests: number } }).__mockMediaState.requests)).toBe(0)
 })

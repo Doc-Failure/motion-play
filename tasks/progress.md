@@ -2683,3 +2683,62 @@ T25V implementation is complete; physical hardware and release gates remain open
   remain unverified after launch failures; offline integration remains blocked by
   loopback EPERM and audit by registry DNS. Hardware and human release gates remain
   open. T26 stays pending with hardware_verified false. No deploy/upload/commit.
+
+## Raised-hand player alignment (2026-11-16)
+
+- Inspected the live camera rectangle/mirroring and pose rendering. Both already
+  share the uncropped mirrored frame. Corrected the head marker to prefer the
+  measured ear midpoint (then eyes) over a forward-projecting nose landmark.
+- Added Align player(s) in setup and gameplay: re-detect the pose, face camera,
+  center each player in their lane, raise both hands and hold steady for two
+  seconds. Added specific framing, missing-joint, gesture and lane feedback,
+  fresh-sample/steady-hold requirements, progress, completion and cancellation.
+  The check never applies invented offsets or changes normalized game coordinates.
+- Gameplay calibration blocks input events and uses shared pause/recovery. The
+  camera keeps running; completion/cancel permits explicit Resume. Diagnostic
+  failures and unmount release the block. Updated the shared recovery message
+  specifically for alignment. Instructions render above skeleton strokes, and
+  the successful check message clears after a short display.
+- Validation: five new alignment-model cases, twelve body-tracking cases and 49
+  camera flow cases passed (66). Lint, typecheck/build and whitespace checks passed.
+  Four Chromium diagnostic cases passed, including a new raised-hand fixture
+  scenario covering reacquisition, blocked Resume during alignment, frozen timer,
+  unchanged score, completion/resume, cancellation and one continuous camera
+  request. Reviewed the alignment screenshot under /tmp/player-alignment-browser.
+- Browser gesture testing uses explicit fixture landmarks; it does not establish
+  physical pose accuracy or prove that all reported real-camera offsets are gone.
+  No new physical-webcam/multi-person validation, upload, deployment or commit.
+
+
+## T26 module dependency checks and diagnostic release coverage (2026-11-16)
+
+- Read SPEC.md/AGENTS.md and inspected the current application, privacy/runtime
+  policies, camera lifecycle, browser fixtures, packaging, worker and release gates.
+  Preserved camera-alignment edits appearing concurrently during this review.
+- Closed imported-asset gaps: packaging/integrity now resolve literal JS imports,
+  re-exports and dynamic imports plus quoted CSS imports. External/missing modules,
+  unresolved bare imports and missing styles fail checks. Used the existing
+  TypeScript parser to avoid treating bundle strings/comments as imports. Computed
+  runtime paths remain covered by explicit required-file contracts. Counted .mjs
+  and .cjs scripts in the existing core JavaScript budget. No dependencies added.
+- Added three Node regression cases; all 17 packaging tests pass. Added browser
+  cases for iframe local/remote connection isolation and model/WASM inference on
+  blank frames before/after a genuine offline reload. They remain unverified.
+  Cadence attachments now identify release, project, browser version and pose
+  runtime/status. This review produced no new cadence/performance sample.
+- All browser artifact readers honor MOTION_PLAY_DIST. A shared build succeeded,
+  but its integrity check raced another build and lost a font; the first offline
+  attempt similarly lost the report. A separate immutable Vite build/preparation/
+  integrity check passed at /tmp/motion-play-t26.LSWyHS: 444c112d6734d39a686b,
+  39 files, 2,651,813 core + 28,456,010 pose = 31,107,823 total bytes. All existing
+  budgets pass unchanged. This is a point-in-time snapshot of concurrent source.
+- Full unit/component suite passed 922 tests, then 927 in 79 files including
+  concurrent alignment tests. Typecheck/lint pass. Six privacy scenarios across
+  Chromium/Firefox/WebKit failed before assertions: macOS Mach-port denial 1100,
+  Firefox SIGABRT, WebKit Abort trap 6. Both offline scenarios against the stable
+  artifact failed at loopback listen EPERM. npm audit failed registry ENOTFOUND.
+  Retained logs/traces: /tmp/motion-play-t26-browsers-snapshot* and
+  /tmp/motion-play-t26-offline-snapshot*. No fresh browser, visual, dependency
+  security, model inference or physical-webcam validation is claimed.
+- Updated release procedure/current evidence and T26 notes. T26 remains pending
+  with hardware_verified false. No deploy, upload, dependency changes or commit.

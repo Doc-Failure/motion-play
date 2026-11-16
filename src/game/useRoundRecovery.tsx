@@ -26,6 +26,7 @@ export function useRoundRecovery<S extends GameSessionSnapshot>({
   const wasPaused = useRef(false)
   const ownedResults = useRef(false)
   const cameraBlocked = useRef(false)
+  const previousBlockReason=useRef<string|null>(null)
   const pause = useCallback((message: string) => {
     if (phase.current !== 'playing' && phase.current !== 'countdown') return
     const next = model.pause(performance.now())
@@ -37,10 +38,12 @@ export function useRoundRecovery<S extends GameSessionSnapshot>({
   // Register before input consumption so a simultaneous disconnect blocks input.
   useEffect(() => {
     const recovered = cameraBlocked.current && !externalPauseReason
+    const wasAlignment=previousBlockReason.current?.startsWith('Aligning player')
+    previousBlockReason.current=externalPauseReason??null
     cameraBlocked.current = Boolean(externalPauseReason)
     if (externalPauseReason) pause(externalPauseReason)
     else if (document.hidden) pause('The tab was hidden. Resume when you are ready.')
-    else if (recovered && snapshot.phase === 'paused') setReason('Camera recovered. Resume when you are ready.')
+    else if (recovered && snapshot.phase === 'paused') setReason(wasAlignment?'Alignment check ended. Resume when you are ready.':'Camera recovered. Resume when you are ready.')
   }, [externalPauseReason, pause, snapshot.phase])
   useEffect(() => {
     const visibility = () => {

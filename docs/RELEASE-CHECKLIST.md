@@ -4,13 +4,18 @@ Status on 2026-11-16: **not cleared for public release**. This is a local releas
 candidate and a repeatable review procedure. No deployment is authorized by this
 checklist. Automated camera fixtures do not validate a physical webcam.
 
-Latest local snapshot: `4b98994e70ca1d43e808`. All **922 unit/component tests**
-and **14 packaging tests** pass, along with lint, typecheck, build and artifact
-integrity. Full Chromium regression: **56 permanent passes / 39 intentional
-hidden-game skips**, including keyboard gameplay, privacy and synthetic cadence.
-The three-engine attempt failed at browser launch; offline integration is blocked
-by loopback permissions and dependency audit by registry DNS. Firefox/WebKit,
-offline, security audit and human review gates remain open.
+T26 packaging review snapshot: `444c112d6734d39a686b`, preserved at
+`/tmp/motion-play-t26.LSWyHS`. **927 unit/component tests in 79 files** and
+**17 packaging tests** passed, plus typecheck, lint and isolated production
+build/integrity. Concurrent camera-alignment work was preserved; this evidence
+describes the reviewed snapshots, not any later source edits.
+
+Earlier Chromium evidence remains **56 permanent passes / 39 intentional
+hidden-game skips** on a preceding build. This review's six privacy scenarios
+failed at engine launch; both offline scenarios were blocked by loopback
+permissions, and dependency audit by registry DNS. No fresh browser, inference,
+visual or performance pass is claimed. Cross-browser, offline, security audit
+and human release gates remain open.
 
 The public selection is Rocket Rumble, Paper Dojo, Bubble Battle, Window Wipe
 and Whack-a-Mole. Other implementations remain hidden. Rocket Rumble uses
@@ -46,6 +51,24 @@ needs permission to listen locally. Other browser tests serve built files throug
 Playwright routing. Never replace a browser launch failure with a claimed pass.
 Hidden-game skips are intentional and do not certify those implementations.
 
+If another local workflow needs to rebuild `dist`, make a separate copy immediately
+after a successful build/integrity check, before any rebuild begins:
+
+```sh
+review_dir=$(mktemp -d /tmp/motion-play-review.XXXXXX)
+cp -R dist/. "$review_dir/"
+node --input-type=module - "$review_dir" <<'JS'
+import { checkRelease } from './scripts/release.mjs'
+console.log((await checkRelease(process.argv[2])).version)
+JS
+MOTION_PLAY_DIST="$review_dir" npm run test:e2e:cross-browser
+MOTION_PLAY_DIST="$review_dir" npm run test:e2e:offline
+```
+
+All browser artifact readers, including the offline server and cadence report,
+honor `MOTION_PLAY_DIST`; the default remains `dist`. Use a distinct Playwright
+`--output` directory if another browser invocation is also running.
+
 ## Packaging and offline behavior
 
 - `npm run build` produces a static root-hosted `dist/` directory. No runtime
@@ -58,6 +81,14 @@ Hidden-game skips are intentional and do not certify those implementations.
   missing or extra files, a mismatched worker, external/missing HTML/CSS assets,
   source maps, common secret-file extensions and budget overruns. This is not a
   general-purpose secret scanner or dependency vulnerability audit.
+- Literal JavaScript imports, re-exports and dynamic imports must resolve to local
+  packaged files, including imports in the optional pose runtime. Bare unresolved
+  modules and external/data module URLs fail packaging and integrity checks.
+  The existing TypeScript parser distinguishes code from comments/string contents.
+  Computed runtime URLs still require explicit contracts such as the pose file list;
+  this is not a complete analysis of JavaScript behavior. Quoted CSS `@import`
+  dependencies and `url(...)` loads are checked too. Core `.js`, `.mjs` and `.cjs`
+  files share the JavaScript budget.
 - Packaging requires the complete canonical CSP from `config/privacy-policy.json`
   as the first head element, before resource loads. Vite uses the same source.
   A partial policy, a commented/template/body tag, or a policy inserted after a
@@ -97,6 +128,10 @@ Hidden-game skips are intentional and do not certify those implementations.
   optional `pose/` diagnostic is excluded from installation precaching. An earlier
   Chromium test covered caching its document/runtime after first use; full model
   inference offline and other engines remain unverified.
+  A new genuine-offline regression initializes the bundled model on a blank canvas,
+  confirms model/WASM cache entries, reloads offline and repeats inference. It is
+  currently blocked before assertions by loopback permissions; blank input cannot
+  validate human detection or physical webcam quality.
   Root/index navigations use the app shell; other packaged documents retain
   their own HTML. The diagnostic iframe must load `pose/tracker.html` and its
   separate privacy policy. Unknown document paths are left to the host.
@@ -134,6 +169,12 @@ Hidden-game skips are intentional and do not certify those implementations.
   view, rather than requiring a separate diagnostic click. Home does not load it.
   The main document's blocked POST probes do not certify this iframe. Review its
   requests and performance separately; it does not feed game scoring.
+- A separate release regression checks that the diagnostic can read local assets,
+  rejects external GET/POST probes, and leaves the main document's local fetches
+  blocked. A test route contains probes if enforcement regresses. This new case
+  has not passed yet because all three engines failed to launch in this review.
+  The diagnostic's `connect-src 'self'` permits same-origin fetches; do not claim
+  its policy blocks same-origin POSTs like the main document does.
 - The synthetic release scenario checks local GET requests, no microphone request,
   no default worker registration, storage keys and blocked same-origin/external
   POST probes. It does not inspect browser-vendor traffic or OS camera behavior.
@@ -146,7 +187,11 @@ Hidden-game skips are intentional and do not certify those implementations.
 The release scenario attaches `synthetic-four-player-frame-cadence.json` to its
 Playwright result. It samples 90 animation-frame intervals during four-player
 Paper Dojo with a 320×240 canvas camera. Median/p95 intervals are diagnostics,
-not hardware latency or a 60 FPS certification. This review's Chromium sample
+not hardware latency or a 60 FPS certification. New reports also identify the
+release, Playwright project, actual browser version and diagnostic runtime/status
+so results are attributable to a build and show whether pose was loading/running.
+These fields have not produced a fresh sample because engine launch is blocked.
+The preceding review's Chromium sample
 recorded 16.7 ms median and 17.5 ms p95 across 90 intervals at 1280×720; the JSON
 is retained at `/tmp/motion-play-release-review/chromium-synthetic-four-player-frame-cadence.json`.
 The user agent is Playwright's desktop emulation, not evidence of a physical
@@ -180,7 +225,7 @@ accessibility/usability gate.
 
 | Gate | Required evidence | Current status |
 | --- | --- | --- |
-| Chromium production regression | Synthetic navigation, scoring, recovery, audio scheduling, layout | Passed this review: 56 permanent cases / 39 intentional hidden-game skips. Earlier launch failures are retained below |
+| Chromium production regression | Synthetic navigation, scoring, recovery, audio scheduling, layout | Earlier build passed 56 permanent cases / 39 intentional hidden-game skips. Fresh privacy cases blocked at launch; current artifact unverified |
 | Offline integration | Genuine worker, offline art/fonts/play and opt-out cleanup | Earlier scenario passed including diagnostic document/runtime; current run blocked by loopback listen EPERM |
 | Firefox and WebKit | Same regression in engines that successfully launch | Open: attempted launches aborted before assertions in this environment |
 | Safari on a Mac | Real permission flow, camera video, audio unlock, reconnect and tab recovery | Open |
@@ -197,6 +242,37 @@ failures/fixes and evidence before changing its status. Keep
 hardware testing has occurred.
 
 ## Latest local review (2026-11-16)
+
+### Module dependencies, stable artifacts and diagnostic release coverage
+
+Closed two packaging gaps: `.mjs`/`.cjs` scripts bypassed the JavaScript budget,
+and imported modules/styles could be absent or external while packaging passed.
+Added three Node regression cases covering static/re-export/dynamic module loads,
+CSS imports, comments/strings and script budgets. Both preparation and integrity
+review enforce dependencies; no new package was added.
+
+Added diagnostic iframe privacy probes, genuine offline blank-frame inference,
+and attributable cadence metadata. All browser artifact reads now accept
+`MOTION_PLAY_DIST` to review a stable copy while another workflow rebuilds `dist`.
+The first shared build completed, but its integrity check lost a font file to a
+concurrent rebuild; the first offline attempt likewise lost its report. Neither
+is recorded as a passing shared-artifact check. An isolated Vite build and both
+release preparation/integrity succeeded at `/tmp/motion-play-t26.LSWyHS`:
+`444c112d6734d39a686b`, 39 files, 2,651,813 core bytes + 28,456,010 pose bytes =
+31,107,823 total, with all budgets unchanged and passing. Source changes in the
+concurrent camera-alignment workflow were preserved and are not attributed to
+this packaging work.
+
+Full unit/component runs passed first 922 cases, then 927 in 79 files including
+the concurrent alignment tests. Seventeen packaging tests, typecheck, lint and
+whitespace checks passed. Six three-engine privacy cases failed before assertions
+(Chromium Mach-port permission denial 1100, Firefox SIGABRT, WebKit Abort trap 6).
+Both offline cases using the isolated artifact failed at loopback `listen EPERM`.
+`npm audit` failed registry DNS ENOTFOUND. Logs/traces are under
+`/tmp/motion-play-t26-browsers-snapshot*` and
+`/tmp/motion-play-t26-offline-snapshot*`. New browser cases remain unverified;
+there is no fresh performance or physical-camera evidence. T26 stays pending.
+No deployment, upload, dependency changes or commit.
 
 ### Public keyboard controls and results focus
 

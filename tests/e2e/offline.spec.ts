@@ -1,13 +1,16 @@
 import { createServer, type Server } from 'node:http'
 import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
-import { expect, test } from './fixtures'
+import { expect, releaseDirectory, test } from './fixtures'
+
+// MediaPipe uses WebGL for preprocessing even with CPU inference.
+test.use({ launchOptions: { args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] } })
 
 let server: Server
 let origin: string
 
 test.beforeAll(async () => {
-  const report = JSON.parse(await readFile(resolve('dist/release-report.json'), 'utf8').catch(() => {
+  const report = JSON.parse(await readFile(resolve(releaseDirectory, 'release-report.json'), 'utf8').catch(() => {
     throw new Error('Run `npm run build` successfully before the offline browser test.')
   })) as { files: { path: string }[] }
   const files = new Set([...report.files.map(file => `/${file.path}`), '/sw.js'])
@@ -17,7 +20,7 @@ test.beforeAll(async () => {
     if (!files.has(path)) { response.writeHead(404).end(); return }
     const extension = path.split('.').pop()!
     const mime: Record<string, string> = { js: 'text/javascript', mjs: 'text/javascript', wasm: 'application/wasm', css: 'text/css', svg: 'image/svg+xml', webp: 'image/webp', ttf: 'font/ttf', webmanifest: 'application/manifest+json', txt: 'text/plain', html: 'text/html' }
-    void readFile(resolve('dist', path.slice(1))).then(bytes => {
+    void readFile(resolve(releaseDirectory, path.slice(1))).then(bytes => {
       response.writeHead(200, { 'Content-Type': mime[extension] ?? 'application/octet-stream', 'Cache-Control': 'no-store' }).end(bytes)
     }).catch(() => response.writeHead(500).end())
   })
@@ -78,4 +81,47 @@ test('opted-in production shell reloads offline with art/fonts and removes only 
   await page.reload()
   await expect.poll(() => page.evaluate(async () => (await navigator.serviceWorker.getRegistrations()).length)).toBe(0)
   await expect.poll(() => page.evaluate(() => caches.keys())).toEqual(['another-app'])
+})
+
+test('previously used local model runs blank-frame inference after a genuine offline reload', async ({ page, context }) => {
+  test.setTimeout(90000)
+  await page.addInitScript(() => localStorage.setItem('motion-play:settings:v1', JSON.stringify({ soundEnabled: false, reducedMotion: false, offlineCaching: true })))
+  await page.goto(origin)
+  await page.evaluate(async () => {
+    await navigator.serviceWorker.ready
+    if (!navigator.serviceWorker.controller) await new Promise<void>(resolve => navigator.serviceWorker.addEventListener('controllerchange', () => resolve(), { once: true }))
+  })
+  const runBlankInference = () => page.evaluate(async () => {
+    const frame = document.createElement('iframe')
+    frame.src = './pose/tracker.html'
+    let tracker: { detect: (image: HTMLCanvasElement, time: number) => unknown[]; close: () => void } | undefined
+    try {
+      await new Promise<void>((resolve, reject) => {
+        frame.onload = () => resolve()
+        frame.onerror = () => reject(new Error('Local model document failed to load'))
+        document.body.append(frame)
+      })
+      const runtime = frame.contentWindow as (Window & { createLocalPoseTracker: (players: number) => Promise<NonNullable<typeof tracker>> }) | null
+      if (!runtime?.createLocalPoseTracker) throw new Error('Local model runtime is unavailable')
+      tracker = await runtime.createLocalPoseTracker(1)
+      const blank = document.createElement('canvas')
+      blank.width = 64; blank.height = 64
+      const drawing = blank.getContext('2d')!
+      drawing.fillStyle = '#808080'; drawing.fillRect(0, 0, 64, 64)
+      return tracker.detect(blank, performance.now()).length
+    } finally { tracker?.close(); frame.remove() }
+  })
+  expect(await runBlankInference()).toBe(0)
+  const cachedPaths = await page.evaluate(async () => {
+    const keys = await caches.keys()
+    const cache = await caches.open(keys.find(key => key.startsWith('motion-play-shell-'))!)
+    return (await cache.keys()).map(request => new URL(request.url).pathname)
+  })
+  expect(cachedPaths).toContain('/pose/pose_landmarker_lite.task')
+  expect(cachedPaths.some(path => path.endsWith('.wasm'))).toBe(true)
+  await context.setOffline(true)
+  await page.reload()
+  await expect(page.getByRole('heading', { name: 'Motion Play!' })).toBeVisible()
+  expect(await runBlankInference()).toBe(0)
+  // This tests local loading/inference, not tracking people or webcam quality.
 })

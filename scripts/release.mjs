@@ -3,6 +3,7 @@ import { copyFile, mkdir, readFile, readdir, writeFile } from 'node:fs/promises'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { gzipSync } from 'node:zlib'
+import ts from 'typescript'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const workerMarker = 'null /* motion-play-release */'
@@ -19,6 +20,30 @@ export const requiredPoseFiles = [
   'pose/wasm/vision_wasm_nosimd_internal.js', 'pose/wasm/vision_wasm_nosimd_internal.wasm',
   'pose/LICENSE.txt', 'pose/MODEL-CARD.txt', 'pose/README.txt',
 ]
+
+// Read syntax rather than matching words inside bundle strings or comments.
+// Computed runtime loads still need explicit contracts such as requiredPoseFiles.
+function moduleReferences(source, path) {
+  const references = []
+  const visit = (node) => {
+    const specifier = ts.isImportDeclaration(node) || ts.isExportDeclaration(node)
+      ? node.moduleSpecifier
+      : ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword
+        ? node.arguments[0] : undefined
+    if (specifier && (ts.isStringLiteral(specifier) || ts.isNoSubstitutionTemplateLiteral(specifier))) {
+      references.push(specifier.text)
+    }
+    ts.forEachChild(node, visit)
+  }
+  visit(ts.createSourceFile(path, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.JS))
+  return references
+}
+
+function checkAsset(reference, path, paths) {
+  const target = new URL(reference, new URL(path, 'https://motion-play.invalid/'))
+  if (target.origin !== 'https://motion-play.invalid') throw new Error(`External asset in ${path}: ${reference}`)
+  if (!paths.includes(decodeURIComponent(target.pathname.slice(1)))) throw new Error(`Missing asset in ${path}: ${reference}`)
+}
 
 async function checkPrivacyPolicy(html, path) {
   const policies = JSON.parse(await readFile(join(root, 'config/privacy-policy.json'), 'utf8'))
@@ -91,21 +116,32 @@ async function describeRelease(directory) {
     if (/(?:^|\/)(?:\.env[^/]*|.*\.(?:map|pem|key)|.*\.(?:test|spec)\.[^/]+)$/.test(path)) throw new Error(`Unexpected release file: ${path}`)
     const bytes = await readFile(join(directory, path))
     if (requiredPoseFiles.includes(path) && !bytes.length) throw new Error(`Empty release file: ${path}`)
+    if (/\.(?:m?js|cjs)$/.test(path)) {
+      for (const reference of moduleReferences(bytes.toString(), path)) {
+        // Bare imports cannot resolve in this root-hosted, bundled app.
+        if (!/^(?:\.{1,2}\/|\/|[a-z][a-z0-9+.-]*:)/i.test(reference)) throw new Error(`Unbundled module in ${path}: ${reference}`)
+        checkAsset(reference, path, paths)
+      }
+    }
     if (/\.(?:html|css)$/.test(path)) {
-      const pattern = path.endsWith('.css') ? /url\(\s*(?:"([^"]*)"|'([^']*)'|([^\s)]+))\s*\)/g : /(?:src|href)="([^"#]+)"/g
-      for (const match of bytes.toString().matchAll(pattern)) {
+      const source = path.endsWith('.css') ? bytes.toString().replace(/\/\*[\s\S]*?\*\//g, '') : bytes.toString()
+      const pattern = path.endsWith('.css') ? /url\(\s*(?:"([^"]*)"|'([^']*)'|([^\s)]+))\s*\)/gi : /(?:src|href)="([^"#]+)"/g
+      for (const match of source.matchAll(pattern)) {
         const reference = match[1] ?? match[2] ?? match[3]
         if (reference.startsWith('data:') || reference.startsWith('#')) continue
-        const target = new URL(reference, new URL(path, 'https://motion-play.invalid/'))
-        if (target.origin !== 'https://motion-play.invalid') throw new Error(`External asset in ${path}: ${reference}`)
-        if (!paths.includes(decodeURIComponent(target.pathname.slice(1)))) throw new Error(`Missing asset in ${path}: ${reference}`)
+        checkAsset(reference, path, paths)
+      }
+      if (path.endsWith('.css')) {
+        for (const match of source.matchAll(/@import\s+(?:"([^"]+)"|'([^']+)')/gi)) {
+          checkAsset(match[1] ?? match[2], path, paths)
+        }
       }
       if (path.endsWith('.html')) await checkPrivacyPolicy(bytes.toString(), path)
     }
     return { path, bytes: bytes.length, gzipBytes: gzipSync(bytes).length, sha256: digest(bytes) }
   }))
   const totals = {
-    javascript: files.filter((file) => file.path.endsWith('.js') && !file.path.startsWith('pose/')).reduce((sum, file) => sum + file.bytes, 0),
+    javascript: files.filter((file) => /\.(?:m?js|cjs)$/.test(file.path) && !file.path.startsWith('pose/')).reduce((sum, file) => sum + file.bytes, 0),
     css: files.filter((file) => file.path.endsWith('.css')).reduce((sum, file) => sum + file.bytes, 0),
     core: files.filter(file => !file.path.startsWith('pose/')).reduce((sum,file) => sum+file.bytes,0),
     pose: files.filter(file => file.path.startsWith('pose/')).reduce((sum,file) => sum+file.bytes,0),

@@ -166,6 +166,68 @@ test('rejects missing CSS assets and external HTML assets before packaging', asy
   await assert.rejects(prepareRelease(directory), /External asset/)
 })
 
+test('validates static, re-exported and literal dynamic module dependencies in every script', async (t) => {
+  const directory = await fixture(t)
+  await writeFile(join(directory, 'assets/chunk.mjs'), 'export const value = 1')
+  const valid = `import './chunk.mjs'; export { value } from './chunk.mjs?version=1';
+    const lazy = () => import(\`./chunk.mjs#lazy\`);
+    const text = "import('https://example.invalid/not-code.js')";
+    // import './not-code.js'
+  `
+  await writeFile(join(directory, 'assets/main.js'), valid)
+  await prepareRelease(directory)
+  await checkRelease(directory)
+  for (const [script, message] of [
+    ["import './missing.mjs'", /Missing asset/],
+    ["export * from './missing.mjs'", /Missing asset/],
+    ["import('./missing.mjs')", /Missing asset/],
+    ["import(`./missing.mjs`)", /Missing asset/],
+    ["import 'https://example.invalid/module.js'", /External asset/],
+    ["export * from '//example.invalid/module.js'", /External asset/],
+    ["import('data:text/javascript,export default 1')", /External asset/],
+    ["import 'unbundled-package'", /Unbundled module/],
+  ]) {
+    // Also cover the optional runtime: its separate budget/CSP is no exemption
+    // from requiring local, packaged module dependencies.
+    for (const path of ['assets/chunk.mjs', 'pose/tracker.js']) {
+      const original = await readFile(join(directory, path))
+      await writeFile(join(directory, path), script)
+      await assert.rejects(prepareRelease(directory), message)
+      await assert.rejects(checkRelease(directory), message)
+      await writeFile(join(directory, path), original)
+    }
+  }
+  await checkRelease(directory)
+})
+
+test('checks quoted CSS imports as well as url imports without treating comments as loads', async (t) => {
+  const directory = await fixture(t)
+  const path = join(directory, 'assets/main.css')
+  await writeFile(join(directory, 'assets/theme.css'), 'body{color:black}')
+  await writeFile(path, `@import './theme.css' layer(theme); @import url("./theme.css");
+    /* @import 'https://example.invalid/not-loaded.css'; url(./not-loaded.png) */`)
+  await prepareRelease(directory)
+  await checkRelease(directory)
+  for (const css of [
+    `@import './missing.css';`, `@import "./missing.css" screen;`,
+    `@import url('./missing.css');`, `@import URL('./missing.css');`, `@IMPORT 'https://example.invalid/theme.css';`,
+  ]) {
+    await writeFile(path, css)
+    await assert.rejects(prepareRelease(directory), /(?:Missing|External) asset/)
+    await assert.rejects(checkRelease(directory), /(?:Missing|External) asset/)
+  }
+})
+
+test('counts module and CommonJS scripts toward the same core JavaScript budget', async (t) => {
+  const directory = await fixture(t)
+  for (const extension of ['mjs', 'cjs']) {
+    const path = join(directory, `assets/chunk.${extension}`)
+    await writeFile(path, `/*${'x'.repeat(budgets.javascript)}*/`)
+    await assert.rejects(prepareRelease(directory), /javascript budget exceeded/)
+    await rm(path)
+  }
+})
+
 test('requires the complete enforced privacy policy before any head content', async (t) => {
   const directory = await fixture(t)
   for (const html of [

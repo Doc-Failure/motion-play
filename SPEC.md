@@ -202,3 +202,18 @@ Existing Vite tabs require a reload to replace retained React state. Camera-only
 model files load when the active camera view opens during this test phase;
 the homepage does not load them. In-flight runtime loads are cancelled on exit
 or disable. Artwork fades only after a human skeleton is actually detected.
+
+## Player alignment check (2026-11-16)
+An Align player(s) action reinitializes pose tracking and asks every selected player
+to face the camera, stand in their lane, lift both hands above their shoulders and
+hold still for two seconds. It requires visible head, hips and arm joints, safe
+framing, and enough fresh stable observations. Missing joints, motion or stale
+frames reset progress. Guidance asks players to step back/closer or recenter as
+needed. Completion validates framing/confidence, not physical distance or an
+artificial translation of measured joints. Head placement prefers measured ear
+midpoints rather than the nose. Real-camera quality still needs validation.
+
+During gameplay the alignment action uses shared pause/recovery and suppresses
+input events; completion or cancellation leaves the round ready to resume.
+Alignment can be cancelled, does not restart the camera, and never blocks normal
+Play in setup. Failure of the diagnostic also releases the alignment pause block.
