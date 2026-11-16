@@ -9,7 +9,7 @@ type MediaFixture = {
 }
 
 const installCamera = ({ denied, person }: { denied?: boolean; person?: boolean }) => {
-  const state = { requests: 0, stoppedTracks: 0 }
+  const state = { requests: 0, stoppedTracks: 0, audioRequests: 0 }
   Object.defineProperty(window, '__mockMediaState', { configurable: true, value: state })
   const canvas = document.createElement('canvas')
   canvas.width = person ? 320 : 64
@@ -37,8 +37,9 @@ const installCamera = ({ denied, person }: { denied?: boolean; person?: boolean 
     configurable: true,
     value: {
       enumerateDevices: async () => [{ deviceId: 'motion-fixture-camera', groupId: 'fixture', kind: 'videoinput', label: 'Deterministic motion camera', toJSON: () => ({}) }],
-      getUserMedia: async () => {
+      getUserMedia: async (constraints: MediaStreamConstraints) => {
         state.requests += 1
+        if (constraints.audio !== false) state.audioRequests += 1
         if (denied) throw new DOMException('Permission denied by fixture', 'NotAllowedError')
         return stream
       },
@@ -65,7 +66,7 @@ export async function openApp(page: Page, hash = '#/camera') {
   await page.route('http://motion-play.test/**', async route => {
     const pathname = new URL(route.request().url()).pathname
     const file = resolve(process.cwd(), 'dist', pathname === '/' ? 'index.html' : pathname.slice(1))
-    const mime = file.endsWith('.js') ? 'text/javascript' : file.endsWith('.css') ? 'text/css' : file.endsWith('.svg') ? 'image/svg+xml' : file.endsWith('.webp') ? 'image/webp' : file.endsWith('.ttf') ? 'font/ttf' : 'text/html'
+    const mime = file.endsWith('.js') ? 'text/javascript' : file.endsWith('.css') ? 'text/css' : file.endsWith('.svg') ? 'image/svg+xml' : file.endsWith('.webp') ? 'image/webp' : file.endsWith('.ttf') ? 'font/ttf' : file.endsWith('.webmanifest') ? 'application/manifest+json' : file.endsWith('.json') ? 'application/json' : 'text/html'
     await route.fulfill({body:readFileSync(file),contentType:mime})
   })
   await page.goto(`http://motion-play.test/${hash}`)

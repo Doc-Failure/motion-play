@@ -2270,3 +2270,89 @@ T25T implementation is complete within the current hidden-game refinement scope.
   is inferred from these synthetic screenshots or browser checks.
 
 T25V implementation is complete; physical hardware and release gates remain open.
+
+## T26A / T26 — Release hardening and truthful review gates (2026-11-16)
+
+- Read SPEC.md and AGENTS.md, inspected the current application, camera/input
+  boundary, five-game catalog, browser fixtures, offline worker and build. Kept
+  the five-game public scope and camera-first crayon UI. Reviewed the rendered
+  narrow camera lobby; no redesign or deployment was performed.
+- Split completed automated work into T26A. T26 remains pending for actual
+  cross-browser, hardware, performance, usability and public packaging sign-off.
+  `needs_hardware_validation` stays true and `hardware_verified` stays false.
+- Fixed a camera ownership race: `stop()` invalidates pending permission requests;
+  late streams stop all returned tracks, and superseded failures cannot override
+  the current request. A distinct cancellation error leaves native AbortError
+  failures actionable rather than silently leaving setup in a requesting state.
+  Added three CameraSource cases and one CameraSetup case.
+- Added a production-only CSP that blocks network data connections, external
+  scripts/fonts/images, objects and form submissions while retaining local/blob
+  media and the inline styles needed for game positioning. Development HMR is
+  unaffected. New synthetic browser coverage checks interaction-gated capture,
+  no microphone requests, local GET-only asset loading, optional-worker default,
+  local storage keys and rejected same-origin/external POST probes.
+- Replaced the partial offline cache with a generated complete asset list, versioned
+  shell and install-time validation. CSS images/fonts and bundled licenses are
+  included before activation. Updates wait for existing tabs to close. Fetches
+  use only this release's cache and packaged asset whitelist; evicted assets can
+  recover online without caching arbitrary runtime responses. Opt-out retains
+  other apps' caches. No camera data is stored or uploaded.
+- Build now writes `dist/release-report.json` with SHA-256, raw/gzip sizes and
+  budgets. `check:release` rejects changed artifacts/workers, absent/extra files,
+  missing/external HTML/CSS assets, common accidental secret files, source maps
+  and budget regressions. Active OFL font and React/React DOM/Scheduler licenses
+  ship with the artifact. Added six Node packaging/worker tests. A CSS data-URL
+  parser bug found during the first final build was corrected and regression
+  covered; nested SVG filter URLs are not treated as separate files.
+- Final artifact ID: `04a29abaca0ee3ea662a`; 28 payload files, 2,617,770 raw
+  bytes excluding worker/report, including 453,131 JavaScript bytes and 133,182
+  CSS bytes. Main JS gzip is about 108 KB. All declared budgets pass; these byte
+  measurements do not certify FPS or input latency.
+- Added Chromium/Firefox/WebKit projects and explicit cross-browser/offline
+  commands. Offline integration uses a loopback static server, a genuine worker,
+  offline reload, font/image validation, camera-free play and opt-out cleanup.
+  Browser screenshots now use per-test output directories instead of colliding
+  paths. The release scenario records 90 four-player animation-frame intervals
+  to a JSON artifact; synthetic cadence is not physical webcam performance.
+- Validation: final unit/component suite **883 passed in 75 files**; all **six
+  packaging tests passed**. Typecheck, ESLint, production build, artifact integrity,
+  backlog JSON and whitespace checks passed. Two-worker Chromium regression
+  passed **48 scenarios with 37 intentional hidden-game skips** before the final
+  cancellation-error distinction; the latest full unit tests cover that distinction.
+- Earlier expanded Chromium run passed **49 scenarios / 37 skips**, including
+  the genuine offline scenario before it moved into a separate project. The
+  final separate offline command could not bind `127.0.0.1` (`listen EPERM`), so
+  no final-worker browser/offline pass is claimed. Worker eviction fallback is
+  covered by the Node harness. An intervening offline attempt also failed because
+  a failed packaging build had not produced its report; fixed the packaging parser,
+  rebuilt, and improved the missing-build diagnostic. Browser commands must run
+  sequentially after build; overlapping invocations also collided in trace output.
+- One four-worker Chromium rerun took 29 minutes of wall time and ended with five
+  failures: layout/polish timeouts, a deferred URL case and a moving-ninja camera
+  strike mismatch. This is retained as a failed run, not erased by earlier passes.
+  Limited workers to two to reduce contention for camera/audio timing; the next
+  complete Chromium run passed 48 / skipped 37. No game timing assertion was
+  weakened and no failure was reclassified as a skip.
+- Firefox/WebKit installed successfully, but six focused attempts aborted before
+  assertions (Firefox SIGABRT, WebKit Abort trap 6). A wider three-engine command
+  also failed during browser process startup, including Chromium Mach-port
+  permission denial (1100). No Firefox, WebKit or Safari compatibility pass is
+  claimed. `npm audit` failed registry DNS (`ENOTFOUND registry.npmjs.org`);
+  dependency security is not marked clean.
+- Added docs/RELEASE-CHECKLIST.md with reproducible commands, static-host packaging,
+  offline update behavior, privacy/storage boundaries, performance measurement
+  limits and specific human evidence gates. Real Mac/Safari permission flows,
+  one/two/four people, lighting/occlusion, real input latency, sustained performance,
+  accessibility/user review, artwork rights and host/install behavior remain open.
+- No physical webcam testing, camera uploads, dependency changes, public deployment
+  or commit. A final Chromium regression against the final artifact is recorded
+  below when complete.
+- Final Chromium regression against artifact `04a29abaca0ee3ea662a`: **48 passed,
+  37 intentionally skipped, zero failures** in 1.6 minutes, using two workers.
+  This includes the final cancellation-error behavior and CSP privacy scenario.
+  Four-player synthetic Paper Dojo cadence: 90 frame intervals, median **16.7 ms**,
+  p95 **16.7 ms**, 1280×720 viewport, one mock camera request, zero microphone
+  requests. Raw JSON is retained in the release test's `test-results` output.
+  The configured Desktop Chrome user-agent is emulated and must not be used to
+  infer the host operating system. These are animation callback intervals, not
+  physical webcam processing/input-latency or sustained-performance evidence.

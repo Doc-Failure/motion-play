@@ -8,6 +8,14 @@ function controller(): CameraController {
   return { listDevices: vi.fn().mockResolvedValue([]), start: vi.fn().mockResolvedValue({} as MediaStream), stop: vi.fn() }
 }
 describe('simple camera flow', () => {
+  it('shows recovery for a native camera AbortError instead of ignoring it as cancellation', async () => {
+    const source = controller()
+    vi.mocked(source.start).mockRejectedValueOnce(new DOMException('Device aborted capture', 'AbortError'))
+    render(<CameraSetup source={source} />)
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('The camera could not start'))
+    expect(screen.getByRole('button', { name: 'Activate camera & play' })).toBeEnabled()
+  })
+
   it.each([
     ['bubble-battle', 'Bubble Battle'], ['window-wipe', 'Window Wipe'], ['whack-a-mole', 'Whack-a-Mole'],
     ['paint-splash', 'Paint Splash'], ['meteor-smash', 'Meteor Smash'],

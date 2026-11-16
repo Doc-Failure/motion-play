@@ -8,9 +8,17 @@ export type CameraFailure =
   | 'disconnected'
   | 'unknown'
 
+export class CameraRequestCancelledError extends Error {
+  constructor() {
+    super('Camera request was cancelled.')
+    this.name = 'CameraRequestCancelledError'
+  }
+}
+
 export class CameraSource {
   private stream: MediaStream | null = null
   private endedHandler: (() => void) | null = null
+  private requestVersion = 0
 
   constructor(private readonly devices: MediaDevices | undefined = navigator.mediaDevices) {}
 
@@ -25,13 +33,26 @@ export class CameraSource {
   async start(deviceId?: string, onEnded?: () => void): Promise<MediaStream> {
     if (!this.devices?.getUserMedia) throw Object.assign(new Error('Camera APIs are unavailable.'), { name: 'NotSupportedError' })
     this.stop()
+    const requestVersion = this.requestVersion
     const video: MediaTrackConstraints = {
       width: { ideal: 960 },
       height: { ideal: 540 },
       frameRate: { ideal: 24, max: 30 },
       ...(deviceId ? { deviceId: { exact: deviceId } } : { facingMode: 'user' }),
     }
-    const stream = await this.devices.getUserMedia({ video, audio: false })
+    let stream: MediaStream
+    try {
+      stream = await this.devices.getUserMedia({ video, audio: false })
+    } catch (error) {
+      if (requestVersion !== this.requestVersion) throw new CameraRequestCancelledError()
+      throw error
+    }
+    // Permission can resolve after unmount, a retry, or switching to demo mode.
+    // A superseded request must never leave an unowned camera track running.
+    if (requestVersion !== this.requestVersion) {
+      stream.getTracks().forEach((item) => item.stop())
+      throw new CameraRequestCancelledError()
+    }
     const track = stream.getVideoTracks()[0]
     if (!track) {
       stream.getTracks().forEach((item) => item.stop())
@@ -47,6 +68,7 @@ export class CameraSource {
   }
 
   stop(): void {
+    this.requestVersion += 1
     if (!this.stream) return
     const track = this.stream.getVideoTracks()[0]
     if (track && this.endedHandler) track.removeEventListener('ended', this.endedHandler)

@@ -17,7 +17,7 @@ import { PlateSpinner } from '../minigames/plate-spinner/PlateSpinner'
 import { GraffitiRace } from '../minigames/graffiti-race/GraffitiRace'
 import { CarWash } from '../minigames/car-wash/CarWash'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { CameraSource, cameraFailure, type CameraDevice, type CameraFailure } from './CameraSource'
+import { CameraSource, CameraRequestCancelledError, cameraFailure, type CameraDevice, type CameraFailure } from './CameraSource'
 import {
   defaultCameraZones,
   type PlayerCameraZone,
@@ -215,6 +215,7 @@ export function CameraSetup({ source: providedSource, initialGame = 'bubble-batt
       await refreshDevices()
       if (playWhenReady) beginGame()
     } catch (error) {
+      if (error instanceof CameraRequestCancelledError) return
       setStatus('idle')
       setFailure(cameraFailure(error))
     }

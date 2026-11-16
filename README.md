@@ -19,14 +19,26 @@ npm run dev
 npm run typecheck
 npm run lint
 npm run test
+npm run test:packaging
 npm run build
+npm run check:release
 npm run test:e2e
+npm run test:e2e:offline
+npm run test:e2e:cross-browser
 ```
 
 The browser tests run the production build with mocked local media streams and
 deterministic synthetic motion fixtures. Run `npm run build` first and install
-Chromium once with `npx playwright install chromium`.
+browser engines once with `npx playwright install chromium firefox webkit`.
+The default browser regression uses Chromium; the cross-browser command also
+runs Firefox and WebKit. The separate offline test needs a loopback static server.
+Run browser commands sequentially after a successful build.
 These checks do not perform or claim physical camera validation.
+
+The [release checklist](docs/RELEASE-CHECKLIST.md) describes packaging, privacy,
+offline updates, performance measurements and outstanding human review gates.
+The build creates a static `dist/` artifact with a complete offline asset list,
+bundled licenses and a checksum/size report. No deployment is performed.
 
 ## Autonomous runner
 

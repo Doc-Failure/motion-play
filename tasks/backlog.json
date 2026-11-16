@@ -588,14 +588,26 @@
     "hardware_verified": false
   },
   {
-    "id": "T26",
-    "title": "Final cross-browser, performance, privacy, packaging and release checklist (no deployment)",
+    "id": "T26A",
+    "title": "Automate release packaging, privacy checks and cross-browser review tooling",
     "depends_on": [
       "T25V"
     ],
+    "status": "done",
+    "attempts": 1,
+    "notes": "Added deterministic artifact checksums and size budgets, complete versioned offline precaching with safe updates and eviction recovery, bundled font/runtime licenses, production CSP blocking network data connections, three-engine Playwright configuration, synthetic privacy/cadence diagnostics and a real loopback/offline browser scenario. Fixed late camera-permission stream cleanup with regression tests. Release procedure and outstanding human gates are in docs/RELEASE-CHECKLIST.md. Unit/component suite: 883 passed in 75 files; six packaging tests passed. Final Chromium: 48 passed / 37 intentional hidden-game skips. Final separate offline command was blocked by loopback listen EPERM; an earlier offline scenario passed. Browser run details and environmental failures are recorded in tasks/progress.md; no cross-browser or physical-camera certification is claimed. No deployment or commit.",
+    "needs_hardware_validation": false,
+    "hardware_verified": false
+  },
+  {
+    "id": "T26",
+    "title": "Final cross-browser, performance, privacy, packaging and release checklist (no deployment)",
+    "depends_on": [
+      "T26A"
+    ],
     "status": "pending",
-    "attempts": 0,
-    "notes": "",
+    "attempts": 1,
+    "notes": "Automatable hardening and review tooling split into completed T26A. Release remains uncleared: real Mac/Safari camera behavior, one/two/four-person tracking and latency, sustained hardware performance, accessibility/user review, artwork distribution rights, host packaging/install behavior and current dependency audit remain open. Firefox/WebKit and a wider three-engine run aborted at browser launch in this environment; npm audit failed registry DNS lookup. Keep pending until the remaining evidence is recorded in docs/RELEASE-CHECKLIST.md. No deployment authorized or performed.",
     "needs_hardware_validation": true,
     "hardware_verified": false
   }
