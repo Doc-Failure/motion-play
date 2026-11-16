@@ -28,6 +28,7 @@ const routeFromHash = (): Route => {
   if (hash === 'camera/laser-escape') return { page: 'camera', game: 'laser-escape' }
   if (hash === 'camera/dodgeball') return { page: 'camera', game: 'dodgeball' }
   if (hash === 'camera/tower-builder') return { page: 'camera', game: 'tower-builder' }
+  if (hash === 'camera/rocket-rumble') return {page:'camera',game:'rocket-rumble'}
   if (hash === 'camera/ninja-training') return {page:'camera',game:'ninja-training'}
   if (hash === 'camera/fish-frenzy') return { page: 'camera', game: 'fish-frenzy' }
   if (hash === 'camera/plate-spinner') return { page: 'camera', game: 'plate-spinner' }

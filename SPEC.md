@@ -172,3 +172,19 @@ or recordings are introduced. Offline shell installation excludes optional pose
 files; when offline caching is enabled they are cached after first use. The
 existing 3 MB core budget remains separate. Browser and photograph checks do
 not establish physical-webcam or four-person pose quality.
+
+## Rocket Rumble refinement (2026-11-16)
+Rocket Rumble is an additional original game (catalog entry 33), inspired by
+colour selection followed by a fireworks trigger. It replaces Fruit Catcher in
+the public five: Rocket Rumble, Paper Dojo, Bubble Battle, Window Wipe and
+Whack-a-Mole. Existing hidden implementations remain preserved.
+
+One to four players tag matching colour/shape rockets and hit their own plunger
+for a staggered fireworks chain. Two earn 40 points; three earn 90. Animated
+launches, fuse indicators, linked tags, bounded transparent particle trails,
+three burst patterns, original synthesized music/effects and a final fifteen-second
+acceleration give the game its own identity. The live mirrored camera stays at
+full opacity and remains uncropped. Reduced motion uses stationary fading rings;
+shared pause/recovery freezes fuses, targets and particles. Game input remains
+normalized MOTION_HIT, with pointer and keyboard fallback. No source-game assets,
+code or audio are copied. Physical play quality remains unverified.

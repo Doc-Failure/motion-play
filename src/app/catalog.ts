@@ -40,12 +40,13 @@ export const catalogGames: readonly CatalogGame[] = [
   game(30, 'simon-says', 'Simon Says', 'Repeat the growing sequence of target touches.', 'Skill & Precision', 'MOTION_HIT', 'Normal', 'Competitive', ['#f5c847', '#4c9ed9'], true),
   game(31, 'plate-spinner', 'Plate Spinner', 'Tap each wobbling plate before it tumbles.', 'Skill & Precision', 'MOTION_HIT', 'Hard', 'Competitive', ['#66c7df', '#e45b9d'], true),
   game(32, 'magic-duel', 'Magic Duel', 'Draw the shown hand patterns to cast playful spells.', 'Skill & Precision', 'HAND_SWIPE', 'Hard', 'Competitive', ['#7557a8', '#e45b9d'], true),
+  game(33, 'rocket-rumble', 'Rocket Rumble', 'Tag matching rockets, then hit the switch for a fireworks chain.', 'Skill & Precision', 'MOTION_HIT', 'Normal', 'Competitive', ['#7557a8','#f5c847'], true),
 ]
 
 export const getGameBySlug = (slug: string) => catalogGames.find((entry) => entry.slug === slug)
 
 // The focused public set. Other implementations stay available for later refinement.
-export const visibleGameSlugs = ['ninja-training','bubble-battle','window-wipe','whack-a-mole','fruit-catcher'] as const
+export const visibleGameSlugs = ['rocket-rumble','ninja-training','bubble-battle','window-wipe','whack-a-mole'] as const
 export const visibleCatalogGames: readonly CatalogGame[] = visibleGameSlugs.flatMap(slug => {
   const entry = getGameBySlug(slug)
   return entry?.available ? [entry] : []

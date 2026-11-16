@@ -2493,3 +2493,37 @@ T25V implementation is complete; physical hardware and release gates remain open
 - Updated release checklist with current evidence and reconciled earlier focused
   diagnostic/offline passes. T26 remains pending with hardware_verified false.
   No deployment, uploads, dependency changes or commit.
+
+## Rocket Rumble — original fireworks refinement (2026-11-16)
+
+- Added catalog entry 33, an original camera-first matching/fireworks game. It
+  replaces Fruit Catcher in the five-game public catalog and Quick Play. Other
+  implementations remain preserved and hidden. No source-game art/audio/code used.
+- Nine staggered rockets per lane use colour AND shape identities, eased ascent,
+  floating positions, fuse rings and linked tags. Tag two or three of one colour,
+  then hit the plunger for 40/90 points. Independent 1–4-player lanes retain the
+  full-opacity mirrored uncropped camera. Last fifteen seconds accelerate waves.
+- Added glowing armed controls, sequential ignition, transparent Canvas spark
+  trails with chrysanthemum/willow/heart patterns, impact lettering and chain
+  statistics. Particles are deterministic, lifetime-bounded and rendered at DPR
+  at most two. Reduced motion replaces moving bursts with stationary fading rings.
+- Original synthesized whistles, low booms, filtered generated noise/crackle and
+  sparkling overtones use the shared audio/mute lifecycle, plus a quiet plucked
+  theme. No recordings, samples, dependencies or remote requests were added.
+- Preserved normalized camera -> events -> game boundaries, shared countdown,
+  manual/tab/camera recovery, aspect-correct hit regions, debounced input,
+  confidence/stale checks, frozen fuses/particles, focused results and clean replay.
+- Browser testing found an end-of-round recovery race: pause could advance into
+  results and then throw. The model now returns results safely. Added a boundary
+  regression; the browser lifecycle rerun checks for page errors and passed.
+- Validation: **900 unit/component tests passed in 77 files**; nine are new game
+  model cases. Typecheck, lint, production build and whitespace checks passed.
+  Packaging suite: **12 passed**. Three Rocket Rumble browser cases passed
+  (continuous lifecycle); the final boundary/audio/replay case passed again on
+  the fixed build. Three public-game/audio regressions and four catalog/Quick Play
+  checks passed. Browser tests include real motion processing on synthetic video,
+  actual Web Audio noise scheduling, drawn particle pixels, pause/finale/results,
+  four-player/narrow layouts and reduced motion. Reviewed final screenshots under
+  /tmp/rocket-boundary-browser and multiplayer images under /tmp/rocket-final-browser.
+- No physical webcam response, speaker listening, four real players or Safari
+  gameplay verification. No deployment, upload or commit performed.

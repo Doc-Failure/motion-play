@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 
 const star = <path d="m50 12 10 25 27 3-20 18 6 27-23-14-24 13 7-27-19-18 27-2Z" fill="#ffe17a" />
 const drawings: Record<string,ReactNode> = {
+  'rocket-rumble': <><path d="m38 30 12-20 13 20v43H38Z" fill="#f8a4cf"/><path d="m38 58-14 20 14-6m25-14 14 20-14-6" fill="#72e4ef"/><path d="m43 79 7 15 7-15M16 17v20m-10-10h20m57 10v20m-10-10h20" stroke="#f5c847"/><circle cx="50" cy="45" r="8" fill="#fff2d6"/></>,
   'ninja-training': <><path d="m26 23 13-14 12 11 22-6 13 18-5 28-28 11-28-15Z" fill="#477f8e"/><path d="m30 34 47-5 2 16-46 5Z" fill="#fff2c9"/><path d="m38 40 7 1m16-3 8-2"/><path d="m23 64 58 2-2 23-56-2Z" fill="#477f8e"/><path d="m22 73 59 2-2 8-56-2Z" fill="#f3c966"/><path d="m79 56 17-9-5 23-15-3" fill="#f3c966"/></>,
   'bubble-battle': <><circle cx="43" cy="52" r="27" fill="#a1e1ef"/><circle cx="75" cy="26" r="14" fill="#d8c4ef"/><path d="M28 43q1-10 12-11M68 21l3-3" stroke="#fffdf5" strokeWidth="7"/></>,
   'whack-a-mole': <><ellipse cx="50" cy="78" rx="36" ry="11" fill="#725640"/><path d="M26 75V46c0-35 49-35 49 0v29" fill="#b98a62"/><path d="M37 47h1m24 0h1" strokeWidth="7"/><ellipse cx="50" cy="61" rx="14" ry="10" fill="#ebc5a0"/><path d="m45 61 5 4 5-4"/></>,
