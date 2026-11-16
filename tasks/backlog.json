@@ -561,9 +561,9 @@
     "id": "T25T",
     "title": "Implement and test Basketball Blitz using generic HAND_SWIPE input",
     "depends_on": ["T25S"],
-    "status": "pending",
-    "attempts": 0,
-    "notes": "Acceptance: deterministic 1-4 player upward-swipe model, shot/accuracy/scoring/isolation tests, rendered simulation, practice/setup/catalog routing, pointer fallback, honest availability gating, and no claim of hand tracking.",
+    "status": "done",
+    "attempts": 1,
+    "notes": "Implemented deterministic 1–4 player Basketball Blitz using generic HAND_SWIPE input. Upward strokes start in a launch circle and project aim onto the rim; baskets resolve after a 650 ms flight for +2, misses score zero. Includes independent attempts/baskets, cooldowns, confidence/speed validation, stale/duplicate rejection, deterministic sparse-frame results, pause-safe flight and replay. Transparent crayon hoops, ball arcs, pointer/touch and Arrow Up simulation, direct countdown, results focus, camera setup and shared recovery are integrated. Motion masks never produce hand swipes; UI explicitly states hand tracking is unavailable. Public catalog/Quick Play set and legacy URL gating are preserved. Direct countdown supersedes old practice acceptance wording. Added 33 model tests, eight component cases, two CameraSetup cases, two App URL cases and two Chromium gating cases. Full unit suite: 803 passed across 73 files. A temporary Chromium preview passed four-player keyboard/pointer scoring and desktop/narrow screenshots; harness removed. Final lint, typecheck, build, whitespace and JSON checks passed; full Chromium regression: 44 passed, 37 intentionally skipped. Initial concurrent build/browser run had two missing-asset failures, resolved by running browsers after build. Details in tasks/progress.md. Physical webcam behavior and Safari remain unverified; hardware validation required and hardware_verified false. No deployment, upload, dependency changes or commit.",
     "needs_hardware_validation": true,
     "hardware_verified": false
   },

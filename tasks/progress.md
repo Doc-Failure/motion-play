@@ -2103,3 +2103,51 @@ T25R implementation is complete within the current hidden-game refinement scope.
 - No deployment, external uploads, dependency changes or commit.
 
 T25S implementation is complete within the current hidden-game refinement scope.
+
+## T25T — Basketball Blitz (2026-11-16)
+
+- Read SPEC.md and AGENTS.md and inspected the application, generic swipe
+  validation, camera-first styles, setup, public route gating and round recovery.
+- Implemented deterministic 1–4 player Basketball Blitz receiving only normalized
+  HAND_SWIPE events. A quick upward stroke must begin inside the launch circle;
+  its direction projects onto the hoop. Accurate shots earn +2 when the ball lands
+  after 650 ms; misses earn zero. Each player has independent attempts, baskets,
+  in-flight state and shooting cooldown. Invalid/uncertain, stale, duplicate,
+  downward, sideways and off-launch strokes cannot shoot.
+- Flight and round time freeze during pause. Countdown, resume and replay cannot
+  be bridged by a stroke. Landing events resolve on the game timeline, including
+  when a sparse frame jumps past the round end; landings at/after the boundary
+  cannot score. An initial cadence test exposed differing final timestamps, fixed
+  by clamping the round clock to its end.
+- Added transparent crayon backboards, nets, launch circles and ball arcs over
+  camera-aligned lanes, compact scores/stats, pointer/touch and Arrow Up simulation,
+  direct countdown, results/replay focus and manual/tab/camera recovery. Reduced
+  motion suppresses flying-ball animation. Camera activation requires interaction;
+  frame differencing never produces fake hand swipes. The UI explicitly states
+  hand tracking is unavailable. No game code reads camera/media internals.
+- Integrated implementation metadata and setup/route dispatch while preserving
+  the existing public catalog and Quick Play set. Basketball stays hidden and
+  both legacy public URLs return to the catalog. Immediate countdown follows the
+  current specification and supersedes old practice-screen acceptance wording.
+- Added 33 model tests, eight component cases, two CameraSetup cases, two App URL
+  cases and two Chromium gating cases. The full unit/component suite passed:
+  **803 tests across 73 files**. Final lint, typecheck and production build passed.
+- A temporary four-player Chromium preview passed keyboard and pointer scoring
+  with player isolation. Inspected desktop (1440×900) and narrow (700×500)
+  screenshots, then moved the swipe hint clear of the stats bar. The final preview
+  passed again. Temporary repository preview files were removed. The standalone
+  Node browser launcher initially failed with macOS Mach-port permission denial
+  (1100); using the existing Playwright test runner succeeded.
+- The initial full Chromium run had 42 passes, 37 intentional skips and two
+  missing-asset failures because a concurrent production build replaced dist.
+  This was a verification orchestration error; final browser verification runs
+  after the completed build, without dist mutation.
+- Physical webcam behavior, hand tracking, motion feel and Safari remain
+  unverified. Hardware validation remains required and hardware_verified false.
+  No deployment, external uploads, dependency changes or commit.
+- Final Chromium regression after build completion: **44 passed, 37 intentionally
+  skipped** for hidden games, zero failures. The final Basketball model/component
+  rerun also passed all 41 cases. Whitespace checks and backlog JSON validation
+  passed.
+
+T25T implementation is complete within the current hidden-game refinement scope.

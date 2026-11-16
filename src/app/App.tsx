@@ -18,6 +18,7 @@ const routeFromHash = (): Route => {
   if (hash === 'settings') return { page: 'settings' }
   if (hash === 'camera') return { page: 'camera' }
   if (hash === 'quick-play') return { page: 'camera', game: pickQuickPlayGame(), autoPlay: true }
+  if (hash === 'camera/basketball-blitz') return { page: 'camera', game: 'basketball-blitz' }
   if (hash === 'camera/punch-arena') return { page: 'camera', game: 'punch-arena' }
   if (hash === 'camera/fruit-slash') return { page: 'camera', game: 'fruit-slash' }
   if (hash === 'camera/jump-rush') return { page: 'camera', game: 'jump-rush' }
