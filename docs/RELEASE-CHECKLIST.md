@@ -4,6 +4,13 @@ Status on 2026-11-16: **not cleared for public release**. This is a local releas
 candidate and a repeatable review procedure. No deployment is authorized by this
 checklist. Automated camera fixtures do not validate a physical webcam.
 
+Latest local snapshot: `81a1e9d9edc2a9314e84`. All **891 unit/component tests**
+and **12 packaging tests** pass, along with lint, typecheck, build and artifact
+integrity. Current three-engine checks are blocked at browser launch; offline
+integration is blocked by loopback permissions; dependency audit is blocked by
+registry DNS. These are unresolved gates. Earlier successful focused diagnostic
+and offline runs are historical evidence, not passes for this review.
+
 The public selection is Bubble Battle, Window Wipe, Whack-a-Mole, Fruit Catcher
 and Paper Dojo. Other implementations remain hidden. Fruit Catcher uses a
 motion-center alternative, not an implemented hand-landmark tracker. Paper Dojo
@@ -55,6 +62,11 @@ Hidden-game skips are intentional and do not certify those implementations.
   A partial policy, a commented/template/body tag, or a policy inserted after a
   script fails packaging. This checks the generated HTML contract; it is not a
   general-purpose HTML sanitizer.
+- Every packaged HTML document is checked. `pose/tracker.html` is required and
+  must start with its exact separate policy from `config/privacy-policy.json`.
+  Only that document receives the same-origin fetch/WASM exception; other HTML
+  documents require the main app policy. Packaging and integrity checks both
+  reject a missing, weakened, commented-out or late diagnostic policy.
 - Packaging also checks the install manifest: start/shortcut URLs must launch
   the root-hosted hash-route app, scope must be the hosting root, and icons,
   screenshots and shortcut icons must be local files included in the artifact.
@@ -76,8 +88,9 @@ Hidden-game skips are intentional and do not certify those implementations.
   this refinement phase; the persisted legacy `offlineCaching` setting remains
   supported and is exercised by the offline browser test.
 - Opt-in installs the core packaged assets, including CSS images/fonts. The
-  optional `pose/` diagnostic is excluded from installation precaching; its
-  offline behavior is not certified.
+  optional `pose/` diagnostic is excluded from installation precaching. An earlier
+  Chromium test covered caching its document/runtime after first use; full model
+  inference offline and other engines remain unverified.
   Root/index navigations use the app shell; other packaged documents retain
   their own HTML. The diagnostic iframe must load `pose/tracker.html` and its
   separate privacy policy. Unknown document paths are left to the host.
@@ -143,8 +156,8 @@ accessibility review.
 
 | Gate | Required evidence | Current status |
 | --- | --- | --- |
-| Chromium production regression | Synthetic navigation, scoring, recovery, audio scheduling, layout | Earlier artifact: 48 passed / 37 skips. Current review blocked at launch by Mach-port permission denial |
-| Offline integration | Genuine worker, offline art/fonts/play and opt-out cleanup | Earlier scenario passed; final separate run blocked by loopback listen EPERM |
+| Chromium production regression | Synthetic navigation, scoring, recovery, audio scheduling, layout | Earlier full regression: 48 passed / 37 skips; later diagnostic integration: 9 focused passes. Current review blocked at launch by Mach-port permission denial |
+| Offline integration | Genuine worker, offline art/fonts/play and opt-out cleanup | Earlier scenario passed including diagnostic document/runtime; current run blocked by loopback listen EPERM |
 | Firefox and WebKit | Same regression in engines that successfully launch | Open: attempted launches aborted before assertions in this environment |
 | Safari on a Mac | Real permission flow, camera video, audio unlock, reconnect and tab recovery | Open |
 | Physical camera | One/two/four people, lighting, occlusion, field of view, mirrored targets, no false awards | Open |
@@ -160,6 +173,31 @@ failures/fixes and evidence before changing its status. Keep
 hardware testing has occurred.
 
 ## Latest local review (2026-11-16)
+
+### Diagnostic policy packaging review
+
+Inspected the application, diagnostic lifecycle/runtime, production policies,
+worker routing and release/browser tests. Closed a release-check gap: the opt-in
+iframe's CSP was present in source but not enforced by packaging. Both build and
+integrity review now check every shipped HTML document and require the diagnostic
+document. Two added regression tests cover missing/weakened/misplaced policies,
+integrity checks, and confinement of the exception to that exact document.
+Runtime permissions and the public UI are unchanged.
+
+Passed **891 unit/component tests in 76 files**, **12 packaging tests**, lint,
+typecheck, build and artifact integrity. Snapshot `81a1e9d9edc2a9314e84` contains
+39 payload files: 2,623,498 core bytes and 28,455,625 optional pose bytes,
+31,079,123 total. All budgets pass. No current cadence/latency measurements were
+possible because the browser engines could not start.
+
+Focused production privacy scenarios failed before application assertions in all
+three engines: Chromium Mach-port permission denial (1100), Firefox SIGABRT,
+WebKit Abort trap 6. The offline scenario failed at loopback `listen EPERM`.
+`npm audit --fetch-retries=0 --fetch-timeout=15000` failed registry DNS ENOTFOUND.
+No browser, dependency-security, performance or physical-camera pass is claimed
+for this review. T26 remains pending; no deployment, upload or commit performed.
+
+### Earlier local review
 
 Reviewed the existing skip-link and canonical CSP changes and added recovery for
 service-worker recache quota failures. Unit/component checks passed **884 tests

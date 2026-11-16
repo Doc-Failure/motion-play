@@ -2467,3 +2467,29 @@ T25V implementation is complete; physical hardware and release gates remain open
   passes. Unsupported runtime failures remain visible without blocking Play.
   No physical webcam, live latency, four real people or Safari pose verification
   was performed. No deployment, camera upload or commit.
+
+
+## T26 diagnostic policy packaging review (2026-11-16)
+
+- Read SPEC.md/AGENTS.md and inspected the current app, optional diagnostic,
+  camera lifecycle, production policies, worker and release/browser tests.
+- Closed a packaging privacy gap: only index.html previously had its policy
+  checked. Every shipped HTML document now requires the canonical main policy,
+  except the required pose/tracker.html document, which must have its exact
+  dedicated local-fetch/WASM policy before other head content. Runtime permissions
+  and the public UI are unchanged.
+- Added two packaging regressions covering missing, commented, late and weakened
+  iframe policies; both prepare/integrity paths; missing iframe HTML; and attempts
+  to apply the exception to another document.
+- Passed 891 unit/component tests in 76 files, 12 packaging tests, lint, typecheck,
+  production build and artifact integrity. Snapshot 81a1e9d9edc2a9314e84 has 39
+  payload files: 2,623,498 core bytes plus 28,455,625 optional pose bytes,
+  31,079,123 total. All budgets pass.
+- Focused production privacy scenarios failed before assertions in Chromium
+  (Mach-port permission denial 1100), Firefox (SIGABRT), and WebKit (Abort trap 6).
+  Offline integration failed loopback listen EPERM. npm audit with zero retries
+  and a 15-second timeout failed registry DNS ENOTFOUND. No fresh browser,
+  cadence/latency, dependency-security, visual or physical-webcam pass is claimed.
+- Updated release checklist with current evidence and reconciled earlier focused
+  diagnostic/offline passes. T26 remains pending with hardware_verified false.
+  No deployment, uploads, dependency changes or commit.

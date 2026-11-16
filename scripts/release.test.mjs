@@ -8,6 +8,8 @@ import { budgets, checkRelease, prepareRelease } from './release.mjs'
 
 const policy = JSON.parse(await readFile(new URL('../config/privacy-policy.json', import.meta.url), 'utf8')).content
 const policyTag = `<meta http-equiv="Content-Security-Policy" content="${policy}">`
+const posePolicy = JSON.parse(await readFile(new URL('../config/privacy-policy.json', import.meta.url), 'utf8')).poseContent
+const posePolicyTag = `<meta http-equiv="Content-Security-Policy" content="${posePolicy}">`
 const manifest = { start_url: './#/', scope: './', icons: [{ src: './icon.svg' }] }
 
 async function fixture(t) {
@@ -20,7 +22,7 @@ async function fixture(t) {
     'manifest.webmanifest': JSON.stringify(manifest), 'icon.svg': '<svg/>',
     'assets/main.js': 'export {}', 'assets/main.css': `body{background:url(./paper.webp);filter:url("data:image/svg+xml,<svg><path filter='url(%23grain)'/></svg>")}`,
     'assets/paper.webp': 'image', 'assets/font.ttf': 'font',
-    'pose/tracker.html': '<html><head><title>Local tracking</title></head></html>',
+    'pose/tracker.html': `<html><head>${posePolicyTag}<title>Local tracking</title></head></html>`,
   })) await writeFile(join(directory, path), contents)
   return directory
 }
@@ -158,6 +160,36 @@ test('requires the complete enforced privacy policy before any head content', as
     await assert.rejects(prepareRelease(directory), /production privacy policy/)
   }
   await writeFile(join(directory, 'index.html'), `<head>\n<!-- release -->\n${policyTag}</head>`)
+  await prepareRelease(directory)
+})
+
+test('enforces the diagnostic policy during packaging and integrity review', async (t) => {
+  const directory = await fixture(t)
+  await prepareRelease(directory)
+  for (const html of [
+    '<head><title>No policy</title></head>',
+    `<head><!-- ${posePolicyTag} --></head>`,
+    `<head><script src="../assets/main.js"></script>${posePolicyTag}</head>`,
+    `<head>${posePolicyTag.replace("connect-src 'self'", 'connect-src *')}</head>`,
+    `<head>${posePolicyTag.replace("script-src 'self' 'wasm-unsafe-eval'", "script-src 'self' 'unsafe-eval'")}</head>`,
+    `<head>${policyTag}</head>`,
+  ]) {
+    await writeFile(join(directory, 'pose/tracker.html'), html)
+    await assert.rejects(prepareRelease(directory), /privacy policy in pose\/tracker.html/)
+    await assert.rejects(checkRelease(directory), /privacy policy in pose\/tracker.html/)
+  }
+  await writeFile(join(directory, 'pose/tracker.html'), `<head>${posePolicyTag}</head>`)
+  await prepareRelease(directory)
+  await checkRelease(directory)
+  await rm(join(directory, 'pose/tracker.html'))
+  await assert.rejects(prepareRelease(directory), /Missing release file: pose\/tracker.html/)
+})
+
+test('additional packaged documents cannot inherit the diagnostic policy exception', async (t) => {
+  const directory = await fixture(t)
+  await writeFile(join(directory, 'pose/extra.html'), `<head>${posePolicyTag}</head>`)
+  await assert.rejects(prepareRelease(directory), /privacy policy in pose\/extra.html/)
+  await writeFile(join(directory, 'pose/extra.html'), `<head>${policyTag}</head>`)
   await prepareRelease(directory)
 })
 

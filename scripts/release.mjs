@@ -10,15 +10,18 @@ const digest = (value) => createHash('sha256').update(value).digest('hex')
 // Raw-byte regression guards, not claims about download speed or FPS.
 export const budgets = { javascript: 550_000, css: 160_000, total: 33_000_000, core: 3_000_000, pose: 30_000_000 }
 
-async function checkPrivacyPolicy(html) {
-  const policy = JSON.parse(await readFile(join(root, 'config/privacy-policy.json'), 'utf8')).content
+async function checkPrivacyPolicy(html, path) {
+  const policies = JSON.parse(await readFile(join(root, 'config/privacy-policy.json'), 'utf8'))
+  // Only the opt-in diagnostic may fetch local model/WASM files or compile WASM.
+  // All other packaged documents retain the main app's blocked connections.
+  const policy = path === 'pose/tracker.html' ? policies.poseContent : policies.content
   // Verify the canonical tag emitted by Vite, including placement before loads.
   // Substrings elsewhere (or in comments) do not establish an enforced policy.
   const markup = html.replace(/<!--[\s\S]*?-->/g, '')
   const head = markup.match(/<head\b[^>]*>([\s\S]*?)<\/head\s*>/i)?.[1] ?? ''
   const expected = `<meta http-equiv="Content-Security-Policy" content="${policy}">`
   if (!head.trimStart().startsWith(expected)) {
-    throw new Error('Missing or misplaced production privacy policy')
+    throw new Error(`Missing or misplaced production privacy policy in ${path}`)
   }
 }
 
@@ -71,7 +74,7 @@ async function checkManifest(directory, paths) {
 
 async function describeRelease(directory) {
   const paths = (await listFiles(directory)).filter((path) => !['sw.js', 'release-report.json'].includes(path))
-  for (const required of ['index.html', 'manifest.webmanifest', 'icon.svg', 'licenses/Short-Stack.txt']) {
+  for (const required of ['index.html', 'pose/tracker.html', 'manifest.webmanifest', 'icon.svg', 'licenses/Short-Stack.txt']) {
     if (!paths.includes(required)) throw new Error(`Missing release file: ${required}`)
   }
   const files = await Promise.all(paths.map(async (path) => {
@@ -86,6 +89,7 @@ async function describeRelease(directory) {
         if (target.origin !== 'https://motion-play.invalid') throw new Error(`External asset in ${path}: ${reference}`)
         if (!paths.includes(decodeURIComponent(target.pathname.slice(1)))) throw new Error(`Missing asset in ${path}: ${reference}`)
       }
+      if (path.endsWith('.html')) await checkPrivacyPolicy(bytes.toString(), path)
     }
     return { path, bytes: bytes.length, gzipBytes: gzipSync(bytes).length, sha256: digest(bytes) }
   }))
@@ -99,8 +103,6 @@ async function describeRelease(directory) {
   for (const [name, limit] of Object.entries(budgets)) {
     if (totals[name] > limit) throw new Error(`${name} budget exceeded: ${totals[name]} > ${limit} bytes`)
   }
-  const html = await readFile(join(directory, 'index.html'), 'utf8')
-  await checkPrivacyPolicy(html)
   await checkManifest(directory, paths)
   const version = digest(JSON.stringify(files)).slice(0, 20)
   return { version, totals, budgets, files }
