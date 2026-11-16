@@ -1,0 +1,13 @@
+.freeze-game { position: relative; color: #29313c; }
+.freeze-boards { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0,1fr); }
+.freeze-player { min-width: 0; }
+.freeze-player h2 { font-size: 1rem; }
+.freeze-player h2 span { display: block; font-size: .8rem; }
+.freeze-board { position: relative; height: min(65vh,36rem); border: 2px dashed #7557a8; border-radius: 1% 2%; touch-action: none; overflow: hidden; }
+.freeze-board:focus-visible { outline: 4px solid #7557a8; outline-offset: -4px; }
+.freeze-cue { position: absolute; top: 30%; left: 50%; transform: translateX(-50%) rotate(-3deg); display: grid; justify-items: center; gap: .2rem; padding: .4rem .6rem; color: #492c68; background: #fff8e9ed; border: 3px dashed #7557a8; border-radius: 43% 38% 32% 25%; pointer-events: none; }
+.freeze-cue strong { font-size: clamp(1.5rem,5vw,3rem); line-height: 1; }
+.freeze-cue span { white-space: nowrap; font-size: clamp(.75rem,2vw,1.2rem); }
+.freeze-cue.is-frozen { border-style: solid; box-shadow: 3px 4px #66c7df; transform: translateX(-50%) rotate(2deg); }
+.freeze-cue progress { width: clamp(2.5rem,8vw,6rem); height: .5rem; accent-color: #7557a8; }
+.freeze-help, .freeze-rules { font-size: .85rem; }

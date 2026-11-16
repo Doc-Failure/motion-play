@@ -27,6 +27,9 @@ const installCamera = ({ denied, person }: { denied?: boolean; person?: boolean 
   }
   Object.assign(window, {__cameraFixture:canvas})
   const stream = canvas.captureStream(20)
+  // A live synthetic camera keeps delivering observations even when the picture
+  // is still. Canvas capture only emits frames after drawing to the canvas.
+  window.setInterval(() => context?.fillRect(0, 0, 1, 1), 50)
   const track = stream.getVideoTracks()[0]
   const stop = track.stop.bind(track)
   track.stop = () => { state.stoppedTracks += 1; stop() }

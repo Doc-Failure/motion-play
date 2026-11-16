@@ -1925,3 +1925,68 @@ Desktop/narrow browser visual inspection remains a follow-up validation item.
   upload, dependency change or commit was performed.
 
 T25O implementation is complete under the current hidden-game refinement scope.
+
+## T25P — Freeze! (2026-11-16)
+
+- Read SPEC.md / AGENTS.md and inspected the catalog, camera capture/dispatch,
+  existing motion games, lifecycle, input and tests. Preserved the existing public
+  five-game refinement set; Freeze! is implemented internally and hidden from
+  catalog, Quick Play and legacy game/camera URLs.
+- Added generic FREEZE events with normalized activity, confidence and timestamps.
+  MotionProcessor emits continuous per-player activity independently of debounced
+  hits, including explicit still frames. Initial/reset frames emit no observations;
+  uniform exposure changes and extreme activity report uncertain confidence.
+  This is a frame-difference alternative, not pose or player-presence detection.
+- Implemented deterministic 1–4 player Move (2400ms), Ready (600ms), Freeze (2000ms)
+  cycles. Each player must move during Move to participate. Fresh consecutive still
+  observations spanning 1200ms earn +10 once per cue. Moving during Freeze costs
+  5 once, including after an award; scores and feedback stay isolated. Missing,
+  invalid, duplicate, stale and reordered packets cannot contribute stillness time.
+  Gaps, release and interruptions clear accumulated holds.
+- Added transparent crayon cues, text/symbol indicators, accessible progress,
+  pointer and Space-key simulation, immediate countdown, results/replay focus,
+  exit and shared manual/tab/camera recovery. Music stops for Ready/Freeze and
+  restarts on Move. Current spec supersedes backlog practice-screen acceptance.
+- Fixed a related capture defect: drawing the same stalled video image every
+  50ms formerly counted as fresh input. Capture now requires ready, playing video
+  with a changed decoder timestamp, allowing the three-second recovery pause.
+  A rendered CameraSetup regression verifies duplicate rejection, fresh-frame
+  processing, stalled-feed pause and reacquisition. Game code receives events only.
+- Added 37 model cases, seven rendered Freeze cases, three CameraSetup cases,
+  two App route-gating cases, one shared music case and two Chromium gating cases.
+  Synthetic coverage includes mirrored activity isolation across all player counts,
+  still frames, exposure changes, timing/round boundaries, malformed input, render
+  cadence, pause/resume, false moves, pointer/keyboard, StrictMode and replay.
+- Final checks: **618 unit/component tests across 65 files passed**; lint,
+  typecheck, production build and whitespace checks passed. An initial synthetic
+  fixture underfilled the activity threshold and was corrected; the initial full
+  suite also caught the catalog expectation needing the new hidden implementation.
+- Chromium regression could not launch: **57 startup failures, 16 skips**. A
+  focused retry confirmed macOS Mach-port registration permission denial (1100)
+  before any assertions. The final capture change was verified with the unit
+  integration test and final full suite; no browser gameplay/visual pass claimed.
+- Physical webcam behavior, movement feel, presence/occlusion limitations and Safari
+  remain unverified. Hardware validation stays required and hardware_verified false.
+  No deployment, external upload, dependency change or commit.
+
+T25P implementation is complete under the current hidden-game refinement scope.
+
+## T25P follow-up audit (2026-11-16)
+
+- Reviewed the existing uncommitted Freeze implementation against SPEC.md and
+  AGENTS.md; kept its generic-input boundary and current public visibility.
+- Fixed post-round mutation: later animation frames, late input and focus loss
+  preserve final cue/feedback/progress until replay. Rendering that skips past
+  round end now stops at the exact boundary. Added two model regressions.
+- Browser regression exposed a synthetic-camera fixture defect: a canvas painted
+  only once stops delivering frames, correctly triggering the new decoder-stall
+  recovery. Added a continuous tiny redraw to model a live still camera without
+  weakening production stall detection. Paper Dojo browser tests now respect
+  visibility gating like other games (currently visible, so all three ran).
+- Verification supersedes the earlier browser-launch limitation: **620 unit and
+  component tests in 65 files passed**; lint, typecheck, production build and
+  whitespace checks passed. Final full Chromium suite: **36 passed, 37 skipped**
+  for hidden games. Initial browser failures were resolved by the fixture change.
+  Inspected the generated synthetic-camera lobby screenshot.
+- Physical webcam behavior, motion feel and Safari remain unverified. Hardware
+  flags stay unchanged. No deployment, upload, dependency changes or commit.

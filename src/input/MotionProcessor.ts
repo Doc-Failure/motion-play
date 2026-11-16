@@ -1,9 +1,11 @@
 import { mapCameraPoint, type PlayerCameraZone, type PlayerId } from './PlayerZoneMapper'
 
 export interface MotionFrame { width: number; height: number; data: Uint8ClampedArray }
-export interface MotionInputEvent { playerId: PlayerId; kind: 'MOTION_HIT' | 'MOTION_BRUSH' | 'HAND_POSITION' | 'BODY_MOVE'; x: number; y: number; confidence: number; timestamp: number }
+/** FREEZE requires activity in [0,1]: observed changing fraction of a player zone.
+ * Zero is a measured still frame; absent/uncertain frames must not imply stillness. */
+export interface MotionInputEvent { playerId: PlayerId; kind: 'MOTION_HIT' | 'MOTION_BRUSH' | 'HAND_POSITION' | 'BODY_MOVE' | 'FREEZE'; x: number; y: number; confidence: number; timestamp: number; activity?: number }
 export interface ZoneMotion { playerId: PlayerId; activePixels: number; activity: number; centroid: { x: number; y: number } | null }
-export interface MotionResult { mask: Uint8ClampedArray; width: number; height: number; threshold: number; zones: ZoneMotion[]; events: MotionInputEvent[]; positions?: MotionInputEvent[] }
+export interface MotionResult { mask: Uint8ClampedArray; width: number; height: number; threshold: number; zones: ZoneMotion[]; events: MotionInputEvent[]; positions?: MotionInputEvent[]; freezeSamples?: MotionInputEvent[] }
 export interface MotionOptions { spatialSampling?: boolean; sensitivity?: number; smoothing?: number; minimumNeighbors?: number; minimumZoneActivity?: number; debounceMs?: number }
 
 const clamp = (value: number, minimum = 0, maximum = 1) => Math.min(maximum, Math.max(minimum, value))
@@ -93,7 +95,14 @@ export class MotionProcessor {
     const eligible = new Set(positions.filter(event => timestamp - (this.lastHit.get(event.playerId) ?? -Infinity) >= this.debounceMs).map(event => event.playerId))
     const events = positions.filter(event => eligible.has(event.playerId))
     eligible.forEach(playerId => this.lastHit.set(playerId, timestamp))
-    return { mask, width: frame.width, height: frame.height, threshold, zones: zoneMotion, events, positions }
+    // Separate continuous activity observations from debounced motion hits. First
+    // frames/reset frames intentionally emit none. Global exposure changes are
+    // uncertain, not proof that a player held still.
+    const freezeSamples: MotionInputEvent[] = zoneMotion.map(motion => ({
+      playerId: motion.playerId, kind: 'FREEZE', x: .5, y: .5,
+      activity: motion.activity, confidence: Math.abs(exposureChange) >= threshold || motion.activity > .65 ? 0 : 1, timestamp,
+    }))
+    return { mask, width: frame.width, height: frame.height, threshold, zones: zoneMotion, events, positions, freezeSamples }
   }
 
   private assertCompatible(a: MotionFrame, b: MotionFrame) {

@@ -519,9 +519,9 @@
     "id": "T25P",
     "title": "Implement and test Freeze! using generic FREEZE input",
     "depends_on": ["T25O"],
-    "status": "pending",
-    "attempts": 0,
-    "notes": "Acceptance: deterministic 1-4 player move/freeze cue model, false-move/scoring/isolation tests, rendered simulation, practice/setup/catalog routing, fallback controls, honest availability gating, and no claim of pose tracking.",
+    "status": "done",
+    "attempts": 1,
+    "notes": "Implemented competitive 1–4 player Freeze! with generic FREEZE activity samples, shared Move/Ready/Freeze cues, participation, 1200ms observed stillness for +10 and one false-move penalty per cue. Missing, uncertain, stale or reordered samples cannot earn stillness. Includes pointer/Space simulation, transparent crayon cues, countdown/results/replay, pause/tab/camera recovery and music stopping during Ready/Freeze. Continuous activity observations remain separate from debounced hits; cached decoder frames are rejected. Follow-up audit preserves final results against later rendering, late input and focus loss, and clamps skipped rendering to the round boundary. Public visibility remains unchanged; Freeze stays hidden. Camera browser fixture now draws continuously to model live frame delivery. Checks: 620 unit/component tests in 65 files passed; lint, typecheck, build and whitespace passed; final full Chromium suite 36 passed, 37 intentionally skipped. Initial browser run exposed the static fixture mismatch; fixed and reran successfully. No physical webcam or Safari validation, deployment, upload, dependency change or commit.",
     "needs_hardware_validation": true,
     "hardware_verified": false
   },

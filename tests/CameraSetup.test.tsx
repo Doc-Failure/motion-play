@@ -1,5 +1,6 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
+import { MotionProcessor } from '../src/input/MotionProcessor'
 import { CameraSetup, type CameraController } from '../src/camera/CameraSetup'
 
 function controller(): CameraController {
@@ -11,7 +12,7 @@ describe('simple camera flow', () => {
     ['paint-splash', 'Paint Splash'], ['meteor-smash', 'Meteor Smash'],
     ['balloon-panic', 'Balloon Panic'], ['gold-rush', 'Gold Rush'],
     ['simon-says', 'Simon Says'], ['fruit-catcher', 'Fruit Catcher'],
-    ['dance-challenge', 'Dance Challenge'], ['laser-escape', 'Laser Escape'], ['dodgeball', 'Dodgeball'], ['air-pong', 'Air Pong'], ['goalkeeper', 'Goalkeeper'], ['tower-builder', 'Tower Builder'],
+    ['freeze', 'Freeze!'], ['dance-challenge', 'Dance Challenge'], ['laser-escape', 'Laser Escape'], ['dodgeball', 'Dodgeball'], ['air-pong', 'Air Pong'], ['goalkeeper', 'Goalkeeper'], ['tower-builder', 'Tower Builder'],
   ] as const)('keeps %s paused through denial and requires resume after recovery', async (game, title) => {
     const source = controller()
     vi.mocked(source.start)
@@ -194,6 +195,50 @@ describe('simple camera flow', () => {
     for (const id of [1, 2, 3, 4]) expect(screen.getByLabelText(`Player ${id} Dance Challenge play area`)).toBeVisible()
     fireEvent.click(screen.getByRole('button', { name: 'Exit game' }))
     expect(screen.getByRole('button', { name: 'Play Dance Challenge' })).toBeEnabled()
+  })
+  it('rejects cached video images and pauses Freeze when the decoder stops advancing', async () => {
+    const source = controller()
+    render(<CameraSetup source={source} initialGame="freeze" />)
+    await waitFor(() => expect(screen.getByRole('button', {name:'Play Freeze!'})).toBeEnabled())
+    vi.useFakeTimers({toFake:['setTimeout','clearTimeout','setInterval','clearInterval','performance','requestAnimationFrame','cancelAnimationFrame']})
+    const process = vi.spyOn(MotionProcessor.prototype, 'process')
+    const context = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
+      drawImage: vi.fn(), getImageData: () => ({data:new Uint8ClampedArray(160*90*4)}),
+    } as unknown as CanvasRenderingContext2D)
+    try {
+      fireEvent.click(screen.getByRole('button', {name:'Play Freeze!'}))
+      const video = screen.getByLabelText('Mirrored live camera during gameplay')
+      let videoTime = 1
+      Object.defineProperties(video, {
+        videoWidth:{value:640}, readyState:{value:4}, paused:{value:false}, ended:{value:false},
+        currentTime:{get:() => videoTime},
+      })
+      act(() => vi.advanceTimersByTime(50))
+      expect(process).toHaveBeenCalledTimes(1)
+      act(() => vi.advanceTimersByTime(500))
+      expect(process).toHaveBeenCalledTimes(1)
+      videoTime = 2
+      act(() => vi.advanceTimersByTime(50))
+      expect(process).toHaveBeenCalledTimes(2)
+      act(() => vi.advanceTimersByTime(3500))
+      expect(process).toHaveBeenCalledTimes(2)
+      expect(screen.getByRole('dialog')).toHaveTextContent('Camera frames stopped for three seconds')
+      expect(screen.getByRole('button',{name:'Resume round'})).toBeDisabled()
+      videoTime = 3
+      act(() => vi.advanceTimersByTime(50))
+      expect(screen.getByRole('button',{name:'Resume round'})).toBeEnabled()
+    } finally { process.mockRestore(); context.mockRestore(); vi.useRealTimers() }
+  })
+  it('routes Freeze! directly into four-player gameplay and setup', async () => {
+    const source = controller()
+    render(<CameraSetup source={source} initialGame="freeze" />)
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Play Freeze!' })).toBeEnabled())
+    fireEvent.click(screen.getByRole('button', { name: '4 players' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Play Freeze!' }))
+    expect(screen.getByRole('heading', { name: 'Freeze!' })).toBeVisible()
+    for (const id of [1, 2, 3, 4]) expect(screen.getByLabelText(`Player ${id} Freeze! play area`)).toBeVisible()
+    fireEvent.click(screen.getByRole('button', { name: 'Exit game' }))
+    expect(screen.getByRole('button', { name: 'Play Freeze!' })).toBeEnabled()
   })
   it('routes Treasure Grab directly into four-player gameplay and setup', async () => {
     const source = controller()

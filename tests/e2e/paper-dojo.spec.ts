@@ -1,4 +1,9 @@
 import { expect, openApp, test } from './fixtures'
+import { isGameVisible } from '../../src/app/catalog'
+
+test.beforeEach(() => {
+  test.skip(!isGameVisible('ninja-training'), 'Hidden while individual games are refined; model and component coverage remains active.')
+})
 
 async function startDojo(page:import('@playwright/test').Page,players=1){
   await openApp(page,'#/camera/ninja-training')

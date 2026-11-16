@@ -8,7 +8,7 @@ interface FeedbackSnapshot {
   countdownRemainingMs: number
   scores: { playerId: number; score: number }[]
 }
-export function GameFeedback({ snapshot, theme }: { snapshot: FeedbackSnapshot; theme?: 'dojo' }) {
+export function GameFeedback({ snapshot, theme, musicPaused = false }: { snapshot: FeedbackSnapshot; theme?: 'dojo'; musicPaused?: boolean }) {
   const play=useCallback((cue:Cue)=>{if(theme)gameAudio.play(cue,theme);else gameAudio.play(cue)},[theme])
   const input = useContext(InputFeedbackContext)
   const [sound, setSound] = useState(gameAudio.enabled)
@@ -36,10 +36,13 @@ export function GameFeedback({ snapshot, theme }: { snapshot: FeedbackSnapshot; 
       if (snapshot.phase === 'results') play('finish')
       return
     }
+  }, [snapshot.phase, play])
+  useEffect(() => {
+    if (snapshot.phase !== 'playing' || musicPaused) return
     let step = 0
     const timer = window.setInterval(() => gameAudio.music(step++,theme), theme?150:300)
     return () => { window.clearInterval(timer); gameAudio.stop() }
-  }, [snapshot.phase, play, theme])
+  }, [snapshot.phase, musicPaused, theme])
   useEffect(() => {
     const before = previous.current
     previous.current = snapshot
