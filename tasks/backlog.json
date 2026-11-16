@@ -581,9 +581,9 @@
     "id": "T25V",
     "title": "Implement and test Ninja Training using generic MIXED input events",
     "depends_on": ["T25U"],
-    "status": "pending",
-    "attempts": 0,
-    "notes": "Acceptance: deterministic 1-4 player hit-and-dodge model using only generic events, target/obstacle/scoring/isolation tests, rendered simulation, practice/setup/catalog routing, fallback controls, honest availability gating, and no claim of pose/hand tracking.",
+    "status": "done",
+    "attempts": 1,
+    "notes": "Completed the existing Paper Dojo implementation with deterministic 1–4 player hit-and-avoid mechanics. MIXED capability consumes normalized MOTION_HIT strikes and BODY_MOVE movement-center observations; no raw media or pose tracking. Marked obstacles warn for 700 ms, become active for 1100 ms, and charge -10 once per player while clearing streaks. Added aspect-correct collision bounds, contact feedback/results, stale/duplicate guards and camera adapter integration while preserving current public selection and concurrent compact UI refinements. Added 22 model cases, two component cases, two camera integration/recovery cases and one Chromium obstacle case; fixed an asynchronous recovery-test assertion. Final checks: 879 unit/component tests passed across 75 files; lint, typecheck, production build, JSON and whitespace checks passed. Full Chromium: 47 passed, 37 intentional hidden-game skips. Synthetic camera tests are not physical validation; hardware_verified remains false. Direct countdown supersedes old practice acceptance wording. No deployment, uploads, dependency additions or commit. See tasks/progress.md.",
     "needs_hardware_validation": true,
     "hardware_verified": false
   },

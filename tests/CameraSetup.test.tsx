@@ -1,5 +1,6 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
+import { NinjaTrainingModel } from '../src/minigames/ninja-training/NinjaTrainingModel'
 import { MotionProcessor } from '../src/input/MotionProcessor'
 import { CameraSetup, type CameraController } from '../src/camera/CameraSetup'
 
@@ -12,7 +13,7 @@ describe('simple camera flow', () => {
     ['paint-splash', 'Paint Splash'], ['meteor-smash', 'Meteor Smash'],
     ['balloon-panic', 'Balloon Panic'], ['gold-rush', 'Gold Rush'],
     ['simon-says', 'Simon Says'], ['fruit-catcher', 'Fruit Catcher'],
-    ['magic-duel', 'Magic Duel'], ['basketball-blitz', 'Basketball Blitz'], ['punch-arena', 'Punch Arena'], ['fruit-slash', 'Fruit Slash'], ['jump-rush', 'Jump Rush'], ['freeze', 'Freeze!'], ['dance-challenge', 'Dance Challenge'], ['laser-escape', 'Laser Escape'], ['dodgeball', 'Dodgeball'], ['air-pong', 'Air Pong'], ['goalkeeper', 'Goalkeeper'], ['tower-builder', 'Tower Builder'],
+    ['ninja-training', 'Paper Dojo'], ['magic-duel', 'Magic Duel'], ['basketball-blitz', 'Basketball Blitz'], ['punch-arena', 'Punch Arena'], ['fruit-slash', 'Fruit Slash'], ['jump-rush', 'Jump Rush'], ['freeze', 'Freeze!'], ['dance-challenge', 'Dance Challenge'], ['laser-escape', 'Laser Escape'], ['dodgeball', 'Dodgeball'], ['air-pong', 'Air Pong'], ['goalkeeper', 'Goalkeeper'], ['tower-builder', 'Tower Builder'],
   ] as const)('keeps %s paused through denial and requires resume after recovery', async (game, title) => {
     const source = controller()
     vi.mocked(source.start)
@@ -112,7 +113,7 @@ describe('simple camera flow', () => {
     expect(screen.getByRole('button', { name: 'Resume round' })).toBeDisabled()
     fireEvent.click(screen.getByRole('button', { name: 'Reconnect camera' }))
     await waitFor(() => expect(screen.getByRole('button', { name: 'Resume round' })).toBeEnabled())
-    expect(screen.getByRole('dialog')).toHaveTextContent('Camera recovered')
+    await waitFor(() => expect(screen.getByRole('dialog')).toHaveTextContent('Camera recovered'))
     fireEvent.click(screen.getByRole('button', { name: 'Resume round' }))
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(source.start).toHaveBeenCalledTimes(3)
@@ -376,4 +377,32 @@ it('requests the camera for Quick Play even when Fish Frenzy is randomly chosen'
   render(<CameraSetup source={source} initialGame="fish-frenzy" autoPlay />)
   await waitFor(() => expect(screen.getByRole('group',{name:'Player 1 Fish Frenzy play area'})).toBeVisible())
   expect(source.start).toHaveBeenCalledTimes(1)
+})
+
+
+it('adapts Ninja Training camera samples into both concrete MIXED input kinds',async()=>{
+  const source=controller()
+  render(<CameraSetup source={source} initialGame="ninja-training"/>)
+  await waitFor(()=>expect(screen.getByRole('button',{name:'Play Paper Dojo'})).toBeEnabled())
+  vi.useFakeTimers({toFake:['setTimeout','clearTimeout','setInterval','clearInterval','performance','requestAnimationFrame','cancelAnimationFrame']})
+  const sample={playerId:1 as const,kind:'MOTION_HIT' as const,x:.3,y:.62,confidence:1,timestamp:0}
+  const process=vi.spyOn(MotionProcessor.prototype,'process').mockImplementation((_frame,_zones,timestamp)=>({
+    mask:new Uint8ClampedArray(160*90),width:160,height:90,threshold:20,
+    zones:[{playerId:1,activePixels:100,activity:.01,centroid:{x:.3,y:.62}}],
+    events:[{...sample,timestamp}],positions:[{...sample,timestamp}],
+  }))
+  const hit=vi.spyOn(NinjaTrainingModel.prototype,'hit')
+  const context=vi.spyOn(HTMLCanvasElement.prototype,'getContext').mockReturnValue({
+    drawImage:vi.fn(),getImageData:()=>({data:new Uint8ClampedArray(160*90*4)}),
+  } as unknown as CanvasRenderingContext2D)
+  try {
+    fireEvent.click(screen.getByRole('button',{name:'Play Paper Dojo'}))
+    const video=screen.getByLabelText('Mirrored live camera during gameplay')
+    Object.defineProperties(video,{
+      videoWidth:{value:640},readyState:{value:4},paused:{value:false},ended:{value:false},currentTime:{value:1},
+    })
+    act(()=>vi.advanceTimersByTime(100))
+    expect(hit).toHaveBeenCalledWith(expect.objectContaining({playerId:1,kind:'MOTION_HIT',x:.3,y:.62}))
+    expect(hit).toHaveBeenCalledWith(expect.objectContaining({playerId:1,kind:'BODY_MOVE',x:.3,y:.62}))
+  } finally {hit.mockRestore();process.mockRestore();context.mockRestore();vi.useRealTimers()}
 })

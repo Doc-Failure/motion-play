@@ -26,7 +26,7 @@ export const catalogGames: readonly CatalogGame[] = [
   game(16, 'laser-escape', 'Laser Escape', 'Steer a motion-center marker clear of sweeping laser lines.', 'Move & Survive', 'BODY_MOVE', 'Hard', 'Competitive', ['#e45b9d', '#18334a'], true),
   game(17, 'dance-challenge', 'Dance Challenge', 'Match each simple movement cue to keep the beat.', 'Move & Survive', 'BODY_MOVE', 'Normal', 'Competitive', ['#e45b9d', '#7557a8'], true),
   game(18, 'freeze', 'Freeze!', 'Move with the music, then hold still when it stops.', 'Move & Survive', 'FREEZE', 'Easy', 'Competitive', ['#66c7df', '#7557a8'], true),
-  game(19, 'ninja-training', 'Paper Dojo', 'Swat leaping paper ninjas, build a streak, and smash bamboo bundles.', 'Move & Survive', 'MOTION_HIT', 'Normal', 'Competitive', ['#477f8e', '#f3c966'], true),
+  game(19, 'ninja-training', 'Paper Dojo', 'Swat paper ninjas, avoid marked obstacles, and smash bamboo bundles.', 'Move & Survive', 'MIXED', 'Normal', 'Competitive', ['#477f8e', '#f3c966'], true),
   game(20, 'jump-rush', 'Jump Rush', 'Rise to trigger a timed hop over incoming hurdles.', 'Move & Survive', 'BODY_MOVE', 'Normal', 'Competitive', ['#72b779', '#f28c46'], true),
   game(21, 'window-wipe', 'Window Wipe', 'Sweep across the window until every smudge is gone.', 'Clean & Create', 'MOTION_BRUSH', 'Easy', 'Competitive', ['#66c7df', '#fffaf0'], true),
   game(22, 'paint-splash', 'Paint Splash', 'Cover as much of your canvas with paint as you can.', 'Clean & Create', 'MOTION_BRUSH', 'Easy', 'Competitive', ['#e45b9d', '#f5c847'], true),

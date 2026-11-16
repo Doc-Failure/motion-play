@@ -11,7 +11,7 @@ class WelcomeScene extends Phaser.Scene {
     this.add
       .text(width / 2, height / 2, 'Ready to move!', {
         color: '#fff8df',
-        fontFamily: 'system-ui, sans-serif',
+        fontFamily: '"Motion Hand", cursive',
         fontSize: '32px',
         fontStyle: 'bold',
       })

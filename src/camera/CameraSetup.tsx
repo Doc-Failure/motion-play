@@ -253,7 +253,7 @@ export function CameraSetup({ source: providedSource, initialGame = 'bubble-batt
     const sample = motion?.positions?.find(event => event.playerId === zone.playerId)
     return sample && zone.centroid ? [{...sample,...zone.centroid}] : []
   })
-  const gameEvents = (selectedGame === 'magic-duel' || selectedGame === 'basketball-blitz' || selectedGame === 'fruit-slash' || selectedGame === 'punch-arena') ? [] : selectedGame === 'freeze' ? motion?.freezeSamples ?? [] : selectedGame === 'graffiti-race' || selectedGame === 'car-wash' || selectedGame === 'window-wipe' || selectedGame === 'paint-splash'
+  const gameEvents = selectedGame === 'ninja-training' ? [...(motion?.events ?? []), ...positionEvents.map(event => ({...event,kind:'BODY_MOVE' as const}))] : (selectedGame === 'magic-duel' || selectedGame === 'basketball-blitz' || selectedGame === 'fruit-slash' || selectedGame === 'punch-arena') ? [] : selectedGame === 'freeze' ? motion?.freezeSamples ?? [] : selectedGame === 'graffiti-race' || selectedGame === 'car-wash' || selectedGame === 'window-wipe' || selectedGame === 'paint-splash'
     ? (motion?.positions ?? []).map((event) => ({ ...event, kind: 'MOTION_BRUSH' as const }))
     : selectedGame === 'tower-builder' || selectedGame === 'fish-frenzy' || selectedGame === 'fruit-catcher' || selectedGame === 'air-pong' ? positionEvents.map((event) => ({ ...event, kind: 'HAND_POSITION' as const }))
       : selectedGame === 'jump-rush' || selectedGame === 'dance-challenge' || selectedGame === 'goalkeeper' || selectedGame === 'dodgeball' || selectedGame === 'laser-escape' ? positionEvents.map((event) => ({ ...event, kind: 'BODY_MOVE' as const })) : motion?.events ?? []

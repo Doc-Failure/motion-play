@@ -54,3 +54,28 @@ describe('original Paper Dojo view',()=>{
     expect(screen.getByRole('button',{name:'Resume round'})).toBeDisabled()
   })
 })
+
+describe('Paper Dojo obstacle simulation',()=>{
+  it('renders warning, normalized BODY_MOVE contact, player isolation and one penalty per obstacle',()=>{
+    const tick=clock(),props={playerCount:4 as const,onExit:vi.fn()}
+    const {rerender}=render(<NinjaTraining {...props}/>);tick(7200)
+    expect(screen.getByRole('button',{name:'Player 3 obstacle: warning'})).toBeDisabled()
+    tick(8000)
+    const event:MotionInputEvent={playerId:3,kind:'BODY_MOVE',x:.3,y:.62,confidence:1,timestamp:8000}
+    rerender(<NinjaTraining {...props} inputEvents={[event]}/>)
+    expect(screen.getByRole('button',{name:'Player 3 obstacle: bumped'})).toBeDisabled()
+    expect(screen.getByRole('button',{name:'Player 1 obstacle: avoid'})).toBeEnabled()
+    expect(screen.getByText('BUMP!')).toBeVisible()
+    const score=document.querySelectorAll('.dojo-game header dd')[2].textContent
+    rerender(<NinjaTraining {...props} inputEvents={[{...event}]}/>)
+    expect(document.querySelectorAll('.dojo-game header dd')[2]).toHaveTextContent(score!)
+  })
+  it('offers keyboard/pointer simulation with a compact action cue',()=>{
+    const tick=clock();render(<NinjaTraining playerCount={1} onExit={vi.fn()}/>);tick(8000)
+    fireEvent.click(screen.getByRole('button',{name:'Player 1 obstacle: avoid'}))
+    expect(screen.getByText('BUMP!')).toBeVisible()
+    expect(screen.getByText(/Swat ninjas · keep clear of marked obstacles/)).toBeVisible()
+    tick(9000)
+    expect(screen.queryByRole('button',{name:/obstacle/})).not.toBeInTheDocument()
+  })
+})

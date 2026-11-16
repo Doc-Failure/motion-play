@@ -2190,3 +2190,83 @@ T25T implementation is complete within the current hidden-game refinement scope.
 - No physical webcam, hand-tracking, motion-feel or Safari validation was performed.
   `needs_hardware_validation` remains true and `hardware_verified` remains false.
   No deployment, upload, dependency change or commit.
+
+
+## T25V — Ninja Training / Paper Dojo MIXED input (2026-11-16)
+
+- Read SPEC.md and AGENTS.md and inspected the current model, camera adapter,
+  recovery flow, catalog and existing tests. Paper Dojo was already implemented
+  with strikes, flying puppets, combos and bamboo bonuses; the missing T25V work
+  was a mixed hit/avoid mechanic and its integration coverage.
+- Added deterministic marked obstacles with a 700 ms warning and 1100 ms contact
+  window at the end of attack cycles. Markers alternate sides, disappear during
+  bonuses, and charge −10 only once per player/obstacle while clearing the streak.
+  Scores and contacts remain isolated for all one to four player layouts.
+- MIXED is capability metadata; concrete normalized MOTION_HIT and BODY_MOVE
+  events retain their kinds. The camera adapter supplies hits plus observed
+  movement-center samples. Strikes hit ninjas/bamboo; either kind can contact an
+  obstacle. Game code consumes events without importing media/camera libraries.
+  This is an explicit motion-area avoidance alternative, not pose recognition.
+  Missing observations earn no dodge points or inferred successful avoidance.
+- Obstacle circles share aspect-correct bounds with their visual markers. Pause,
+  countdown, recovery and replay preserve lifecycle behavior. Added bounded
+  per-player/per-kind duplicate history and a 150 ms stale-capture limit; old,
+  malformed, uncertain, unrelated and pause-crossing input cannot score.
+- Added 22 model cases, two rendered cases, two camera-setup cases and one browser
+  case. Tests exercise warning/contact timing, both kinds, player isolation,
+  malformed/stale/duplicate input, tall lanes, mirrored synthetic motion for all
+  player counts, full-round fine/coarse cadence, replay and camera adaptation.
+  Existing direct countdown and pointer/keyboard fallback controls are retained.
+- Preserved existing uncommitted font/audio/dojo refinements and the current public
+  five-game set. Concurrent workspace refinements compacted the dojo HUD and moved
+  detailed statistics to results; final checks use those latest files. No other
+  catalog games were made public by this work.
+- A new synthetic fixture initially fell below the configured activity minimum;
+  lowered its explicit test threshold. An existing camera-recovery assertion raced
+  the recovery effect; it now awaits the actual recovered message. Focused reruns
+  passed. Final full unit/component suite: **879 passed across 75 files**.
+  Lint, typecheck (through build), production build, backlog JSON and whitespace
+  validation passed. Initial focused Chromium verification: **4 passed**, including
+  synthetic camera scoring/audio, keyboard bonus/replay and isolated obstacles.
+- Physical webcam behavior, pose tracking, motion feel, Safari and real speaker
+  quality remain unverified. Hardware validation remains required and
+  hardware_verified false. No deployment, uploads, dependency changes or commit.
+
+## Paper Dojo, shared typography and camera-first polish (2026-11-16)
+
+- Researched the likely requested EyeToy Kung Foo interaction through contemporary
+  written reporting; recorded sources and limits in the Paper Dojo README. Built
+  original paper puppets, tower art, run/windup/leap choreography, rising waves,
+  combo scoring, bamboo bonus rounds and impact/tumble/confetti feedback. Original
+  local synthesized percussion/plucks use the shared pause/mute/audio lifecycle.
+  No source game assets, audio, branding or code were copied.
+- Paper Dojo replaces Goalkeeper in the public five; Quick Play retains random
+  selection and automatic launch. Other implementations remain hidden. Camera
+  media stays outside the game; strikes and obstacle contacts use normalized
+  input with player isolation, capture guards and aspect-correct collision areas.
+- Refined collision sampling, ledge alignment, pause timing, bonus boundaries and
+  duplicate/stale event handling. Marked obstacles warn before becoming active
+  and charge contact once; motion-center input is not full-body pose recognition.
+- Removed the long gameplay instruction strip, repeated lane statistics and center
+  decoration after screenshot review. Scores/time and player labels stay compact;
+  the single lower action cue clears sound controls. Detailed stats stay in results.
+- The supplied ZIP has typography reference images, not a font binary. Bundled
+  OFL Short Stack as a visual match and applied the same local font throughout
+  website, game controls, SVG text and fallback Phaser text. Its license/source
+  are recorded; no runtime font download or new dependency was introduced.
+- Final validation: typecheck, ESLint, production build and whitespace checks
+  passed. Full unit/component suite: **879 passed in 75 files**. Full Chromium
+  suite: **47 passed, 37 intentionally skipped** for hidden games, no failures.
+  Browser coverage includes synthetic camera strikes, real Web Audio scheduling
+  and mute, four-player/narrow layouts, obstacles, bamboo, pause/results/replay,
+  local font loading, catalog, random Quick Play and stream continuity. Reviewed
+  final desktop/narrow screenshots under /tmp/dojo-complete-browser.
+- Physical webcam recognition/latency, four real people, speaker listening and
+  Safari were not validated. No deployment, uploads or commit in this invocation.
+- Final full Chromium regression against the completed latest build: **47 passed,
+  37 intentionally skipped** for hidden games, zero failures. All four Paper Dojo
+  cases passed again. Inspected desktop obstacle and narrow-layout screenshots;
+  the compact cue and controls leave the camera visible. No physical validation
+  is inferred from these synthetic screenshots or browser checks.
+
+T25V implementation is complete; physical hardware and release gates remain open.

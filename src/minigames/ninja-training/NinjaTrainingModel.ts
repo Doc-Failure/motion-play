@@ -3,9 +3,10 @@ import type { MotionInputEvent } from '../../input/MotionProcessor'
 import type { PlayerCount, PlayerId } from '../../input/PlayerZoneMapper'
 
 export interface PaperNinja { id:number; playerId:PlayerId; side:-1|1; level:number; born:number; flightMs:number; x:number; y:number; progress:number; pose:'run'|'ready'|'leap' }
-export interface DojoEffect { id:number; playerId:PlayerId; kind:'hit'|'miss'|'chip'|'break'; x:number; y:number; born:number; side:number; points:number }
+export interface DojoEffect { id:number; playerId:PlayerId; kind:'hit'|'miss'|'chip'|'break'|'obstacle'; x:number; y:number; born:number; side:number; points:number }
+export interface DojoObstacle { id:number; playerId:PlayerId; x:number; y:number; active:boolean; struck:boolean }
 export interface DojoSnapshot extends GameSessionSnapshot {
-  elapsed:number; wave:number; bonus:boolean; bonusRemainingMs:number; ninjas:PaperNinja[]; effects:DojoEffect[]
+  obstacles:DojoObstacle[]; contacts:Record<PlayerId,number>; elapsed:number; wave:number; bonus:boolean; bonusRemainingMs:number; ninjas:PaperNinja[]; effects:DojoEffect[]
   combos:Record<PlayerId,number>; bestCombos:Record<PlayerId,number>; misses:Record<PlayerId,number>; hits:Record<PlayerId,number>; planks:Record<PlayerId,number>; boards:Record<PlayerId,number>
 }
 const counters = ():Record<PlayerId,number> => ({1:0,2:0,3:0,4:0})
@@ -25,6 +26,9 @@ export class NinjaTrainingModel {
   private nextBoard=counters()
   private elapsed=0; private nextSpawn=0; private nextId=1; private wave=0; private lastTime=0; private inputNotBefore=0
   private bonus=false
+  private contacts=counters()
+  private struck=new Set<string>()
+  private inputHistory=new Map<string,{timestamp:number; points:Set<string>}>()
   constructor(options:{playerCount?:PlayerCount; countdownMs?:number; roundDurationMs?:number; aspectRatio?:number}={}) {
     this.count=options.playerCount??1; this.duration=options.roundDurationMs??60_000
     this.session=new GameSession({...options,playerCount:this.count})
@@ -35,6 +39,7 @@ export class NinjaTrainingModel {
     // Replays create a fresh session even when restarted from a paused game.
     if(this.session.getSnapshot().phase!=='idle'&&this.session.getSnapshot().phase!=='results') throw new Error('Finish the current round before replaying.')
     const state=this.session.start(time)
+    this.contacts=counters();this.struck.clear();this.inputHistory.clear()
     this.ninjas=[];this.effects=[];this.combos=counters();this.best=counters();this.misses=counters();this.hits=counters();this.boards=counters()
     this.planks={1:3,2:3,3:3,4:3};this.lastHit=counters();this.lastChip={1:-Infinity,2:-Infinity,3:-Infinity,4:-Infinity};this.nextBoard=counters()
     this.elapsed=0;this.nextSpawn=0;this.nextId=1;this.wave=0;this.lastTime=time;this.bonus=false;this.inputNotBefore=time+state.countdownRemainingMs
@@ -79,10 +84,26 @@ export class NinjaTrainingModel {
     return this.snapshot()
   }
   hit(event:MotionInputEvent) {
-    if(event.kind!=='MOTION_HIT'||!Number.isInteger(event.playerId)||event.playerId<1||event.playerId>this.count||!Number.isFinite(event.timestamp)||event.timestamp<this.inputNotBefore||!Number.isFinite(event.confidence)||event.confidence<.2||event.confidence>1||![event.x,event.y].every(v=>Number.isFinite(v)&&v>=0&&v<=1)) return this.snapshot()
+    if((event.kind!=='MOTION_HIT'&&event.kind!=='BODY_MOVE')||!Number.isInteger(event.playerId)||event.playerId<1||event.playerId>this.count||!Number.isFinite(event.timestamp)||event.timestamp<this.inputNotBefore||event.timestamp<this.lastTime-150||!Number.isFinite(event.confidence)||event.confidence<.2||event.confidence>1||![event.x,event.y].every(v=>Number.isFinite(v)&&v>=0&&v<=1)) return this.snapshot()
     const state=this.update(event.timestamp)
     if(state.phase!=='playing')return state
     const id=event.playerId, captured=Math.max(0,this.elapsed-Math.max(0,this.lastTime-event.timestamp))
+    // MIXED is a game capability: each sample retains its concrete normalized kind.
+    // Permit distinct spatial samples from one frame, but never replay old captures.
+    const key=`${id}:${event.kind}`, point=`${event.x}:${event.y}`, previous=this.inputHistory.get(key)
+    if(previous && (event.timestamp<previous.timestamp || (event.timestamp===previous.timestamp && previous.points.has(point))))return state
+    const points=previous?.timestamp===event.timestamp?previous.points:new Set<string>()
+    points.add(point);this.inputHistory.set(key,{timestamp:event.timestamp,points})
+    const obstacle=this.obstacles(captured).find(o=>o.playerId===id&&o.active&&!o.struck&&this.overlaps(event,o,.13))
+    if(obstacle) {
+      this.struck.add(`${obstacle.id}:${id}`);this.contacts[id]++;this.combos[id]=0
+      this.session.awardScore(id,-10)
+      this.effects.push({id:this.nextId++,playerId:id,kind:'obstacle',x:obstacle.x,y:obstacle.y,born:this.elapsed,side:0,points:-10})
+      return this.snapshot()
+    }
+    if(event.kind!=='MOTION_HIT')return this.snapshot()
+    // A late camera frame must not strike the next phase's bamboo/targets.
+    if((captured%BONUS_CYCLE>=BONUS_START)!==this.bonus)return this.snapshot()
     if(this.bonus) {
       if(this.planks[id]===0||this.elapsed-this.lastChip[id]<180||Math.abs(event.x-.5)>.2||Math.abs(event.y-.55)>.12)return state
       this.lastChip[id]=this.elapsed;this.planks[id]--
@@ -96,7 +117,7 @@ export class NinjaTrainingModel {
     const target=this.ninjas.find(n=> {
       if(n.playerId!==id||captured<n.born+850)return false
       const p=this.position(n,captured)
-      return ((event.x-p.x)/(.1*Math.min(1,1/this.aspect)))**2+((event.y-p.y)/(.1*Math.min(1,this.aspect)))**2<=1
+      return this.overlaps(event,p,.1)
     })
     if(target) {
       this.ninjas=this.ninjas.filter(n=>n.id!==target.id)
@@ -133,11 +154,19 @@ export class NinjaTrainingModel {
     })
   }
   private position(n:PaperNinja,at:number):PaperNinja {
-    const age=Math.max(0,at-n.born), progress=Math.max(0,Math.min(1,(age-850)/n.flightMs)), startY=[.33,.52,.72][n.level]
+    const age=Math.max(0,at-n.born), progress=Math.max(0,Math.min(1,(age-850)/n.flightMs)), startY=[.44,.655,.87][n.level]-.1*Math.min(1,this.aspect)
     const distance=age<350?.03+.06*age/350:age<850?.09:.1+.4*progress
     return {...n,x:n.side===-1?distance:1-distance,y:startY+(.55-startY)*progress-Math.sin(progress*Math.PI)*.19,progress,pose:age<350?'run':age<850?'ready':'leap'}
   }
+  private overlaps(a:{x:number;y:number},b:{x:number;y:number},radius:number) {
+    return ((a.x-b.x)/(radius*Math.min(1,1/this.aspect)))**2+((a.y-b.y)/(radius*Math.min(1,this.aspect)))**2<=1
+  }
+  private obstacles(at=this.elapsed):DojoObstacle[] {
+    const cycle=Math.floor(at/6000), age=at%6000
+    if(at%BONUS_CYCLE>=BONUS_START||age<4200)return []
+    return Array.from({length:this.count},(_,i)=>({id:cycle,playerId:(i+1) as PlayerId,x:cycle%2?.7:.3,y:.62,active:age>=4900,struck:this.struck.has(`${cycle}:${i+1}`)}))
+  }
   private snapshot():DojoSnapshot {
-    return {...this.session.getSnapshot(),elapsed:this.elapsed,wave:1+Math.floor(this.elapsed/6000),bonus:this.bonus,bonusRemainingMs:this.bonus?BONUS_CYCLE-this.elapsed%BONUS_CYCLE:0,ninjas:this.ninjas.map(n=>this.position(n,this.elapsed)),effects:this.effects.map(e=>({...e})),combos:{...this.combos},bestCombos:{...this.best},misses:{...this.misses},hits:{...this.hits},planks:{...this.planks},boards:{...this.boards}}
+    return {...this.session.getSnapshot(),obstacles:this.session.getSnapshot().phase==='results'?[]:this.obstacles(),contacts:{...this.contacts},elapsed:this.elapsed,wave:1+Math.floor(this.elapsed/6000),bonus:this.bonus,bonusRemainingMs:this.bonus?BONUS_CYCLE-this.elapsed%BONUS_CYCLE:0,ninjas:this.ninjas.map(n=>this.position(n,this.elapsed)),effects:this.effects.map(e=>({...e})),combos:{...this.combos},bestCombos:{...this.best},misses:{...this.misses},hits:{...this.hits},planks:{...this.planks},boards:{...this.boards}}
   }
 }

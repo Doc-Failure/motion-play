@@ -133,9 +133,21 @@ The UI pack contains typography PNG references only, not an installable font fil
 
 ## Five-game refinement phase (2026-11-16)
 The public catalog and Quick Play expose only Bubble Battle, Window Wipe, Whack-a-Mole,
-Fruit Catcher and Goalkeeper while each game is refined individually. All other game
+Fruit Catcher and Paper Dojo while each game is refined individually. All other game
 implementations remain in the codebase but are hidden; legacy public URLs return to
 the catalog. Restoring games is controlled by visibleGameSlugs in src/app/catalog.ts.
 The catalog header contains only Back to Home and Game Catalog, with no site header,
 tagline, subtitle or decorative sheets/scenery around it. Improving animation and
 distinct game identities is subsequent per-game work, not completed by hiding games.
+
+## Paper Dojo and typography refinement (2026-11-16)
+Paper Dojo replaces Goalkeeper in the public five. Original paper ninjas run and
+telegraph attacks from side towers, leap across the live camera, and react to
+normalized strikes with animated impacts, tumbles and paper confetti. Waves speed
+up, combos reward consecutive hits, marked obstacles warn before contact penalties,
+and bamboo bonus rounds require three strikes. Original local synthesized
+percussion and plucked music use the shared mute/recovery lifecycle.
+Gameplay keeps only compact scores/time, player labels, a short action cue and
+pause/exit/sound controls over the camera. Detailed statistics appear in results.
+The pack supplies lettering reference images rather than a font binary. The local
+OFL Short Stack font is used throughout as a visual match, with no runtime download.

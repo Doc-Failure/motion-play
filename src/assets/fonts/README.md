@@ -1,7 +1,15 @@
-Patrick Hand Regular, by Patrick Wagesreiter. Bundled locally under SIL OFL 1.1.
-Source: https://github.com/google/fonts/tree/main/ofl/patrickhand
-License: OFL-Patrick-Hand.txt
+# Local handwriting fonts
 
-Chosen as a real, portable handwriting font visually guided by the user-provided
-UI pack's raster typography references. It is not represented as a font extracted
-from that ZIP. There are no Google Fonts or third-party font requests at runtime.
+Active font: Short Stack Regular (SIL OFL 1.1), selected for the broad, rounded,
+imperfect handwriting of the supplied UI pack. Source:
+https://github.com/google/fonts/tree/main/ofl/shortstack
+License: OFL-Short-Stack.txt
+
+Patrick Hand was also evaluated and is retained with its OFL license as a reference;
+it is not requested by the active stylesheet. Source:
+https://github.com/google/fonts/tree/main/ofl/patrickhand
+
+Both are real font files obtained from the official Google Fonts repository. The
+ZIP supplied only raster typography references, so neither is misrepresented as a
+font extracted from that archive. All fonts are served locally, with no runtime
+Google Fonts requests or tracking. HTML labels remain accessible text.

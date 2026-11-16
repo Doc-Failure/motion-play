@@ -35,3 +35,25 @@
 @media (max-width:600px) { .dojo-wave { font-size:.8rem; padding:.2rem .5rem; }.dojo-wave small { font-size:.55rem; }.dojo-bamboo span { font-size:.55rem; } }
 @media (prefers-reduced-motion:reduce) { .dojo-ninja svg>g>g { transform:none; } }
 .reduce-motion .dojo-ninja svg>g>g { transform:none; }
+/* Phase information must stay clear of the shared camera HUD/player labels. */
+.camera-play .camera-arena>section.dojo-game>div.dojo-wave[role="status"] { top:auto; bottom:3.5rem; left:50%; width:max-content; max-width:55%; max-height:none; margin:0; padding:.35rem 1rem; translate:-50% 0; z-index:8; overflow:visible; background:#fff6d9ed; color:#32484e; text-align:center; font-size:.9rem; line-height:1.2; }
+.camera-play .camera-arena>section.dojo-game>div.dojo-wave--bonus[role="status"] { background:#ffe17a; }
+.dojo-game[data-bonus="true"] .dojo-tower { filter:drop-shadow(0 0 7px #f5cf7666); }
+.dojo-combo { animation:dojo-streak .25s ease-out; }
+@keyframes dojo-streak { from { scale:.65; } 70% { scale:1.1; } to { scale:1; } }
+@media (prefers-reduced-motion:reduce) { .dojo-combo { animation:none; } }
+.reduce-motion .dojo-combo { animation:none; }
+@media (max-width:700px) { .camera-play .camera-arena>section.dojo-game>div.dojo-wave[role="status"] { bottom:3.7rem; padding:.25rem .5rem; font-size:.65rem; } }
+
+/* The same cqmin circle drives normalized collision bounds in every camera lane. */
+.dojo-obstacle { position:absolute; z-index:5; width:26cqmin; height:26cqmin; min-width:0; min-height:0; padding:0; border:2px dashed #713d42; border-radius:50%; background:#fff3d466; translate:-50% -50%; color:#713d42; cursor:crosshair; }
+.dojo-obstacle svg { width:100%; height:100%; opacity:.45; }
+.dojo-obstacle--active { border-style:solid; background:#fff3d4aa; }
+.dojo-obstacle--active svg { opacity:1; }
+.dojo-obstacle--struck { opacity:.45; }
+.dojo-obstacle span { position:absolute; left:50%; bottom:-1.4em; translate:-50% 0; white-space:nowrap; padding:0 .25em; border-radius:.3em; background:#fff5d8; font-size:clamp(.6rem,2cqmin,1rem); }
+.dojo-obstacle:focus-visible { outline:4px solid #713d42; outline-offset:4px; }
+
+/* One compact cue shares the lower edge with sound; the camera stays clear. */
+.camera-play .camera-arena>section.dojo-game>div.dojo-wave[role="status"] { bottom:.5rem; left:.5rem; translate:none; max-width:calc(100% - 9rem); padding:.3rem .6rem; text-align:left; }
+@media (max-width:700px) { .camera-play .camera-arena>section.dojo-game>div.dojo-wave[role="status"] { bottom:.4rem; max-width:calc(100% - 8rem); font-size:.6rem; } .dojo-wave small { font-size:.5rem; } }
