@@ -162,8 +162,10 @@ An optional Test body tracking button in the lobby loads local MediaPipe Pose
 Landmarker Lite. Confident joints draw one torso stick, jointed arms and wrist
 dots over the uncropped mirrored camera. Occluded/low-confidence segments are
 omitted; stale frames clear the overlay. This diagnostic does not supply game
-input, award points or claim finger/hand-shape recognition. Starting play,
-leaving setup or disabling it releases the diagnostic while retaining the camera.
+input, award points or claim finger/hand-shape recognition. The enabled choice
+carries from setup into gameplay. A Show/Hide wireframe button during any game
+allows verification without leaving play. Leaving the active camera view, camera
+failure or disabling the overlay releases the diagnostic while retaining the camera.
 
 The optional local model/runtime is about 28.5 MB and loads only on request.
 It uses a separate local document with its own restrictive policy, preserving

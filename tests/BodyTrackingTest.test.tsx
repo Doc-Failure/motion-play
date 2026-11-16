@@ -73,3 +73,11 @@ it('shows an honest failure while leaving play available',async()=>{
   render(<BodyTrackingTest videoRef={video()} players={1} createTracker={async()=>{throw new Error('No WASM')}}/>)
   await waitFor(()=>expect(screen.getByRole('status')).toHaveTextContent('Body tracking unavailable · you can still play'))
 })
+
+it('labels gameplay sticks as a joint diagnostic rather than claiming they drive game inputs',async()=>{
+  const tracker={detect:vi.fn().mockReturnValue([pose()]),close:vi.fn()}
+  render(<BodyTrackingTest videoRef={video()} players={1} compact createTracker={async()=>tracker}/>)
+  await waitFor(()=>expect(screen.getByRole('status')).toHaveTextContent('1 of 1 bodies visible'))
+  expect(screen.getByRole('status')).toHaveTextContent('Joint overlay only · games respond to movement')
+  expect(screen.getByRole('img',{name:'Detected torso, arms and hands'})).toBeVisible()
+})

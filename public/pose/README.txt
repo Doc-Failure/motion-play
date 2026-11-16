@@ -22,7 +22,9 @@ asset loading and WebAssembly, with no remote connections. Model/runtime assets
 its 3 MB budget. Offline caching stores these optional files only after use;
 a first-ever diagnostic needs access to the local static site files.
 
-The test stops before gameplay, on leaving setup, or when hidden/disabled.
+The enabled choice carries from setup into gameplay. A Show/Hide wireframe
+button in games controls the diagnostic without restarting the camera. The
+runtime stops when the active camera view is left, unavailable, or disabled.
 Low-confidence joints are omitted; a stale camera frame clears the drawing.
 Hand dots represent pose-estimated wrists, not finger or hand-shape tracking.
 Real webcam/multi-person tracking quality still needs physical validation.

@@ -3,7 +3,7 @@ import { createPoseTracker, stickBodies, type PoseTracker, type StickBody } from
 import './body-tracking.css'
 
 const colors=['#ffe17a','#80e8f0','#efb1ef','#b5f09b']
-export function BodyTrackingTest({videoRef,players,createTracker=createPoseTracker}:{videoRef:RefObject<HTMLVideoElement>;players:number;createTracker?:(players:number)=>Promise<PoseTracker>}) {
+export function BodyTrackingTest({videoRef,players,compact=false,createTracker=createPoseTracker}:{videoRef:RefObject<HTMLVideoElement>;players:number;compact?:boolean;createTracker?:(players:number)=>Promise<PoseTracker>}) {
   const [bodies,setBodies]=useState<StickBody[]>([])
   const [status,setStatus]=useState('Loading body tracking…')
   useEffect(()=>{
@@ -30,13 +30,13 @@ export function BodyTrackingTest({videoRef,players,createTracker=createPoseTrack
     }).catch(()=>{if(!disposed)setStatus('Body tracking unavailable · you can still play')})
     return()=>{disposed=true;window.clearTimeout(timer);tracker?.close()}
   },[videoRef,players,createTracker])
-  return <div className="body-test">
+  return <div className={`body-test${compact?' body-test--game':''}`}>
     <svg className="body-test__sticks" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-label="Detected torso, arms and hands" role="img">
       {bodies.map((body,index)=><g key={index} stroke={colors[index%colors.length]} fill="none" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round">
         {[body.torso,...body.arms].map((chain,i)=><polyline key={i} points={chain.map(p=>`${p.x*1000},${p.y*1000}`).join(' ')} vectorEffect="non-scaling-stroke"/>)}
         {body.hands.map((hand,i)=><ellipse key={i} cx={hand.x*1000} cy={hand.y*1000} rx="9" ry="9" fill={colors[index%colors.length]} stroke="#26313f" strokeWidth="2" vectorEffect="non-scaling-stroke"/>)}
       </g>)}
     </svg>
-    <p className="body-test__status" role="status">{status}<small>Test only · missing lines mean low confidence · pictures stay on this device</small></p>
+    <p className="body-test__status" role="status">{compact?status.split(' · ')[0]:status}<small>{compact?'Joint overlay only · games respond to movement':'Test only · missing lines mean low confidence · pictures stay on this device'}</small></p>
   </div>
 }

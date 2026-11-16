@@ -44,3 +44,33 @@ test('changing player count keeps fit guidance and active test within the camera
     await page.screenshot({path:test.info().outputPath(`distance-guide-${size.width}.png`)})
   }
 })
+
+test('fixture joints stay aligned through setup and play, and wireframe can be toggled without restarting the camera',async({page,installMockCamera})=>{
+  await installMockCamera({person:true})
+  await openApp(page,'#/camera/rocket-rumble')
+  // Deterministic detector fixture verifies UI geometry/lifecycle, not ML accuracy.
+  await page.route('**/pose/tracker.js',route=>route.fulfill({contentType:'text/javascript',body:`window.createLocalPoseTracker=async()=>({detect:()=>{const p=Array.from({length:33},()=>({x:.5,y:.5,visibility:1}));p[11]={x:.3,y:.3,visibility:1};p[12]={x:.7,y:.3,visibility:1};p[23]={x:.4,y:.8,visibility:1};p[24]={x:.6,y:.8,visibility:1};return [p]},close:()=>{}})`}))
+  await page.getByRole('button',{name:'Test body tracking',exact:true}).click()
+  await expect(page.locator('.body-test polyline')).toHaveCount(3)
+  await expect(page.locator('.body-test polyline').first()).toHaveAttribute('points','500,300 500,800')
+  await page.getByRole('button',{name:'Play Rocket Rumble',exact:true}).click()
+  await expect(page.getByRole('button',{name:'Hide wireframe',exact:true})).toHaveAttribute('aria-pressed','true')
+  await expect(page.locator('.camera-play .body-test polyline')).toHaveCount(3)
+  await expect(page.locator('.body-test polyline').first()).toHaveAttribute('points','500,300 500,800')
+  await expect(page.locator('.body-test__status')).toContainText('games respond to movement')
+  const overlay=(await page.locator('.body-test__sticks').boundingBox())!,video=(await page.getByLabel('Mirrored live camera during gameplay').boundingBox())!
+  expect(overlay).toEqual(video)
+  await page.waitForTimeout(3400)
+  await expect(page.locator('.rocket-game header dd').first()).toHaveText('0')
+  await page.screenshot({path:test.info().outputPath('game-wireframe.png')})
+  await page.getByRole('button',{name:'Hide wireframe',exact:true}).click()
+  await expect(page.locator('.body-test')).toHaveCount(0)
+  await expect(page.locator('iframe[title="Local body tracking runtime"]')).toHaveCount(0)
+  await page.getByRole('button',{name:'Show wireframe',exact:true}).click()
+  await expect(page.locator('.body-test polyline')).toHaveCount(3)
+  await page.getByRole('button',{name:'Exit game',exact:true}).click()
+  await expect(page.getByRole('button',{name:'Hide body tracking',exact:true})).toHaveAttribute('aria-pressed','true')
+  await expect(page.locator('.camera-lobby .body-test polyline')).toHaveCount(3)
+  const state=await page.evaluate(()=>(window as typeof window&{__mockMediaState:{requests:number;stoppedTracks:number}}).__mockMediaState)
+  expect(state.requests).toBe(1);expect(state.stoppedTracks).toBe(0)
+})
