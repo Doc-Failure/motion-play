@@ -571,9 +571,9 @@
     "id": "T25U",
     "title": "Implement and test Magic Duel using generic HAND_SWIPE input",
     "depends_on": ["T25T"],
-    "status": "pending",
-    "attempts": 0,
-    "notes": "Acceptance: deterministic 1-4 player pattern-event model, recognition/scoring/isolation tests, rendered simulation, practice/setup/catalog routing, pointer fallback, honest availability gating, and no claim of hand tracking.",
+    "status": "done",
+    "attempts": 1,
+    "notes": "Implemented deterministic 1–4 player Magic Duel using generic HAND_SWIPE events. Ordered Valley, Corner and Triangle traces support segmented strokes, spatial continuity, direction, timeout, confidence/speed validation, stale/duplicate rejection and player isolation. Each completed pattern awards +20 once; prompts rotate every five seconds. Transparent numbered crayon paths, pointer/touch and per-edge Enter simulation, direct countdown, results/replay, shared pause/recovery and camera setup are integrated. Camera activation requires interaction; motion masks produce no hand swipes and UI explicitly states hand tracking is unavailable. Existing five-game public catalog, Quick Play and legacy URL gating are preserved. Direct countdown supersedes practice wording. Added 36 model tests, nine component cases, two CameraSetup cases, two App URL cases and two Chromium gating cases. Full unit/component suite: 852 passed in 75 files. Lint, typecheck, build, JSON and whitespace checks passed; full Chromium regression: 46 passed, 37 intentionally skipped. Temporary preview build succeeded, but direct and Playwright-runner browser launches failed before assertions with macOS Mach-port permission denial (1100); repository harness removed. No Magic Duel browser-gameplay, visual or physical webcam pass claimed. Hardware validation remains required and hardware_verified false. No deployment, uploads, new dependencies or commit. See tasks/progress.md for validation details.",
     "needs_hardware_validation": true,
     "hardware_verified": false
   },

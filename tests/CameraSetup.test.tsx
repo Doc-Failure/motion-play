@@ -12,7 +12,7 @@ describe('simple camera flow', () => {
     ['paint-splash', 'Paint Splash'], ['meteor-smash', 'Meteor Smash'],
     ['balloon-panic', 'Balloon Panic'], ['gold-rush', 'Gold Rush'],
     ['simon-says', 'Simon Says'], ['fruit-catcher', 'Fruit Catcher'],
-    ['basketball-blitz', 'Basketball Blitz'], ['punch-arena', 'Punch Arena'], ['fruit-slash', 'Fruit Slash'], ['jump-rush', 'Jump Rush'], ['freeze', 'Freeze!'], ['dance-challenge', 'Dance Challenge'], ['laser-escape', 'Laser Escape'], ['dodgeball', 'Dodgeball'], ['air-pong', 'Air Pong'], ['goalkeeper', 'Goalkeeper'], ['tower-builder', 'Tower Builder'],
+    ['magic-duel', 'Magic Duel'], ['basketball-blitz', 'Basketball Blitz'], ['punch-arena', 'Punch Arena'], ['fruit-slash', 'Fruit Slash'], ['jump-rush', 'Jump Rush'], ['freeze', 'Freeze!'], ['dance-challenge', 'Dance Challenge'], ['laser-escape', 'Laser Escape'], ['dodgeball', 'Dodgeball'], ['air-pong', 'Air Pong'], ['goalkeeper', 'Goalkeeper'], ['tower-builder', 'Tower Builder'],
   ] as const)('keeps %s paused through denial and requires resume after recovery', async (game, title) => {
     const source = controller()
     vi.mocked(source.start)
@@ -20,7 +20,7 @@ describe('simple camera flow', () => {
       .mockRejectedValueOnce(new DOMException('denied', 'NotAllowedError'))
       .mockResolvedValueOnce({} as MediaStream)
     render(<CameraSetup source={source} initialGame={game} />)
-    if (game === 'basketball-blitz' || game === 'fruit-slash' || game === 'punch-arena') fireEvent.click(screen.getByRole('button', { name: 'Activate camera & play' }))
+    if (game === 'magic-duel' || game === 'basketball-blitz' || game === 'fruit-slash' || game === 'punch-arena') fireEvent.click(screen.getByRole('button', { name: 'Activate camera & play' }))
     else {
       await waitFor(() => expect(screen.getByRole('button', { name: `Play ${title}` })).toBeEnabled())
       fireEvent.click(screen.getByRole('button', { name: `Play ${title}` }))
@@ -78,6 +78,20 @@ describe('simple camera flow', () => {
     expect(screen.queryByRole('button', { name: 'Start round now' })).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Exit game' }))
     expect(screen.getByRole('button', { name: 'Play Basketball Blitz' })).toBeEnabled()
+    expect(source.start).not.toHaveBeenCalled()
+  })
+  it('integrates hidden Magic Duel as four-player simulation with direct countdown', () => {
+    const source = controller()
+    render(<CameraSetup source={source} initialGame="magic-duel" />)
+    expect(source.start).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('button', { name: '4 players' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Play without camera' }))
+    expect(screen.getByRole('heading', { name: 'Magic Duel' })).toBeVisible()
+    expect(screen.getAllByRole('group', { name: /Magic Duel play area/ })).toHaveLength(4)
+    expect(screen.getByText(/hand tracking unavailable/)).toBeVisible()
+    expect(screen.queryByRole('button', { name: 'Start round now' })).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Exit game' }))
+    expect(screen.getByRole('button', { name: 'Play Magic Duel' })).toBeEnabled()
     expect(source.start).not.toHaveBeenCalled()
   })
   it('keeps the round paused after a failed camera reconnect and allows another retry', async () => {

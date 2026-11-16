@@ -39,7 +39,7 @@ export const catalogGames: readonly CatalogGame[] = [
   game(29, 'basketball-blitz', 'Basketball Blitz', 'Swipe upward to sink as many baskets as possible.', 'Skill & Precision', 'HAND_SWIPE', 'Hard', 'Solo score chase', ['#f28c46', '#7557a8'], true),
   game(30, 'simon-says', 'Simon Says', 'Repeat the growing sequence of target touches.', 'Skill & Precision', 'MOTION_HIT', 'Normal', 'Competitive', ['#f5c847', '#4c9ed9'], true),
   game(31, 'plate-spinner', 'Plate Spinner', 'Tap each wobbling plate before it tumbles.', 'Skill & Precision', 'MOTION_HIT', 'Hard', 'Competitive', ['#66c7df', '#e45b9d'], true),
-  game(32, 'magic-duel', 'Magic Duel', 'Draw the shown hand patterns to cast playful spells.', 'Skill & Precision', 'HAND_SWIPE', 'Hard', 'Competitive', ['#7557a8', '#e45b9d']),
+  game(32, 'magic-duel', 'Magic Duel', 'Draw the shown hand patterns to cast playful spells.', 'Skill & Precision', 'HAND_SWIPE', 'Hard', 'Competitive', ['#7557a8', '#e45b9d'], true),
 ]
 
 export const getGameBySlug = (slug: string) => catalogGames.find((entry) => entry.slug === slug)

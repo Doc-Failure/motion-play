@@ -2151,3 +2151,42 @@ T25S implementation is complete within the current hidden-game refinement scope.
   passed.
 
 T25T implementation is complete within the current hidden-game refinement scope.
+
+## T25U — Magic Duel (2026-11-16)
+
+- Read SPEC.md and AGENTS.md and inspected the existing swipe models, simulation
+  adapters, camera-first layout, setup/recovery flow and five-game visibility gate.
+- Added deterministic 1–4 player Magic Duel using only normalized HAND_SWIPE
+  events. Valley, Corner and Triangle patterns rotate on a shared five-second
+  timeline; completing an ordered spatial trace earns +20 once per player/pattern.
+  Smaller swipe segments can advance along an edge. Recognition requires spatial
+  continuity, forward movement near the drawn edge, sufficient speed/confidence
+  and a three-second completion window. Wrong paths reset progress without a
+  penalty. Stale, duplicate, malformed, countdown/pattern/pause-crossing inputs
+  cannot award points. Player progress and scores remain independent.
+- Integrated transparent numbered crayon paths over the camera, visible pattern
+  progress, pointer/touch input and Enter-per-edge keyboard simulation, direct
+  countdown, score/audio feedback, results focus, replay and shared recovery.
+  Incomplete traces reset on pause; completed spells cannot be re-awarded after
+  resume. Side-by-side lanes follow the shared uncropped camera layout.
+- Added internal catalog/setup/routing integration while preserving visibleGameSlugs
+  and Quick Play's existing five-game set. Deferred public URLs still return to
+  the catalog. Camera activation requires interaction. Motion-mask events never
+  become hand swipes, and the visible rules state hand tracking is unavailable.
+  The current direct-countdown flow supersedes old backlog practice wording.
+- Added 36 model tests, nine rendered component cases, two CameraSetup cases,
+  two App URL cases and two Chromium URL-gating cases. Coverage includes all
+  patterns, segmented recognition, wrong paths, expiry, score isolation, invalid
+  inputs, sparse/frequent updates, pause/replay, pointer normalization/continuity,
+  keyboard repeat rejection, StrictMode event consumption and recovery focus.
+- Validation: final full unit/component suite **852 passed in 75 files**.
+  Lint, typecheck, production build, JSON validation and whitespace checks passed. Full Chromium regression: **46 passed, 37 intentionally skipped**,
+  zero failures; these include the two Magic Duel visibility cases.
+- A separate temporary Magic Duel preview built successfully. Both direct and
+  Playwright-runner Chromium launches failed before gameplay assertions with
+  macOS Mach-port permission denial (1100). No screenshots were produced and no
+  Magic Duel browser-gameplay or visual pass is claimed. Temporary repository
+  preview files and test were removed; preview outputs remain under /private/tmp.
+- No physical webcam, hand-tracking, motion-feel or Safari validation was performed.
+  `needs_hardware_validation` remains true and `hardware_verified` remains false.
+  No deployment, upload, dependency change or commit.
