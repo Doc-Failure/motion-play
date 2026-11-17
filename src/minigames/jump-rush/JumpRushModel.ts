@@ -17,7 +17,7 @@ export interface JumpRushSnapshot extends GameSessionSnapshot {
   lanes: JumpLane[]; obstacleX: number; wave: number; impactRemainingMs: number
 }
 
-/** Upward motion-center travel triggers a timed hop; no pose recognition. */
+/** Fresh normalized torso rise triggers a hop; hands never enter this model. */
 export class JumpRushModel {
   private readonly session: GameSession
   private readonly clock = new PauseClock()
@@ -30,7 +30,7 @@ export class JumpRushModel {
   private ends = 0
   private nextImpact = 0
   constructor(options: Partial<GameSessionOptions> = {}) {
-    this.session = new GameSession({ ...options, playerCount: options.playerCount ?? 1 })
+    this.session = new GameSession({ roundDurationMs: 40000, ...options, playerCount: options.playerCount ?? 1 })
   }
   start(timestamp: number) {
     const state = this.session.start(timestamp)
@@ -38,7 +38,7 @@ export class JumpRushModel {
     this.begins = timestamp + state.countdownRemainingMs; this.ends = this.begins + state.roundRemainingMs
     this.nextImpact = this.begins + jumpImpactMs
     this.samples.clear(); this.jumps.clear(); this.lastInput.clear()
-    this.lanes = state.scores.map(({ playerId }) => ({ playerId, cleared: 0, hits: 0, feedback: 'Rise as the hurdle reaches the star!', position: null, airborne: false }))
+    this.lanes = state.scores.map(({ playerId }) => ({ playerId, cleared: 0, hits: 0, feedback: 'Jump when the hurdle reaches the star!', position: null, airborne: false }))
     return this.snapshot()
   }
   update(timestamp: number) {
@@ -49,11 +49,11 @@ export class JumpRushModel {
       for (const lane of this.lanes) {
         const sample = this.samples.get(lane.playerId), jump = this.jumps.get(lane.playerId)
         if (!sample || this.nextImpact - sample.time > jumpFreshMs) {
-          lane.feedback = 'Movement lost. Try the next hurdle!'
+          lane.feedback = 'Step back: keep shoulders and hips visible.'
         } else if (jump !== undefined && jump <= this.nextImpact && this.nextImpact < jump + jumpDurationMs) {
           lane.cleared++; this.session.awardScore(lane.playerId, 10); lane.feedback = '✓ Over the hurdle! +10 points.'
         } else {
-          lane.hits++; this.session.awardScore(lane.playerId, -5); lane.feedback = '✕ Hurdle bump! −5. Try a later hop!'
+          lane.hits++; this.session.awardScore(lane.playerId, -5); lane.feedback = '✕ Hurdle bump! −5. Time your next jump!'
         }
       }
       this.nextImpact += jumpCycleMs
@@ -69,18 +69,19 @@ export class JumpRushModel {
   moveBody(event: MotionInputEvent) {
     const lane = this.lanes.find(lane => lane.playerId === event.playerId)
     if (!lane || event.kind !== 'BODY_MOVE' || !Number.isFinite(event.timestamp) || !this.clock.accepts(event.timestamp)
-      || this.clock.time(event.timestamp) < Math.max(this.begins, this.now)
+      || this.clock.time(event.timestamp) < Math.max(this.begins, this.now - 150)
       || event.timestamp <= (this.lastInput.get(event.playerId) ?? -Infinity)) return this.snapshot()
     const state = this.update(event.timestamp)
     if (state.phase !== 'playing') return state
     this.lastInput.set(event.playerId, event.timestamp)
     if (![event.x, event.y, event.confidence].every(Number.isFinite) || event.x < 0 || event.x > 1
       || event.y < 0 || event.y > 1 || event.confidence < .6 || event.confidence > 1) return this.releaseBody(event.playerId)
+    const distance = event.pointerId === 'torso' && Number.isFinite(event.activity) ? Math.max(.025, Math.min(.07, event.activity!)) : jumpDistance
     const previous = this.samples.get(event.playerId)
     let anchor = previous?.anchor ?? event.y, armed = previous?.armed ?? true
     // A deliberate downward return rearms the next rise. Holding high never hops again.
-    if (previous && !armed && event.y - previous.anchor >= jumpDistance - 1e-9) { armed = true; anchor = event.y }
-    if (previous && armed && anchor - event.y >= jumpDistance - 1e-9) {
+    if (previous && !armed && event.y - previous.anchor >= distance - 1e-9) { armed = true; anchor = event.y }
+    if (previous && armed && anchor - event.y >= distance - 1e-9) {
       this.jumps.set(event.playerId, this.now); armed = false; anchor = event.y
     } else if (armed) anchor = Math.max(anchor, event.y)
     this.samples.set(event.playerId, { y: event.y, anchor, time: this.now, armed })

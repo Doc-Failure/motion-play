@@ -42,3 +42,12 @@
 
 .body-alignment { z-index:2; }
 .body-test__align-controls { z-index:3; }
+
+/* This image and the skeleton come from the SAME captured camera frame. */
+.pose-matched-frame { position:absolute; inset:0; width:100%; height:100%; z-index:0; pointer-events:none; transform:none; }
+.pose-matched-frame[hidden] { display:none; }
+.camera-play .pose-matched-frame { z-index:-1; }
+.camera-lobby__zones { z-index:1; }
+/* A skeleton over a menu reads as a skeleton attached to the menu, not the person. */
+.camera-play .camera-arena:has([role="dialog"][aria-label$=" paused"]) .body-test:not([data-aligning="true"]) .body-test__sticks,
+.camera-play .camera-arena:has([role="dialog"][aria-label$=" results"]) .body-test .body-test__sticks { visibility:hidden; }

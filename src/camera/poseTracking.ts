@@ -1,6 +1,7 @@
-/** Diagnostic geometry only. These landmarks never award game points. */
+import type {DetectedHand} from '../input/HandGestureProcessor'
+/** Mirrored measured geometry. Games receive normalized events through input adapters. */
 export interface PosePoint { x:number; y:number; visibility?:number; presence?:number }
-export interface StickBody { neck:PosePoint; torso:PosePoint[]; arms:PosePoint[][]; legs:PosePoint[][]; hands:PosePoint[]; head?:PosePoint; headRadius:number; x:number }
+export interface StickBody { neck:PosePoint; torso:PosePoint[]; arms:PosePoint[][]; legs:PosePoint[][]; hands:PosePoint[]; palms?:PosePoint[]; wristIds?:number[]; head?:PosePoint; headRadius:number; x:number }
 const visible = (p:PosePoint|undefined):p is PosePoint => !!p && Number.isFinite(p.x) && Number.isFinite(p.y)
   && p.x>=0 && p.x<=1 && p.y>=0 && p.y<=1 && (p.visibility??0)>=.6 && (p.presence??1)>=.6
 const mirror = (p:PosePoint):PosePoint => ({...p,x:1-p.x})
@@ -23,16 +24,28 @@ export function stickBodies(poses:PosePoint[][]):StickBody[] {
       :visible(points[2])&&visible(points[5])?mirror(midpoint(points[2],points[5]))
       :visible(points[0])?mirror(points[0]):undefined
     const headRadius=Math.max(.012,Math.min(.045,Math.abs(left.x-right.x)*.18))
-    return [{neck,torso:hip?[neck,hip]:[],arms,legs,hands:[points[15],points[16]].filter(visible).map(mirror),head,headRadius,x:hip?.x??neck.x}]
+    const wrists=[15,16].filter(index=>visible(points[index]))
+    // The menu marker belongs in the palm, not at the wrist joint. Use only
+    // measured, confident finger landmarks; keep a wrist fallback if occluded.
+    const palms=wrists.map(index=>{
+      const wrist=points[index],tips=(index===15?[17,19,21]:[18,20,22]).map(i=>points[i]).filter(visible)
+      if(tips.length<2)return mirror(wrist)
+      const center={x:tips.reduce((sum,p)=>sum+p.x,0)/tips.length,y:tips.reduce((sum,p)=>sum+p.y,0)/tips.length}
+      if(Math.hypot(center.x-wrist.x,center.y-wrist.y)>.15)return mirror(wrist)
+      return {...mirror(midpoint(wrist,center)),visibility:Math.min(wrist.visibility??1,...tips.map(p=>p.visibility??1))}
+    })
+    return [{neck,torso:hip?[neck,hip]:[],arms,legs,hands:wrists.map(index=>mirror(points[index])),palms,wristIds:wrists,head,headRadius,x:hip?.x??neck.x}]
 
   }).sort((a,b)=>a.x-b.x)
 }
 
 export interface PoseTracker {
-  detect(video:HTMLVideoElement,time:number):PosePoint[][]
+  detect(video:HTMLVideoElement|HTMLCanvasElement,time:number):PosePoint[][]
+  enableHands?():Promise<boolean>
+  detectHands?(frame:HTMLCanvasElement):DetectedHand[]
   close():void
 }
-export function createPoseTracker(players:number,signal?:AbortSignal):Promise<PoseTracker> {
+export function createPoseTracker(players:number,signal?:AbortSignal,withHands=false):Promise<PoseTracker> {
   // A separate local runtime preserves the main app's connect-src 'none' policy.
   return new Promise((resolve,reject)=>{
     const frame=document.createElement('iframe')
@@ -50,12 +63,12 @@ export function createPoseTracker(players:number,signal?:AbortSignal):Promise<Po
     frame.onload=async()=>{
       if(closed)return
       try {
-        const runtime=frame.contentWindow as (Window & {createLocalPoseTracker?:(players:number)=>Promise<PoseTracker>})|null
+        const runtime=frame.contentWindow as (Window & {createLocalPoseTracker?:(players:number,withHands?:boolean)=>Promise<PoseTracker>})|null
         if(!runtime?.createLocalPoseTracker)throw new Error('Tracking runtime unavailable')
-        const loaded=await runtime.createLocalPoseTracker(players)
+        const loaded=await runtime.createLocalPoseTracker(players,withHands)
         if(closed){loaded.close();return}
         tracker=loaded;window.clearTimeout(timeout)
-        resolve({detect:(video,time)=>loaded.detect(video,time),close})
+        resolve({detect:(video,time)=>loaded.detect(video,time),enableHands:loaded.enableHands?()=>loaded.enableHands!():undefined,detectHands:loaded.detectHands?(frame)=>loaded.detectHands!(frame):undefined,close})
       }catch(error){if(!closed){close();reject(error)}}
     }
     if(signal?.aborted){abort();return}

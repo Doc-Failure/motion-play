@@ -1,5 +1,5 @@
 import { act, render, screen, waitFor } from '@testing-library/react'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { BodyTrackingTest } from '../src/camera/BodyTrackingTest'
 import { createPoseTracker, stickBodies, type PosePoint } from '../src/camera/poseTracking'
 
@@ -10,6 +10,7 @@ function pose() {
   points[13]={x:.2,y:.4,visibility:1};points[15]={x:.1,y:.2,visibility:1}
   return points
 }
+beforeEach(()=>{vi.spyOn(HTMLCanvasElement.prototype,'getContext').mockReturnValue({drawImage:vi.fn(),setTransform:vi.fn()} as unknown as CanvasRenderingContext2D)})
 afterEach(()=>vi.useRealTimers())
 describe('diagnostic stick geometry',()=>{
   it('mirrors measured joints once and draws one torso with two arms and hand dots',()=>{
@@ -17,6 +18,10 @@ describe('diagnostic stick geometry',()=>{
     expect(body.torso).toEqual([{x:.5,y:.3},{x:.5,y:.8}])
     expect(body.arms).toHaveLength(2);expect(body.hands).toHaveLength(2)
     expect(body.arms[0].at(-1)?.x).toBeCloseTo(.9)
+  })
+  it('keeps wrist identities stable when the other hand is hidden',()=>{
+    const points=pose();expect(stickBodies([points])[0].wristIds).toEqual([15,16])
+    points[15].visibility=.1;expect(stickBodies([points])[0].wristIds).toEqual([16])
   })
   it('never invents a torso or arm from missing, occluded or offscreen joints',()=>{
     const points=pose();points[13].visibility=.1
@@ -34,7 +39,7 @@ describe('diagnostic stick geometry',()=>{
 })
 function video() {
   const element=document.createElement('video')
-  Object.defineProperties(element,{readyState:{value:4},videoWidth:{value:640},paused:{value:false},currentTime:{value:1,writable:true}})
+  Object.defineProperties(element,{readyState:{value:4},videoWidth:{value:640},videoHeight:{value:480},paused:{value:false},currentTime:{value:1,writable:true}})
   return {current:element}
 }
 it('draws actual detector output, clears empty results and releases the runtime on exit',async()=>{
@@ -42,7 +47,7 @@ it('draws actual detector output, clears empty results and releases the runtime 
   const ref=video(),tracker={detect:vi.fn().mockReturnValue([pose()]),close:vi.fn()},create=vi.fn().mockResolvedValue(tracker)
   const {container,unmount}=render(<BodyTrackingTest videoRef={ref} players={2} createTracker={create}/>)
   await act(async()=>{await Promise.resolve()})
-  expect(create).toHaveBeenCalledWith(2,expect.any(AbortSignal))
+  expect(create).toHaveBeenCalledWith(2,expect.any(AbortSignal),false)
   expect(screen.getByRole('status')).toHaveTextContent('1 of 2 bodies visible')
   expect(container.querySelectorAll('polyline')).toHaveLength(5)
   tracker.detect.mockReturnValue([]);ref.current.currentTime=2
@@ -117,4 +122,112 @@ it('releases a detector that resolves after runtime initialization was cancelled
   await expect(pending).rejects.toHaveProperty('name','AbortError')
   const tracker={detect:()=>[],close:vi.fn()};resolve(tracker);await Promise.resolve()
   expect(tracker.close).toHaveBeenCalledOnce()
+})
+
+
+it('detects on the captured image and commits its mirrored pixels with the joints',async()=>{
+  const ref=video(),host=document.createElement('div');host.append(ref.current);document.body.append(host)
+  const tracker={detect:vi.fn().mockReturnValue([pose()]),close:vi.fn()}
+  const {unmount}=render(<BodyTrackingTest videoRef={ref} players={1} createTracker={async()=>tracker}/>)
+  await waitFor(()=>expect(tracker.detect).toHaveBeenCalled())
+  const image=(tracker.detect.mock.calls as unknown as unknown[][])[0][0] as HTMLCanvasElement
+  expect(image).toBeInstanceOf(HTMLCanvasElement)
+  expect(image.width).toBe(640);expect(image.height).toBe(480)
+  const ctx=image.getContext('2d')!
+  expect(ctx.drawImage).toHaveBeenCalledWith(ref.current,0,0,640,480)
+  expect(ctx.setTransform).toHaveBeenCalledWith(-1,0,0,1,640,0)
+  expect(ctx.drawImage).toHaveBeenCalledWith(image,0,0)
+  const matched=host.querySelector('.pose-matched-frame') as HTMLCanvasElement
+  expect(matched.hidden).toBe(false)
+  unmount();expect(host.querySelector('canvas')).toBeNull();host.remove()
+})
+
+it('keeps each inferred frame immutable instead of repainting an older pose over newer pixels',async()=>{
+  vi.useFakeTimers({toFake:['setTimeout','clearTimeout','performance']})
+  const ref=video(),tracker={detect:vi.fn().mockReturnValue([pose()]),close:vi.fn()}
+  render(<BodyTrackingTest videoRef={ref} players={1} createTracker={async()=>tracker}/>)
+  await act(async()=>{await Promise.resolve()})
+  const first=(tracker.detect.mock.calls as unknown as unknown[][])[0][0]
+  ref.current.currentTime=2;act(()=>vi.advanceTimersByTime(60))
+  const second=(tracker.detect.mock.calls as unknown as unknown[][])[1][0]
+  expect(first).not.toBe(second)
+  expect(first).toBeInstanceOf(HTMLCanvasElement);expect(second).toBeInstanceOf(HTMLCanvasElement)
+})
+
+
+it('retains gesture inference while hiding diagnostic UI and artwork fading',async()=>{
+  const status=vi.fn(),events=vi.fn(),tracker={detect:vi.fn().mockReturnValue([pose()]),detectHands:vi.fn().mockReturnValue([]),close:vi.fn()}
+  const {container}=render(<BodyTrackingTest videoRef={video()} players={1} showSkeleton={false} withHands onHandStatus={status} onHandEvents={events} createTracker={async()=>tracker}/>)
+  await waitFor(()=>expect(tracker.detectHands).toHaveBeenCalled())
+  expect(status).toHaveBeenCalledWith(true)
+  expect(events).toHaveBeenCalledWith([])
+  expect(container.querySelector('.body-test')).toHaveAttribute('data-tracked','false')
+  expect(container.querySelector('.body-test')).not.toBeVisible()
+})
+
+
+it('defers finger inference during the body-only ready check without reloading models',async()=>{
+  vi.useFakeTimers({toFake:['setTimeout','clearTimeout','performance']})
+  const ref=video(),tracker={detect:vi.fn().mockReturnValue([pose()]),detectHands:vi.fn().mockReturnValue([]),close:vi.fn()},create=vi.fn().mockResolvedValue(tracker),events=vi.fn()
+  const {rerender}=render(<BodyTrackingTest videoRef={ref} players={1} withHands onHandEvents={events} handInputEnabled={false} createTracker={create}/>)
+  await act(async()=>{await Promise.resolve()})
+  expect(tracker.detectHands).not.toHaveBeenCalled()
+  rerender(<BodyTrackingTest videoRef={ref} players={1} withHands onHandEvents={events} handInputEnabled createTracker={create}/>)
+  ref.current.currentTime=2;act(()=>vi.advanceTimersByTime(100))
+  expect(tracker.detectHands).toHaveBeenCalledOnce();expect(create).toHaveBeenCalledOnce()
+})
+
+
+it('keeps ready poses available while the Silk Squad finger model has not started or finished loading',async()=>{
+ vi.useFakeTimers({toFake:['setTimeout','clearTimeout','performance']})
+ let finish!:(available:boolean)=>void
+ const load=new Promise<boolean>(resolve=>{finish=resolve}),ref=video(),events=vi.fn(),status=vi.fn(),samples=vi.fn()
+ const tracker={detect:vi.fn().mockReturnValue([pose()]),enableHands:vi.fn().mockReturnValue(load),detectHands:vi.fn().mockReturnValue([]),close:vi.fn()},create=vi.fn().mockResolvedValue(tracker)
+ const props={videoRef:ref,players:1,withHands:true,onHandEvents:events,onHandStatus:status,onPoseSample:samples,createTracker:create}
+ const {rerender}=render(<BodyTrackingTest {...props} handInputEnabled={false}/>)
+ await act(async()=>{await Promise.resolve()})
+ expect(samples).toHaveBeenCalled();expect(tracker.enableHands).not.toHaveBeenCalled();expect(status).not.toHaveBeenCalledWith(true)
+ rerender(<BodyTrackingTest {...props} handInputEnabled/>)
+ ref.current.currentTime=2;act(()=>vi.advanceTimersByTime(100))
+ expect(tracker.enableHands).toHaveBeenCalledOnce();expect(tracker.detectHands).not.toHaveBeenCalled()
+ ref.current.currentTime=3;act(()=>vi.advanceTimersByTime(100));expect(tracker.detect).toHaveBeenCalledTimes(3)
+ await act(async()=>finish(true))
+ ref.current.currentTime=4;act(()=>vi.advanceTimersByTime(100));expect(tracker.detectHands).toHaveBeenCalledOnce()
+ expect(create).toHaveBeenCalledOnce();expect(status).toHaveBeenLastCalledWith(true)
+})
+
+it('emits arm casts with hidden sticks, skips fingers and resets movement during the ready hold',async()=>{
+ vi.useFakeTimers({toFake:['setTimeout','clearTimeout','performance']})
+ const ref=video(),points=pose(),events=vi.fn(),tracker={detect:vi.fn().mockImplementation(()=>[points]),detectHands:vi.fn(),close:vi.fn()},create=vi.fn().mockResolvedValue(tracker)
+ const props={videoRef:ref,players:1,withArms:true,showSkeleton:false,onArmEvents:events,createTracker:create}
+ const {rerender}=render(<BodyTrackingTest {...props} armInputEnabled={false}/>)
+ await act(async()=>{await Promise.resolve()})
+ expect(events).toHaveBeenLastCalledWith([])
+ rerender(<BodyTrackingTest {...props} armInputEnabled/>)
+ points[15].y=.3;ref.current.currentTime=2;act(()=>vi.advanceTimersByTime(100))
+ expect(events.mock.lastCall![0].some((e:{kind:string})=>e.kind==='ARM_MOVE')).toBe(false)
+ points[15].y=.4;ref.current.currentTime=3;act(()=>vi.advanceTimersByTime(100))
+ expect(events.mock.lastCall![0].some((e:{kind:string})=>e.kind==='ARM_MOVE')).toBe(true)
+ expect(tracker.detectHands).not.toHaveBeenCalled();expect(create).toHaveBeenCalledWith(1,expect.any(AbortSignal),false)
+})
+
+it('keeps navigation pose samples while restoring live video when diagnostic sticks are hidden',async()=>{
+ const ref=video(),host=document.createElement('div');host.append(ref.current);document.body.append(host)
+ const sample=vi.fn(),tracker={detect:vi.fn().mockReturnValue([pose()]),close:vi.fn()}
+ const {unmount}=render(<BodyTrackingTest videoRef={ref} players={1} showSkeleton={false} onPoseSample={sample} createTracker={async()=>tracker}/>)
+ await waitFor(()=>expect(sample).toHaveBeenCalled())
+ expect(host.querySelector('.pose-matched-frame')).not.toBeVisible()
+ unmount();host.remove()
+})
+
+it('uses the measured palm center for selection and falls back when fingers are occluded or implausible',()=>{
+ const points=pose();points[15]={x:.3,y:.4,visibility:1}
+ for(const id of [17,19,21])points[id]={x:.34,y:.34,visibility:1}
+ const body=stickBodies([points])[0]
+ expect(body.hands[0]).toMatchObject({x:.7,y:.4})
+ expect(body.palms![0].x).toBeCloseTo(.68);expect(body.palms![0].y).toBeCloseTo(.37)
+ points[17].visibility=.1;points[19].visibility=.1
+ expect(stickBodies([points])[0].palms![0]).toEqual(body.hands[0])
+ for(const id of [17,19,21])points[id]={x:.9,y:.9,visibility:1}
+ expect(stickBodies([points])[0].palms![0]).toEqual(body.hands[0])
 })

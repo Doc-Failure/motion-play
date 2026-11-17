@@ -1,4 +1,4 @@
-import { expect, openApp, test } from './fixtures'
+import { completeReadyGate, expect, openApp, test } from './fixtures'
 import { isGameVisible } from '../../src/app/catalog'
 
 test.beforeEach(() => {
@@ -8,11 +8,11 @@ test.beforeEach(() => {
 async function startDojo(page:import('@playwright/test').Page,players=1){
   await openApp(page,'#/camera/ninja-training')
   await page.getByRole('button',{name:`${players} ${players===1?'player':'players'}`,exact:true}).click()
-  await page.getByRole('button',{name:'Play Paper Dojo',exact:true}).click()
+  await completeReadyGate(page)
 }
-test('original towers and articulated ninjas support keyboard, bonus, pause and replay',async ({page,installMockCamera})=>{
+test('original towers and articulated ninjas support continuous play, pause and replay',async ({page,installMockCamera})=>{
   test.setTimeout(60_000)
-  await page.clock.install({time:new Date('2030-01-01T00:00:00Z')});await page.clock.pauseAt(new Date('2030-01-01T00:01:00Z'))
+  await page.addInitScript(()=>Object.assign(window,{__testClockInstalled:true}));await page.clock.install({time:new Date('2030-01-01T00:00:00Z')});await page.clock.pauseAt(new Date('2030-01-01T00:01:00Z'))
   await installMockCamera({person:true});await startDojo(page)
   await page.clock.runFor(4200)
   const ninja=page.getByRole('button',{name:'Swat Player 1 ninja 1',exact:true})
@@ -30,14 +30,15 @@ test('original towers and articulated ninjas support keyboard, bonus, pause and 
   await page.clock.runFor(5000)
   await expect(page.locator('.dojo-game header dd').last()).toHaveText(remaining!)
   await page.getByRole('button',{name:'Resume round'}).click()
-  // Advance into the 18s bonus window, excluding countdown and paused time.
+  // Ninjas continue through the former bonus window after excluding paused time.
   await page.clock.runFor(18000)
-  const bamboo=page.getByRole('button',{name:'Break Player 1 bamboo',exact:true})
-  await expect(bamboo).toBeVisible()
-  await bamboo.focus()
-  for(let i=0;i<3;i++){await page.keyboard.press('Enter');await page.clock.runFor(200)}
-  await expect(page.locator('.dojo-effect--break')).toBeVisible()
-  await page.screenshot({path:test.info().outputPath('dojo-bamboo.png')})
+  await expect(page.getByRole('button',{name:/bamboo/i})).toHaveCount(0)
+  await expect(page.locator('.dojo-ninja--leap').first()).toBeEnabled()
+  await page.locator('.dojo-ninja--leap').first().focus();await page.keyboard.press('Enter')
+  await expect(page.locator('.dojo-effect--hit').first()).toBeVisible()
+  await expect(page.getByRole('img',{name:'Detected human stick figure'})).toHaveCount(0)
+  await expect(page.locator('.game-wireframe-toggle')).toHaveCount(0)
+  await page.screenshot({path:test.info().outputPath('dojo-continuous-waves.png')})
   await page.clock.fastForward(60000)
   await expect(page.getByRole('dialog',{name:'Paper Dojo results'})).toBeVisible()
   await page.getByRole('button',{name:'Play again'}).click()
@@ -71,6 +72,9 @@ test('four-player lanes retain a clear camera center and one consistent local fo
   await installMockCamera({person:true});await startDojo(page,4)
   await page.waitForTimeout(4300);await page.evaluate(()=>document.fonts.ready)
   await expect(page.locator('.dojo-tower')).toHaveCount(8)
+  await expect(page.getByRole('img',{name:'Detected human stick figure'})).toHaveCount(0)
+  await expect(page.locator('.game-wireframe-toggle')).toHaveCount(0)
+  await expect(page.locator('.camera-arena .body-test')).toBeHidden()
   await expect(page.locator('.dojo-ninja--leap')).toHaveCount(4)
   for(const id of [1,2,3,4])await expect(page.getByLabel(`Player ${id} Paper Dojo play area`)).toBeVisible()
   expect(await page.evaluate(()=>document.fonts.check('16px "Motion Hand"'))).toBe(true)
@@ -83,7 +87,7 @@ test('four-player lanes retain a clear camera center and one consistent local fo
 })
 
 test('marked obstacles warn first and charge only the contacted player once',async ({page,installMockCamera})=>{
-  await page.clock.install({time:new Date('2030-01-01T00:00:00Z')})
+  await page.addInitScript(()=>Object.assign(window,{__testClockInstalled:true}));await page.clock.install({time:new Date('2030-01-01T00:00:00Z')})
   await page.clock.pauseAt(new Date('2030-01-01T00:01:00Z'))
   await installMockCamera({person:true});await startDojo(page,4)
   await page.clock.runFor(7300)

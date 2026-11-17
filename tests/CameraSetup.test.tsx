@@ -1,5 +1,6 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
+import {BeatModel} from '../src/minigames/beat-freak/BeatModel'
 import { NinjaTrainingModel } from '../src/minigames/ninja-training/NinjaTrainingModel'
 import { MotionProcessor } from '../src/input/MotionProcessor'
 import { CameraSetup, type CameraController } from '../src/camera/CameraSetup'
@@ -11,7 +12,7 @@ describe('simple camera flow', () => {
   it('shows recovery for a native camera AbortError instead of ignoring it as cancellation', async () => {
     const source = controller()
     vi.mocked(source.start).mockRejectedValueOnce(new DOMException('Device aborted capture', 'AbortError'))
-    render(<CameraSetup source={source} />)
+    render(<CameraSetup readyGateEnabled={false} source={source} />)
     await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('The camera could not start'))
     expect(screen.getByRole('button', { name: 'Activate camera & play' })).toBeEnabled()
   })
@@ -21,20 +22,21 @@ describe('simple camera flow', () => {
     ['paint-splash', 'Paint Splash'], ['meteor-smash', 'Meteor Smash'],
     ['balloon-panic', 'Balloon Panic'], ['gold-rush', 'Gold Rush'],
     ['simon-says', 'Simon Says'], ['fruit-catcher', 'Fruit Catcher'],
-    ['ninja-training', 'Paper Dojo'], ['magic-duel', 'Magic Duel'], ['basketball-blitz', 'Basketball Blitz'], ['punch-arena', 'Punch Arena'], ['fruit-slash', 'Fruit Slash'], ['jump-rush', 'Jump Rush'], ['freeze', 'Freeze!'], ['dance-challenge', 'Dance Challenge'], ['laser-escape', 'Laser Escape'], ['dodgeball', 'Dodgeball'], ['air-pong', 'Air Pong'], ['goalkeeper', 'Goalkeeper'], ['tower-builder', 'Tower Builder'],
+    ['ninja-training', 'Paper Dojo'], ['magic-duel', 'Magic Duel'], ['basketball-blitz', 'Basketball Blitz'], ['punch-arena', 'Cardboard Champ'], ['keep-ups', 'Keep Ups'], ['fruit-slash', 'Fruit Slash'], ['jump-rush', 'Jump Rush'], ['freeze', 'Freeze!'], ['dance-challenge', 'Dance Challenge'], ['laser-escape', 'Laser Escape'], ['dodgeball', 'Dodgeball'], ['air-pong', 'Air Pong'], ['goalkeeper', 'Goalkeeper'], ['tower-builder', 'Tower Builder'],
   ] as const)('keeps %s paused through denial and requires resume after recovery', async (game, title) => {
     const source = controller()
     vi.mocked(source.start)
       .mockResolvedValueOnce({} as MediaStream)
       .mockRejectedValueOnce(new DOMException('denied', 'NotAllowedError'))
       .mockResolvedValueOnce({} as MediaStream)
-    render(<CameraSetup source={source} initialGame={game} />)
+    if(game==='punch-arena'||game==='keep-ups')vi.spyOn(HTMLCanvasElement.prototype,'getContext').mockReturnValue(null)
+    render(<CameraSetup readyGateEnabled={false} source={source} initialGame={game} />)
     if (game === 'magic-duel' || game === 'basketball-blitz' || game === 'fruit-slash' || game === 'punch-arena') fireEvent.click(screen.getByRole('button', { name: 'Activate camera & play' }))
     else {
       await waitFor(() => expect(screen.getByRole('button', { name: `Play ${title}` })).toBeEnabled())
       fireEvent.click(screen.getByRole('button', { name: `Play ${title}` }))
     }
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Pause' })).toBeEnabled())
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Exit game' })).toBeEnabled())
     act(() => vi.mocked(source.start).mock.calls[0][1]!())
     expect(screen.getByRole('dialog')).toHaveTextContent('The camera disconnected')
     expect(screen.getByRole('button', { name: 'Resume round' })).toBeDisabled()
@@ -48,7 +50,7 @@ describe('simple camera flow', () => {
   })
   it('integrates hidden Fruit Slash as four-player simulation with direct countdown', () => {
     const source = controller()
-    render(<CameraSetup source={source} initialGame="fruit-slash" />)
+    render(<CameraSetup readyGateEnabled={false} source={source} initialGame="fruit-slash" />)
     expect(source.start).not.toHaveBeenCalled()
     fireEvent.click(screen.getByRole('button', { name: '4 players' }))
     fireEvent.click(screen.getByRole('button', { name: 'Play without camera' }))
@@ -61,23 +63,24 @@ describe('simple camera flow', () => {
     expect(source.start).not.toHaveBeenCalled()
   })
 
-  it('integrates hidden Punch Arena as four-player simulation with direct countdown', () => {
+  it('integrates Cardboard Champ as four-player simulation with direct countdown', () => {
+    vi.spyOn(HTMLCanvasElement.prototype,'getContext').mockReturnValue(null)
     const source = controller()
-    render(<CameraSetup source={source} initialGame="punch-arena" />)
+    render(<CameraSetup readyGateEnabled={false} source={source} initialGame="punch-arena" />)
     expect(source.start).not.toHaveBeenCalled()
     fireEvent.click(screen.getByRole('button', { name: '4 players' }))
     fireEvent.click(screen.getByRole('button', { name: 'Play without camera' }))
-    expect(screen.getByRole('heading', { name: 'Punch Arena' })).toBeVisible()
-    expect(screen.getAllByRole('group', { name: /Punch Arena play area/ })).toHaveLength(4)
-    expect(screen.getByText(/hand tracking unavailable/)).toBeVisible()
+    expect(screen.getByRole('heading', { name: 'Cardboard Champ' })).toBeVisible()
+    expect(screen.getAllByRole('group', { name: /Cardboard Champ play area/ })).toHaveLength(4)
+    expect(screen.getByText(/Jab the robot/)).toBeVisible()
     expect(screen.queryByRole('button', { name: 'Start round now' })).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Exit game' }))
-    expect(screen.getByRole('button', { name: 'Play Punch Arena' })).toBeEnabled()
+    expect(screen.getByRole('button', { name: 'Play Cardboard Champ' })).toBeEnabled()
     expect(source.start).not.toHaveBeenCalled()
   })
   it('integrates hidden Basketball Blitz as four-player simulation with direct countdown', () => {
     const source = controller()
-    render(<CameraSetup source={source} initialGame="basketball-blitz" />)
+    render(<CameraSetup readyGateEnabled={false} source={source} initialGame="basketball-blitz" />)
     expect(source.start).not.toHaveBeenCalled()
     fireEvent.click(screen.getByRole('button', { name: '4 players' }))
     fireEvent.click(screen.getByRole('button', { name: 'Play without camera' }))
@@ -91,7 +94,7 @@ describe('simple camera flow', () => {
   })
   it('integrates hidden Magic Duel as four-player simulation with direct countdown', () => {
     const source = controller()
-    render(<CameraSetup source={source} initialGame="magic-duel" />)
+    render(<CameraSetup readyGateEnabled={false} source={source} initialGame="magic-duel" />)
     expect(source.start).not.toHaveBeenCalled()
     fireEvent.click(screen.getByRole('button', { name: '4 players' }))
     fireEvent.click(screen.getByRole('button', { name: 'Play without camera' }))
@@ -109,7 +112,7 @@ describe('simple camera flow', () => {
       .mockResolvedValueOnce({} as MediaStream)
       .mockRejectedValueOnce(new DOMException('denied', 'NotAllowedError'))
       .mockResolvedValueOnce({} as MediaStream)
-    render(<CameraSetup source={source} />)
+    render(<CameraSetup readyGateEnabled={false} source={source} />)
     await waitFor(() => expect(screen.getByRole('button', { name: 'Play Bubble Battle' })).toBeEnabled())
     fireEvent.click(screen.getByRole('button', { name: 'Play Bubble Battle' }))
     const onEnded = vi.mocked(source.start).mock.calls[0][1]!
@@ -128,8 +131,8 @@ describe('simple camera flow', () => {
   })
   it('opens Fish Frenzy from an inactive catalog without requesting a camera and plays four-player fallback', async () => {
     const source = controller()
-    const { rerender } = render(<CameraSetup source={source} active={false} />)
-    rerender(<CameraSetup source={source} initialGame="fish-frenzy" />)
+    const { rerender } = render(<CameraSetup readyGateEnabled={false} source={source} active={false} />)
+    rerender(<CameraSetup readyGateEnabled={false} source={source} initialGame="fish-frenzy" />)
     await waitFor(() => expect(screen.getByRole('heading', { name: 'Fish Frenzy' })).toBeVisible())
     expect(source.start).not.toHaveBeenCalled()
     fireEvent.click(screen.getByRole('button', { name: '4 players' }))
@@ -146,7 +149,7 @@ describe('simple camera flow', () => {
   it('requests the Fish Frenzy camera only on activation and keeps fallback usable after denial', async () => {
     const source = controller()
     vi.mocked(source.start).mockRejectedValueOnce(new DOMException('denied', 'NotAllowedError'))
-    render(<CameraSetup source={source} initialGame="fish-frenzy" />)
+    render(<CameraSetup readyGateEnabled={false} source={source} initialGame="fish-frenzy" />)
     expect(source.start).not.toHaveBeenCalled()
     fireEvent.click(screen.getByRole('button', { name: 'Activate camera & play' }))
     await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('Camera permission is blocked'))
@@ -157,7 +160,7 @@ describe('simple camera flow', () => {
   it('integrates hidden Dodgeball with four-player fallback and immediate countdown', async () => {
     const source = controller()
     vi.mocked(source.start).mockRejectedValue(new DOMException('denied', 'NotAllowedError'))
-    render(<CameraSetup source={source} initialGame="dodgeball" />)
+    render(<CameraSetup readyGateEnabled={false} source={source} initialGame="dodgeball" />)
     await waitFor(() => expect(screen.getByRole('alert')).toBeVisible())
     fireEvent.click(screen.getByRole('button', { name: '4 players' }))
     fireEvent.click(screen.getByRole('button', { name: 'Play without camera' }))
@@ -170,7 +173,7 @@ describe('simple camera flow', () => {
   it('integrates hidden Laser Escape with four-player fallback and immediate countdown', async () => {
     const source = controller()
     vi.mocked(source.start).mockRejectedValue(new DOMException('denied', 'NotAllowedError'))
-    render(<CameraSetup source={source} initialGame="laser-escape" />)
+    render(<CameraSetup readyGateEnabled={false} source={source} initialGame="laser-escape" />)
     await waitFor(() => expect(screen.getByRole('alert')).toBeVisible())
     fireEvent.click(screen.getByRole('button', { name: '4 players' }))
     fireEvent.click(screen.getByRole('button', { name: 'Play without camera' }))
@@ -183,7 +186,7 @@ describe('simple camera flow', () => {
   it('integrates hidden Tower Builder with four-player fallback and immediate countdown', async () => {
     const source = controller()
     vi.mocked(source.start).mockRejectedValue(new DOMException('denied', 'NotAllowedError'))
-    render(<CameraSetup source={source} initialGame="tower-builder" />)
+    render(<CameraSetup readyGateEnabled={false} source={source} initialGame="tower-builder" />)
     await waitFor(() => expect(screen.getByRole('alert')).toBeVisible())
     fireEvent.click(screen.getByRole('button', { name: '4 players' }))
     fireEvent.click(screen.getByRole('button', { name: 'Play without camera' }))
@@ -195,15 +198,15 @@ describe('simple camera flow', () => {
   })
   it('opens the camera on game selection and retains it when navigating away and back', async () => {
     const source = controller()
-    const {rerender, unmount} = render(<CameraSetup source={source} />)
+    const {rerender, unmount} = render(<CameraSetup readyGateEnabled={false} source={source} />)
     await waitFor(() => expect(screen.getByRole('button', {name: 'Play Bubble Battle'})).toBeEnabled())
     expect(source.start).toHaveBeenCalledTimes(1)
     expect(screen.queryByRole('slider')).not.toBeInTheDocument()
     expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', {name: '4 players'}))
-    rerender(<CameraSetup source={source} active={false} />)
+    rerender(<CameraSetup readyGateEnabled={false} source={source} active={false} />)
     expect(source.stop).not.toHaveBeenCalled()
-    rerender(<CameraSetup source={source} initialGame="window-wipe" />)
+    rerender(<CameraSetup readyGateEnabled={false} source={source} initialGame="window-wipe" />)
     await waitFor(() => expect(screen.getByRole('button', {name: 'Play Window Wipe'})).toBeEnabled())
     expect(source.start).toHaveBeenCalledTimes(1)
     expect(screen.getByRole('button', {name: '4 players'})).toHaveAttribute('aria-pressed', 'true')
@@ -212,7 +215,7 @@ describe('simple camera flow', () => {
   })
   it('routes Piñata Party directly into four-player gameplay and back to setup', async () => {
     const source = controller()
-    render(<CameraSetup source={source} initialGame="pinata-party" />)
+    render(<CameraSetup readyGateEnabled={false} source={source} initialGame="pinata-party" />)
     await waitFor(() => expect(screen.getByRole('button', { name: 'Play Piñata Party' })).toBeEnabled())
     fireEvent.click(screen.getByRole('button', { name: '4 players' }))
     fireEvent.click(screen.getByRole('button', { name: 'Play Piñata Party' }))
@@ -224,7 +227,7 @@ describe('simple camera flow', () => {
   })
   it('routes Monster Defense directly into four-player gameplay and setup', async () => {
     const source = controller()
-    render(<CameraSetup source={source} initialGame="monster-defense" />)
+    render(<CameraSetup readyGateEnabled={false} source={source} initialGame="monster-defense" />)
     await waitFor(() => expect(screen.getByRole('button', { name: 'Play Monster Defense' })).toBeEnabled())
     fireEvent.click(screen.getByRole('button', { name: '4 players' }))
     fireEvent.click(screen.getByRole('button', { name: 'Play Monster Defense' }))
@@ -235,7 +238,7 @@ describe('simple camera flow', () => {
   })
   it('routes Supermarket Rush directly into four-player gameplay and setup', async () => {
     const source = controller()
-    render(<CameraSetup source={source} initialGame="supermarket-rush" />)
+    render(<CameraSetup readyGateEnabled={false} source={source} initialGame="supermarket-rush" />)
     await waitFor(() => expect(screen.getByRole('button', { name: 'Play Supermarket Rush' })).toBeEnabled())
     fireEvent.click(screen.getByRole('button', { name: '4 players' }))
     fireEvent.click(screen.getByRole('button', { name: 'Play Supermarket Rush' }))
@@ -246,7 +249,7 @@ describe('simple camera flow', () => {
   })
   it('routes Star Collector directly into four-player gameplay and setup', async () => {
     const source = controller()
-    render(<CameraSetup source={source} initialGame="star-collector" />)
+    render(<CameraSetup readyGateEnabled={false} source={source} initialGame="star-collector" />)
     await waitFor(() => expect(screen.getByRole('button', { name: 'Play Star Collector' })).toBeEnabled())
     fireEvent.click(screen.getByRole('button', { name: '4 players' }))
     fireEvent.click(screen.getByRole('button', { name: 'Play Star Collector' }))
@@ -257,7 +260,7 @@ describe('simple camera flow', () => {
   })
   it('routes Dance Challenge directly into four-player gameplay and setup', async () => {
     const source = controller()
-    render(<CameraSetup source={source} initialGame="dance-challenge" />)
+    render(<CameraSetup readyGateEnabled={false} source={source} initialGame="dance-challenge" />)
     await waitFor(() => expect(screen.getByRole('button', { name: 'Play Dance Challenge' })).toBeEnabled())
     fireEvent.click(screen.getByRole('button', { name: '4 players' }))
     fireEvent.click(screen.getByRole('button', { name: 'Play Dance Challenge' }))
@@ -268,7 +271,7 @@ describe('simple camera flow', () => {
   })
   it('routes Jump Rush directly into four-player gameplay and setup', async () => {
     const source = controller()
-    render(<CameraSetup source={source} initialGame="jump-rush" />)
+    render(<CameraSetup readyGateEnabled={false} source={source} initialGame="jump-rush" />)
     await waitFor(() => expect(screen.getByRole('button', { name: 'Play Jump Rush' })).toBeEnabled())
     fireEvent.click(screen.getByRole('button', { name: '4 players' }))
     fireEvent.click(screen.getByRole('button', { name: 'Play Jump Rush' }))
@@ -279,7 +282,7 @@ describe('simple camera flow', () => {
   })
   it('rejects cached video images and pauses Freeze when the decoder stops advancing', async () => {
     const source = controller()
-    render(<CameraSetup source={source} initialGame="freeze" />)
+    render(<CameraSetup readyGateEnabled={false} source={source} initialGame="freeze" />)
     await waitFor(() => expect(screen.getByRole('button', {name:'Play Freeze!'})).toBeEnabled())
     vi.useFakeTimers({toFake:['setTimeout','clearTimeout','setInterval','clearInterval','performance','requestAnimationFrame','cancelAnimationFrame']})
     const process = vi.spyOn(MotionProcessor.prototype, 'process')
@@ -312,7 +315,7 @@ describe('simple camera flow', () => {
   })
   it('routes Freeze! directly into four-player gameplay and setup', async () => {
     const source = controller()
-    render(<CameraSetup source={source} initialGame="freeze" />)
+    render(<CameraSetup readyGateEnabled={false} source={source} initialGame="freeze" />)
     await waitFor(() => expect(screen.getByRole('button', { name: 'Play Freeze!' })).toBeEnabled())
     fireEvent.click(screen.getByRole('button', { name: '4 players' }))
     fireEvent.click(screen.getByRole('button', { name: 'Play Freeze!' }))
@@ -323,7 +326,7 @@ describe('simple camera flow', () => {
   })
   it('routes Treasure Grab directly into four-player gameplay and setup', async () => {
     const source = controller()
-    render(<CameraSetup source={source} initialGame="treasure-grab" />)
+    render(<CameraSetup readyGateEnabled={false} source={source} initialGame="treasure-grab" />)
     await waitFor(() => expect(screen.getByRole('button', { name: 'Play Treasure Grab' })).toBeEnabled())
     fireEvent.click(screen.getByRole('button', { name: '4 players' }))
     fireEvent.click(screen.getByRole('button', { name: 'Play Treasure Grab' }))
@@ -334,7 +337,7 @@ describe('simple camera flow', () => {
   })
   it('routes Car Wash directly into four-player gameplay and setup', async () => {
     const source = controller()
-    render(<CameraSetup source={source} initialGame="car-wash" />)
+    render(<CameraSetup readyGateEnabled={false} source={source} initialGame="car-wash" />)
     await waitFor(() => expect(screen.getByRole('button', { name: 'Play Car Wash' })).toBeEnabled())
     fireEvent.click(screen.getByRole('button', { name: '4 players' }))
     fireEvent.click(screen.getByRole('button', { name: 'Play Car Wash' }))
@@ -346,14 +349,14 @@ describe('simple camera flow', () => {
   it('offers camera-free play after denial and keeps simulation across game selection', async () => {
     const source = controller()
     vi.mocked(source.start).mockRejectedValueOnce(new DOMException('denied', 'NotAllowedError'))
-    const { rerender } = render(<CameraSetup source={source} />)
+    const { rerender } = render(<CameraSetup readyGateEnabled={false} source={source} />)
     await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('Camera permission is blocked'))
     fireEvent.click(screen.getByRole('button', { name: '4 players' }))
     fireEvent.click(screen.getByRole('button', { name: 'Play without camera' }))
     expect(screen.getAllByLabelText(/^Player [1-4] Bubble Battle play area$/)).toHaveLength(4)
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Exit game' }))
-    rerender(<CameraSetup source={source} initialGame="window-wipe" />)
+    rerender(<CameraSetup readyGateEnabled={false} source={source} initialGame="window-wipe" />)
     await waitFor(() => expect(screen.getByRole('button', { name: 'Play Window Wipe' })).toBeEnabled())
     expect(screen.getByRole('button', { name: 'Use camera instead' })).toBeEnabled()
     expect(source.start).toHaveBeenCalledOnce()
@@ -361,7 +364,7 @@ describe('simple camera flow', () => {
   it('explains denied permission and allows retry', async () => {
     const source = controller()
     vi.mocked(source.start).mockRejectedValueOnce(new DOMException('denied', 'NotAllowedError'))
-    render(<CameraSetup source={source} />)
+    render(<CameraSetup readyGateEnabled={false} source={source} />)
     await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('Camera permission is blocked'))
     expect(source.start).toHaveBeenCalledTimes(1)
     fireEvent.click(screen.getByRole('button', {name: 'Activate camera & play'}))
@@ -372,7 +375,7 @@ describe('simple camera flow', () => {
 
 it('auto-starts Quick Play once and stays in setup after exit', async () => {
   const source = controller()
-  render(<CameraSetup source={source} initialGame="star-collector" autoPlay />)
+  render(<CameraSetup readyGateEnabled={false} source={source} initialGame="star-collector" autoPlay />)
   await waitFor(() => expect(screen.getByLabelText('Player 1 Star Collector play area')).toBeVisible())
   expect(screen.queryByRole('button',{name:'Start round now'})).not.toBeInTheDocument()
   fireEvent.click(screen.getByRole('button',{name:'Exit game'}))
@@ -382,7 +385,7 @@ it('auto-starts Quick Play once and stays in setup after exit', async () => {
 
 it('requests the camera for Quick Play even when Fish Frenzy is randomly chosen', async () => {
   const source = controller()
-  render(<CameraSetup source={source} initialGame="fish-frenzy" autoPlay />)
+  render(<CameraSetup readyGateEnabled={false} source={source} initialGame="fish-frenzy" autoPlay />)
   await waitFor(() => expect(screen.getByRole('group',{name:'Player 1 Fish Frenzy play area'})).toBeVisible())
   expect(source.start).toHaveBeenCalledTimes(1)
 })
@@ -390,8 +393,9 @@ it('requests the camera for Quick Play even when Fish Frenzy is randomly chosen'
 
 it('adapts Ninja Training camera samples into both concrete MIXED input kinds',async()=>{
   const source=controller()
-  render(<CameraSetup source={source} initialGame="ninja-training"/>)
+  render(<CameraSetup readyGateEnabled={false} source={source} initialGame="ninja-training"/>)
   await waitFor(()=>expect(screen.getByRole('button',{name:'Play Paper Dojo'})).toBeEnabled())
+  expect(screen.queryByRole('button',{name:/body tracking/i})).not.toBeInTheDocument()
   vi.useFakeTimers({toFake:['setTimeout','clearTimeout','setInterval','clearInterval','performance','requestAnimationFrame','cancelAnimationFrame']})
   const sample={playerId:1 as const,kind:'MOTION_HIT' as const,x:.3,y:.62,confidence:1,timestamp:0}
   const process=vi.spyOn(MotionProcessor.prototype,'process').mockImplementation((_frame,_zones,timestamp)=>({
@@ -405,6 +409,7 @@ it('adapts Ninja Training camera samples into both concrete MIXED input kinds',a
   } as unknown as CanvasRenderingContext2D)
   try {
     fireEvent.click(screen.getByRole('button',{name:'Play Paper Dojo'}))
+    expect(screen.queryByRole('button',{name:/wireframe/i})).not.toBeInTheDocument()
     const video=screen.getByLabelText('Mirrored live camera during gameplay')
     Object.defineProperties(video,{
       videoWidth:{value:640},readyState:{value:4},paused:{value:false},ended:{value:false},currentTime:{value:1},
@@ -413,4 +418,24 @@ it('adapts Ninja Training camera samples into both concrete MIXED input kinds',a
     expect(hit).toHaveBeenCalledWith(expect.objectContaining({playerId:1,kind:'MOTION_HIT',x:.3,y:.62}))
     expect(hit).toHaveBeenCalledWith(expect.objectContaining({playerId:1,kind:'BODY_MOVE',x:.3,y:.62}))
   } finally {hit.mockRestore();process.mockRestore();context.mockRestore();vi.useRealTimers()}
+})
+
+it('passes continuous occupied motion to Paper Jam even when the global hit debounce is closed',async()=>{
+ const source=controller()
+ render(<CameraSetup readyGateEnabled={false} source={source} initialGame="beat-freak"/>)
+ await waitFor(()=>expect(screen.getByRole('button',{name:'Play Paper Jam'})).toBeEnabled())
+ vi.useFakeTimers({toFake:['setTimeout','clearTimeout','setInterval','clearInterval','performance','requestAnimationFrame','cancelAnimationFrame']})
+ const process=vi.spyOn(MotionProcessor.prototype,'process').mockImplementation((_frame,_zones,timestamp)=>({
+  mask:new Uint8ClampedArray(160*90),width:160,height:90,threshold:20,zones:[],events:[],
+  positions:[{playerId:1,kind:'MOTION_HIT',x:.18,y:.32,confidence:1,timestamp}],
+ }))
+ const hit=vi.spyOn(BeatModel.prototype,'hit')
+ const context=vi.spyOn(HTMLCanvasElement.prototype,'getContext').mockReturnValue({drawImage:vi.fn(),getImageData:()=>({data:new Uint8ClampedArray(160*90*4)})} as unknown as CanvasRenderingContext2D)
+ try{
+  fireEvent.click(screen.getByRole('button',{name:'Play Paper Jam'}))
+  const video=screen.getByLabelText('Mirrored live camera during gameplay')
+  Object.defineProperties(video,{videoWidth:{value:640},readyState:{value:4},paused:{value:false},ended:{value:false},currentTime:{value:1}})
+  act(()=>vi.advanceTimersByTime(100))
+  expect(hit).toHaveBeenCalledWith(expect.objectContaining({kind:'MOTION_HIT',x:.18,y:.32,playerId:1}))
+ }finally{hit.mockRestore();process.mockRestore();context.mockRestore();vi.useRealTimers()}
 })

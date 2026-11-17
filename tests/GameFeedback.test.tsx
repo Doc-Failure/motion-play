@@ -36,6 +36,15 @@ describe('game feedback', () => {
       unmount()
     } finally { vi.useRealTimers() }
   })
+  it('lets a game own capture effects without duplicate score badges or chimes', () => {
+    const {rerender}=render(<GameFeedback snapshot={{...state,phase:'playing'}} scoreFeedback={false}/>)
+    vi.mocked(gameAudio.play).mockClear()
+    rerender(<GameFeedback snapshot={{...state,phase:'playing',scores:[{playerId:1,score:10}]}} scoreFeedback={false}/>)
+    expect(gameAudio.play).not.toHaveBeenCalled()
+    expect(screen.queryByText('P1 +10 ✦')).not.toBeInTheDocument()
+    expect(screen.getByRole('button',{name:'Mute game sound'})).toBeVisible()
+  })
+
   it('provides an accessible one-button sound toggle and stops audio on exit', () => {
     const {unmount} = render(<GameFeedback snapshot={state}/> )
     fireEvent.click(screen.getByRole('button',{name:'Mute game sound'}))

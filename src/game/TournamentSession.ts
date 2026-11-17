@@ -1,26 +1,25 @@
+import {visibleCatalogGames} from '../app/catalog'
 import type { PlayerCount, PlayerId } from '../input/PlayerZoneMapper'
 import type { PlayableGame } from '../camera/CameraSetup'
 
-export type TournamentLength = 3 | 5
+export const TOURNAMENT_GAME_COUNT = 5
+export type TournamentLength = typeof TOURNAMENT_GAME_COUNT
 export type TournamentScoring = 'competitive' | 'cooperative'
 export type TournamentScore = { playerId: PlayerId; score: number }
 export type TournamentRound = { game: PlayableGame; title: string; scoring: TournamentScoring }
 export type CompletedTournamentRound = TournamentRound & { scores: TournamentScore[]; teamScore: number }
 
-const rounds: readonly TournamentRound[] = [
-  { game: 'bubble-battle', title: 'Bubble Battle', scoring: 'competitive' },
-  { game: 'window-wipe', title: 'Window Wipe', scoring: 'competitive' },
-  { game: 'goalkeeper', title: 'Goalkeeper', scoring: 'cooperative' },
-  { game: 'whack-a-mole', title: 'Whack-a-Mole', scoring: 'competitive' },
-  { game: 'paint-splash', title: 'Paint Splash', scoring: 'competitive' },
-]
+const rounds: readonly TournamentRound[] = visibleCatalogGames.map(game=>({
+  game:game.slug as PlayableGame,title:game.title,
+  scoring:game.mode==='Cooperative'?'cooperative':'competitive',
+}))
 
 export class TournamentSession {
   readonly schedule: readonly TournamentRound[]
   readonly playerCount: PlayerCount
   private completed: CompletedTournamentRound[] = []
 
-  constructor(playerCount: PlayerCount, length: TournamentLength) {
+  constructor(playerCount: PlayerCount, length: TournamentLength=TOURNAMENT_GAME_COUNT) {
     this.playerCount = playerCount
     this.schedule = rounds.slice(0, length)
   }
@@ -52,6 +51,7 @@ export class TournamentSession {
       completed: this.completed.map((round) => ({ ...round, scores: round.scores.map((score) => ({ ...score })) })),
       totals,
       ranking,
+      winners: this.isComplete ? ranking.filter(entry=>entry.score===ranking[0].score) : [],
       cooperativeTotal: this.completed.filter((round) => round.scoring === 'cooperative').reduce((total, round) => total + round.teamScore, 0),
       isComplete: this.isComplete,
     }

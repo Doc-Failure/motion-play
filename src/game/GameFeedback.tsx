@@ -1,6 +1,6 @@
 import { InputFeedbackContext } from './InputFeedbackContext'
 import { useCallback, useContext, useEffect, useRef, useState } from 'react'
-import { gameAudio, type Cue } from '../audio/GameAudio'
+import { gameAudio, type Cue, type AudioTheme } from '../audio/GameAudio'
 
 interface FeedbackSnapshot {
   phase: string
@@ -8,7 +8,7 @@ interface FeedbackSnapshot {
   countdownRemainingMs: number
   scores: { playerId: number; score: number }[]
 }
-export function GameFeedback({ snapshot, theme, musicPaused = false }: { snapshot: FeedbackSnapshot; theme?: 'dojo'|'fireworks'; musicPaused?: boolean }) {
+export function GameFeedback({ snapshot, theme, musicPaused = false, scoreFeedback = true }: { snapshot: FeedbackSnapshot; scoreFeedback?:boolean; theme?: Exclude<AudioTheme,'default'>; musicPaused?: boolean }) {
   const play=useCallback((cue:Cue)=>{if(theme)gameAudio.play(cue,theme);else gameAudio.play(cue)},[theme])
   const input = useContext(InputFeedbackContext)
   const [sound, setSound] = useState(gameAudio.enabled)
@@ -27,8 +27,8 @@ export function GameFeedback({ snapshot, theme, musicPaused = false }: { snapsho
     }
   }, [])
   useEffect(() => {
-    if (snapshot.phase === 'countdown') play('tick')
-  }, [snapshot.phase, countdown, play])
+    if (snapshot.phase === 'countdown'&&!input.readyGateActive) play('tick')
+  }, [snapshot.phase, countdown, play,input.readyGateActive])
   useEffect(() => {
     if (snapshot.phase === 'playing') play('go')
     if (snapshot.phase !== 'playing') {
@@ -46,7 +46,7 @@ export function GameFeedback({ snapshot, theme, musicPaused = false }: { snapsho
   useEffect(() => {
     const before = previous.current
     previous.current = snapshot
-    if (snapshot.phase !== 'playing' || before.phase !== 'playing') return
+    if (!scoreFeedback || snapshot.phase !== 'playing' || before.phase !== 'playing') return
     const changes = snapshot.scores.flatMap(score => {
       const amount = score.score - (before.scores.find(item => item.playerId === score.playerId)?.score ?? score.score)
       const point = input.events.find(event => event.playerId === score.playerId)
@@ -58,7 +58,7 @@ export function GameFeedback({ snapshot, theme, musicPaused = false }: { snapsho
       play(changes.some(change => change.amount < 0) ? 'miss' : 'score')
       setBursts(changes)
     }
-  }, [snapshot, input, play])
+  }, [snapshot, input, play,scoreFeedback])
   useEffect(() => {
     if (!bursts.length) return
     const timer = window.setTimeout(() => setBursts([]), 850)

@@ -1,7 +1,7 @@
 import { createServer, type Server } from 'node:http'
 import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
-import { expect, releaseDirectory, test } from './fixtures'
+import { completeReadyGate, expect, releaseDirectory, test } from './fixtures'
 
 // MediaPipe uses WebGL for preprocessing even with CPU inference.
 test.use({ launchOptions: { args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] } })
@@ -19,7 +19,7 @@ test.beforeAll(async () => {
     const path = pathname === '/' ? '/index.html' : pathname
     if (!files.has(path)) { response.writeHead(404).end(); return }
     const extension = path.split('.').pop()!
-    const mime: Record<string, string> = { js: 'text/javascript', mjs: 'text/javascript', wasm: 'application/wasm', css: 'text/css', svg: 'image/svg+xml', webp: 'image/webp', ttf: 'font/ttf', webmanifest: 'application/manifest+json', txt: 'text/plain', html: 'text/html' }
+    const mime: Record<string, string> = { js: 'text/javascript', mjs: 'text/javascript', wasm: 'application/wasm', css: 'text/css', svg: 'image/svg+xml', webp: 'image/webp', mp4:'video/mp4', ttf: 'font/ttf', webmanifest: 'application/manifest+json', txt: 'text/plain', html: 'text/html' }
     void readFile(resolve(releaseDirectory, path.slice(1))).then(bytes => {
       response.writeHead(200, { 'Content-Type': mime[extension] ?? 'application/octet-stream', 'Cache-Control': 'no-store' }).end(bytes)
     }).catch(() => response.writeHead(500).end())
@@ -40,6 +40,7 @@ test('opted-in production shell reloads offline with art/fonts and removes only 
     if (!localStorage.getItem('motion-play:settings:v1')) localStorage.setItem('motion-play:settings:v1', JSON.stringify({ soundEnabled: false, reducedMotion: false, offlineCaching: true }))
   })
   await page.goto(origin)
+  await page.getByRole('button',{name:'1 player',exact:true}).click()
   await page.evaluate(async () => {
     await navigator.serviceWorker.ready
     if (!navigator.serviceWorker.controller) await new Promise<void>(resolve => navigator.serviceWorker.addEventListener('controllerchange', () => resolve(), { once: true }))
@@ -75,7 +76,7 @@ test('opted-in production shell reloads offline with art/fonts and removes only 
   await page.getByRole('link', { name: /Game Catalog/ }).click()
   await page.getByRole('link', { name: 'Play Paper Dojo', exact: true }).click()
   await expect(page.getByRole('alert')).toContainText('Camera permission is blocked')
-  await page.getByRole('button', { name: 'Play without camera', exact: true }).click()
+  await page.getByRole('button', { name: 'Play without camera', exact: true }).click();await completeReadyGate(page)
   await expect(page.locator('.dojo-game')).toBeVisible()
   await page.evaluate(() => localStorage.setItem('motion-play:settings:v1', JSON.stringify({ soundEnabled: false, reducedMotion: false, offlineCaching: false })))
   await page.reload()
@@ -87,6 +88,7 @@ test('previously used local model runs blank-frame inference after a genuine off
   test.setTimeout(90000)
   await page.addInitScript(() => localStorage.setItem('motion-play:settings:v1', JSON.stringify({ soundEnabled: false, reducedMotion: false, offlineCaching: true })))
   await page.goto(origin)
+  await page.getByRole('button',{name:'1 player',exact:true}).click()
   await page.evaluate(async () => {
     await navigator.serviceWorker.ready
     if (!navigator.serviceWorker.controller) await new Promise<void>(resolve => navigator.serviceWorker.addEventListener('controllerchange', () => resolve(), { once: true }))

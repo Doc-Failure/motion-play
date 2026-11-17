@@ -1,5 +1,5 @@
 import { isGameVisible } from '../../src/app/catalog'
-import { expect, openApp, test } from './fixtures'
+import { completeReadyGate, expect, openApp, test } from './fixtures'
 import type { Locator, Page } from '@playwright/test'
 import { visibleCatalogGames } from '../../src/app/catalog'
 
@@ -16,27 +16,26 @@ async function clickMovingTarget(page: Page, target: Locator) {
 test('simple game selection and persistent camera across games', async ({ page, installMockCamera }) => {
   await installMockCamera()
   await openApp(page, '#/catalog')
+  await page.getByRole('button',{name:'4 players',exact:true}).click()
   await expect(page.locator('.game-card')).toHaveCount(visibleCatalogGames.length)
   await expect(page.getByRole('combobox')).toHaveCount(0)
-  await page.getByRole('link', {name: 'Play Bubble Battle'}).click()
-  await expect(page.getByText('● Camera on', {exact:true})).toBeVisible()
-  await page.getByRole('button', {name: '4 players'}).click()
-  await page.getByRole('button', {name: 'Play Bubble Battle'}).click()
-  for(const playerId of [1,2,3,4]) await expect(page.getByLabel(`Player ${playerId} Bubble Battle play area`)).toBeVisible()
+  await page.getByRole('link', {name: 'Play Paper Dojo'}).click()
+  await completeReadyGate(page)
+  for(const playerId of [1,2,3,4]) await expect(page.getByLabel(`Player ${playerId} Paper Dojo play area`)).toBeVisible()
   await page.getByRole('button', {name: 'Exit game'}).click()
-  await page.getByRole('link', {name:'Back to games'}).click()
   await page.getByRole('link', {name:'Play Window Wipe'}).click()
-  await expect(page.getByRole('button', {name:'Play Window Wipe'})).toBeEnabled()
+  await expect(page.getByLabel('Window Wipe movement demonstration')).toBeVisible()
   const media = await page.evaluate(() => (window as typeof window & {__mockMediaState:{requests:number;stoppedTracks:number}}).__mockMediaState)
   expect(media).toEqual({requests:1,stoppedTracks:0,audioRequests:0})
-  await expect(page.getByRole('button', {name:'4 players'})).toHaveAttribute('aria-pressed','true')
+  await expect(page.getByRole('button',{name:/^Ready Player /})).toHaveCount(4)
   await page.screenshot({path: test.info().outputPath('simple-camera.png'),fullPage:true})
 })
 
-test('camera is requested only after entering a game', async ({page,installMockCamera}) => {
+test('camera is requested automatically before entering a game', async ({page,installMockCamera}) => {
   await installMockCamera()
   await openApp(page, '#/')
-  expect(await page.evaluate(() => (window as typeof window & {__mockMediaState:{requests:number}}).__mockMediaState.requests)).toBe(0)
+  await expect.poll(()=>page.evaluate(() => (window as typeof window & {__mockMediaState:{requests:number}}).__mockMediaState.requests)).toBe(1)
+  await page.getByRole('button',{name:'1 player',exact:true}).click()
   await page.getByRole('link',{name:/Game Catalog/}).click()
   await expect(page.getByRole('heading',{name:'Game Catalog'})).toBeVisible()
   await page.screenshot({path: test.info().outputPath('simple-catalog.png'),fullPage:true})
@@ -45,35 +44,35 @@ test('camera is requested only after entering a game', async ({page,installMockC
 test('permission failure offers a clear retry without settings',async ({page,installMockCamera}) => {
   await installMockCamera({denied:true})
   await openApp(page)
+  await page.getByRole('button',{name:'4 players',exact:true}).click()
   await expect(page.getByRole('alert')).toContainText('Camera permission is blocked')
-  await expect(page.getByRole('button',{name:'Activate camera & play'})).toBeEnabled()
+  await expect(page.getByRole('button',{name:'Retry camera'})).toBeEnabled()
   await expect(page.getByRole('slider')).toHaveCount(0)
 })
 
 test('permission denial still allows camera-free multiplayer and changing games', async ({page,installMockCamera}) => {
   await installMockCamera({denied:true})
   await openApp(page)
-  await expect(page.getByRole('alert')).toContainText('Camera permission is blocked')
   await page.getByRole('button',{name:'4 players',exact:true}).click()
-  await page.getByRole('button',{name:'Play without camera',exact:true}).click()
-  await expect(page.getByLabel('Player 4 Bubble Battle play area')).toBeVisible()
+  await expect(page.getByRole('alert')).toContainText('Camera permission is blocked')
+  await page.getByRole('button',{name:'Play without camera',exact:true}).click();await completeReadyGate(page)
+  await expect(page.getByLabel('Player 4 Paper Dojo play area')).toBeVisible()
   await expect(page.getByRole('dialog')).toHaveCount(0)
   await page.getByRole('button',{name:'Exit game',exact:true}).click()
-  await page.getByRole('link',{name:'Back to games'}).click()
   await page.getByRole('link',{name:'Play Window Wipe',exact:true}).click()
-  await page.getByRole('button',{name:'Play Window Wipe',exact:true}).click()
+  await completeReadyGate(page)
   await expect(page.getByLabel('Player 4 Window Wipe play area')).toBeVisible()
   expect(await page.evaluate(() => (window as typeof window & {__mockMediaState:{requests:number}}).__mockMediaState.requests)).toBe(1)
 })
 
 test('Piñata Party supports four players, keyboard and pointer hits, and pause', async ({ page, installMockCamera }) => {
   test.skip(!isGameVisible('pinata-party'), 'Hidden while individual games are refined.')
-  await page.clock.install()
+  await page.addInitScript(()=>Object.assign(window,{__testClockInstalled:true}));await page.clock.install()
   await installMockCamera()
   await openApp(page, '#/catalog')
   await page.getByRole('link', { name: 'Play Piñata Party' }).click()
   await page.getByRole('button', { name: '4 players' }).click()
-  await page.getByRole('button', { name: 'Play Piñata Party' }).click()
+  await page.getByRole('button', { name: 'Play Piñata Party' }).click();await completeReadyGate(page)
   await expect(page.getByRole('heading', { name: 'Piñata Party' })).toBeVisible()
   const target = page.getByRole('button', { name: 'Hit Player 1 piñata' })
   await page.clock.runFor(3100)
@@ -106,12 +105,12 @@ test('Piñata Party supports four players, keyboard and pointer hits, and pause'
 
 test('Monster Defense routes from catalog and supports four-player keyboard defense', async ({ page, installMockCamera }) => {
   test.skip(!isGameVisible('monster-defense'), 'Hidden while individual games are refined.')
-  await page.clock.install()
+  await page.addInitScript(()=>Object.assign(window,{__testClockInstalled:true}));await page.clock.install()
   await installMockCamera()
   await openApp(page, '#/catalog')
   await page.getByRole('link', { name: 'Play Monster Defense' }).click()
   await page.getByRole('button', { name: '4 players' }).click()
-  await page.getByRole('button', { name: 'Play Monster Defense' }).click()
+  await page.getByRole('button', { name: 'Play Monster Defense' }).click();await completeReadyGate(page)
   await expect(page.getByRole('heading', { name: 'Monster Defense' })).toBeVisible()
   await page.clock.runFor(3100)
   const target = page.getByRole('button', { name: 'Stop Player 1 monster 1', exact: true })
@@ -136,12 +135,12 @@ test('Monster Defense routes from catalog and supports four-player keyboard defe
 
 test('Supermarket Rush routes from catalog and supports four-player shopping', async ({ page, installMockCamera }) => {
   test.skip(!isGameVisible('supermarket-rush'), 'Hidden while individual games are refined.')
-  await page.clock.install()
+  await page.addInitScript(()=>Object.assign(window,{__testClockInstalled:true}));await page.clock.install()
   await installMockCamera()
   await openApp(page, '#/catalog')
   await page.getByRole('link', { name: 'Play Supermarket Rush' }).click()
   await page.getByRole('button', { name: '4 players' }).click()
-  await page.getByRole('button', { name: 'Play Supermarket Rush' }).click()
+  await page.getByRole('button', { name: 'Play Supermarket Rush' }).click();await completeReadyGate(page)
   await expect(page.getByRole('heading', { name: 'Supermarket Rush' })).toBeVisible()
   await page.clock.runFor(3100)
   const target = page.getByRole('button', { name: 'Pick Player 1 apple 1', exact: true })
@@ -177,12 +176,12 @@ test('Supermarket Rush routes from catalog and supports four-player shopping', a
 
 test('Star Collector supports four-player catches, expiry, pause, results and replay', async ({ page, installMockCamera }) => {
   test.skip(!isGameVisible('star-collector'), 'Hidden while individual games are refined.')
-  await page.clock.install()
+  await page.addInitScript(()=>Object.assign(window,{__testClockInstalled:true}));await page.clock.install()
   await installMockCamera()
   await openApp(page, '#/catalog')
   await page.getByRole('link', { name: 'Play Star Collector' }).click()
   await page.getByRole('button', { name: '4 players' }).click()
-  await page.getByRole('button', { name: 'Play Star Collector' }).click()
+  await page.getByRole('button', { name: 'Play Star Collector' }).click();await completeReadyGate(page)
   await expect(page.getByRole('heading', { name: 'Star Collector' })).toBeVisible()
   await page.clock.runFor(3100)
   for (const id of [1, 2, 3, 4]) await expect(page.getByLabel(`Player ${id} Star Collector play area`)).toBeVisible()
@@ -215,12 +214,12 @@ test('Star Collector supports four-player catches, expiry, pause, results and re
 
 test('Treasure Grab supports four-player catches, expiry, pause, results and replay', async ({ page, installMockCamera }) => {
   test.skip(!isGameVisible('treasure-grab'), 'Hidden while individual games are refined.')
-  await page.clock.install()
+  await page.addInitScript(()=>Object.assign(window,{__testClockInstalled:true}));await page.clock.install()
   await installMockCamera()
   await openApp(page, '#/catalog')
   await page.getByRole('link', { name: 'Play Treasure Grab' }).click()
   await page.getByRole('button', { name: '4 players' }).click()
-  await page.getByRole('button', { name: 'Play Treasure Grab' }).click()
+  await page.getByRole('button', { name: 'Play Treasure Grab' }).click();await completeReadyGate(page)
   await expect(page.getByRole('heading', { name: 'Treasure Grab' })).toBeVisible()
   await page.clock.runFor(3100)
   for (const id of [1, 2, 3, 4]) await expect(page.getByLabel(`Player ${id} Treasure Grab play area`)).toBeVisible()
@@ -264,12 +263,12 @@ test('Treasure Grab supports four-player catches, expiry, pause, results and rep
 
 test('Car Wash supports four-player cooperative scrubbing, pause, results and replay', async ({ page, installMockCamera }) => {
   test.skip(!isGameVisible('car-wash'), 'Hidden while individual games are refined.')
-  await page.clock.install()
+  await page.addInitScript(()=>Object.assign(window,{__testClockInstalled:true}));await page.clock.install()
   await installMockCamera()
   await openApp(page, '#/catalog')
   await page.getByRole('link', { name: 'Play Car Wash' }).click()
   await page.getByRole('button', { name: '4 players' }).click()
-  await page.getByRole('button', { name: 'Play Car Wash' }).click()
+  await page.getByRole('button', { name: 'Play Car Wash' }).click();await completeReadyGate(page)
   await expect(page.getByRole('heading', { name: 'Car Wash' })).toBeVisible()
   await page.clock.runFor(3100)
   const first = page.getByLabel('Player 1 Car Wash play area')
@@ -306,11 +305,11 @@ test('Car Wash supports four-player cooperative scrubbing, pause, results and re
 
 test('Car Wash finishes early only after every car is clean', async ({ page, installMockCamera }) => {
   test.skip(!isGameVisible('car-wash'), 'Hidden while individual games are refined.')
-  await page.clock.install()
+  await page.addInitScript(()=>Object.assign(window,{__testClockInstalled:true}));await page.clock.install()
   await installMockCamera()
   await openApp(page, '#/camera/car-wash')
   await page.getByRole('button', { name: '2 players' }).click()
-  await page.getByRole('button', { name: 'Play Car Wash' }).click()
+  await page.getByRole('button', { name: 'Play Car Wash' }).click();await completeReadyGate(page)
   await page.clock.runFor(3100)
   for (const player of [1, 2]) {
     const board = page.getByLabel(`Player ${player} Car Wash play area`)

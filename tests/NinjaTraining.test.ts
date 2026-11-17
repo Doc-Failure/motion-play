@@ -55,15 +55,14 @@ describe('Paper Dojo simulation',()=>{
     expect(coarse.misses).toEqual(fine.misses)
     expect(coarse.ninjas).toEqual(fine.ninjas)
   })
-  it('runs a debounced bamboo bonus with break animation events and resets for another bundle',()=>{
-    const m=game();m.start(0);expect(m.update(18500).bonus).toBe(true)
-    const first=m.hit(input(.5,.55,18500));expect(first.planks[1]).toBe(2)
-    expect(m.hit(input(.5,.55,18500)).planks[1]).toBe(2)
-    m.hit(input(.5,.55,18700));const broken=m.hit(input(.5,.55,18900))
-    expect(broken.planks[1]).toBe(0);expect(broken.boards[1]).toBe(1)
-    expect(broken.effects.some(e=>e.kind==='break')).toBe(true)
-    expect(m.update(19500).planks[1]).toBe(3)
-    expect(m.update(24500).bonus).toBe(false)
+  it.each([18500,22500,42500,46500])('keeps ninjas attackable through the former bonus windows at %i ms',at=>{
+    const m=game();m.start(0)
+    const state=m.update(at),n=state.ninjas.find(n=>n.pose==='leap')!
+    expect(n).toBeDefined()
+    const hit=m.hit(input(n.x,n.y,at))
+    expect(hit.hits[1]).toBe(1)
+    expect(hit.scores[0].score).toBe(state.scores[0].score+10)
+    expect(hit.effects.at(-1)?.kind).toBe('hit')
   })
   it('freezes trajectories and effects through a long pause and rejects paused captures',()=>{
     const m=game();m.start(0);const paused=m.pause(1200)
@@ -105,10 +104,11 @@ describe('MIXED hit-and-avoid input',()=>{
     expect(noInput.update(6000).contacts[1]).toBe(0)
     expect(noInput.update(6000).scores[0].score).toBeLessThanOrEqual(0)
   })
-  it('keeps BODY_MOVE separate from strikes, even in the bamboo bonus',()=>{
+  it('keeps BODY_MOVE separate from strikes throughout the round',()=>{
     const m=game();m.start(0);const n=m.update(1100).ninjas[0]
     expect(m.hit({...input(n.x,n.y,1100),kind:'BODY_MOVE'}).hits[1]).toBe(0)
-    expect(m.hit({...input(.5,.55,18500),kind:'BODY_MOVE'}).planks[1]).toBe(3)
+    const late=m.update(18500).ninjas.find(n=>n.pose==='leap')!
+    expect(m.hit({...input(late.x,late.y,18500),kind:'BODY_MOVE'}).hits[1]).toBe(0)
   })
   it('matches obstacle collision bounds to cqmin in tall lanes',()=>{
     const m=new NinjaTrainingModel({countdownMs:0,aspectRatio:.25});m.start(0)
@@ -133,11 +133,6 @@ describe('MIXED hit-and-avoid input',()=>{
     m.hit(input(.8,.2,5200))
     expect(m.hit(input(.3,.62,5200)).contacts[1]).toBe(1)
   })
-  it('cannot replay a bamboo frame after its cooldown',()=>{
-    const m=game();m.start(0);m.hit(input(.5,.55,18500));m.update(18700)
-    expect(m.hit(input(.5,.55,18500)).planks[1]).toBe(2)
-    expect(m.hit(input(.5,.55,18700)).planks[1]).toBe(1)
-  })
   it('freezes hazard warning and rejects pause-crossing captures on recovery',()=>{
     const m=game();m.start(0);const paused=m.pause(4500)
     expect(m.update(30000).obstacles).toEqual(paused.obstacles)
@@ -146,9 +141,9 @@ describe('MIXED hit-and-avoid input',()=>{
     expect(m.update(30400).obstacles[0].active).toBe(true)
     expect(m.hit(input(.3,.62,30400)).contacts[1]).toBe(1)
   })
-  it('has no obstacles in bonus/results and resets all contact state on replay',()=>{
+  it('keeps late-round obstacle warnings, clears results and resets contact state on replay',()=>{
     const m=game();m.start(0);m.hit(input(.3,.62,5000))
-    expect(m.update(22500).obstacles).toEqual([])
+    expect(m.update(22500).obstacles).toHaveLength(1)
     const final=m.update(60000)
     expect(final.obstacles).toEqual([])
     expect(m.hit(input(.3,.62,61000)).scores).toEqual(final.scores)

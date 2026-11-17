@@ -86,7 +86,7 @@ describe('Punch Arena generic swipe model', () => {
     expect(model.update(381).trails).toHaveLength(0)
   })
   it('records implementation without exposing the deferred game publicly',()=>{
-    expect(getGameBySlug('punch-arena')).toMatchObject({available:true,input:'HAND_SWIPE',players:[1,2,3,4]})
-    expect(isGameVisible('punch-arena')).toBe(false)
+    expect(getGameBySlug('punch-arena')).toMatchObject({available:true,input:'MIXED',players:[1,2,3,4]})
+    expect(isGameVisible('punch-arena')).toBe(true)
   })
 })

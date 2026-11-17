@@ -12,6 +12,7 @@ export function KeyboardPlayArea({ enabled, onAction, children, className = '', 
   const helpId = useId()
   return <div {...props} className={`${className} keyboard-play-area`} role="group" tabIndex={0}
     aria-disabled={!enabled} aria-describedby={helpId} onKeyDown={event => {
+      if(event.target!==event.currentTarget&&(event.target as Element).closest('button,a,input,select,textarea,[contenteditable=true]'))return
       const keys = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' ', 'Enter']
       if (!keys.includes(event.key) || event.altKey || event.ctrlKey || event.metaKey) return
       event.preventDefault()

@@ -59,8 +59,6 @@
 .mole::before { content: '•  •'; position: absolute; left: 0; right: 0; top: 10%; text-align: center; color: #302d30; font-size: .8em; letter-spacing: .1em; }
 .mole b { color: #372a29; background: #e7c9a0; border-radius: 50%; padding-inline: .15em; }
 .wipe-board { background-image: url('../assets/games/garden.svg'); border-color: #826442; box-shadow: inset 0 0 0 8px #e8c893,5px 6px #d4c4a9; }
-.wipe-board > span:not(.is-clean) { background: radial-gradient(ellipse at 35% 45%, #a28b69bb 0 20%, #c0a98799 25% 40%, transparent 60%); }
-
 /* Keep the whole round in view on desktop, including four simultaneous players. */
 @media (min-width: 850px) {
   .game-stage [class*="-boards--1"] [aria-label$="play area"],

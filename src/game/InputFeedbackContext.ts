@@ -1,3 +1,3 @@
 import { createContext } from 'react'
 import type { MotionInputEvent } from '../input/MotionProcessor'
-export const InputFeedbackContext = createContext<{events: MotionInputEvent[]; playerCount: number; aspectRatio?: number}>({events:[],playerCount:1})
+export const InputFeedbackContext = createContext<{events: MotionInputEvent[]; playerCount: number; aspectRatio?: number; readyGateActive?:boolean; requestReadyGate?:()=>void}>({events:[],playerCount:1})

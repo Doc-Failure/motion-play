@@ -1,14 +1,14 @@
 import { isGameVisible } from '../../src/app/catalog'
-import { expect, openApp, test } from './fixtures'
+import { completeReadyGate, expect, openApp, test } from './fixtures'
 
-for (const [slug, title] of [['bubble-battle', 'Bubble Battle'], ['window-wipe', 'Window Wipe'], ['whack-a-mole', 'Whack-a-Mole'], ['paint-splash', 'Paint Splash'], ['meteor-smash', 'Meteor Smash'], ['balloon-panic', 'Balloon Panic'], ['gold-rush', 'Gold Rush'], ['simon-says', 'Simon Says'], ['fruit-catcher', 'Fruit Catcher'], ['air-pong', 'Air Pong'], ['goalkeeper', 'Goalkeeper']]) {
+for (const [slug, title] of [['beat-freak', 'Paper Jam'], ['bubble-battle', 'Bubble Battle'], ['window-wipe', 'Window Wipe'], ['whack-a-mole', 'Whack-a-Mole'], ['paint-splash', 'Paint Splash'], ['meteor-smash', 'Meteor Smash'], ['balloon-panic', 'Balloon Panic'], ['gold-rush', 'Gold Rush'], ['simon-says', 'Simon Says'], ['fruit-catcher', 'Fruit Catcher'], ['air-pong', 'Air Pong'], ['goalkeeper', 'Goalkeeper']]) {
   for (const countdown of [false, true]) test(`${title} ${countdown ? 'countdown' : 'gameplay'} freezes camera recovery without losing the round`, async ({page, installMockCamera}) => {
     test.skip(!isGameVisible(slug), 'Hidden while individual games are refined; model and component recovery remains covered.')
-    await page.clock.install({time:new Date('2030-01-01T00:00:00Z')})
+    await page.addInitScript(()=>Object.assign(window,{__testClockInstalled:true}));await page.clock.install({time:new Date('2030-01-01T00:00:00Z')})
     await page.clock.pauseAt(new Date('2030-01-01T00:01:00Z'))
     await installMockCamera({person:true})
     await openApp(page, `#/camera/${slug}`)
-    await page.getByRole('button', {name:`Play ${title}`, exact:true}).click()
+    await page.getByRole('button',{name:'1 player',exact:true}).click();await completeReadyGate(page)
     await page.clock.runFor(countdown ? 1000 : 3500)
     const video = page.getByLabel('Mirrored live camera during gameplay')
     await video.evaluate(element => {
@@ -73,11 +73,11 @@ for (const [slug, title] of [['bubble-battle', 'Bubble Battle'], ['window-wipe',
 }
 
 test('camera disconnect and failed reconnect keep the round frozen until recovery', async ({page,installMockCamera}) => {
-  await page.clock.install({time:new Date('2030-01-01T00:00:00Z')})
+  await page.addInitScript(()=>Object.assign(window,{__testClockInstalled:true}));await page.clock.install({time:new Date('2030-01-01T00:00:00Z')})
   await page.clock.pauseAt(new Date('2030-01-01T00:01:00Z'))
   await installMockCamera({person:true})
   await openApp(page)
-  await page.getByRole('button',{name:'Play Bubble Battle',exact:true}).click()
+  await page.getByRole('button',{name:'1 player',exact:true}).click();await completeReadyGate(page)
   const video = page.getByLabel('Mirrored live camera during gameplay')
   await expect.poll(() => video.evaluate(v => (v as HTMLVideoElement).videoWidth)).toBe(320)
   await page.clock.runFor(3500)
@@ -120,11 +120,14 @@ test('camera disconnect and failed reconnect keep the round frozen until recover
 })
 
 test('shared mirrored camera and overlay lanes stay aligned for one to four players', async ({page,installMockCamera}) => {
+  test.skip(!isGameVisible('bubble-battle'),'Bubble Battle hidden for quality rework')
+  test.setTimeout(90000)
   await installMockCamera({person:true})
   await openApp(page)
   for (const players of [1,2,3,4]) {
     await page.getByRole('button',{name:`${players} ${players === 1 ? 'player' : 'players'}`,exact:true}).click()
-    await page.getByRole('button',{name:'Play Bubble Battle',exact:true}).click()
+    if(players>1)await page.evaluate(()=>{window.location.hash='#/camera/bubble-battle'})
+    await completeReadyGate(page)
     const video = page.getByLabel('Mirrored live camera during gameplay')
     await expect.poll(() => video.evaluate(v => (v as HTMLVideoElement).videoWidth)).toBe(320)
     const area = (await video.boundingBox())!
@@ -146,14 +149,17 @@ test('shared mirrored camera and overlay lanes stay aligned for one to four play
       await page.screenshot({path:test.info().outputPath(`camera-play-${players}p.png`)})
     }
     await page.getByRole('button',{name:'Exit game',exact:true}).click()
+    await page.getByRole('link',{name:'← Back to Home'}).click()
+    await page.getByRole('button',{name:/· change$/}).click()
   }
 })
 
 test('synthetic camera movement at a visible bubble scores without pointer input',async ({page,installMockCamera}) => {
+  test.skip(!isGameVisible('bubble-battle'),'Bubble Battle hidden for quality rework')
   await installMockCamera({person:true})
   await page.addInitScript(() => {Math.random = () => .5})
   await openApp(page)
-  await page.getByRole('button',{name:'Play Bubble Battle',exact:true}).click()
+  await page.getByRole('button',{name:'1 player',exact:true}).click();await completeReadyGate(page)
   await page.waitForTimeout(5500)
   const arena = (await page.locator('.camera-arena').boundingBox())!
   const bubble = (await page.locator('.battle-target--bubble').first().boundingBox())!

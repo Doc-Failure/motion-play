@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react'
+import {InputFeedbackContext} from './InputFeedbackContext'
+import { useContext, useCallback, useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react'
 import type { GameSessionSnapshot } from './GameSession'
 
 export interface RoundRecoveryProps {
@@ -16,6 +17,9 @@ export function useRoundRecovery<S extends GameSessionSnapshot>({
   title: string
   onExit(): void
 }) {
+  const {readyGateActive=false,requestReadyGate}=useContext(InputFeedbackContext)
+  const priorRoundPhase=useRef('idle')
+  const wasReadyGate=useRef(readyGateActive)
   const [reason, setReason] = useState('Resume when you are ready.')
   const [hidden, setHidden] = useState(document.hidden)
   const phase = useRef(snapshot.phase)
@@ -34,6 +38,16 @@ export function useRoundRecovery<S extends GameSessionSnapshot>({
     setSnapshot(next)
     setReason(message)
   }, [model, setSnapshot])
+
+  useEffect(()=>{
+    const newRound=snapshot.phase==='countdown'&&(priorRoundPhase.current==='idle'||priorRoundPhase.current==='results')
+    priorRoundPhase.current=snapshot.phase
+    if(newRound&&requestReadyGate){requestReadyGate();pause('Everyone hold a hand on your ready button.')}
+  },[snapshot.phase,requestReadyGate,pause])
+  useEffect(()=>{
+    const released=wasReadyGate.current&&!readyGateActive;wasReadyGate.current=readyGateActive
+    if(released&&phase.current==='paused'&&!externalPauseReason&&!document.hidden){const next=model.resume(performance.now());phase.current=next.phase;setSnapshot(next)}
+  },[readyGateActive,externalPauseReason,model,setSnapshot])
 
   // Register before input consumption so a simultaneous disconnect blocks input.
   useEffect(() => {
@@ -65,8 +79,9 @@ export function useRoundRecovery<S extends GameSessionSnapshot>({
   const blocked = Boolean(externalPauseReason) || hidden
   return {
     resultsHeading,
+    exitButtonRef:button,
     pauseButton: <button ref={button} className="text-button" type="button" disabled={snapshot.phase !== 'playing' && snapshot.phase !== 'countdown'} onClick={() => pause('Take a breather!')}>Pause</button>,
-    pauseDialog: snapshot.phase === 'paused' && <div className="battle-results" role="dialog" aria-label={`${title} paused`}>
+    pauseDialog: snapshot.phase === 'paused' && !readyGateActive && <div className="battle-results" role="dialog" aria-label={`${title} paused`}>
       <h2 ref={heading} tabIndex={-1}>Round paused</h2>
       <p>{externalPauseReason || reason}</p>
       <button className="crayon-button" type="button" disabled={blocked} onClick={() => {

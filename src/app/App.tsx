@@ -1,4 +1,7 @@
-import { pickQuickPlayGame } from './quickPlay'
+import {FullscreenButton} from '../design/FullscreenButton'
+import {TOURNAMENT_GAME_COUNT} from '../game/TournamentSession'
+import {loadSessionPlayers,saveSessionPlayers} from './playerSession'
+import type {PlayerCount} from '../input/PlayerZoneMapper'
 import { PackIcon, type PackIconName } from '../design/PackIcon'
 import { GameDoodle } from '../design/GameDoodle'
 import { gameAudio } from '../audio/GameAudio'
@@ -10,47 +13,16 @@ import { CameraSetup, type PlayableGame } from '../camera/CameraSetup'
 import { loadSettings, saveSettings, unlockAchievement } from './localPreferences'
 import { syncOfflineCaching } from './offlineCache'
 
-type Route = { page: 'home' } | { page: 'catalog' } | { page: 'settings' } | { page: 'camera'; game?: PlayableGame; autoPlay?: boolean } | { page: 'detail'; slug: string }
+type Route = { page: 'home' } | { page: 'catalog' } | { page: 'settings' } | { page: 'camera'; game?: PlayableGame; autoPlay?: boolean; tournament?:boolean } | { page: 'detail'; slug: string }
 const routeFromHash = (): Route => {
   const hash = window.location.hash.replace(/^#\/?/, '')
   if ((hash.startsWith('camera/') && !isGameVisible(hash.slice(7))) || (hash.startsWith('games/') && !isGameVisible(hash.slice(6)))) return {page:'catalog'}
+  if (hash === 'tournament') return {page:'camera',tournament:true}
   if (hash === 'catalog') return { page: 'catalog' }
   if (hash === 'settings') return { page: 'settings' }
-  if (hash === 'camera') return { page: 'camera' }
-  if (hash === 'quick-play') return { page: 'camera', game: pickQuickPlayGame(), autoPlay: true }
-  if (hash === 'camera/magic-duel') return { page: 'camera', game: 'magic-duel' }
-  if (hash === 'camera/basketball-blitz') return { page: 'camera', game: 'basketball-blitz' }
-  if (hash === 'camera/punch-arena') return { page: 'camera', game: 'punch-arena' }
-  if (hash === 'camera/fruit-slash') return { page: 'camera', game: 'fruit-slash' }
-  if (hash === 'camera/jump-rush') return { page: 'camera', game: 'jump-rush' }
-  if (hash === 'camera/freeze') return { page: 'camera', game: 'freeze' }
-  if (hash === 'camera/dance-challenge') return { page: 'camera', game: 'dance-challenge' }
-  if (hash === 'camera/laser-escape') return { page: 'camera', game: 'laser-escape' }
-  if (hash === 'camera/dodgeball') return { page: 'camera', game: 'dodgeball' }
-  if (hash === 'camera/tower-builder') return { page: 'camera', game: 'tower-builder' }
-  if (hash === 'camera/rocket-rumble') return {page:'camera',game:'rocket-rumble'}
-  if (hash === 'camera/ninja-training') return {page:'camera',game:'ninja-training'}
-  if (hash === 'camera/fish-frenzy') return { page: 'camera', game: 'fish-frenzy' }
-  if (hash === 'camera/plate-spinner') return { page: 'camera', game: 'plate-spinner' }
-  if (hash === 'camera/pizza-maker') return { page: 'camera', game: 'pizza-maker' }
-  if (hash === 'camera/graffiti-race') return { page: 'camera', game: 'graffiti-race' }
-  if (hash === 'camera/car-wash') return { page: 'camera', game: 'car-wash' }
-  if (hash === 'camera/window-wipe') return { page: 'camera', game: 'window-wipe' }
-  if (hash === 'camera/whack-a-mole') return { page: 'camera', game: 'whack-a-mole' }
-  if (hash === 'camera/treasure-grab') return { page: 'camera', game: 'treasure-grab' }
-  if (hash === 'camera/star-collector') return { page: 'camera', game: 'star-collector' }
-  if (hash === 'camera/supermarket-rush') return { page: 'camera', game: 'supermarket-rush' }
-  if (hash === 'camera/monster-defense') return { page: 'camera', game: 'monster-defense' }
-  if (hash === 'camera/pinata-party') return { page: 'camera', game: 'pinata-party' }
-  if (hash === 'camera/meteor-smash') return { page: 'camera', game: 'meteor-smash' }
-  if (hash === 'camera/balloon-panic') return { page: 'camera', game: 'balloon-panic' }
-  if (hash === 'camera/gold-rush') return { page: 'camera', game: 'gold-rush' }
-  if (hash === 'camera/paint-splash') return { page: 'camera', game: 'paint-splash' }
-  if (hash === 'camera/simon-says') return { page: 'camera', game: 'simon-says' }
-  if (hash === 'camera/fruit-catcher') return { page: 'camera', game: 'fruit-catcher' }
-  if (hash === 'camera/air-pong') return { page: 'camera', game: 'air-pong' }
-  if (hash === 'camera/goalkeeper') return { page: 'camera', game: 'goalkeeper' }
-  if (hash === 'camera/bubble-battle') return { page: 'camera', game: 'bubble-battle' }
+  if (hash === 'camera') return { page: 'camera',game:visibleCatalogGames[0].slug as PlayableGame }
+  if (hash === 'quick-play') return { page: 'catalog' }
+  if (hash.startsWith('camera/')) return {page:'camera',game:hash.slice(7) as PlayableGame}
   if (hash.startsWith('games/')) return { page: 'detail', slug: hash.slice(6) }
   return { page: 'home' }
 }
@@ -61,8 +33,8 @@ function AppHeader() {
 
 function Home() {
   const actions: Array<{ title: string; description: string; icon: PackIconName; tone: string; href?: string; featured?: boolean }> = [
-    { title: 'Quick Play', description: 'Start a random game.', icon: 'play', tone: 'yellow', href: '#/quick-play', featured: true },
     { title: 'Game Catalog', description: 'Peek at every game in the toy box.', icon: 'cards', tone: 'blue', href: '#/catalog' },
+    { title: `${TOURNAMENT_GAME_COUNT}-Game Tournament`, description: `${TOURNAMENT_GAME_COUNT} games. Highest total points wins.`, icon: 'trophy', tone: 'purple', href: '#/tournament' },
   ]
   return <div className="reference-home"><GeneratedHomeScene /><section className="hero" id="top" aria-labelledby="app-title"><div className="hero-copy"><h1 id="app-title" aria-label="Motion Play!"><span className="title-red">M</span><span className="title-orange">o</span><span className="title-green">t</span><span className="title-blue">i</span><span className="title-blue-dark">o</span><span className="title-pink">n</span> <span className="title-purple">Play!</span></h1><p className="intro">Camera Party Games for 1–4 Players</p></div></section>
     <section className="play-menu" id="play-menu" aria-labelledby="play-menu-title"><div className="section-heading"><p className="eyebrow">Pick your path</p><h2 id="play-menu-title">How do you want to play?</h2></div><div className="action-grid">{actions.map((action) => {
@@ -71,8 +43,12 @@ function Home() {
     })}</div></section></div>
 }
 
+function PlayerWelcome({onChoose}:{onChoose:(players:PlayerCount)=>void}){
+ return <div className="reference-home player-welcome"><GeneratedHomeScene/><section className="hero"><div className="hero-copy"><h1>How many players?</h1></div></section><div className="welcome-players" role="group" aria-label="Choose players once">{([1,2,3,4] as const).map(count=><button className="action-card action-card--blue" key={count} aria-label={`${count} ${count===1?'player':'players'}`} onClick={()=>onChoose(count)}><strong>{count}</strong><span>{count===1?'player':'players'}</span></button>)}</div></div>
+}
+
 function Catalog() {
-  return <section className="catalog-page catalog-picker" aria-labelledby="catalog-title"><header className="catalog-toolbar"><a className="back-link" href="#/">← Back to Home</a><h1 id="catalog-title">Game Catalog</h1></header>
+  return <section className="catalog-page catalog-picker" aria-labelledby="catalog-title"><header className="catalog-toolbar"><a className="back-link" href="#/">← Back to Home</a><h1 id="catalog-title">Game Catalog</h1><a className="text-button catalog-tournament" href="#/tournament">{TOURNAMENT_GAME_COUNT}-game tournament</a></header>
     <div className="catalog-grid">{visibleCatalogGames.map(game => <a className="game-card" key={game.slug} href={`#/camera/${game.slug}`} aria-label={`Play ${game.title}`}><GameDoodle slug={game.slug}/><div className="game-card__body"><h2>{game.title}</h2><p className="sr-only">{game.rules}</p></div></a>)}</div></section>
 }
 
@@ -84,6 +60,8 @@ function GameDetail({ slug }: { slug: string }) {
 
 export function App() {
   const [route, setRoute] = useState(routeFromHash)
+  const [players,setPlayers]=useState<PlayerCount|null>(loadSessionPlayers)
+  const choosePlayers=(count:PlayerCount)=>{saveSessionPlayers(count);setPlayers(count)}
   const [settings] = useState(loadSettings)
   useEffect(() => { const navigate = () => setRoute(routeFromHash()); window.addEventListener('hashchange', navigate); return () => window.removeEventListener('hashchange', navigate) }, [])
   useEffect(() => {
@@ -99,5 +77,5 @@ export function App() {
   return <><a className="skip-link" href="#main-content" onClick={(event) => {
     event.preventDefault()
     document.getElementById('main-content')?.focus()
-  }}>Skip to main content</a><main onPointerDown={gameAudio.unlock} onKeyDown={gameAudio.unlock} className="home-shell" id="main-content" tabIndex={-1}>{route.page === 'detail' && <AppHeader />}{route.page === 'home' ? <Home /> : route.page === 'catalog' ? <Catalog /> : route.page === 'settings' ? <Catalog /> : route.page === 'camera' ? null : <GameDetail slug={route.slug} />}<div hidden={route.page !== 'camera'}><CameraSetup active={route.page === 'camera'} initialGame={route.page === 'camera' ? route.game : undefined} autoPlay={route.page === 'camera' && route.autoPlay} /></div>{route.page === 'detail' && <footer className="home-footer"><p><span aria-hidden="true">★</span> Made for 1–4 local players <span aria-hidden="true">★</span></p></footer>}</main></>
+  }}>Skip to main content</a><main onPointerDown={gameAudio.unlock} onKeyDown={gameAudio.unlock} className="home-shell" id="main-content" tabIndex={-1}>{players!==null&&route.page === 'detail' && <AppHeader />}{players===null?<PlayerWelcome onChoose={choosePlayers}/>:route.page === 'home' ? <Home /> : route.page === 'catalog' ? <Catalog /> : route.page === 'settings' ? <Catalog /> : route.page === 'camera' ? null : <GameDetail slug={route.slug} />}{players!==null&&route.page==='home'&&<button className="change-players" onClick={()=>setPlayers(null)}>{players} {players===1?'player':'players'} · change</button>}<CameraSetup webcamNavigation selectedPlayers={players??undefined} navigationKey={`${window.location.hash}|${players??'choose'}`} active={route.page === 'camera'&&players!==null} initialGame={route.page === 'camera' ? route.game : undefined} autoPlay={route.page === 'camera'&&players!==null} tournament={route.page === 'camera' && route.tournament} />{route.page === 'detail' && <footer className="home-footer"><p><span aria-hidden="true">★</span> Made for 1–4 local players <span aria-hidden="true">★</span></p></footer>}</main><FullscreenButton/></>
 }

@@ -13,11 +13,11 @@ A joyful, original, browser-based motion-controlled party game inspired by the *
 - Design: **childlike hand-colored crayon and marker drawings**, intentionally uneven bold outlines, imperfect fills crossing borders, paper textures, sticker collages, scribbly stars/arrows, springy interactions; maintain strong text contrast/readability. Original artwork, SVG/Canvas procedural illustrations; local fonts/assets (respect licenses), no hotlinked images.
 
 ## Product navigation
-Title / Home -> Catalog -> Centered Camera Lobby (player count only) -> Play -> automatic 3-2-1 -> Gameplay -> Results -> Replay / Catalog. Quick Play chooses a random compatible game and starts it as soon as the camera is ready. No practice or start-confirmation screen.
-Home: Quick Play and Game Catalog. Tournament is deferred. Main catalog is a compact grid of playable games, with original game drawings on the same crayon sticker panels as the homepage. Each tile goes directly to that game’s camera lobby. Quick Play picks among implemented compatible games. The planned tournament mode rotates 3 or 5 implemented games and aggregates points. Cooperative mode shares a goal; competitive/free-for-all has independent scores. 2v2 only when four players and a game supports it. Avoid promising co-op/teams for incompatible games.
+Home (choose 1–4 players once per tab) -> Catalog or 5-Game Tournament -> small looping stick-figure movement demo + three-second simultaneous hand-ready buttons -> automatic 3-2-1 -> Gameplay -> Results -> Replay / Catalog. No extra Play/setup/confirmation screen. Replays and every tournament round use the same introduction.
+Home: Game Catalog and 5-Game Tournament only. Quick Play is removed. Main catalog is a compact grid of playable games, with original game drawings on the same crayon sticker panels as the homepage. Each tile goes directly to that game’s movement introduction. The tournament keeps its existing five-game schedule and aggregates points; additional catalog games can be played separately. Cooperative mode shares a goal; competitive/free-for-all has independent scores. 2v2 only when four players and a game supports it. Avoid promising co-op/teams for incompatible games.
 
 ## Camera, calibration and recovery
-- User selects a `videoinput` device and starts a permission request only on interaction. Offer actionable permission-denied and camera-missing states; allow simulation demo mode without hardware.
+- Request the default webcam automatically on entry, subject to the browser’s native permission decision. Keep it across routes. Offer actionable permission-denied and camera-missing states; allow simulation demo mode without hardware. Player count is chosen once on Home, stored for the tab session, and can be changed deliberately from Home.
 - Mirror preview; render adjustable overlays for player zones. Players wave to test; visually indicate motion detection per region. Estimate background noise, expose sensitivity slider and recalibrate button. Avoid background motion registering as player hits.
 - Detect low confidence, occlusion, extreme noise/lighting changes. No false awards from missing tracking. Pause on camera disconnect and prolonged player tracking loss (~3 seconds), allow reacquisition. Pause on tab visibility loss. Reconnect/recalibrate without full restart.
 - Use one captured video source and low-resolution processing; FPS adaptive. Be cautious: four people on one camera may require wide-angle webcam, sufficient light, space, and distance.
@@ -33,7 +33,7 @@ Advanced interactions must not be falsely claimed working until implemented/test
 Mouse/keyboard simulation backend for development and automated tests; deterministic synthetic video/motion fixtures. Debug mode: show thresholds, masks, zones, FPS, hit events, confidence.
 
 ## Motion menus
-Large hand hover buttons; dwell ~1.2 seconds with animated ring, cancel on leave, cooldown to prevent double-activation. Player 1 controls menu by default to avoid conflicts. Mouse/touch/keyboard fallback always available. Provide visible pause and restart routes.
+Large hand hover buttons; dwell 3 seconds with animated ring, cancel on leave, cooldown to prevent double-activation. Any detected player can choose with the same measured hand; ownership cannot change midway through a hold. Mouse/touch/keyboard fallback always available. Provide visible pause and restart routes.
 
 ## Game mechanics and UX
 Default 60-second round (configurable by game), 3-second countdown, sound cues, score/pop particles, color-coded player identity, clear hazards, results podium. Accessible reduced motion / reduced sound toggles; no rapid flashes, readable text, color + symbol identification, volume/mute. Child-friendly positive feedback. Difficulty presets Easy / Normal / Hard adjust object speed/size and hazard rate but not input threshold silently. Mobile can show unsupported notice if camera/player experience isn't suitable; desktop-first.
@@ -114,9 +114,9 @@ Use compact score/time/control overlays and lightweight crayon framing rather th
 opaque illustrated boards. Brush games must reveal the person beneath their effects.
 Player count remains the only setup choice; preserve stream continuity.
 
-Camera setup follows the same camera-first presentation: a viewport-fitted, centered
-preview with a small player-count selector and Play button over it. No surrounding
-site header/footer, oversized game heading, explanatory panel, or scrolling is needed.
+Game entry uses a viewport-fitted, centered camera with a small movement demo and
+three-second hand-ready buttons. Player count is chosen once on Home. No surrounding
+site header/footer, repeated selector, extra Play button, or scrolling is needed.
 Show permission/recovery explanations only when an error occurs.
 
 Game selection uses compact illustrated crayon stickers matching the homepage panels,
@@ -144,8 +144,8 @@ distinct game identities is subsequent per-game work, not completed by hiding ga
 Paper Dojo replaces Goalkeeper in the public five. Original paper ninjas run and
 telegraph attacks from side towers, leap across the live camera, and react to
 normalized strikes with animated impacts, tumbles and paper confetti. Waves speed
-up, combos reward consecutive hits, marked obstacles warn before contact penalties,
-and bamboo bonus rounds require three strikes. Original local synthesized
+up, combos reward consecutive hits, and marked obstacles warn before contact
+penalties. Ninja waves run continuously; bamboo-breaking interludes are removed. Original local synthesized
 percussion and plucked music use the shared mute/recovery lifecycle.
 Gameplay keeps only compact scores/time, player labels, a short action cue and
 pause/exit/sound controls over the camera. Detailed statistics appear in results.
@@ -217,3 +217,308 @@ During gameplay the alignment action uses shared pause/recovery and suppresses
 input events; completion or cancellation leaves the round ready to resume.
 Alignment can be cancelled, does not restart the camera, and never blocks normal
 Play in setup. Failure of the diagnostic also releases the alignment pause block.
+
+## Same-frame pose diagnostic (2026-11-16)
+While wireframe tracking is visible, the camera image displayed behind it is the
+same captured image used for that pose result. Capture and landmarks are paired
+immutably and committed together before paint. Capture preserves the full frame
+and aspect, with a 960px maximum width; the preview is mirrored exactly once.
+Hiding the wireframe or losing tracking restores the underlying live video.
+The live camera stream and game input processing remain active independently.
+
+The diagnostic uses independent IMAGE-mode pose detection, avoiding single-pose
+VIDEO-mode temporal smoothing that can trail movement. Scheduling targets 50ms
+including inference time rather than adding an 80ms wait after every detection;
+no physical FPS or latency guarantee is claimed. Pause/results dialogs hide the
+skeleton so it cannot appear attached to interface controls. Calibration remains
+a framing/confidence check and does not apply fabricated coordinate corrections.
+
+## Shared three-second ready check (2026-11-16)
+Every initial round, Quick Play and replay now waits over the centered camera for
+all selected players to hold a measured wrist on their own ready button for five
+continuous seconds. One detected body cannot ready multiple lanes. Leaving a
+button, stale pose observations, a hidden tab or camera loss resets the hold.
+The existing three-second countdown follows automatically. Keyboard users can
+Tab/Enter to toggle each button; pointer/touch users hold it. This replaces the
+older immediate-countdown direction without adding a confirmation dialog.
+
+## Silk Squad (2026-11-16)
+Original catalog entry 34 is a hand-gesture robot-catching game inspired by the
+interaction premise of WEB SLINGERS. It uses original robot-bug SVG artwork,
+procedural animation and synthesized audio, with no source attraction assets,
+code, characters or branding. The public five are now Silk Squad, Rocket Rumble,
+Paper Dojo, Bubble Battle and Window Wipe; Whack-a-Mole remains implemented but
+hidden. Quick Play includes the new game.
+
+A local Hand Landmarker measures 21 finger joints. An open hand arms a cast;
+pinching thumb and index fires once, and opening again is required to rearm.
+Hand ownership is matched to a confident body wrist and its player lane. Missing,
+ambiguous, low-confidence or stale observations produce no gesture. Minigames
+receive normalized HAND_POSITION/HAND_PINCH events, never camera/model objects.
+Pointer, touch and keyboard remain available when hand tracking is unavailable.
+
+A 60-second round animates eight-legged scout, spring and golden armored bots,
+web casts, net wraps and cocoons traveling to each player's collection jar.
+Golden bots need two casts. Streaks increase rewards; waves accelerate. Pause
+freezes the simulation, shared sound controls govern original web/capture cues
+and a quiet musical loop, and reduced motion removes cocoon travel/rotation.
+The complete uncropped camera stays behind the game. Finger and pose tracking
+share the same captured image; hiding diagnostic sticks retains required gesture
+tracking without fading the artwork. The optional local assets total about
+36.3 MB, including a 7.8 MB hand model; the core budget stays 3 MB. Physical
+webcam gesture reliability and four-person performance remain unverified.
+
+## Ready-hold reliability correction (2026-11-16)
+The ready check advances from captured pose observation timestamps rather than
+polling a cached contact against wall time. It accepts observations up to one
+second old, resets after larger gaps, and cannot finish without new measured
+samples spanning three seconds. This accommodates slower inference without
+silently counting frozen video. A small exit margin stabilizes an already-entered
+button against wrist jitter; entry still requires the original visible circle.
+A measured departure resets the hold immediately. Keyboard/touch alternatives
+retain their own three-second timing.
+
+Silk Squad returns the pose tracker without awaiting Hand Landmarker. Finger
+model initialization and inference begin after the ready hold ends, without
+reloading pose tracking or restarting the camera. Slow or failed finger loading
+cannot block wrist readiness. Models close safely if initialization finishes
+late after leaving the view. Real physical webcam quality remains unverified.
+
+## Silk Squad arm-motion controls (2026-11-16 user correction)
+Silk Squad now casts from deliberate arm movement, superseding the finger-pinch
+mechanic. It uses measured shoulder, elbow and arm-end joints from the existing
+body tracker; no finger model is loaded. Move an arm over a bot to cast. Continued
+arm motion can cast repeatedly at a bounded cadence, while holding still stops
+firing. Shoulder-relative motion rejects whole-body translation and small jitter;
+missing/ambiguous joints and stale samples reset movement history. Aim follows
+that arm's endpoint, and the visible web travels from the forearm to the target.
+Only normalized ARM_POSITION/ARM_MOVE events cross into the game. Keyboard/touch
+alternatives, one shared retained camera, three-second ready checks and the
+original visual/audio effects remain. Actual webcam motion feel needs validation.
+
+## Webcam website navigation and five-game tournaments (current user direction)
+After the initial browser camera permission/Enable action, any confidently
+tracked hand can navigate Home, Catalog, player count, Play, pause/resume, mute,
+replay, exit and tournament results. One shared camera stays active across routes.
+Home and Catalog put their controls over a full uncropped mirrored camera frame,
+using the same contain/letterbox geometry as gameplay. All current menu choices
+fit inside that frame without scrolling. The poster-style Home remains before
+camera activation; native mouse/touch/keyboard alternatives remain available.
+
+UI_POINTER events retain measured mirrored camera coordinates and wrist identity.
+Only translation/scaling into the actual camera rectangle is applied; there is
+no virtual cursor, player-lane expansion or reach remapping. Any detected body
+can choose without remaining in a game lane. A small marker sits on the measured
+wrist. Buttons highlight and show a countdown during a continuous three-second
+hold by the same wrist. Missing/weak/departed wrists reset progress; cached
+frames cannot advance it. Deliberate movement rearms after activation or a new
+screen. Stale frames, resize, scrolling and visibility changes cancel holds.
+
+A local pose tracker runs in the active view, even when diagnostic sticks are
+hidden. Menu frames and measured positions are paired to avoid independent video
+motion behind the hand marker. Processing remains local with no finger model or
+uploads. Gameplay objects are excluded from website selection; the separate
+simultaneous three-second ready buttons retain their original camera-space logic.
+
+Home offers only Game Catalog and 5-Game Tournament. Catalog also links
+to the tournament. The focused five are Rocket Rumble, Paper Dojo, Bubble Battle,
+Window Wipe and Paper Jam. Silk Squad is deferred/hidden at the user's request;
+its code is preserved for later work. The retired Quick Play URL opens Catalog.
+
+The tournament has five competitive rounds: Bubble Battle, Window Wipe, Paper
+Dojo, Paper Jam and Rocket Rumble. Keep player count for all rounds; no other
+setup settings. Each game reports its actual final points once, automatic
+advancement opens the next ready hold, and raw points are summed per player.
+Highest total after all five wins; equal highest totals share the win. Points
+are not converted to placements or normalized. Window Wipe shows its actual
+points in tournament play. Final results, new tournament and Home work by webcam.
+Physical webcam quality, motion comfort, multi-person reliability and performance
+remain subject to real hardware testing; automated input is not physical evidence.
+
+
+## Paper Dojo cleanup (2026-11-17)
+Paper Dojo has no visible body wireframe or diagnostic controls in setup/gameplay.
+Local pose inference continues for webcam navigation and the three-second ready
+hold. The bamboo-breaking minigame, bonus pauses, related scoring/effects and
+bundle statistics are removed. Ninja waves and marked obstacles continue through
+the complete 60-second round with existing combos, audio, pause/replay and
+competitive tournament completion. Tower artwork remains at the sides.
+
+## Window Wipe rebuild (2026-11-17)
+Window Wipe now uses a successive-window clean-and-reveal loop. Procedural
+translucent soap hides the live camera; normalized brush discs smoothly reveal
+it. A hidden 40×30 coverage grid measures cleaning, with aspect-aware circles
+matching all 1–4 camera lanes. Separate arm samples never paint between arms.
+Three ink spots need fresh rubbing movement across three passes. Dot indicators,
+pop stars, a moving squeegee, bubble trails and a frame-clear celebration provide
+visual feedback. At 94% soap removed and all spots rubbed out, remaining crumbs
+clear and a 1.2-second celebration advances that player's window independently.
+The 60-second round keeps running; completed windows do not end it early.
+
+Soap earns up to 100 points, ink spots 10 each and a completed window another 50.
+Scores accumulate across windows (180 per completed pane) in standalone and
+five-game tournament play. Progress includes soap and ink. Malformed, duplicated,
+stale, pre-resume or pre-window observations cannot score; stationary cached
+positions cannot rub ink away. Paint history is bounded and resets per window.
+
+Original locally synthesized filtered swishes, squeaks, bubble pops, sparkle
+fanfare and a quiet plucked tune share mute/pause/recovery/cleanup. No downloaded
+art or music, new dependency, camera uploads or copied source-game assets.
+Reduced motion removes decorative movement. Mouse/touch dragging and keyboard
+fallback remain; diagnostics start hidden for Window Wipe and can be enabled
+with its existing wireframe control. Pose tracking continues for navigation and
+ready holds. Physical camera sensitivity and audio perception need real-device
+validation. See the game's README for reference analysis and implementation.
+
+## Paper Jam rhythm game (2026-11-17)
+Paper Jam is an original Beat Freak-style game at #/camera/beat-freak. It replaces
+Whack-a-Mole in the focused five and the fourth tournament round; the existing
+Whack implementation stays hidden for later refinement. Home retains only
+Catalog and 5-Game Tournament. Current five: Rocket Rumble, Paper Dojo, Bubble
+Battle, Window Wipe and Paper Jam.
+
+Four original instrument speakers surround the uncropped live camera in each
+player lane. Records approach from the center over 1.4 seconds. Fresh normalized
+MOTION_HIT input at the speaker earns Perfect (±85 ms, 15 points) or Good
+(±210 ms, 10 points). Misses break streaks; every eight hits build multipliers
+up to ×3. All 1–4 players receive the same deterministic 60-second chart, with
+four count-in beats, quarter notes, offbeat pickups and paired accents. No finger
+shapes, new settings, external music or source-game assets are used.
+
+A 100 BPM original background track is scheduled with 25 ms polling/120 ms
+lookahead on the round's absolute 150 ms subdivision grid and Web Audio clock.
+Instrument strikes add percussion, plucks/chimes and perfect/streak accents.
+Camera/visibility/manual pauses freeze notes and the music timeline together;
+future voices are cancelled. Re-enable sound rejoins the current grid. Animated
+speakers, records, timing rings, a deck, meters and judgment sparks provide visual
+feedback. Reduced motion removes decorative spinning/pulsing/thumps while
+retaining essential record travel.
+
+Player isolation, concrete event validation, per-frame spatial deduplication,
+150 ms stale/capture-delivery limits and pre-resume guards prevent cached or
+invalid scores. Simultaneous distinct arm samples can hit paired speakers.
+Pointer/touch, native speaker buttons, aim/action fallback and number keys 1–4
+remain available. Shared webcam navigation and three-second ready checks still
+control setup, play, replay and results. Physical reach, camera latency and
+perceived music synchronization remain hardware-validation requirements.
+
+
+## Physical camera menu correction (2026-11-17)
+The earlier small-preview/expanded-cursor navigation is superseded. Home and
+Catalog now overlay the full mirrored camera, with choices placed around the
+visible body. Native three-second hand overlap selects the actual button at
+that image location. Both menus fit the same complete camera frame on desktop
+and portrait screens. No Up/Down controls or separate camera preview remain.
+Gameplay navigation uses the same physical projection into its existing camera
+rectangle, while three-second player readiness stays separate. Real-device
+tracking/comfort validation remains open.
+
+## Minimal game introduction (2026-11-17)
+
+The complete uncropped mirrored camera remains the background. Each of the five
+public games has an original, local, silent three-second looping MP4 illustrating
+its own movement. Show only its compact title/demo/one instruction, one ready
+hand button per selected player, the three-second hold progress, and a small Games
+exit. Hide gameplay HUD, targets, wireframe, diagnostic/recovery notices related
+to waiting for ready, and tournament ribbon during this introduction. After all
+players hold together for three fresh seconds, show only the three-second countdown
+over the camera, then reveal gameplay. Genuine camera errors retain recovery.
+The hand marker and ready contact use measured palm centers when confident finger
+landmarks are present, otherwise wrists, projected into the actual video rectangle
+without invented offsets or reach amplification. Physical hardware verification
+remains required. Decorative kids/rainbow/sun stay at menu edges.
+
+## Font exploration (2026-11-17)
+
+Motion Scribble revision 02 is the active original two-weight handwriting face,
+with a separate editable /font-preview.html specimen and local TTF/WOFF2 files.
+Letter shapes, lean, baseline and stroke pressure vary, with contextual alternate
+forms for repeated letters and real Bold headings instead of synthetic outlines. Player
+choice cards have independent grid sizing so inherited card aspect ratios cannot
+push a choice outside the camera image.
+
+## Stable hand selection and unified timing (2026-11-17)
+
+All navigation and player-ready selections use one 3,000 ms hold constant,
+including game entry, every tournament round and replay. The gameplay countdown
+remains three seconds after readiness. Require fresh simultaneous observations
+for all players; preserve interruption, missing-tracking and scene-change guards.
+
+The visible hand pointer and its menu hit testing use the same stabilized sample.
+A camera-size-aware 3–9 px rest band suppresses small tremors; moderate movement
+is lightly smoothed and large deliberate reaches follow immediately. Each hand
+has independent history. Missing/weak/stale data, scene/geometry/visibility
+changes and long sample gaps clear that history. No extrapolated or invented
+captures, button-center snapping or game-input smoothing is introduced.
+
+## Focused catalog reduction (2026-11-17)
+
+Rocket Rumble and Bubble Battle are hidden for quality rework. Retain their
+implementation and unit coverage, but omit them from Catalog, tournament rounds,
+and public camera/detail routes. Bare /camera defaults to Paper Dojo. The current
+public set is Paper Dojo, Window Wipe and Paper Jam. Tournament labels and schedule
+follow this same set, temporarily three distinct rounds without repeating games.
+The eight remaining original EyeToy: Play candidates and the separately paused
+Rocket Rumble are documented in docs/EYETOY-PLAY-CATALOG.md, with regional aliases
+and explicit distinctions between missing adaptations and hidden generic prototypes.
+
+
+## Cardboard Champ — Boxing Chump inspired adaptation
+The public catalog now includes Cardboard Champ (`punch-arena`) alongside Paper
+Dojo, Window Wipe and Paper Jam. The tournament uses these four distinct games.
+The former generic Punch Arena remains in source for historical tests but is no
+longer mounted. The new game uses measured wrist travel for head/body punches
+and fresh head position for ducking/leaning away from telegraphed robot punches.
+Camera geometry passes through `input/BoxingInput`; the game never reads media.
+Original articulated cardboard robot, impact bursts, guard/recoil/KO animation,
+synthesized thuds/windup/dodge/bell sounds, local stick-figure demo, 1–4 isolated
+lanes, sixty-second score chase, pause/replay and shared three-second ready hold.
+No new model/dependency or network access. Missing tracking never earns a dodge.
+This is an original adaptation, not an exact rule/asset reproduction. Physical
+camera reach, occlusion, punch feel and speaker playback still need validation.
+
+
+## Keep Ups — camera football
+The public catalog and tournament now include Keep Ups (`keep-ups`) as the fifth
+game, after Paper Dojo, Window Wipe, Paper Jam and Cardboard Champ. Each round is
+played once; total points decide the winner. Keep Ups uses normalized measured
+head, wrist, arm and torso surfaces with a fresh-pose physics simulation, round
+footballs, headers, streaks, golden hoops and automatic re-serves. Original
+artwork/tutorial and synthesized contact/crowd feedback retain the camera-first
+presentation. No extra settings or confirmation steps. Details and physical
+validation limits: `docs/KEEP-UPS.md`. Public camera routes now derive directly
+from the visible catalog rather than requiring a second hard-coded route list.
+
+
+## Keep Ups challenge revision
+Keep Ups is now capped at 30 active seconds with three lives per player. Each
+drop costs a life; only players with lives remaining receive another ball.
+Eliminated players stop scoring, and all players eliminated ends the round early.
+Gravity and lateral speed rise across the round. Directional gusts begin at eight
+seconds with a 900 ms warning, last one second, and reverse every six seconds.
+A sustained lateral drift replaces the old repeating bounce to require movement.
+Lives, wind and elimination have minimal visible/readable feedback; replay resets
+them. The tournament continues to use total points and advances on early finish.
+
+### Ghost Catcher
+Original rising paper ghosts and bats, continuous rubbing capture, expressive inflation, confetti and synthesized sound. Six catalog entries; tournament retains five existing rounds. 45-second cap, five escapes per player, escalating waves, isolated lanes and shared three-second readiness. See docs/GHOST-CATCHER.md.
+
+### UFO Juggler
+Seventh public game: spin saucers upward with short waving bursts, coast to avoid overheating, rescue pilots into orbit. Three lives per player, 40-second cap, increasing simultaneous ships, original art/audio/tutorial. Existing five-game tournament remains unchanged. See docs/UFO-JUGGLER.md.
+
+### Multiplayer hand-menu release handling
+A first detected hand already on a player-count button can begin its three-second hold immediately. Scene/geometry/tracking resets preserve release protection only when a prior choice actually activated it. After selection or dialog changes, release/re-entry is evaluated independently for each measured hand; one stationary player must not block another player's deliberate choice. Same-hand hold continuity and accidental-repeat protection remain in place.
+
+### Minimal gameplay controls and results
+Public games omit the manual Pause and Show/Hide wireframe buttons. Camera-disconnect and tab-visibility recovery continue automatically. Results use two matching side-by-side buttons for replay and Back to games across all seven visible games. Returning from automatic recovery focuses Exit game for keyboard access.
+
+### Fullscreen control
+A compact four-corner fullscreen button stays at the bottom right across menus and games, outside the camera-layout containers. It requests fullscreen for the document so camera overlays, navigation and results remain included, reflects fullscreenchange including browser exits, and toggles back to windowed mode. The sound control leaves room for it. Entry requires the browser's direct click/touch/keyboard activation; denied requests show an inline retry hint, not an alert. Unsupported fullscreen APIs omit the control.
+
+
+### Jump Rush — requested obstacle jumping game (2026-11-17)
+- Eighth public catalog game; existing five-game tournament schedule stays unchanged. Other four newly requested games remain pending.
+- One to four isolated lanes on the shared camera. The input adapter uses measured shoulder/hip midpoint movement, with a rise threshold proportional to torso height (clamped to 2.5–7% of frame height). Arm motion alone is excluded; missing hips or multiple bodies in a lane produce no input. This detects torso rise, not independently verified foot lift.
+- Forty-second rounds, a hurdle every 2.4 seconds, +10 for a timed hop and −5 for a tracked bump. Lowering rearms the next hop. Missing tracking cannot award clears. Up to 150 ms of camera/render skew is accepted without retroactively changing scored hurdles.
+- Dedicated local movement video, three-second ready hold, three-second countdown, jump prompt, animated crayon hurdle/star, success burst and original synthesized cues. Paired replay/catalog actions; automatic recovery remains, no manual pause or wireframe button.
+- Physical webcam jump comfort, lighting, distance and speaker playback remain unverified. Unit and browser fixtures are synthetic evidence only.

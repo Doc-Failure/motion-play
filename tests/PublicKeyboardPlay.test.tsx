@@ -45,6 +45,15 @@ describe('keyboard play area', () => {
     expect(action).toHaveBeenCalledTimes(2)
   })
 
+  it('preserves native keyboard activation of targets inside the lane', () => {
+    const action = vi.fn()
+    render(<KeyboardPlayArea enabled onAction={action}><button>Catch bot</button></KeyboardPlayArea>)
+    const target = screen.getByRole('button', {name:'Catch bot'})
+    expect(fireEvent.keyDown(target, {key:'Enter'})).toBe(true)
+    expect(fireEvent.keyDown(target, {key:' '})).toBe(true)
+    expect(action).not.toHaveBeenCalled()
+  })
+
   it('blocks movement and actions outside play without losing the cursor', () => {
     const action = vi.fn()
     const { rerender } = render(<KeyboardPlayArea enabled onAction={action} aria-label="My lane" />)
@@ -67,7 +76,7 @@ for (const [title, Game] of [['Bubble Battle', BubbleBattle], ['Whack-a-Mole', W
       const { container, rerender } = render(<Game playerCount={playerCount} onExit={vi.fn()} />)
       const board = screen.getByRole('group', { name: `Player ${playerCount} ${title} play area` })
       const scores = () => [...container.querySelectorAll('dl dd')].slice(0, playerCount).map(element => element.textContent)
-      const zero = title === 'Window Wipe' ? '0%' : '0'
+      const zero = '0'
       fireEvent.keyDown(board, { key: 'Enter' })
       expect(scores()).toEqual(Array(playerCount).fill(zero))
       advance(3000)
@@ -90,14 +99,14 @@ for (const [title, Game] of [['Bubble Battle', BubbleBattle], ['Whack-a-Mole', W
       expect(screen.getByRole('button', { name: 'Resume round' })).toBeDisabled()
     })
 
-    it('focuses results and returns focus to Pause when replay begins', () => {
+    it('focuses results and returns focus to a gameplay control when replay begins', () => {
       render(<Game playerCount={1} onExit={vi.fn()} />)
       advance(65000)
       const dialog = screen.getByRole('dialog')
       expect(within(dialog).getByRole('heading')).toHaveFocus()
       fireEvent.click(within(dialog).getByRole('button', { name: /Play again|Wipe again/ }))
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
-      expect(screen.getByRole('button', { name: 'Pause' })).toHaveFocus()
+      expect(screen.getByRole('button', { name: title==='Window Wipe'?'Exit game':'Pause' })).toHaveFocus()
       expect(screen.getByRole('group', { name: /play area/ })).toHaveAttribute('aria-disabled', 'true')
     })
   })

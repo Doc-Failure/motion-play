@@ -3,14 +3,13 @@ import type { MotionInputEvent } from '../../input/MotionProcessor'
 import type { PlayerCount, PlayerId } from '../../input/PlayerZoneMapper'
 
 export interface PaperNinja { id:number; playerId:PlayerId; side:-1|1; level:number; born:number; flightMs:number; x:number; y:number; progress:number; pose:'run'|'ready'|'leap' }
-export interface DojoEffect { id:number; playerId:PlayerId; kind:'hit'|'miss'|'chip'|'break'|'obstacle'; x:number; y:number; born:number; side:number; points:number }
+export interface DojoEffect { id:number; playerId:PlayerId; kind:'hit'|'miss'|'obstacle'; x:number; y:number; born:number; side:number; points:number }
 export interface DojoObstacle { id:number; playerId:PlayerId; x:number; y:number; active:boolean; struck:boolean }
 export interface DojoSnapshot extends GameSessionSnapshot {
-  obstacles:DojoObstacle[]; contacts:Record<PlayerId,number>; elapsed:number; wave:number; bonus:boolean; bonusRemainingMs:number; ninjas:PaperNinja[]; effects:DojoEffect[]
-  combos:Record<PlayerId,number>; bestCombos:Record<PlayerId,number>; misses:Record<PlayerId,number>; hits:Record<PlayerId,number>; planks:Record<PlayerId,number>; boards:Record<PlayerId,number>
+  obstacles:DojoObstacle[]; contacts:Record<PlayerId,number>; elapsed:number; wave:number; ninjas:PaperNinja[]; effects:DojoEffect[]
+  combos:Record<PlayerId,number>; bestCombos:Record<PlayerId,number>; misses:Record<PlayerId,number>; hits:Record<PlayerId,number>
 }
 const counters = ():Record<PlayerId,number> => ({1:0,2:0,3:0,4:0})
-const BONUS_CYCLE = 24_000, BONUS_START = 18_000
 
 /** An elapsed-time simulation: rendering, pause length and camera frame cadence do not change trajectories. */
 export class NinjaTrainingModel {
@@ -20,12 +19,9 @@ export class NinjaTrainingModel {
   private aspect:number
   private ninjas:PaperNinja[]=[]
   private effects:DojoEffect[]=[]
-  private combos=counters(); private best=counters(); private misses=counters(); private hits=counters(); private boards=counters()
-  private planks:Record<PlayerId,number>={1:3,2:3,3:3,4:3}
-  private lastHit=counters(); private lastChip:Record<PlayerId,number>={1:-Infinity,2:-Infinity,3:-Infinity,4:-Infinity}
-  private nextBoard=counters()
+  private combos=counters(); private best=counters(); private misses=counters(); private hits=counters()
+  private lastHit=counters()
   private elapsed=0; private nextSpawn=0; private nextId=1; private wave=0; private lastTime=0; private inputNotBefore=0
-  private bonus=false
   private contacts=counters()
   private struck=new Set<string>()
   private inputHistory=new Map<string,{timestamp:number; points:Set<string>}>()
@@ -40,9 +36,9 @@ export class NinjaTrainingModel {
     if(this.session.getSnapshot().phase!=='idle'&&this.session.getSnapshot().phase!=='results') throw new Error('Finish the current round before replaying.')
     const state=this.session.start(time)
     this.contacts=counters();this.struck.clear();this.inputHistory.clear()
-    this.ninjas=[];this.effects=[];this.combos=counters();this.best=counters();this.misses=counters();this.hits=counters();this.boards=counters()
-    this.planks={1:3,2:3,3:3,4:3};this.lastHit=counters();this.lastChip={1:-Infinity,2:-Infinity,3:-Infinity,4:-Infinity};this.nextBoard=counters()
-    this.elapsed=0;this.nextSpawn=0;this.nextId=1;this.wave=0;this.lastTime=time;this.bonus=false;this.inputNotBefore=time+state.countdownRemainingMs
+    this.ninjas=[];this.effects=[];this.combos=counters();this.best=counters();this.misses=counters();this.hits=counters()
+    this.lastHit=counters()
+    this.elapsed=0;this.nextSpawn=0;this.nextId=1;this.wave=0;this.lastTime=time;this.inputNotBefore=time+state.countdownRemainingMs
     return this.update(time)
   }
   update(time:number):DojoSnapshot {
@@ -56,25 +52,18 @@ export class NinjaTrainingModel {
       const elapsed=this.duration-state.roundRemainingMs
       // Scheduled spawn/expiry events preserve results across coarse and fine time steps.
       while(this.nextSpawn<=elapsed) {
-        const at=this.nextSpawn, inBonus=at%BONUS_CYCLE>=BONUS_START
+        const at=this.nextSpawn
         this.expire(at)
-        if(!inBonus) {
-          const wave=Math.floor(at/6000), flightMs=Math.max(1200,2500-wave*110)
-          for(let i=1;i<=this.count;i++) {
-            const playerId=i as PlayerId
-            if(this.ninjas.filter(n=>n.playerId===playerId).length<5) this.ninjas.push({id:this.nextId++,playerId,side:(this.wave%2?1:-1),level:Math.floor(this.wave/2)%3,born:at,flightMs,x:0,y:0,progress:0,pose:'run'})
-          }
-          this.wave++
+        const wave=Math.floor(at/6000), flightMs=Math.max(1200,2500-wave*110)
+        for(let i=1;i<=this.count;i++) {
+          const playerId=i as PlayerId
+          if(this.ninjas.filter(n=>n.playerId===playerId).length<5) this.ninjas.push({id:this.nextId++,playerId,side:(this.wave%2?1:-1),level:Math.floor(this.wave/2)%3,born:at,flightMs,x:0,y:0,progress:0,pose:'run'})
         }
+        this.wave++
         this.nextSpawn+=Math.max(650,1550-Math.floor(at/6000)*90)
       }
-      const bonus=elapsed%BONUS_CYCLE>=BONUS_START
-      // Any ninjas still in flight at a bonus boundary bow out without a penalty.
       this.expire(elapsed)
-      if(bonus) this.ninjas=[]
-      if(bonus&&!this.bonus) {this.planks={1:3,2:3,3:3,4:3};this.nextBoard=counters()}
-      this.bonus=bonus;this.elapsed=elapsed
-      for(let i=1;i<=this.count;i++) if(this.planks[i as PlayerId]===0&&elapsed>=this.nextBoard[i as PlayerId]) this.planks[i as PlayerId]=3
+      this.elapsed=elapsed
       this.effects=this.effects.filter(effect=>elapsed-effect.born<850)
       for(let i=1;i<=this.count;i++) if(elapsed-this.lastHit[i as PlayerId]>2200)this.combos[i as PlayerId]=0
     }
@@ -102,18 +91,6 @@ export class NinjaTrainingModel {
       return this.snapshot()
     }
     if(event.kind!=='MOTION_HIT')return this.snapshot()
-    // A late camera frame must not strike the next phase's bamboo/targets.
-    if((captured%BONUS_CYCLE>=BONUS_START)!==this.bonus)return this.snapshot()
-    if(this.bonus) {
-      if(this.planks[id]===0||this.elapsed-this.lastChip[id]<180||Math.abs(event.x-.5)>.2||Math.abs(event.y-.55)>.12)return state
-      this.lastChip[id]=this.elapsed;this.planks[id]--
-      const broken=this.planks[id]===0
-      if(broken){this.boards[id]++;this.nextBoard[id]=this.elapsed+600}
-      const points=broken?30:5
-      this.session.awardScore(id,points)
-      this.effects.push({id:this.nextId++,playerId:id,kind:broken?'break':'chip',x:.5,y:.55,born:this.elapsed,side:0,points})
-      return this.snapshot()
-    }
     const target=this.ninjas.find(n=> {
       if(n.playerId!==id||captured<n.born+850)return false
       const p=this.position(n,captured)
@@ -143,9 +120,6 @@ export class NinjaTrainingModel {
   private expire(at:number) {
     this.ninjas=this.ninjas.filter(n=> {
       const end=n.born+850+n.flightMs
-      // A bonus cancels any still-active attackers rather than charging for them later.
-      const boundary=Math.floor(n.born/BONUS_CYCLE)*BONUS_CYCLE+BONUS_START
-      if(at>=boundary&&end>=boundary)return false
       if(at<end)return true
       this.session.awardScore(n.playerId,-5);this.misses[n.playerId]++;this.combos[n.playerId]=0
       const p=this.position(n,end)
@@ -163,10 +137,10 @@ export class NinjaTrainingModel {
   }
   private obstacles(at=this.elapsed):DojoObstacle[] {
     const cycle=Math.floor(at/6000), age=at%6000
-    if(at%BONUS_CYCLE>=BONUS_START||age<4200)return []
+    if(age<4200)return []
     return Array.from({length:this.count},(_,i)=>({id:cycle,playerId:(i+1) as PlayerId,x:cycle%2?.7:.3,y:.62,active:age>=4900,struck:this.struck.has(`${cycle}:${i+1}`)}))
   }
   private snapshot():DojoSnapshot {
-    return {...this.session.getSnapshot(),obstacles:this.session.getSnapshot().phase==='results'?[]:this.obstacles(),contacts:{...this.contacts},elapsed:this.elapsed,wave:1+Math.floor(this.elapsed/6000),bonus:this.bonus,bonusRemainingMs:this.bonus?BONUS_CYCLE-this.elapsed%BONUS_CYCLE:0,ninjas:this.ninjas.map(n=>this.position(n,this.elapsed)),effects:this.effects.map(e=>({...e})),combos:{...this.combos},bestCombos:{...this.best},misses:{...this.misses},hits:{...this.hits},planks:{...this.planks},boards:{...this.boards}}
+    return {...this.session.getSnapshot(),obstacles:this.session.getSnapshot().phase==='results'?[]:this.obstacles(),contacts:{...this.contacts},elapsed:this.elapsed,wave:1+Math.floor(this.elapsed/6000),ninjas:this.ninjas.map(n=>this.position(n,this.elapsed)),effects:this.effects.map(e=>({...e})),combos:{...this.combos},bestCombos:{...this.best},misses:{...this.misses},hits:{...this.hits}}
   }
 }

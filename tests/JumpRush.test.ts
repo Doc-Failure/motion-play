@@ -113,9 +113,9 @@ describe('Jump Rush normalized motion mechanic', () => {
     }
     expect(model.update(1800).scores.map(s=>s.score)).toEqual([...Array(count-1).fill(0),10])
   })
-  it('records the implementation while preserving public gating', () => {
+  it('exposes the new game in the public catalog', () => {
     expect(getGameBySlug('jump-rush')).toMatchObject({available:true,input:'BODY_MOVE',players:[1,2,3,4]})
-    expect(isGameVisible('jump-rush')).toBe(false)
+    expect(isGameVisible('jump-rush')).toBe(true)
   })
 
 })

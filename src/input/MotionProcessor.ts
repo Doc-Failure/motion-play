@@ -6,7 +6,7 @@ export interface MotionFrame { width: number; height: number; data: Uint8Clamped
 /** HAND_SWIPE ends at (x,y); swipe supplies its player-local origin and elapsed
  * milliseconds. Velocity is derived from this segment, never trusted from callers.
  * Frame differencing cannot produce hand swipes. */
-export interface MotionInputEvent { playerId: PlayerId; kind: 'MOTION_HIT' | 'MOTION_BRUSH' | 'HAND_POSITION' | 'HAND_SWIPE' | 'BODY_MOVE' | 'FREEZE'; x: number; y: number; confidence: number; timestamp: number; activity?: number; swipe?: { fromX: number; fromY: number; durationMs: number } }
+export interface MotionInputEvent { playerId: PlayerId; kind: 'UI_POINTER' | 'ARM_POSITION' | 'ARM_MOVE' | 'HAND_PINCH' | 'MOTION_HIT' | 'MOTION_BRUSH' | 'HAND_POSITION' | 'HAND_SWIPE' | 'BODY_MOVE' | 'FREEZE'; x: number; y: number; confidence: number; timestamp: number; pointerId?:string; origin?:{x:number;y:number}; activity?: number; swipe?: { fromX: number; fromY: number; durationMs: number } }
 export interface ZoneMotion { playerId: PlayerId; activePixels: number; activity: number; centroid: { x: number; y: number } | null }
 export interface MotionResult { mask: Uint8ClampedArray; width: number; height: number; threshold: number; zones: ZoneMotion[]; events: MotionInputEvent[]; positions?: MotionInputEvent[]; freezeSamples?: MotionInputEvent[] }
 export interface MotionOptions { spatialSampling?: boolean; sensitivity?: number; smoothing?: number; minimumNeighbors?: number; minimumZoneActivity?: number; debounceMs?: number }

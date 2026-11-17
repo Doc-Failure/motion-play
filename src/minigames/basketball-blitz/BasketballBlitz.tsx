@@ -5,7 +5,8 @@ import { HandSwipeTracker } from '../../input/HandSwipe'
 import type { MotionInputEvent } from '../../input/MotionProcessor'
 import type { PlayerCount, PlayerId } from '../../input/PlayerZoneMapper'
 import { basketFlightMs, BasketballBlitzModel } from './BasketballBlitzModel'
-import './basketball-blitz.css'
+// This prototype is hidden from the production catalog.
+if (import.meta.env.DEV) void import('./basketball-blitz.css')
 
 export function BasketballBlitz({ playerCount, inputEvents = [], onExit, externalPauseReason, onReconnect }: RoundRecoveryProps & {
   playerCount: PlayerCount; inputEvents?: MotionInputEvent[]; onExit(): void

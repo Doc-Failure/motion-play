@@ -9,13 +9,13 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const workerMarker = 'null /* motion-play-release */'
 const digest = (value) => createHash('sha256').update(value).digest('hex')
 // Raw-byte regression guards, not claims about download speed or FPS.
-export const budgets = { javascript: 550_000, css: 160_000, total: 33_000_000, core: 3_000_000, pose: 30_000_000 }
+export const budgets = { javascript: 550_000, css: 160_000, total: 43_000_000, core: 3_000_000, pose: 40_000_000 }
 
 // These runtime dependencies are loaded from JavaScript, so the HTML/CSS asset
 // checks cannot discover a missing model or a missing browser-specific WASM path.
 export const requiredPoseFiles = [
   'pose/tracker.html', 'pose/tracker.js', 'pose/vision_bundle.mjs',
-  'pose/pose_landmarker_lite.task',
+  'pose/pose_landmarker_lite.task', 'pose/hand_landmarker.task',
   'pose/wasm/vision_wasm_internal.js', 'pose/wasm/vision_wasm_internal.wasm',
   'pose/wasm/vision_wasm_nosimd_internal.js', 'pose/wasm/vision_wasm_nosimd_internal.wasm',
   'pose/LICENSE.txt', 'pose/MODEL-CARD.txt', 'pose/README.txt',

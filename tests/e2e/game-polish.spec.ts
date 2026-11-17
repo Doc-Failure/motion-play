@@ -1,4 +1,4 @@
-import { expect, openApp, test } from './fixtures'
+import { completeReadyGate, expect, openApp, test } from './fixtures'
 import { visibleCatalogGames } from '../../src/app/catalog'
 
 for (const players of [1, 4]) {
@@ -6,10 +6,10 @@ for (const players of [1, 4]) {
     test.setTimeout(120_000)
     await installMockCamera()
     await openApp(page,'#/catalog')
+    await page.getByRole('button',{name:`${players} ${players === 1 ? 'player' : 'players'}`,exact:true}).click()
     for(const game of visibleCatalogGames.filter(game => game.available)) {
       await page.evaluate(slug => {window.location.hash = `#/camera/${slug}`},game.slug)
-      await page.getByRole('button',{name:`${players} ${players === 1 ? 'player' : 'players'}`,exact:true}).click()
-      await page.getByRole('button',{name:`Play ${game.title}`,exact:true}).click()
+      await completeReadyGate(page)
       await page.waitForTimeout(3300)
       await expect(page.getByRole('heading',{name:game.title,exact:true})).toBeVisible()
       await expect(page.getByRole('button',{name:'Mute game sound'})).toBeVisible()
@@ -42,7 +42,7 @@ test('real Web Audio schedules notes and mute silences subsequent cues',async ({
     }
   })
   await openApp(page)
-  await page.getByRole('button',{name:'Play Bubble Battle'}).click()
+  await page.getByRole('button',{name:'1 player',exact:true}).click();await completeReadyGate(page)
   await expect.poll(() => page.evaluate(() => (window as typeof window & {__audioTest:{notes:number}}).__audioTest.notes)).toBeGreaterThan(0)
   await page.getByRole('button',{name:'Mute game sound'}).click()
   const before = await page.evaluate(() => (window as typeof window & {__audioTest:{notes:number}}).__audioTest.notes)

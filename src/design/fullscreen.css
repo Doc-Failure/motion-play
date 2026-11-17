@@ -1,0 +1,4 @@
+.fullscreen-toggle { position:fixed; z-index:90; right:.5rem; bottom:.5rem; display:grid; place-items:center; width:44px; height:44px; padding:0; border:2px solid #29313c; border-radius:.6rem; background:#fff8e9; color:#29313c; cursor:pointer; }
+.fullscreen-toggle:focus-visible { outline:3px solid #f5c847; outline-offset:3px; }
+.fullscreen-error { position:fixed; z-index:91; right:.5rem; bottom:3.5rem; max-width:18rem; margin:0; padding:.5rem; border-radius:.5rem; background:#fff8e9; color:#29313c; font-size:.8rem; }
+body:has(.fullscreen-toggle) .camera-play .game-tools { right:4rem; }

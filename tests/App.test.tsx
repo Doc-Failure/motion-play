@@ -9,32 +9,55 @@ function visit(hash: string) {
 }
 
 describe('catalog data', () => {
-  it('contains the complete, unique, ordered 33-game specification catalog', () => {
-    const expectedTitles = ['Bubble Battle', 'Whack-a-Mole', 'Meteor Smash', 'Fruit Slash', 'Punch Arena', 'Piñata Party', 'Monster Defense', 'Balloon Panic', 'Fruit Catcher', 'Gold Rush', 'Fish Frenzy', 'Supermarket Rush', 'Star Collector', 'Treasure Grab', 'Dodgeball', 'Laser Escape', 'Dance Challenge', 'Freeze!', 'Paper Dojo', 'Jump Rush', 'Window Wipe', 'Paint Splash', 'Car Wash', 'Pizza Maker', 'Graffiti Race', 'Tower Builder', 'Air Pong', 'Goalkeeper', 'Basketball Blitz', 'Simon Says', 'Plate Spinner', 'Magic Duel', 'Rocket Rumble']
-    expect(catalogGames).toHaveLength(33)
-    expect(catalogGames.map((game) => game.id)).toEqual(Array.from({ length: 33 }, (_, index) => index + 1))
+  it('contains the complete, unique, ordered 38-game specification catalog', () => {
+    const expectedTitles = ['Bubble Battle', 'Whack-a-Mole', 'Meteor Smash', 'Fruit Slash', 'Cardboard Champ', 'Piñata Party', 'Monster Defense', 'Balloon Panic', 'Fruit Catcher', 'Gold Rush', 'Fish Frenzy', 'Supermarket Rush', 'Star Collector', 'Treasure Grab', 'Dodgeball', 'Laser Escape', 'Dance Challenge', 'Freeze!', 'Paper Dojo', 'Jump Rush', 'Window Wipe', 'Paint Splash', 'Car Wash', 'Pizza Maker', 'Graffiti Race', 'Tower Builder', 'Air Pong', 'Goalkeeper', 'Basketball Blitz', 'Simon Says', 'Plate Spinner', 'Magic Duel', 'Rocket Rumble', 'Silk Squad','Paper Jam','Keep Ups','Ghost Catcher','UFO Juggler']
+    expect(catalogGames).toHaveLength(38)
+    expect(catalogGames.map((game) => game.id)).toEqual(Array.from({ length: 38 }, (_, index) => index + 1))
     expect(catalogGames.map((game) => game.title)).toEqual(expectedTitles)
-    expect(new Set(catalogGames.map((game) => game.slug))).toHaveLength(33)
-    expect(new Set(catalogGames.map((game) => game.title))).toHaveLength(33)
+    expect(new Set(catalogGames.map((game) => game.slug))).toHaveLength(38)
+    expect(new Set(catalogGames.map((game) => game.title))).toHaveLength(38)
     expect(new Set(catalogGames.map((game) => game.category))).toEqual(new Set(catalogCategories))
-    expect(catalogGames.filter((game) => game.available).map((game) => [game.slug, game.players])).toEqual([['bubble-battle', [1, 2, 3, 4]], ['whack-a-mole', [1, 2, 3, 4]], ['meteor-smash', [1, 2, 3, 4]], ['fruit-slash', [1, 2, 3, 4]], ['punch-arena', [1, 2, 3, 4]], ['pinata-party', [1, 2, 3, 4]], ['monster-defense', [1, 2, 3, 4]], ['balloon-panic', [1, 2, 3, 4]], ['fruit-catcher', [1, 2, 3, 4]], ['gold-rush', [1, 2, 3, 4]], ['fish-frenzy', [1, 2, 3, 4]], ['supermarket-rush', [1, 2, 3, 4]], ['star-collector', [1, 2, 3, 4]], ['treasure-grab', [1, 2, 3, 4]], ['dodgeball', [1, 2, 3, 4]], ['laser-escape', [1, 2, 3, 4]], ['dance-challenge', [1, 2, 3, 4]], ['freeze', [1, 2, 3, 4]], ['ninja-training', [1, 2, 3, 4]], ['jump-rush', [1, 2, 3, 4]], ['window-wipe', [1, 2, 3, 4]], ['paint-splash', [1, 2, 3, 4]], ['car-wash', [1, 2, 3, 4]], ['pizza-maker', [1, 2, 3, 4]], ['graffiti-race', [1, 2, 3, 4]], ['tower-builder', [1, 2, 3, 4]], ['air-pong', [1, 2, 3, 4]], ['goalkeeper', [1, 2, 3, 4]], ['basketball-blitz', [1, 2, 3, 4]], ['simon-says', [1, 2, 3, 4]], ['plate-spinner', [1, 2, 3, 4]], ['magic-duel', [1, 2, 3, 4]], ['rocket-rumble', [1, 2, 3, 4]]])
+    expect(catalogGames.filter((game) => game.available).map((game) => [game.slug, game.players])).toEqual([['bubble-battle', [1, 2, 3, 4]], ['whack-a-mole', [1, 2, 3, 4]], ['meteor-smash', [1, 2, 3, 4]], ['fruit-slash', [1, 2, 3, 4]], ['punch-arena', [1, 2, 3, 4]], ['pinata-party', [1, 2, 3, 4]], ['monster-defense', [1, 2, 3, 4]], ['balloon-panic', [1, 2, 3, 4]], ['fruit-catcher', [1, 2, 3, 4]], ['gold-rush', [1, 2, 3, 4]], ['fish-frenzy', [1, 2, 3, 4]], ['supermarket-rush', [1, 2, 3, 4]], ['star-collector', [1, 2, 3, 4]], ['treasure-grab', [1, 2, 3, 4]], ['dodgeball', [1, 2, 3, 4]], ['laser-escape', [1, 2, 3, 4]], ['dance-challenge', [1, 2, 3, 4]], ['freeze', [1, 2, 3, 4]], ['ninja-training', [1, 2, 3, 4]], ['jump-rush', [1, 2, 3, 4]], ['window-wipe', [1, 2, 3, 4]], ['paint-splash', [1, 2, 3, 4]], ['car-wash', [1, 2, 3, 4]], ['pizza-maker', [1, 2, 3, 4]], ['graffiti-race', [1, 2, 3, 4]], ['tower-builder', [1, 2, 3, 4]], ['air-pong', [1, 2, 3, 4]], ['goalkeeper', [1, 2, 3, 4]], ['basketball-blitz', [1, 2, 3, 4]], ['simon-says', [1, 2, 3, 4]], ['plate-spinner', [1, 2, 3, 4]], ['magic-duel', [1, 2, 3, 4]], ['rocket-rumble', [1, 2, 3, 4]], ['silk-squad', [1, 2, 3, 4]], ['beat-freak', [1, 2, 3, 4]], ['keep-ups', [1, 2, 3, 4]], ['ghost-catcher', [1, 2, 3, 4]], ['ufo-juggler', [1, 2, 3, 4]]])
     expect(catalogGames.filter((game) => !game.available).every((game) => game.players.join() === '1,2,3,4')).toBe(true)
   })
 
 })
 
 describe('App navigation', () => {
-  beforeEach(() => { window.localStorage.clear(); visit('#/') })
-  afterEach(() => visit('#/'))
+  beforeEach(() => { window.localStorage.clear(); window.sessionStorage.setItem('motion-play:players:v1','1'); visit('#/') })
+  afterEach(() => {window.sessionStorage.clear();visit('#/')})
+  it.each(visibleCatalogGames)('routes the public $title card to its camera flow',async game=>{
+    visit(`#/camera/${game.slug}`);render(<App/>)
+    await waitFor(()=>expect(document.title).toBe('Camera · Motion Play'))
+    expect(screen.queryByRole('heading',{name:'Motion Play!'})).not.toBeInTheDocument()
+    expect(document.querySelector('.camera-lobby')).not.toHaveAttribute('hidden')
+  })
+  it('asks for players once, persists the choice and allows changing it on Home',async()=>{
+    window.sessionStorage.clear()
+    render(<App/>)
+    expect(screen.getByRole('heading',{name:'How many players?'})).toBeVisible()
+    fireEvent.click(screen.getByRole('button',{name:'3 players'}))
+    expect(screen.getByRole('heading',{name:'Motion Play!'})).toBeVisible()
+    expect(window.sessionStorage.getItem('motion-play:players:v1')).toBe('3')
+    fireEvent.click(screen.getByRole('link',{name:/game catalog/i}))
+    await waitFor(()=>expect(screen.getByRole('heading',{name:'Game Catalog',level:1})).toBeVisible())
+    expect(screen.queryByRole('group',{name:'Choose players once'})).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('link',{name:'← Back to Home'}))
+    await waitFor(()=>expect(screen.getByRole('button',{name:'3 players · change'})).toBeVisible())
+    fireEvent.click(screen.getByRole('button',{name:'3 players · change'}))
+    fireEvent.click(screen.getByRole('button',{name:'2 players'}))
+    expect(window.sessionStorage.getItem('motion-play:players:v1')).toBe('2')
+  })
   it('keeps a simple home and sends game cards straight to play', async () => {
     render(<App />)
     expect(screen.getByRole('heading', {name: 'Motion Play!'})).toBeVisible()
     expect(screen.queryByRole('link', {name: 'Settings'})).not.toBeInTheDocument()
-    expect(screen.queryByRole('link', {name: /Tournament/})).not.toBeInTheDocument()
-    expect(screen.getByRole('link', {name:/Quick Play/})).toHaveAttribute('href','#/quick-play')
+    expect(screen.getByRole('link', {name: /Tournament/})).toHaveAttribute('href','#/tournament')
+    expect(screen.queryByRole('link', {name:/Quick Play/})).not.toBeInTheDocument()
+    expect(document.querySelectorAll('.action-card')).toHaveLength(2)
     fireEvent.click(screen.getByRole('link', {name: /game catalog/i}))
     await waitFor(() => expect(screen.getByRole('heading', {name: 'Game Catalog', level: 1})).toBeVisible())
-    expect(screen.getByRole('link', {name: 'Play Bubble Battle'})).toHaveAttribute('href', '#/camera/bubble-battle')
+    expect(screen.getByRole('link', {name: 'Play Paper Dojo'})).toHaveAttribute('href', '#/camera/ninja-training')
     expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
   })
   it('shows exactly five games under a minimal catalog header', () => {
@@ -42,8 +65,8 @@ describe('App navigation', () => {
     render(<App />)
     expect(screen.getByRole('heading',{name:'Game Catalog'})).toBeVisible()
     expect(screen.getByRole('link',{name:'← Back to Home'})).toHaveAttribute('href','#/')
-    expect(visibleCatalogGames.map(game => game.slug)).toEqual(['rocket-rumble','ninja-training','bubble-battle','window-wipe','whack-a-mole'])
-    expect(screen.getAllByRole('link',{name:/^Play /})).toHaveLength(5)
+    expect(visibleCatalogGames.map(game => game.slug)).toEqual(['ninja-training','window-wipe','beat-freak','punch-arena','keep-ups','ghost-catcher','ufo-juggler','jump-rush'])
+    expect(screen.getAllByRole('link',{name:/^Play /})).toHaveLength(8)
     expect(screen.queryByLabelText('Motion Play')).not.toBeInTheDocument()
   })
   it('skips to main content without changing the catalog route', async () => {
@@ -56,7 +79,7 @@ describe('App navigation', () => {
     expect(window.location.hash).toBe('#/catalog')
     expect(screen.getByRole('heading', { name: 'Game Catalog' })).toBeVisible()
   })
-  it.each(['#/camera/magic-duel','#/games/magic-duel','#/camera/basketball-blitz','#/games/basketball-blitz','#/camera/punch-arena','#/games/punch-arena','#/camera/fruit-slash','#/games/fruit-slash','#/camera/meteor-smash','#/games/pizza-maker','#/camera/freeze','#/games/freeze','#/camera/jump-rush','#/games/jump-rush'])('keeps deferred game URL %s in the catalog', hash => {
+  it.each(['#/camera/rocket-rumble','#/games/rocket-rumble','#/camera/bubble-battle','#/games/bubble-battle','#/camera/whack-a-mole','#/quick-play','#/camera/magic-duel','#/games/magic-duel','#/camera/basketball-blitz','#/games/basketball-blitz','#/camera/fruit-slash','#/games/fruit-slash','#/camera/meteor-smash','#/games/pizza-maker','#/camera/freeze','#/games/freeze'])('keeps deferred game URL %s in the catalog', hash => {
     visit(hash)
     render(<App />)
     expect(screen.getByRole('heading',{name:'Game Catalog'})).toBeVisible()

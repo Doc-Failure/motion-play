@@ -41,12 +41,14 @@ function Tower({right=false}: {right?:boolean}) {
     <path d="m21 170 4 395m72-400 3 400M31 543l51-2m-49 17 47-2" fill="none" stroke="#f8dfa6" strokeWidth="3" opacity=".65"/>
   </svg>
 }
-export function NinjaTraining({playerCount,inputEvents=[],onExit,externalPauseReason,onReconnect}:RoundRecoveryProps&{playerCount:PlayerCount;inputEvents?:MotionInputEvent[];onExit():void}) {
+export function NinjaTraining({playerCount,inputEvents=[],onExit,externalPauseReason,onReconnect,onComplete}:RoundRecoveryProps&{playerCount:PlayerCount;inputEvents?:MotionInputEvent[];onExit():void;onComplete?:(scores:{playerId:PlayerId;score:number}[])=>void}) {
   const {aspectRatio=1}=useContext(InputFeedbackContext)
   const [model]=useState(()=>new NinjaTrainingModel({playerCount,aspectRatio}))
   const [snapshot,setSnapshot]=useState(()=>model.start(performance.now()))
+ const completionSent=useRef(false)
+ useEffect(()=>{if(snapshot.phase==='results'&&onComplete&&!completionSent.current){completionSent.current=true;onComplete(snapshot.scores)}else if(snapshot.phase==='countdown')completionSent.current=false},[snapshot,onComplete])
   const recovery=useRoundRecovery({model,snapshot,setSnapshot,title:'Paper Dojo',externalPauseReason,onReconnect,onExit})
-  const seenEffect=useRef(0),lastLaunch=useRef(0),wasBonus=useRef(false)
+  const lastLaunch=useRef(0)
   const results=useRef<HTMLHeadingElement>(null)
   useEffect(()=>{model.setAspectRatio(aspectRatio)},[aspectRatio,model])
   useEffect(()=>{
@@ -57,15 +59,8 @@ export function NinjaTraining({playerCount,inputEvents=[],onExit,externalPauseRe
   useEffect(()=>{for(const event of inputEvents)setSnapshot(model.hit(event))},[inputEvents,model])
   useEffect(()=>{
     if(snapshot.phase!=='playing')return
-    for(const effect of snapshot.effects) {
-      if(effect.id<=seenEffect.current)continue
-      if(effect.kind==='break'||effect.kind==='chip') gameAudio.play('crack','dojo')
-      seenEffect.current=Math.max(seenEffect.current,effect.id)
-    }
     const launched=snapshot.ninjas.filter(n=>n.pose==='leap').reduce((id,n)=>Math.max(id,n.id),0)
     if(launched>lastLaunch.current){gameAudio.play('swoosh','dojo');lastLaunch.current=launched}
-    if(snapshot.bonus&&!wasBonus.current)gameAudio.play('combo','dojo')
-    wasBonus.current=snapshot.bonus
   },[snapshot])
   useEffect(()=>{if(snapshot.phase==='results')results.current?.focus()},[snapshot.phase])
   const hitAt=(playerId:PlayerId,x:number,y:number)=>setSnapshot(model.hit({playerId,kind:'MOTION_HIT',x,y,confidence:1,timestamp:performance.now()}))
@@ -73,25 +68,25 @@ export function NinjaTraining({playerCount,inputEvents=[],onExit,externalPauseRe
     const rect=event.currentTarget.getBoundingClientRect()
     if(rect.width&&rect.height)hitAt(id,(event.clientX-rect.left)/rect.width,(event.clientY-rect.top)/rect.height)
   }
-  const replay=()=>{seenEffect.current=lastLaunch.current=0;wasBonus.current=false;setSnapshot(model.start(performance.now()))}
+  const replay=()=>{lastLaunch.current=0;setSnapshot(model.start(performance.now()))}
   const best=Math.max(...snapshot.scores.map(s=>s.score))
-  return <section className="dojo-game" aria-labelledby="dojo-title" data-phase={snapshot.phase} data-bonus={snapshot.bonus}>
+  return <section className="dojo-game" aria-labelledby="dojo-title" data-phase={snapshot.phase}>
     <GameFeedback snapshot={snapshot} theme="dojo"/>
-    <header className="bubble-game__header"><h1 id="dojo-title">Paper Dojo</h1><dl>{snapshot.scores.map(s=><div key={s.playerId}><dt>P{s.playerId}</dt><dd>{s.score}</dd></div>)}<div><dt>Time</dt><dd>{Math.ceil(snapshot.roundRemainingMs/1000)}s</dd></div></dl>{recovery.pauseButton}<button className="text-button" onClick={onExit}>Exit game</button></header>
-    <div className={`dojo-wave${snapshot.bonus?' dojo-wave--bonus':''}`} role="status">{snapshot.bonus?`Bamboo burst! ${Math.ceil(snapshot.bonusRemainingMs/1000)}s`:`Wave ${snapshot.wave}`}<small>{snapshot.bonus?'Three quick strikes per bundle':'Swat ninjas · keep clear of marked obstacles'}</small></div>
+    <header className="bubble-game__header"><h1 id="dojo-title">Paper Dojo</h1><dl>{snapshot.scores.map(s=><div key={s.playerId}><dt>P{s.playerId}</dt><dd>{s.score}</dd></div>)}<div><dt>Time</dt><dd>{Math.ceil(snapshot.roundRemainingMs/1000)}s</dd></div></dl><button ref={recovery.exitButtonRef} className="text-button" onClick={onExit}>Exit game</button></header>
+    <div className="dojo-wave" role="status">Wave {snapshot.wave}<small>Swat ninjas · keep clear of marked obstacles</small></div>
     <div className={`dojo-boards dojo-boards--${playerCount}`}>{snapshot.scores.map(({playerId})=><section className="dojo-player" key={playerId} aria-label={`Player ${playerId}`}>
       <h2>Player {playerId}</h2>
       <div className="dojo-board" aria-label={`Player ${playerId} Paper Dojo play area`} onPointerDown={e=>pointer(playerId,e)}>
         <Tower/><Tower right/>
         {snapshot.ninjas.filter(n=>n.playerId===playerId).map(n=><button key={n.id} className={`dojo-ninja dojo-ninja--${n.pose}`} style={{left:`${n.x*100}%`,top:`${n.y*100}%`,'--ninja-scarf':['#f2c95d','#ee8e9f','#af9dd7'][n.level],'--tilt':`${n.pose==='leap'?n.side*(25-50*n.progress):0}deg`} as CSSProperties} aria-label={`Swat Player ${playerId} ninja ${n.id}`} disabled={snapshot.phase!=='playing'||n.pose!=='leap'} onPointerDown={e=>e.stopPropagation()} onClick={()=>hitAt(playerId,n.x,n.y)}><NinjaPuppet pose={n.pose} side={n.side} beat={snapshot.elapsed-n.born}/>{n.pose==='ready'&&<span className="dojo-warning" aria-hidden="true">!</span>}</button>)}
         {snapshot.obstacles.filter(o=>o.playerId===playerId).map(o=><button key={o.id} className={`dojo-obstacle${o.active?' dojo-obstacle--active':''}${o.struck?' dojo-obstacle--struck':''}`} style={{left:`${o.x*100}%`,top:`${o.y*100}%`}} aria-label={`Player ${playerId} obstacle: ${o.struck?'bumped':o.active?'avoid':'warning'}`} disabled={snapshot.phase!=='playing'||!o.active||o.struck} onPointerDown={e=>e.stopPropagation()} onClick={()=>hitAt(playerId,o.x,o.y)}><svg viewBox="0 0 100 100" aria-hidden="true"><path d="m50 4 12 23 26-14-10 28 19 10-23 12 13 25-27-11-10 20-12-22-25 14 10-28L4 50l23-12-13-25 27 11Z" fill="#f5c847" stroke="#713d42" strokeWidth="4"/><path d="m35 35 30 30m0-30L35 65" stroke="#713d42" strokeWidth="9" strokeLinecap="round"/></svg><span>{o.struck?'Bump −10':o.active?'Avoid!':'Watch out…'}</span></button>)}
-        {snapshot.bonus&&snapshot.planks[playerId]>0&&<button className="dojo-bamboo" aria-label={`Break Player ${playerId} bamboo`} disabled={snapshot.phase!=='playing'} onPointerDown={e=>e.stopPropagation()} onClick={()=>hitAt(playerId,.5,.55)}><svg viewBox="0 0 240 140" aria-hidden="true">{[0,1,2].map(i=><g key={i} className={i<snapshot.planks[playerId]?'':'dojo-bamboo--broken'}><path d={`M15 ${20+i*35} 222 ${15+i*35}l4 27-209 6Z`} fill="#d1b873" stroke="#3e4940" strokeWidth="4"/><path d={`m44 ${19+i*35} 1 27m119-30 2 27m-143-16 187-4`} stroke="#75844f" strokeWidth="4" fill="none"/></g>)}</svg><span>{snapshot.planks[playerId]} strikes left</span></button>}
-        {snapshot.effects.filter(e=>e.playerId===playerId).map(effect=><div key={effect.id} className={`dojo-effect dojo-effect--${effect.kind}`} style={{left:`${effect.x*100}%`,top:`${effect.y*100}%`,'--away':effect.side===-1?'-1':'1'} as CSSProperties} aria-hidden="true">{effect.kind==='hit'?<><div className="dojo-tumble"><NinjaPuppet side={effect.side}/></div><b>POW!<small>+{effect.points}</small></b></>:effect.kind==='miss'?<b>WHOOPS!</b>:effect.kind==='obstacle'?<b>BUMP!<small>−10</small></b>:<b>{effect.kind==='break'?'CRACK!':'CHOP!'}</b>}{Array.from({length:6},(_,i)=><i key={i} style={{'--piece':i} as CSSProperties}/>)}</div>)}
+
+        {snapshot.effects.filter(e=>e.playerId===playerId).map(effect=><div key={effect.id} className={`dojo-effect dojo-effect--${effect.kind}`} style={{left:`${effect.x*100}%`,top:`${effect.y*100}%`,'--away':effect.side===-1?'-1':'1'} as CSSProperties} aria-hidden="true">{effect.kind==='hit'?<><div className="dojo-tumble"><NinjaPuppet side={effect.side}/></div><b>POW!<small>+{effect.points}</small></b></>:effect.kind==='miss'?<b>WHOOPS!</b>:<b>BUMP!<small>−10</small></b>}{Array.from({length:6},(_,i)=><i key={i} style={{'--piece':i} as CSSProperties}/>)}</div>)}
         {snapshot.combos[playerId]>=2&&<div key={snapshot.combos[playerId]} className="dojo-combo" aria-label={`Player ${playerId} combo`}>{snapshot.combos[playerId]}<small>IN A ROW</small>{snapshot.combos[playerId]>=5&&<span>×{Math.min(3,1+Math.floor((snapshot.combos[playerId]-1)/4))}</span>}</div>}
         {snapshot.phase==='countdown'&&<div className="game-curtain"><strong>{Math.max(1,Math.ceil(snapshot.countdownRemainingMs/1000))}</strong><span>Hands up. Here they come!</span></div>}
       </div>
     </section>)}</div>
     {recovery.pauseDialog}
-    {snapshot.phase==='results'&&<div className="battle-results dojo-results" role="dialog" aria-label="Paper Dojo results"><p className="eyebrow">Training complete</p><h2 ref={results} tabIndex={-1}>{playerCount===1?'A paper-perfect finish!':`Top score: ${best}`}</h2><div className="battle-results__scores">{snapshot.scores.map(s=><p key={s.playerId}><strong>Player {s.playerId}</strong><span>{s.score} points</span><small>{snapshot.hits[s.playerId]} swats · best streak {snapshot.bestCombos[s.playerId]} · {snapshot.boards[s.playerId]} bundles · {snapshot.contacts[s.playerId]} bumps</small></p>)}</div><button className="crayon-button crayon-button--primary" onClick={replay}>Play again</button><button className="text-button" onClick={onExit}>Back to games</button></div>}
+    {snapshot.phase==='results'&&<div className="battle-results dojo-results" role="dialog" aria-label="Paper Dojo results"><p className="eyebrow">Training complete</p><h2 ref={results} tabIndex={-1}>{playerCount===1?'A paper-perfect finish!':`Top score: ${best}`}</h2><div className="battle-results__scores">{snapshot.scores.map(s=><p key={s.playerId}><strong>Player {s.playerId}</strong><span>{s.score} points</span><small>{snapshot.hits[s.playerId]} swats · best streak {snapshot.bestCombos[s.playerId]} · {snapshot.contacts[s.playerId]} bumps</small></p>)}</div><div className="result-actions"><button className="crayon-button crayon-button--primary" onClick={replay}>Play again</button><button className="crayon-button" onClick={onExit}>Back to games</button></div></div>}
   </section>
 }

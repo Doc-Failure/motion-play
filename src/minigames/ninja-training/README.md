@@ -1,7 +1,7 @@
 # Paper Dojo
 
 An original camera-first martial-arts party game. Catalog slot 19 (`ninja-training`)
-is now Paper Dojo. It temporarily replaces Goalkeeper in the five-game public set.
+is now Paper Dojo, one of the current five public games.
 
 ## Reference analysis
 
@@ -28,13 +28,12 @@ voice samples, code or exact level sequences were imported.
 - Sixty-second rounds with gradually faster waves, per-player combo multipliers,
   forgiving score penalties and no violent imagery. One to four independent lanes
   overlay an uncropped mirrored camera. There is no body-pose recognition claim.
-- Six-second bamboo bursts near 18s and 42s. Bundles need three separated strikes;
-  individual chips and full breaks have different visual/audio reactions.
+- Continuous ninja waves throughout the round. The bamboo-breaking interludes,
+  their scoring and their result statistics have been removed.
 - Marked paper obstacles warn before becoming active; motion-center contact or
   explicit pointer/keyboard simulation charges the owning player once. These
   events are not represented as full-body pose recognition.
-- Tumbles, paper confetti, impact lettering, combo stamps, preparation glows and
-  bonus lighting. Pause freezes both simulation and decorative animation. Reduced
+- Tumbles, paper confetti, impact lettering, combo stamps, preparation glows. Pause freezes both simulation and decorative animation. Reduced
   motion suppresses tumbling/confetti/bounce/limb flourishes, retaining essential
   attack movement.
 - Original local Web Audio pitch-bent drum/woodblock effects, launch swooshes,
@@ -54,17 +53,21 @@ frame differences. Missing observations never earn dodge points.
 
 Every six-second attack cycle ends with a marked obstacle: 700 ms warning, then
 1100 ms active. Motion in its circle costs 10 points once per player and clears
-their streak. Markers alternate sides and disappear during bamboo bonuses.
+their streak. Markers alternate sides throughout the round.
 Pointer/touch or Tab + Enter/Space simulate contact as well as strikes. Collision
 bounds use the same aspect-correct circles as the rendered markers. Pauses freeze
 warnings, and stale/duplicate, invalid and pause-crossing samples cannot score.
 
 Model tests cover choreography, scoring/debounce, players, geometry, fine/coarse
-clock equivalence, bonus cycles, pause, replay and escalating waves. View tests
-cover generic input, visible effects, bamboo, lifecycle and recovery. Browser checks
+clock equivalence, continuous waves, pause, replay and escalating waves. View tests
+cover generic input, visible effects, uninterrupted play, lifecycle and recovery. Browser checks
 use synthetic canvas video to exercise real motion processing and audio scheduling.
 Physical webcam feel, camera occlusion and speaker quality still need hardware review.
 
 During play, labels show only player identity. Scores, timer, a single action cue
-and sound/pause/exit controls leave the camera clear. Swats, best streaks, bamboo
-bundles and obstacle bumps are summarized after the round.
+and sound/pause/exit controls leave the camera clear. Swats, best streaks
+and obstacle bumps are summarized after the round.
+
+Paper Dojo hides the body diagnostic and its controls in setup and gameplay.
+Local pose inference stays active for webcam menus and the three-second ready
+hold, while the live camera and original tower artwork remain unobstructed.

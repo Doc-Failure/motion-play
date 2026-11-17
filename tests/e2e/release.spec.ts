@@ -1,4 +1,4 @@
-import { expect, openApp, releaseDirectory, test } from './fixtures'
+import { completeReadyGate, expect, openApp, releaseDirectory, test } from './fixtures'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 
@@ -10,11 +10,11 @@ test('production stays local, requests no microphone and blocks network data con
   page.on('pageerror', error => errors.push(error.message))
   await installMockCamera({ person: true })
   await openApp(page, '#/')
-  expect(await page.evaluate(() => (window as typeof window & { __mockMediaState: { requests: number } }).__mockMediaState.requests)).toBe(0)
+  await expect.poll(()=>page.evaluate(() => (window as typeof window & { __mockMediaState: { requests: number } }).__mockMediaState.requests)).toBe(1)
+  await page.getByRole('button',{name:'4 players',exact:true}).click()
   await page.getByRole('link', { name: /Game Catalog/ }).click()
   await page.getByRole('link', { name: 'Play Paper Dojo', exact: true }).click()
-  await page.getByRole('button', { name: '4 players', exact: true }).click()
-  await page.getByRole('button', { name: 'Play Paper Dojo', exact: true }).click()
+  await completeReadyGate(page)
   await expect(page.locator('.dojo-game')).toBeVisible()
   await page.waitForTimeout(3300)
   const diagnostics = await page.evaluate(async () => {
@@ -66,6 +66,7 @@ test('diagnostic policy allows local assets while blocking external data connect
   await page.evaluate(async () => {
     const frame = document.createElement('iframe')
     frame.title = 'Release privacy diagnostic'
+    frame.name = 'release-privacy-diagnostic'
     frame.src = './pose/tracker.html'
     await new Promise<void>((resolve, reject) => {
       frame.onload = () => resolve()
@@ -73,7 +74,7 @@ test('diagnostic policy allows local assets while blocking external data connect
       document.body.append(frame)
     })
   })
-  const runtime = page.frame({ url: /\/pose\/tracker\.html$/ })!
+  const runtime = page.frame({name:'release-privacy-diagnostic'})!
   expect(await runtime.evaluate(async () => {
     const local = await fetch('./README.txt')
     return local.ok && (await local.text()).includes('Optional local body-tracking diagnostic')
@@ -85,5 +86,5 @@ test('diagnostic policy allows local assets while blocking external data connect
     try { await fetch('./pose/README.txt'); return false } catch { return true }
   })).toBe(true)
   expect(escapedProbes).toEqual([])
-  expect(await page.evaluate(() => (window as typeof window & { __mockMediaState: { requests: number } }).__mockMediaState.requests)).toBe(0)
+  await expect.poll(()=>page.evaluate(() => (window as typeof window & { __mockMediaState: { requests: number } }).__mockMediaState.requests)).toBe(1)
 })

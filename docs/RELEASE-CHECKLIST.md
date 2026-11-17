@@ -4,18 +4,17 @@ Status on 2026-11-16: **not cleared for public release**. This is a local releas
 candidate and a repeatable review procedure. No deployment is authorized by this
 checklist. Automated camera fixtures do not validate a physical webcam.
 
-T26 packaging review snapshot: `444c112d6734d39a686b`, preserved at
-`/tmp/motion-play-t26.LSWyHS`. **927 unit/component tests in 79 files** and
-**17 packaging tests** passed, plus typecheck, lint and isolated production
-build/integrity. Concurrent camera-alignment work was preserved; this evidence
-describes the reviewed snapshots, not any later source edits.
+T26 navigation lifecycle review snapshot: `ea99847d338919e993de`.
+**934 unit/component tests in 80 files** and **17 packaging tests** passed,
+plus typecheck, lint and production build/integrity. All byte budgets pass:
+2,651,787 core bytes plus 28,456,010 pose bytes, 31,107,797 total.
 
 Earlier Chromium evidence remains **56 permanent passes / 39 intentional
-hidden-game skips** on a preceding build. This review's six privacy scenarios
-failed at engine launch; both offline scenarios were blocked by loopback
-permissions, and dependency audit by registry DNS. No fresh browser, inference,
-visual or performance pass is claimed. Cross-browser, offline, security audit
-and human release gates remain open.
+hidden-game skips** on a preceding build. This review's six baseline privacy
+scenarios and three new lifecycle scenarios failed at engine launch; both offline
+scenarios were blocked by loopback permissions, and dependency audit by registry
+DNS. No fresh browser, inference, visual or performance pass is claimed.
+Cross-browser, offline, security audit and human release gates remain open.
 
 The public selection is Rocket Rumble, Paper Dojo, Bubble Battle, Window Wipe
 and Whack-a-Mole. Other implementations remain hidden. Rocket Rumble uses
@@ -110,8 +109,8 @@ honor `MOTION_PLAY_DIST`; the default remains `dist`. Use a distinct Playwright
   External URLs, absent artwork and malformed manifest collections fail the
   build and integrity check. This does not certify browser installation behavior.
 - Current raw payload budgets: core JavaScript 550,000 bytes, CSS 160,000 bytes,
-  core payload 3,000,000 bytes, optional pose assets 30,000,000 bytes and total
-  33,000,000 bytes. The separate pose allowance was introduced by the concurrent
+  core payload 3,000,000 bytes, optional pose/hand assets 40,000,000 bytes and total
+  43,000,000 bytes. The separate pose allowance was introduced by the concurrent
   diagnostic integration; its download/performance implications need review.
   Payload totals exclude the generated worker/report themselves.
   Gzip measurements describe individual files, not assumed server compression.
@@ -156,7 +155,13 @@ honor `MOTION_PLAY_DIST`; the default remains `dist`. Use a distinct Playwright
   in memory and are not stored in localStorage, IndexedDB, or offline caches.
 - Camera requests specify `audio: false`. Home/catalog do not request the camera;
   entering a camera lobby or Quick Play follows a player action. A retained stream
-  survives in-app navigation. Teardown stops owned tracks; a permission request
+  survives in-app navigation. Only the visible lobby/game video receives it;
+  leaving that view pauses and detaches the video. Returning to the catalog/home
+  unmounts game loops, audio scheduling and the diagnostic without stopping the
+  retained stream. A late permission grant while outside a camera route remains
+  detached until that route reopens. Seven component regressions cover these
+  transitions across all five games; the browser Back scenario remains unverified
+  after engine launch failures. Teardown stops owned tracks; a permission request
   resolving after cancellation also stops its returned tracks.
 - Production HTML applies a CSP with `connect-src 'none'`, local scripts/fonts,
   local/data/blob images, local/blob media, no objects or form submission. Inline
@@ -242,6 +247,38 @@ failures/fixes and evidence before changing its status. Keep
 hardware testing has occurred.
 
 ## Latest local review (2026-11-16)
+
+### Navigation cleanup with camera continuity
+
+Found that a hash-route exit left hidden gameplay mounted, with its animation
+loop and music still scheduled. The hidden lobby preview also retained the stream
+during gameplay. Reproduced both defects in component regressions. Camera views
+now attach the stream through one effect with pause/detach cleanup, and inactive
+routes unmount gameplay and reset its flow. Camera ownership and retained player
+count are preserved; returning opens setup without another permission request.
+Late grants on an inactive route cannot attach a hidden preview.
+
+Added seven component cases and a browser Back scenario traversing all five public
+games, checking cancelled frame loops, silent audio scheduling, detached videos,
+released diagnostic and one continuous camera request. The browser scenario is
+not yet validated.
+
+Full unit/component suite: **934 passed in 80 files**, with **17 packaging tests**,
+typecheck, lint, build and artifact integrity passing. Snapshot
+`ea99847d338919e993de` contains 39 payload files with unchanged passing budgets.
+This is cleanup correctness and a size check, not a measured FPS improvement.
+
+The six baseline privacy cases and the final three-engine lifecycle case failed
+before assertions: Chromium Mach-port denial (1100), Firefox SIGABRT, WebKit
+Abort trap 6. Both offline cases failed at loopback `listen EPERM`;
+`npm audit --fetch-retries=0 --fetch-timeout=15000` failed registry DNS ENOTFOUND.
+Logs/traces: `/tmp/motion-play-t26-baseline-browsers`,
+`/tmp/motion-play-t26-lifecycle-browsers*`,
+`/tmp/motion-play-t26-lifecycle-offline*`; unit/audit logs are
+`/tmp/motion-play-t26-unit.log` and `/tmp/motion-play-t26-audit.log`.
+No current browser, visual, inference, performance, dependency-security or
+physical-webcam pass is claimed. T26 remains pending; no deployment, upload,
+dependency change or commit.
 
 ### Module dependencies, stable artifacts and diagnostic release coverage
 
@@ -435,3 +472,230 @@ offline browser scenario could not start its loopback server (`listen EPERM`).
 `npm audit --fetch-retries=0 --fetch-timeout=15000` failed registry DNS ENOTFOUND.
 No new browser, visual, inference, dependency-security, performance or physical
 webcam pass is claimed. T26 remains pending. No deployment, upload or commit.
+
+## Silk Squad and ready-check follow-up (2026-11-16)
+
+The current public five are Silk Squad, Rocket Rumble, Paper Dojo, Bubble Battle
+and Window Wipe. Whack-a-Mole remains hidden. All rounds/replays now require a
+simultaneous five-second ready hold, followed by the three-second countdown.
+Ready buttons consume measured body wrists with keyboard/pointer alternatives.
+Silk Squad additionally consumes actual normalized finger-pinch events. Its hand
+model is bundled locally under public/pose; the optional asset allowance is now
+40 MB (about 36.3 MB used), total allowance 43 MB. The 3 MB core allowance remains.
+Hide wireframe retains gesture tracking required by this game. Raw frames stay
+in memory and no minigame imports camera/media libraries. Earlier statements
+that diagnostic landmarks never drive input are superseded for these two uses.
+
+Automated tests use synthetic camera images and detector fixtures; a separate
+case initializes the real local hand model on a blank image and verifies no
+invented gestures. These checks do not validate physical hand recognition.
+Before release, test open/pinch/reopen reliability, bot targeting, camera framing,
+1–4-person hand ownership, five-second simultaneous holds, actual latency,
+visibility recovery and audio on real devices. No physical hand test or public
+deployment has been performed.
+
+Latest local verification for the Silk Squad follow-up: 962 unit/component tests
+pass across 84 files; six targeted Chromium cases pass (the three Silk Squad
+scenarios repeated twice with one worker). Broader Chromium coverage recorded
+60 passes and 42 hidden-game skips, plus a synthetic pinch failure subsequently
+resolved by waiting for fresh observed open/reopen gestures in the fixture.
+Additional repeats exposed a test-helper race at ready-overlay removal and
+synthetic frame freshness problems; these were corrected. Parallel model-loading
+runs are not a performance pass. Final artifact `16595f3ac055d305161b` passes
+lint, typecheck, build, integrity and whitespace checks; 17 packaging tests pass.
+It has 2,678,783 core bytes and 36,278,006 optional bytes (38,956,789 total).
+Human and cross-browser release gates remain open. See tasks/progress.md for
+failed attempts and final evidence. These results supersede earlier Chromium
+launch restrictions only for this follow-up; they do not certify physical input.
+
+Silk Squad's current control is arm movement, superseding the earlier pinch
+integration. It requests pose tracking only; shoulder-relative elbow/arm-end
+movement produces normalized arm events. The optional finger weights remain
+packaged but are not requested by this game. Latest checks: 980 unit/component
+passes, 38 focused follow-up passes and five targeted Chromium passes, including
+no finger-weight request, ready holds, repeated arm-wave capture and stillness.
+Artifact `02f5c98deb7150c13dc4` passes build/integrity and existing byte budgets.
+Physical arm sensitivity, multi-person tracking and actual latency remain human
+review requirements. See tasks/progress.md for the initial helper-timeout failure
+and final test evidence. No deployment has occurred.
+
+## Webcam navigation and tournament follow-up
+
+Home/catalog can now request the camera through their explicit Enable action.
+After permission, pose wrists drive website choices, player setup, in-game
+controls, results and scrolling. The retained stream decodes only in the current
+menu-preview/lobby/game video. Leaving gameplay stops its loops/audio while menu
+pose input continues. This supersedes the older requirement that all videos and
+pose runtimes be detached on returning to Home/catalog. First browser permission
+and recovery from unavailable hardware still require the browser/native fallback.
+
+The current five are Rocket Rumble, Paper Dojo, Bubble Battle, Window Wipe and
+Whack-a-Mole. Silk Squad is explicitly deferred. The five-round tournament sums
+actual competitive points; highest total wins, ties share the win. Score callbacks
+for all five games and stale/duplicate completion guards are integrated.
+
+Latest artifact `94a708a2337f551c4581`: 2,694,829 core bytes and 36,279,145 optional
+bytes, 38,973,974 total. Existing budgets pass; no dependency or privacy-policy
+changes. Physical menu accuracy, comfort, lighting, multi-person behavior and
+actual performance remain open human gates. See tasks/progress.md for automated
+results, initial test failures, corrections and current evidence. No deployment.
+
+Automated coverage for this follow-up: 994 unit/component passes, followed by 11
+focused navigation/tournament regressions; 17 packaging passes; four body-tracking
+Chromium passes; and three final Chromium navigation/tournament/mobile passes on
+the artifact above. These use synthetic camera/pose input and do not certify
+physical usability. Lint, typecheck/build, integrity and whitespace checks pass.
+
+
+Home simplification follow-up: only Game Catalog and 5-Game Tournament remain.
+Legacy Quick Play links open Catalog. Artifact `a238e5785e80e2430775` supersedes
+that above: 2,694,442 core bytes plus 36,279,145 optional = 38,973,587 total;
+existing budgets pass. See the latest tasks/progress.md entry for scoped checks.
+
+
+Paper Dojo cleanup: bamboo-breaking interludes/statistics and the visible Dojo
+body diagnostic are removed. Local tracking remains for navigation/ready holds.
+Artifact `08d4725dcb2cbe053b93`: 2,691,405 core plus 36,279,145 optional bytes =
+38,970,550 total. Existing budgets pass. Focused unit/component coverage passes
+91 cases; lint, typecheck/build and integrity pass. Browser evidence and physical
+verification limits are recorded in the latest tasks/progress.md entry.
+
+## Window Wipe rebuild
+
+Successive soapy windows replace the original static-smudge board. Fresh spatial
+brush samples reveal the live camera, three-pass ink spots add rubbing feedback,
+and players independently clear panes while accumulating points across the full
+60-second round. Procedural foam/squeegee/bubbles/sparkles and original local
+washing synthesis/music need no external assets or new dependencies. Camera,
+ready holds, webcam navigation, pause/recovery and tournament totals remain shared.
+
+Final artifact `118db6a352b556bb76c1`: 2,706,613 core bytes plus 36,279,145 optional
+= 38,985,758 total. JavaScript 521,873 and CSS 153,283 bytes satisfy existing
+budgets. Lint, typecheck/build and integrity pass. Full unit/component coverage
+passed 1,016 cases; six targeted Chromium integration cases passed before the
+final reduced-motion drift correction, whose browser evidence is recorded in
+tasks/progress.md. The build retains its >500 kB JavaScript chunk advisory.
+Physical cleaning reach/sensitivity, multiplayer framing and perceived audio
+quality remain human checks; synthetic tests are not hardware validation.
+No deployment has occurred.
+
+## Paper Jam rhythm follow-up
+
+Paper Jam replaces Whack-a-Mole in the public five and fourth tournament round.
+It uses original art/music and normalized motion hits with capture-time scoring,
+shared readiness/recovery and a round-grid audio lookahead scheduler. The hidden
+Whack implementation remains available for later refinement.
+
+Artifact `6e7c82bcef76803eff93`: JavaScript 537,709, CSS 157,418, core 2,726,584
+plus 36,279,145 optional bytes = 39,005,729 total. All existing budgets pass.
+1,048 unit/component tests and six targeted Chromium cases pass, including the
+complete revised tournament. Lint, typecheck/build, integrity and whitespace
+checks pass. Reviewed desktop/four-player/narrow captures. Physical reach,
+camera latency and perceived speaker/music timing remain human release gates.
+No deployment has occurred. See tasks/progress.md for exact evidence/limitations.
+
+## Physical camera menu follow-up
+
+The preview/expanded-cursor website navigation is superseded. Home and Catalog
+now overlay the full uncropped mirrored camera; all current choices fit inside
+that rectangle on desktop and portrait screens without scrolling. Any tracked
+wrist can select by holding on the actual button for three seconds. Stable wrist
+identity, fresh-sample timing, scene guards and physical letterbox projection
+replace the previous upper-body reach/lane mapping. Five-second readiness remains.
+One stream/local processing/native fallback remain; there are no new assets,
+dependencies, camera uploads or recordings.
+
+Artifact `cc43e35237ab0dd42b64`: JavaScript 538,845, CSS 159,543, core 2,729,845
+plus 36,279,145 optional bytes = 39,008,990 total. Existing budgets pass. Final
+full unit suite: 1,056 passes; focused follow-up: 17 passes. Three Chromium cases
+pass (full navigation, complete tournament, desktop/portrait containment); the
+containment/navigation case passed again after final label/layout cleanup.
+Lint, typecheck/build, integrity and whitespace checks pass. Physical pose/hold
+reliability and reach remain human release gates. See tasks/progress.md for logs.
+No deployment has occurred.
+
+## Minimal introduction follow-up
+
+Camera navigation now starts automatically, subject to native permission. Choose
+players once on Home; retain that choice for the tab. Each of the five public
+games, replays and tournament rounds shows its own small local stick-figure video,
+five-second hand-ready buttons, then only the three-second countdown over the
+camera. Gameplay HUD/diagnostics are hidden until play. Camera errors still offer
+recovery; one stream is retained. Palm-center/wrist-fallback markers project into
+the actual video rectangle. Paper Jam's normalized occupied-motion adapter no
+longer drops rhythm hits to the generic debounce; comparison and remaining
+differences are documented in [PAPER-JAM-AUDIT.md](PAPER-JAM-AUDIT.md).
+
+Artifact `517397c1c7020fad54c6`: JavaScript 541,585; CSS 158,449; core 2,784,963;
+optional pose 36,279,145; total 39,064,108 bytes in 45 payload files. Existing
+budgets pass. Full unit run: 1,061 passes; subsequent focused run: 142 passes;
+additional rhythm file: 29 passes. All 17 packaging checks pass. Twenty-one
+unique targeted Chromium scenarios pass across runs; final all-five demo and
+complete tournament/restart scenarios pass again on this artifact. Lint,
+typecheck/build, integrity and whitespace pass. See tasks/progress.md for logs,
+corrected fixture failures and limits. No fresh full cross-browser/offline run.
+Real webcam/palm alignment, reach, multiplayer comfort and perceived audio timing
+remain human release gates. No deployment or commit occurred.
+
+## Three-second selection, stabilization and handwriting revision
+
+All hand selections, including ready/replay/tournament starts, now use a shared
+3,000 ms duration. The pointer and menu hit tests use the same stabilized measured
+position, with camera-scaled tremor suppression and independent resettable hand
+histories. Missing data cannot complete a hold. The original Motion Scribble
+revision 02 family is active throughout the site, including contextual alternate
+forms and real Regular/Bold weights. See SPEC.md for behavior details.
+
+Artifact `2ea864c551ee2109feaa`: 51 files; JavaScript 542,813, CSS 159,825,
+core 2,906,099, optional pose 36,279,145, total 39,185,244 bytes. Existing budgets
+pass. Full unit suite: 1,069 cases in 93 files. All nine targeted Chromium cases
+pass, including synthetic hand tremor, interrupted/replay readiness, the complete
+tournament and font/layout checks. Lint/types/build/integrity/whitespace pass.
+Physical camera steadiness, reach, perceived lag and human readability remain
+human validation gates. No deployment/commit. See tasks/progress.md for evidence.
+
+## Three-game public set after quality review
+
+Rocket Rumble and Bubble Battle are hidden from catalog, direct public routes and
+all tournament rounds. Their code/assets/model tests remain for later work. The
+public catalog and tournament now use Paper Dojo, Window Wipe and Paper Jam;
+labels and schedule share their count (three), preserving raw totals and restart.
+Bare camera links default to Paper Dojo. Missing original-game options are tracked
+in [EYETOY-PLAY-CATALOG.md](EYETOY-PLAY-CATALOG.md).
+
+Artifact `b925fcec0c452d2a37a9`: JS 542,604; CSS 159,834; core 2,905,899;
+optional pose 36,279,145; total 39,185,044 bytes. Existing budgets pass.
+80 relevant unit/component checks and all eight targeted Chromium cases pass;
+lint/types/build/integrity/whitespace pass. Full suites and physical webcam play
+were not rerun. See tasks/progress.md for scope and evidence. No deployment/commit.
+
+### 2026-11-17 Cardboard Champ review build
+
+Artifact `9019530867f253e76159` adds original robot boxing to the four-game catalog
+and tournament. 133 relevant unit/component checks pass; nine targeted Chromium
+scenarios pass, with both boxing scenarios rerun after the final multiplayer
+proportion adjustment. Build/types/lint and unchanged release budgets pass.
+Synthetic camera-input scoring, stationary-hand rejection, replay/stream reuse,
+reduced-motion four-player geometry, full tournament and menu flow verified.
+Physical punch feel, reach/occlusion with 1–4 people and speaker playback remain
+open hardware checks. See `docs/CARDBOARD-CHAMP.md`; this is not hardware approval.
+
+### 2026-11-17 Keep Ups review build
+
+Artifact `ae296928249eaac1948a` adds Keep Ups as the fifth public game/tournament
+round. 109 relevant unit/component tests and all 11 targeted Chromium scenarios
+pass; three football cases rerun after final arc/UI changes also pass. Reviewed
+one-/four-player captures. Build/types/lint/release integrity and unchanged budgets
+pass (JS 546,628; CSS 158,786; core 2,928,085; total 39,207,230 bytes).
+Synthetic tests cover body contacts, scoring, loss of pose, fallback, retained
+camera, replay and complete five-game tournament. Real camera comfort/occlusion,
+1–4-person spacing, audio latency and speaker quality still require hardware
+validation. See `docs/KEEP-UPS.md`; no release deployment or hardware approval.
+
+### 2026-11-17 Keep Ups challenge revision
+
+Artifact `8dd66c79c346545a65b6`: three lives, elimination/early finish, 30-second
+cap, increasing speed and warned alternating gusts. 23 focused checks pass;
+three final Keep Ups browser cases and the five-game tournament pass. Reviewed
+life/wind feedback. Lint/types/build and unchanged budgets pass. Difficulty feel
+and physical tracking remain hardware review items, not certified by these tests.

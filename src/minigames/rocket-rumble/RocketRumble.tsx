@@ -8,10 +8,12 @@ import type {MotionInputEvent} from '../../input/MotionProcessor'
 import {RocketModel,colors,symbols} from './RocketModel'
 import {FireworksCanvas} from './FireworksCanvas'
 import './rockets.css'
-export function RocketRumble({playerCount,inputEvents=[],onExit,externalPauseReason,onReconnect}:RoundRecoveryProps&{playerCount:PlayerCount;inputEvents?:MotionInputEvent[];onExit():void}){
+export function RocketRumble({playerCount,inputEvents=[],onExit,externalPauseReason,onReconnect,onComplete}:RoundRecoveryProps&{playerCount:PlayerCount;inputEvents?:MotionInputEvent[];onExit():void;onComplete?:(scores:{playerId:PlayerId;score:number}[])=>void}){
  const {aspectRatio=1}=useContext(InputFeedbackContext)
  const [model]=useState(()=>new RocketModel({playerCount,aspectRatio}))
  const [snapshot,setSnapshot]=useState(()=>model.start(performance.now()))
+ const completionSent=useRef(false)
+ useEffect(()=>{if(snapshot.phase==='results'&&onComplete&&!completionSent.current){completionSent.current=true;onComplete(snapshot.scores)}else if(snapshot.phase==='countdown')completionSent.current=false},[snapshot,onComplete])
  const recovery=useRoundRecovery({model,snapshot,setSnapshot,title:'Rocket Rumble',externalPauseReason,onReconnect,onExit})
  const [reduced,setReduced]=useState(()=>window.matchMedia('(prefers-reduced-motion: reduce)').matches||document.documentElement.classList.contains('reduce-motion'))
  const heard=useRef(new Set<number>()),selectedBefore=useRef(0),launched=useRef(0),results=useRef<HTMLHeadingElement>(null)

@@ -32,3 +32,44 @@ Real webcam/multi-person tracking quality still needs physical validation.
 
 WebGL is required for image preprocessing even with CPU model inference.
 Unsupported initialization shows an unavailable message and leaves Play usable.
+
+Same-frame rendering: each result is paired with its captured camera image,
+committed before paint. Only the latest frame is retained in memory, never saved
+or uploaded. The matched image sits behind gameplay; hiding tracking restores
+the underlying live video. Independent IMAGE-mode detection avoids temporal
+smoothing in single-person VIDEO mode. Reference for that upstream behavior:
+https://github.com/google-ai-edge/mediapipe/blob/master/mediapipe/tasks/cc/vision/pose_landmarker/pose_landmarker_graph.cc
+The diagnostic can run at a lower frame rate than the source video. Neither
+pixel correspondence nor photo-based tests prove physical webcam pose accuracy.
+
+Silk Squad / shared ready-check extension (2026-11-16)
+
+Hand Landmarker float16 version 1 (Apache-2.0), unmodified:
+https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task
+Official model/landmark documentation:
+https://ai.google.dev/edge/mediapipe/solutions/vision/hand_landmarker
+The existing Apache license covers these bundled MediaPipe model/runtime files.
+The hand model adds about 7.8 MB; optional pose + hand assets total 36.3 MB.
+No new npm dependency was added. Models are served from this app, never a CDN
+at runtime. Offline use requires loading these optional files while online first.
+
+Pose wrists now support the shared five-second ready buttons. In Silk Squad,
+Hand Landmarker supplies actual finger landmarks, matched to pose wrists for
+player ownership; normalized open-to-pinch edges drive casts. The diagnostic
+wrist dots alone still do not infer finger gestures. Hiding the sticks does not
+stop the pose/hand models needed for Silk Squad or an active ready check.
+Hands and pose are measured on the same captured frame, retained only in memory.
+No recordings, uploads or raw-image game inputs are introduced. Actual physical
+hand recognition, field of view and multi-person performance need user testing.
+
+Interaction inspiration only:
+https://disneyland.disney.go.com/attractions/disney-california-adventure/web-slingers-spider-man-adventure/
+All game robot art, animation, web effects and synthesized audio are original.
+
+Silk Squad arm-motion correction (2026-11-16): the public game now uses only
+Pose Landmarker. Shoulder-relative elbow/arm-end movement emits normalized arm
+position and cast events, with jitter rejection, reacquisition and cooldowns.
+No finger shapes, pinch recognition or hand-model requests are used by Silk Squad.
+The optional hand model/runtime support remains preserved for future precision
+input; it is not initialized by this game. The five-second wrist-ready check
+continues to use pose observations. Physical motion feel remains unverified.

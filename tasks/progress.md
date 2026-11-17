@@ -2742,3 +2742,840 @@ T25V implementation is complete; physical hardware and release gates remain open
   security, model inference or physical-webcam validation is claimed.
 - Updated release procedure/current evidence and T26 notes. T26 remains pending
   with hardware_verified false. No deploy, upload, dependency changes or commit.
+
+## T26 navigation cleanup with camera continuity (2026-11-16)
+
+- Read SPEC.md/AGENTS.md and inspected navigation, all five public games,
+  camera/diagnostic lifecycle, production policies, worker and release tooling.
+  Starting working tree was clean. No deployment was performed.
+- Found that leaving gameplay via a hash route kept the hidden game mounted,
+  including its animation loop/audio scheduling. The hidden lobby video also
+  retained the camera stream during gameplay. Reproduced these defects in new
+  component regressions; initial fixture gaps for Rocket Rumble were corrected.
+- Inactive routes now unmount gameplay and reset round/tournament flow. One
+  effect attaches the retained stream only to the visible video and pauses/
+  detaches it when that view exits. A late permission grant outside a camera
+  route stays detached. CameraSource still owns one continuous stream; retained
+  player count survives navigation and returning opens setup without another
+  request. Game input remains normalized, with no camera-to-game imports added.
+- Added seven passing component cases covering all five public games, frame/
+  audio cleanup, view transfers, late grants, player count and stream continuity.
+  Added a browser Back regression traversing all five games; it is unverified
+  because engines could not launch. Added a jsdom pause stub alongside play.
+- Full unit/component suite: **934 passed in 80 files**. **17 packaging tests**,
+  lint, typecheck, production build/integrity and whitespace checks passed.
+  Snapshot **ea99847d338919e993de** has 39 payload files, 2,651,787 core bytes plus
+  28,456,010 pose bytes = 31,107,797 total. All existing budgets pass unchanged.
+  These checks do not measure FPS, real-camera latency or hardware performance.
+- Six baseline three-engine privacy cases and the final three-engine lifecycle
+  case failed before assertions: Chromium Mach-port permission denial 1100,
+  Firefox SIGABRT, WebKit Abort trap 6. Both offline cases failed loopback listen
+  EPERM. Current npm audit failed registry DNS ENOTFOUND. No fresh browser,
+  screenshot, model inference, cadence, dependency-security or webcam pass claimed.
+  Evidence under /tmp/motion-play-t26-baseline-browsers,
+  /tmp/motion-play-t26-lifecycle-browsers*, /tmp/motion-play-t26-lifecycle-offline*,
+  /tmp/motion-play-t26-unit.log and /tmp/motion-play-t26-audit.log.
+- Updated current release checklist and T26 notes. T26 stays pending with
+  needs_hardware_validation true and hardware_verified false. No physical webcam
+  validation, upload, dependency change or commit.
+
+## Pose/video drift — paired frames and independent inference (2026-11-16)
+
+- Inspected camera geometry, mirroring, pose rendering and the SDK. The old
+  diagnostic read a moving video and rendered the returned joints later while
+  the visible video continued advancing; an additional fixed 80ms wait increased
+  that lag. Confirmed upstream single-person VIDEO mode also enables smoothing.
+- Now capture an immutable camera frame for inference, pair its landmarks with
+  that exact image, and commit the mirrored image plus skeleton before paint.
+  The paired image sits behind game art; the stream and motion input keep running.
+  Capture is uncropped, aspect-preserving and capped at 960px width. An old pose
+  cannot be drawn over a reused/newer frame buffer. Poll scheduling accounts for
+  inference time rather than always adding 80ms. Independent IMAGE-mode pose
+  detection removes video-mode temporal smoothing from this diagnostic.
+- Hiding the wireframe/unmounting removes its paired-image canvas. Missing or
+  stale detection exposes the underlying live video. Skeletons are hidden over
+  pause/results menus so they do not appear attached to the interface itself.
+- Added captured-source/immutable-buffer unit checks, actual mirrored pixel
+  assertions, matching canvas/video bounds and cleanup browser checks. Validation:
+  **68 unit/component cases passed** (14 body tracking, five alignment, 49 camera
+  flow); lint, typecheck/build and whitespace checks passed. Four permanent
+  Chromium diagnostic scenarios passed, including calibration and camera continuity.
+- Also verified on the actual localhost:5173 dev server with the real local model
+  and a photo-fed stream: full skeleton, matched frame bounds, mirrored translation
+  after shifting the photo, and removal/restoration of live video on hiding. Final
+  combined browser run: **five passed**, including this temporary local test.
+  Reviewed /tmp/frame-locked-human.png. Removed the temporary photo/localhost test.
+  One earlier IMAGE-mode dev probe timed out on its translation assertion; a
+  diagnostic rerun and the final combined run both passed, without suppression.
+- These tests validate frame correspondence and the synthetic/photo path. They
+  do not establish the user's physical webcam pose accuracy or prove a static
+  offset is resolved; a clarification about static versus moving offset was asked.
+  No physical recording, upload, deployment, dependency change or commit.
+
+## Five-second ready check and Silk Squad (2026-11-16)
+
+- Implemented simultaneous per-player hand-ready buttons over the centered camera.
+  Every initial round, Quick Play and replay requires five continuous seconds,
+  then releases the existing countdown automatically. Contacts use fresh measured
+  wrists from a uniquely owned body/lane. Missing/stale observations, leaving a
+  button, camera loss or a hidden tab resets the hold. Keyboard toggle and
+  pointer/touch hold alternatives remain available. Camera retention is preserved.
+- Added original Silk Squad (entry 34): eight-legged robot bugs, articulated legs,
+  bobbing movement, scouts/spring bots, golden two-cast armor, visible hand aim,
+  elastic web casts, wrap nets, cocoons traveling into collection jars, streaks,
+  escalating waves, 60-second rounds and results/replay. Original synthesized cast
+  sounds, capture chimes and music respect shared pause/mute. Reduced motion
+  removes cocoon travel/rotation. No attraction art, code, characters or audio used.
+- Added the local MediaPipe Hand Landmarker float16 v1 asset using the existing
+  pinned SDK. Both pose and 21-joint finger detection use one captured image.
+  Actual open-to-pinch edges fire casts; held pinches do not autofire. Wrist/body
+  proximity assigns hands to lanes; ambiguous, low-confidence, missing or stale
+  input is rejected. Games receive normalized events only. All processing remains
+  local, with original isolated runtime CSP and no remote runtime asset loads.
+- The public selection remains five: Silk Squad, Rocket Rumble, Paper Dojo,
+  Bubble Battle and Window Wipe. Whack-a-Mole is preserved but hidden. Model
+  provenance/license and revised optional-asset budgets are documented: core
+  allowance stays 3 MB, optional pose/hand allowance 40 MB, total allowance 43 MB.
+- Fixed nested target keyboard activation being intercepted by KeyboardPlayArea.
+  Also hid diagnostic UI/artwork fading when sticks are hidden while retaining
+  gesture inference. Synthetic canvas fixtures now explicitly request new frames;
+  a still image must still deliver decoded observations to the camera watchdog.
+- Full unit/component suite passed 957 tests in 84 files. Two subsequent targeted
+  additions verify web audio/mute cleanup and hidden-diagnostic gesture inference;
+  that final focused run passed 18 tests. Lint, typecheck, build, whitespace and
+  all 17 packaging cases pass. Final artifact 16595f3ac055d305161b has 40 payload
+  files: 2,678,783 core bytes plus 36,278,006 optional bytes = 38,956,789 total.
+- Focused Chromium checks passed all four: empty-frame body-model lifecycle,
+  pinch capture through the landmark/event/model pipeline, keyboard captures in
+  four-player/narrow layouts, and actual local finger-model initialization on a
+  blank frame without phantom gestures. Reviewed capture and desktop screenshots;
+  diagnostic fading found there was corrected. Five-second four-hand and keyboard
+  replay scenarios passed in the preceding focused run. The complete final
+  Chromium regression is recorded below once finished.
+- Physical webcam finger recognition, multi-person ownership quality, field of
+  view, latency and gameplay feel remain unverified. Fixtures and blank-model
+  inference are not physical validation. No deployment, upload or commit.
+
+- Broader Chromium run: 60 passed, 42 intentional hidden-game skips, one missed
+  synthetic pinch. Instrumented follow-up showed the scripted pinch occurred
+  after a >400 ms observation gap, which correctly disarmed recognition. The
+  fixture now waits for a fresh open-hand observation before closing, and waits
+  for an observed reopening before the second cast. It does not bypass tracking
+  freshness. Further concurrent repeats also encountered camera-ready/recovery
+  interruptions while real headless models loaded; no parallel model-performance
+  pass is claimed. Final model checks use one browser worker.
+- Finger inference is now deferred during the body-only ready hold without
+  reloading models. Actual-model tests await initialization before beginning the
+  keyboard hold. Added a component regression for this transition; its first
+  version omitted the event consumer and was corrected (optional-callback
+  arguments intentionally do not run without a consumer). The corrected 16-case
+  body-tracking suite passes. Delayed casts have a bounded 400 ms allowance,
+  resolve collisions at captured target positions, and reject repeated/out-of-order
+  timestamps. Tests cover this independently of the synthetic fixture issue.
+- Removed duplicate generic score badges/chimes so Silk Squad owns its capture
+  feedback. Final screenshots reviewed under /tmp/silk-final-repeated and
+  /tmp/silk-finished-browser. No physical webcam result is implied.
+
+- Final verification: **962 unit/component tests passed in 84 files**. **Six
+  Chromium Silk Squad cases passed** (all three scenarios repeated twice with
+  one worker) after fixing a ready-helper locator race at overlay removal and
+  making the synthetic stream alternate one pixel to guarantee decoded frames.
+  Pinch/reopen/held-pinch, four-player keyboard capture, responsive art, local
+  model initialization and no phantom gestures all pass. Evidence:
+  /tmp/silk-verified-browser, /tmp/silk-verified-browser.log,
+  /tmp/silk-final-all-unit.log. Earlier failures are retained above, not suppressed.
+  Final lint, typecheck, build, artifact integrity and whitespace checks pass;
+  packaging suite remains 17 passing cases. No physical or parallel-performance
+  certification, deployment, upload or commit.
+
+
+## Reported five-second hand-ready failure, especially Silk Squad (2026-11-16)
+
+- Found that Silk Squad's runtime awaited finger-model creation before returning
+  the pose tracker at all. Disabling finger inference during ready had not
+  removed that startup dependency. Pose tracking now returns independently;
+  finger initialization is lazy and begins after ready. Initialization can remain
+  pending without blocking pose samples or the ready-to-countdown transition.
+- The shared ready model used a strict 400ms wall-clock freshness/reset threshold,
+  which rejected a valid result after 450ms inference. It now supports bounded
+  one-second observation latency/gaps and advances camera progress only on fresh
+  capture timestamps. Cached contacts cannot finish the hold. New samples must
+  span five seconds; long gaps, missing ownership or an actual departure reset it.
+  Small exit hysteresis prevents edge jitter from dropping an established contact;
+  initial entry bounds and confidence thresholds stay unchanged.
+- Added unit regressions for delayed/cadenced observations, cached near-complete
+  frames, long gaps, edge jitter and pending lazy hand initialization. Full suite:
+  **966 tests passed in 84 files**. Lint, typecheck/build, integrity and whitespace
+  checks passed. Artifact **1485d6883b47e16eda20** retains all byte budgets.
+- Existing Chromium four-player wrist-ready and keyboard/replay checks passed,
+  as did all three Silk Squad gameplay/local-model scenarios. Two new browser
+  cases passed using the production runtime/bridge with controlled SDK outputs:
+  one player at 450ms pose latency and four players at normal cadence. Both
+  require measured wrist contacts, verify a departure resets progress and require
+  at least five seconds after re-entry. Finger initialization is deliberately
+  blocked until after the gate has completed; no ready buttons are clicked.
+- Initial new browser fixtures returned no poses because their SDK stub read
+  options from the wrong argument. Corrected the fixture signature and isolated
+  its SDK URL from lobby initialization; both cases then passed. Earlier failures
+  remain in /tmp/ready-fix-browser and /tmp/ready-fix-silk. Final new evidence:
+  /tmp/ready-fix-final-silk (two passing); existing five cases passed in the first
+  combined run. Unit log: /tmp/ready-fix-unit.log. Build: /tmp/ready-fix-build.log.
+- This is automated/synthetic validation, not a physical webcam result. No camera
+  uploads, hardware certification, deployment or commit. Reload existing localhost
+  tabs to replace the already-loaded camera runtime.
+
+
+## Silk Squad: cast webs from arm movement (2026-11-16)
+
+- Replaced finger-pinch input with normalized ARM_POSITION/ARM_MOVE events from
+  measured shoulder, elbow and arm-end joints. Aim follows the active arm's
+  endpoint, with web strands emitted from the forearm. Moving arms can cast
+  repeatedly (420ms per-player cooldown); stillness stops firing. Finger shape,
+  open/reopen gestures and Hand Landmarker are no longer required by Silk Squad.
+- Shoulder-relative movement rejects whole-body translation, small jitter and
+  implausible jumps. Missing/ambiguous/low-confidence joints and stale samples
+  reset arm history; reacquisition cannot fire by itself. Per-lane ownership and
+  per-player cooldowns prevent cross-player shots. Short cast edges survive
+  batched React renders and are deduplicated by the game model.
+- CameraSetup now requests pose-only tracking for Silk Squad, including when
+  the wireframe is hidden. Ready/alignment/tracking-loss states suppress arm
+  input and reset movement history. Five-second pose-wrist ready checks remain.
+  No finger-model request/initialization occurs in this game. Preserved optional
+  finger infrastructure/weights for future precision games; no new dependency.
+  UI/catalog instructions now say to wave arms over bots, and fallback messages
+  describe body tracking rather than finger tracking.
+- Full unit/component suite: **980 passed in 85 files**. A subsequent focused run
+  after forearm-origin refinement passed all **38 arm/model/camera cases**.
+  Final **five Chromium cases passed**: measured one/four-player ready holds
+  (including 450ms pose delay), arm-wave capture/stillness/repeat capture,
+  four-player keyboard/responsive presentation, and actual local pose-only
+  initialization on an empty frame with no hand-weight request or phantom shots.
+- The first browser run passed four cases; the real-model case hit the test
+  helper's 500ms evaluation timeout during initialization. It now waits for pose
+  readiness and uses bounded 3s helper actions; the final combined run passes.
+  Evidence: /tmp/arm-web-unit.log, /tmp/arm-web-final-unit.log,
+  /tmp/arm-web-final-browser and /tmp/arm-web-final-browser.log. Reviewed capture
+  screenshot there. Synthetic/blank-frame tests do not validate physical play.
+- Lint, typecheck/build, integrity and whitespace checks pass. Final artifact
+  **02f5c98deb7150c13dc4**, 40 payload files: 2,682,183 core bytes plus 36,279,145
+  optional bytes = 38,961,328 total; existing budgets pass. No uploads, deployment,
+  dependency additions, physical webcam validation or commit. Reload localhost
+  to replace any retained old game-model instance after hot refresh.
+
+## Webcam website navigation and five-game tournament (2026-11-16)
+
+- Deferred Silk Squad following the user's report; preserved its code and hid it
+  from Catalog, Quick Play and tournaments. The public five are Rocket Rumble,
+  Paper Dojo, Bubble Battle, Window Wipe and Whack-a-Mole.
+- Added Home and Catalog tournament entries. One tournament keeps its player
+  count through five competitive games, advances automatically after each round,
+  and uses the existing simultaneous five-second wrist-ready check before each.
+  Actual points accumulate per player; the highest total wins and tied leaders
+  share the win. Rocket Rumble/Paper Dojo now report completion; duplicate/stale
+  callbacks cannot advance another round. Window Wipe displays tournament points.
+- Player 1's measured pose wrists now navigate menus, player count, Play, game
+  controls, results and page scrolling through normalized UI_POINTER events.
+  Comfortable upper-body reach maps to the whole viewport. A fresh 1.2-second
+  hold selects a choice; movement rearms it. Screen/dialog changes, missing or
+  stale observations, visibility changes and scrolling prevent accidental holds.
+  Game targets and the separate five-second ready buttons are excluded.
+- Reused the retained camera and current view's local pose tracker. Menu preview
+  continues tracking on Home/Catalog; game loops/audio stop when gameplay ends.
+  Hiding diagnostic sticks keeps navigation tracking while restoring live video
+  for ordinary games. First Enable/camera permission requires a native user
+  action; mouse/keyboard/touch alternatives remain. No camera uploads, dependency
+  additions, deployment or commit.
+- Full unit/component run: **994 tests passed across 88 files**. Subsequent
+  focused runs verified adjacent small controls and scene/dialog replacement;
+  the final focused run passed **11 tests in three files**. Tournament coverage
+  verifies raw point totals, ties, duplicate callbacks, all five completions and
+  replay without a new camera request. **17 packaging tests passed**.
+- Four updated body-tracking Chromium regressions pass: blank local-model
+  initialization, player count, aligned fixture joints/stick toggles, and
+  alignment recovery. They reflect the new retained menu tracker; detector
+  fixtures reload through a player-count change rather than hiding sticks.
+- Earlier selected Chromium coverage recorded eight passes, including camera
+  lifecycle, catalog, Quick Play and privacy. Two failures exposed a one-flash
+  scoring fixture falling between decoded frames and a neutral menu wrist over
+  a scrolled card. Replaced these with continuous changing pixels and a blank
+  viewport-edge wrist. The resulting three navigation/tournament/mobile cases
+  passed together in /tmp/webcam-handsfree-final.log. On the final artifact all
+  **three passed again**: camera-only catalog/setup/pause/resume/exit navigation,
+  the complete five-game tournament with unequal scores and correct winner, and
+  narrow-screen webcam scrolling/tournament entry. All use one retained stream;
+  only the initial Enable action is clicked. Final evidence:
+  /tmp/webcam-navigation-release.log and /tmp/webcam-navigation-release. Reviewed
+  the Home screenshot; the three choices fit the desktop viewport.
+- Lint, typecheck/build and release integrity pass. Artifact
+  **94a708a2337f551c4581**, 40 payload files: 2,694,829 core bytes plus 36,279,145
+  optional bytes = 38,973,974 total; all existing budgets pass. Build still emits
+  its advisory about a JavaScript chunk above 500 kB. Evidence:
+  /tmp/webcam-handsfree-unit.log, /tmp/webcam-navigation-final-focused.log,
+  /tmp/webcam-body-integration.log, /tmp/webcam-tournament-packaging.log and
+  /tmp/webcam-navigation-release-build.log. These are synthetic/blank-frame
+  checks, not physical webcam validation. Physical reach, gesture accuracy,
+  lighting, multiplayer ownership and actual performance remain open.
+
+
+## Home limited to catalog and tournament (2026-11-16)
+
+- Removed Quick Play from Home and replaced the three-column desktop layout with
+  two centered cards: Game Catalog, then 5-Game Tournament. Mobile keeps stacked
+  cards. Legacy #/quick-play now opens Catalog without starting the camera/game.
+- Updated the current product specification and Home/legacy-route assertions.
+  All 19 App tests, lint and typecheck/build pass; existing byte budgets pass.
+  Artifact a238e5785e80e2430775 has 2,694,442 core bytes and 38,973,587 total bytes.
+  Initial Chromium run passed legacy-route and mobile-webcam checks; its Home
+  route test incorrectly expected a camera-ready Play caption without enabling
+  a camera. Corrected the assertion to verify the Tournament heading. Final
+  all three Chromium cases passed. Evidence: /tmp/home-two-choices-final.log.
+  Release integrity and whitespace checks pass. No hardware, deployment or commit;
+  webcam behavior itself is unchanged.
+
+
+## Paper Dojo cleanup and next-game research (2026-11-17)
+
+- Removed the bamboo bonus from the model, renderer, CSS, score statistics and
+  catalog instructions. Ninja waves and obstacle schedules continue throughout
+  the former 18–24s and 42–48s interruptions; per-player scoring, deterministic
+  coarse/fine simulation, recovery, replay and tournament completion remain.
+- Paper Dojo no longer shows the body wireframe or diagnostic controls in setup
+  or play. Local pose tracking still supplies website navigation and the
+  five-second ready gate. Other games retain their diagnostic preference.
+- Final focused unit/component run: 91 passes in five files covering Dojo,
+  camera integration and tournament completion. An initial run had 90 passes
+  and one failure from a new Dojo assertion accidentally placed in the Freeze
+  fixture; moved it to the intended Dojo test and reran successfully.
+- Lint, typecheck/build, integrity and whitespace checks pass. Artifact
+  08d4725dcb2cbe053b93 has 2,691,405 core bytes and 38,970,550 total bytes; all byte
+  budgets pass. Build retains its advisory about the >500 kB JavaScript chunk.
+  Evidence: /tmp/dojo-cleanup-tests-final.log, /tmp/dojo-cleanup-build.log,
+  /tmp/dojo-cleanup-integrity.log and /tmp/dojo-cleanup-browser.log.
+- User additionally requested next-game planning. Consulted the original
+  EyeToy: Play instruction manual and the published game-analysis study
+  (https://pmc.ncbi.nlm.nih.gov/articles/PMC4290029/). The original disc lists
+  twelve games; Beat Freak is a candidate for an original rhythm adaptation.
+  No next game has been implemented or selected by the user.
+- No physical webcam validation, camera upload, dependency change, deployment
+  or commit. Browser checks use synthetic video and are recorded below.
+
+- All four targeted Chromium scenarios pass on the final artifact: uninterrupted
+  waves/pause/replay, synthetic camera strike with real audio scheduling, four
+  player/narrow layouts without a visible skeleton, and obstacle score isolation.
+  Screenshot evidence: /tmp/dojo-cleanup-browser (four-player capture reviewed).
+
+## Window Wipe rebuilt around successive soapy windows (2026-11-17)
+
+- Replaced the single 60-cell smudge board with original procedural soap, chalk
+  swirls, bubbles, ink spots and a crayon window frame over the retained live
+  camera. Smooth model-owned elliptical brush discs reveal the video; a hidden
+  40×30 coverage grid measures progress without appearing as artwork.
+- Added moving squeegees, bubble trails, three-pass rubbing/dot indicators, ink
+  pop sparkles, a pane-clear stamp and lifting foam. Each player independently
+  advances after 94% soap and all ink are removed. Rounds now last the full 60
+  seconds; points accumulate through as many windows as players clean.
+  Completed panes score 180 (100 soap, 30 ink, 50 completion). Progress includes
+  both materials; standalone/tournament headers show actual points consistently.
+- Added original local filtered swishes, short squeaks, rising bubble pops,
+  ascending sparkle fanfare and quiet plucked accompaniment through shared
+  GameAudio. Mute/pause/exit cleanup also stops noise sources. No new assets,
+  dependencies, recordings, uploads or copied music/art. Window Wipe starts with
+  diagnostics hidden while retaining the test toggle and background menu/ready
+  tracking. Existing camera/navigation and game-input boundaries are preserved.
+- Hardened samples before clock advancement: malformed/range/confidence checks,
+  per-player timestamp/spatial duplicate rejection, stale/pre-resume/pre-window
+  guards, fresh spaced rubbing and no interpolation between separate arms.
+  Paint retention is bounded by newly revealed coverage and reset per window.
+  Pauses freeze window transitions and effects. Reduced motion suppresses
+  decorative movement without hiding progress or cleaning.
+- Initial focused run exposed four keyboard assertions expecting the retired
+  percentage score header; updated them for actual point totals. Updated the
+  browser grid assertion to check two canvases and no visible tile spans.
+  The first complete unit run passed 1,015 cases; three targeted Chromium cases
+  passed for raster clearing/effects/sound/window advance/replay, keyboard/recovery,
+  and four-player mirrored motion/narrow layouts. Reviewed those screenshots;
+  replaced the visible scalloped eraser edge with feathered measured brush discs.
+- Final full unit/component suite: **1,016 passed across 90 files**. Smooth-disc
+  and washing-audio focused checks also pass. Build/lint/typecheck, integrity
+  and existing byte budgets pass. Artifact **62df54b50e3b08501d08**, 40 payload
+  files: 2,706,607 core plus 36,279,145 optional bytes = 38,985,752 total.
+  JavaScript 521,867 and CSS 153,283 bytes remain within unchanged limits. The
+  existing advisory about a >500 kB JavaScript chunk remains.
+- Evidence: /tmp/wipe-final-unit.log, /tmp/wipe-smooth-tests.log,
+  /tmp/wipe-smooth-build.log, /tmp/wipe-final-integrity.log and
+  /tmp/wipe-rebuild-browser. Final targeted browser results are recorded below.
+  Automated/synthetic checks are not physical camera or speaker validation.
+  No physical validation, deployment or commit was performed.
+- All **six** final Chromium integration cases passed: countdown/gameplay camera
+  recovery, keyboard/replay focus, the full five-game tournament, complete
+  cleaning/ink/transition/audio/mute/replay flow and four-player mirrored motion
+  with narrow-screen containment. Evidence: /tmp/wipe-final-browser.log and
+  /tmp/wipe-final-browser. Reviewed normal/smooth-reveal/four-player captures.
+- A final accessibility correction also removes vertical particle drift under
+  reduced motion. Artifact **118db6a352b556bb76c1** supersedes the previous build:
+  JavaScript 521,873, CSS 153,283, core 2,706,613 and total 38,985,758 bytes; all
+  limits remain unchanged. /tmp/wipe-accessibility-build.log records the build.
+  The new browser assertion observes real particle-canvas draw coordinates under
+  reduced motion, alongside disabled CSS entrance animations. No motion-sensor
+  or physical audio quality claim follows from these synthetic observations.
+- Both final washing browser cases passed again on artifact
+  118db6a352b556bb76c1, including the reduced-motion particle-position regression.
+  Evidence: /tmp/wipe-accessibility-browser.log and
+  /tmp/wipe-accessibility-browser. Final typecheck, lint, release integrity and
+  whitespace checks pass. Physical webcam/speaker checks remain open.
+
+## Paper Jam: original Beat Freak-style rhythm game (2026-11-17)
+
+- Added Paper Jam (#/camera/beat-freak): four original animated instrument
+  speakers, incoming records, timing rings, deck/meter movement, Perfect/Good
+  judgments, streak multipliers and hit sparks over the uncropped live camera.
+  The 60-second deterministic 100 BPM chart progresses from a count-in through
+  quarter notes, offbeats and paired accents. All players receive the same chart.
+- Added original quiet synthesized kick/snare/hats/bass/plucked accompaniment and
+  strike-specific voices. A 25 ms/120 ms lookahead scheduler anchors audio to the
+  round's absolute 150 ms grid using Web Audio scheduling. Rendering does not
+  independently advance music; stalls skip past steps, pause/recovery cancels
+  future voices, mute rejoins the current grid, and replay resets the timeline.
+- Only normalized MOTION_HIT events enter the game; no camera/media imports or
+  finger shapes. Model validation covers malformed/stale/pre-resume/duplicate
+  input, capture-time judgment, aspect-correct circles, player ownership and
+  simultaneous distinct samples. Keyboard 1–4 on release, native speaker buttons,
+  pointer/touch and shared aim/action fallback remain. Reduced motion suppresses
+  decorative spinning/pulsing while preserving essential note travel.
+- Kept five public choices by replacing Whack-a-Mole in Catalog and the fourth
+  tournament round; preserved its hidden implementation. Added original catalog
+  art/routing, cumulative completion-once integration, existing five-second ready
+  checks and retained camera/menu navigation. Diagnostics start hidden for Paper
+  Jam. No external assets/music, new dependencies, uploads, deployment or commit.
+- First five focused files passed 55 tests. Full unit/component run passed
+  **1,048 tests in 92 files**. Added chart/scoring/scheduler/view/audio tests and
+  updated public catalog/tournament expectations. An initial lint attempt found
+  a browser-fixture this-alias and effect-cleanup ref warning; captured the
+  scheduler reference and used a clock getter, then lint/typecheck/build passed.
+- All **six targeted Chromium cases pass** on the final artifact: note travel,
+  timing/keyboard combo/instrument scheduling, ahead-of-time audio, pause/mute/
+  replay/reduced motion, four-player mirrored synthetic camera scoring, gameplay
+  and countdown camera recovery, compact catalog selection, and the complete
+  revised five-game tournament with correct cumulative winner. Reviewed records,
+  combo, four-player and narrow captures. These are synthetic tests, not a claim
+  of physical camera latency, reach or perceived audio synchronization.
+- Final artifact **6e7c82bcef76803eff93**: 40 payload files, JavaScript 537,709,
+  CSS 157,418, core 2,726,584 plus 36,279,145 optional bytes = 39,005,729 total.
+  Existing budgets pass without changes; the >500 kB chunk advisory remains.
+  Lint, typecheck/build, release integrity and whitespace checks pass.
+- Evidence: /tmp/beat-initial-tests.log, /tmp/beat-full-unit.log,
+  /tmp/beat-final-build.log, /tmp/beat-integrity.log, /tmp/beat-browser.log and
+  /tmp/beat-browser. Real-device camera/audio validation remains open.
+
+## Physical hand-over-button website navigation (2026-11-17)
+
+- Replaced the small menu preview/expanded Player 1 cursor with the complete
+  mirrored camera behind Home and Catalog. Menus share the camera's uncropped
+  contain/letterbox rectangle with gameplay. Home choices sit to either side;
+  all five catalog choices and header commands fit the image without scrolling.
+  Poster Home remains before native camera activation. Crayon assets/font remain.
+- UI_POINTER retains each measured wrist's real mirrored position. Projection
+  only translates/scales into the camera rectangle; no lane expansion, upper-body
+  reach scaling or artificial cursor gain remains. Any detected body can choose,
+  including across game-lane borders. Duplicate body observations are rejected.
+  Stable anatomical wrist IDs survive the other wrist leaving the camera.
+- Selection now requires three seconds of fresh continuous contact by the same
+  wrist. Another hand cannot inherit its progress. Departure, missing/weak data,
+  stale/cached captures, visibility, resize or scroll reset the hold. Deliberate
+  movement rearms after selection/scene changes. A measured wrist marker and
+  button-local ring/countdown show contact. The separate five-second ready gate
+  and game scoring are unchanged. Mouse/touch/keyboard alternatives remain.
+- Retained one camera and the existing local tracker. Menu landmarks and the
+  camera image are frame-paired, with skeleton diagnostics hidden. No uploads,
+  finger model, dependency change, recording, deployment or commit. Removed
+  obsolete tile-era Window Wipe span CSS to keep the unchanged CSS budget.
+- Focused geometry/navigation/tracking tests initially passed 40 cases. Full unit
+  run passed 1,054; after stable body/wrist refinements, final full suite passed
+  **1,056 cases across 92 files**. Subsequent focused navigation checks passed
+  **17 cases** after capturing scalar layout dependencies to resolve a lint
+  warning without repeatedly resetting layout during incoming pose frames.
+- All **three Chromium navigation cases pass**: catalog/game/player/Play/pause/
+  resume/exit/Home, complete five-game tournament with ready holds and correct
+  winner, and desktop/portrait menu containment. Each selection asserts at least
+  three seconds elapsed; all paths retain exactly one camera stream. Reviewed
+  Home and both catalog viewport captures. After centering Home labels and the
+  layout-dependency refinement, the containment/camera-navigation case passed
+  again on the final artifact. These are synthetic observations, not real-webcam
+  tracking/comfort certification.
+- Final artifact **cc43e35237ab0dd42b64**: 40 payload files, JavaScript 538,845,
+  CSS 159,543, core 2,729,845 plus 36,279,145 optional bytes = 39,008,990 total.
+  Existing budgets pass without changes. Lint, typecheck/build, release integrity
+  and whitespace checks pass; the existing >500 kB chunk advisory remains.
+- Evidence: /tmp/physical-menu-final-unit.log,
+  /tmp/physical-menu-release-unit.log, /tmp/physical-menu-browser.log and
+  /tmp/physical-menu-browser; final repeat in
+  /tmp/physical-menu-release-browser.log and /tmp/physical-menu-release-browser;
+  /tmp/physical-menu-release-build.log and /tmp/physical-menu-release-integrity.log.
+  Real-device pose accuracy, reach and multiplayer selection comfort remain open.
+
+## Minimal game entry, automatic camera and shared player choice (2026-11-17)
+
+- Player count is chosen once on Home and retained in sessionStorage for this
+  tab, including reloads and game/tournament navigation. Home provides a small
+  deliberate change action. Camera navigation requests the default camera on
+  entry, respects native browser permission, and retains one stream. Original
+  kids/sun/rainbow artwork sits at the menu edges.
+- Each public game now opens directly into a compact original looping movement
+  video, one instruction and one hand button per player. Fresh simultaneous
+  five-second contact starts the existing three-second countdown; only its
+  numerals remain visible over the camera until play. Removed repeated player
+  selectors, Play confirmation, targets, HUD, distance prompts, wireframe and
+  tournament ribbon from preparation. Small Games exit and genuine camera-error
+  recovery remain. Replays and every tournament round use the same introduction.
+  New tournament restarts directly; exits return to Catalog with players retained.
+- Five silent 320×180, 24 fps, three-second MP4s were generated from original local
+  canvas stick figures. Rebuild script: scripts/generate-intro-videos.mjs, using
+  installed Playwright and ffmpeg (optional FFMPEG_PATH). No runtime dependency,
+  external artwork, recording, camera upload, deployment or commit was added.
+- Hand markers/readiness now use confident measured palm centers with wrist
+  fallback, stable wrist identity and one mirroring step. Menu projection reads
+  the actual video rectangle, including page offsets. Added palm/fallback,
+  projection, lower ready-button geometry and once-only selection regressions.
+  Diagnostic sticks continue to follow measured wrists/body joints during play.
+- Paper Jam comparison is recorded in docs/PAPER-JAM-AUDIT.md with primary and
+  secondary source links and explicit differences/uncertainties. No original
+  footage was watched (video fetches were throttled). Corrected its camera-input
+  adapter: continuous normalized occupied samples bypass the generic 280 ms hit
+  debounce; per-note rhythm validation still prevents duplicate awards. Adapter
+  coverage and two valid Good strikes only 180 ms apart pass.
+- Full unit/component run: **1,061 passes across 92 files**. After the tournament
+  restart refinement, **142 focused cases pass**; the additional close-strike
+  regression passes in the **29-case rhythm file**. All **17 packaging cases**,
+  final lint, typecheck, production build, integrity and whitespace checks pass.
+- **21 distinct targeted Chromium scenarios pass across runs**: four physical
+  menu/complete-tournament/all-five-intro/portrait scenarios; ten player-ready,
+  player-choice, minimal-entry, catalog and Paper Jam cases; seven wireframe,
+  alignment, permission recovery and privacy cases. Final complete tournament
+  (including restart) and all-five introduction scenarios passed again on the
+  final artifact. Reviewed desktop/portrait intro and bare-countdown captures.
+  Tests exercise five fresh seconds, interruption/reset, replay, actual video
+  playback, retained player count, no scrolling, one stream, no microphone and
+  same-origin GET-only asset requests; privacy probes remain blocked.
+- Initial failures were corrected: a lifecycle fixture now waits until permission
+  is actually pending; browser fixtures register pose overrides before automatic
+  startup, remove retired Play clicks and locate hidden Pause during countdown;
+  the privacy probe names its iframe to distinguish it from the automatically
+  mounted tracker. An initial CSS-budget failure was resolved by removing unused
+  settings/zone/legacy setup styles, without increasing any budget.
+- Artifact **517397c1c7020fad54c6**: 45 payload files; JavaScript **541,585**,
+  CSS **158,449**, core **2,784,963**, optional pose **36,279,145**, total
+  **39,064,108 bytes**. Existing >500 kB JavaScript advisory remains. No full
+  cross-browser, offline or physical-webcam certification is claimed.
+- Evidence: /tmp/intro-final-unit.log, /tmp/intro-final-focused.log,
+  /tmp/intro-beat-regression.log, /tmp/intro-browser.log,
+  /tmp/intro-integration-browser.log, /tmp/intro-integration-retry.log,
+  /tmp/intro-final-browser.log, /tmp/intro-final-browser,
+  /tmp/intro-recovery-browser.log, /tmp/intro-privacy-retry.log,
+  /tmp/intro-final-build.log, /tmp/intro-integrity.log,
+  /tmp/intro-packaging.log, /tmp/intro-release-lint.log,
+  /tmp/intro-release-types.log. Real-body palm accuracy, multiplayer reach,
+  perceived audio quality/timing and camera performance remain hardware checks.
+
+## Centered player choices and original font draft (2026-11-17)
+
+- Found that the four Home choices inherited a card aspect ratio and intrinsic
+  minimum width. At 1440×900 the last button extended beyond the camera's right
+  edge; the same overflow occurred at 390×844. The grid container itself was
+  centered, so previous container-only assertions did not detect this defect.
+- The player row now uses four `minmax(0,1fr)` tracks, and only its buttons reset
+  minimum width/aspect ratio. The actual four-button envelope, each label/number
+  and every button's containment are checked on desktop and portrait. Reviewed
+  both corrected captures; other game/menu sizing and normalized input unchanged.
+- Generated **Motion Scribble draft 01**, an original rounded handwritten font
+  with Regular/Bold weights, 223 mapped characters, Latin accents, numerals,
+  arrows and symbols. Original vector pen drawings/outline construction are in
+  scripts/generate-motion-font.py; fontTools/Brotli were installed only in a
+  temporary build environment. No font outlines were copied from existing faces.
+  TTF/WOFF2 assets and MIT license are served locally from public/fonts.
+- Added /font-preview.html with editable sample text, actual game titles, player
+  numbers, body/small text and native TTF downloads. The application retains its
+  existing Short Stack face while this original draft is reviewed. The preview
+  uses the canonical production privacy policy; no scripts or network data calls.
+- Both final Chromium cases pass: four-button envelope/label/number alignment and
+  font weights/editable text/narrow layout/native downloads. The font specimen's
+  downloads were verified against an actual loopback static server; intercepted
+  virtual-domain downloads initially canceled. A first narrow preview overflow
+  and missing canonical CSP placement were fixed without relaxing release rules.
+  Browser font loading/visual review exposed and corrected the original 8's
+  counters. FontTools checks verify ASCII/accent/sample coverage, vertical bounds,
+  and both open counters. These checks are not a physical-camera certification.
+- Production build/typecheck, lint, integrity and whitespace pass. Artifact
+  **967e3b3db2c48bb3d028**: 52 payload files; JS 541,585, CSS 159,783, core
+  2,926,272, optional pose 36,279,145, total 39,205,417 bytes. Existing budgets
+  unchanged; existing >500 kB bundle advisory remains. No deployment/commit.
+- Evidence: /tmp/player-center-before.log, /tmp/player-center-after.log,
+  /tmp/motion-font-release-build.log, /tmp/motion-font-release-browser.log,
+  /tmp/motion-font-release-browser, /tmp/font-finish-lint.log and
+  /tmp/font-finish-integrity.log. Live dev preview verified with HTTP 200 at
+  http://localhost:5173/font-preview.html.
+
+## Stable pointers, three-second holds and natural handwriting (2026-11-17)
+
+- User shortened every hand-selection hold to three seconds. Navigation and
+  readiness now share HAND_HOLD_MS=3000, including single/multiplayer entry,
+  replay and every tournament round. Countdown remains three seconds. Instructions
+  and progress use the same duration; interruption/freshness/body ownership guards
+  remain. Historical five-second entries above describe superseded behavior.
+- Added HandPointerStabilizer between actual-video projection and both menu hit
+  testing and pointer rendering. A 3–9 px band scaled to camera size holds small
+  tremors still. Moderate movement has a 45 ms time constant; large deliberate
+  reaches follow immediately. Separate hand histories reset on disappearance,
+  weak/invalid/stale observations, long gaps, route/dialog changes, visibility,
+  resize and scroll. No synthesized frames, prediction, button-center snapping,
+  game-input smoothing or extrapolated dwell time. Ready geometry retains its
+  existing measured-hand contact hysteresis.
+- Reworked original Motion Scribble revision 02 with looser looped pen forms,
+  pressure/taper variation, small lean/width/height/baseline differences and ten
+  contextual alternates. Repeated letters use actual OpenType alternate outlines,
+  not per-letter HTML transforms. Applied the two local weights throughout the
+  site; headings use real Bold rather than synthetic outline/weight. The editable
+  /font-preview.html specimen and TTF downloads show the same revision.
+- **1,069 unit/component cases pass in 93 files**, including six new filtering
+  regressions and a render/selection integration check. The tests cover fresh
+  timestamps while stationary, responsive deliberate reaches, gradual motion,
+  missing/weak/replayed samples, separate hands, departure and three-second holds.
+- **All nine targeted Chromium cases pass**: font weights/contextual alternates/
+  editable samples/native downloads, centered four-player controls, interrupted
+  four-person ready holds, keyboard/replay, full webcam navigation, complete
+  tournament/restart, portrait containment, all-five introductions/countdowns, and
+  injected small two-axis tremors selecting a player choice after three seconds.
+  In the jitter scenario, marker drift stays below 0.5 px during a 2.2 s observed
+  hold while fresh pose samples continue. Reviewed font/desktop/portrait captures.
+- FontTools verifies ASCII/accent/sample coverage, differing alternate outlines
+  and unclipped vertical bounds for both weights. Full typecheck, lint, production
+  build, release integrity and whitespace pass. Artifact **2ea864c551ee2109feaa**:
+  51 files, JS 542,813; CSS 159,825; core 2,906,099; optional pose 36,279,145;
+  total 39,185,244 bytes. Existing budgets unchanged; >500 kB chunk advisory stays.
+  Removing the active Short Stack payload offsets the expanded original family.
+- Evidence: /tmp/steady-hands-unit.log, /tmp/steady-handwriting-all-unit.log,
+  /tmp/steady-handwriting-browser.log, /tmp/steady-handwriting-browser,
+  /tmp/steady-handwriting-build.log, /tmp/steady-handwriting-final-lint.log,
+  /tmp/steady-handwriting-final-types.log, /tmp/steady-handwriting-integrity.log.
+  Synthetic tests do not certify physical-camera stability, natural reach,
+  perceived lag or human readability. No deployment, uploads or commit.
+
+## Hide two games and reduce the public tournament (2026-11-17)
+
+- User rejected Rocket Rumble and Bubble Battle's current quality. Both are now
+  hidden from the catalog, camera/detail URLs and tournament, retaining code,
+  assets and model/component tests for future rework. The bare camera route now
+  opens Paper Dojo rather than the hidden Bubble Battle fallback.
+- Current catalog: **Paper Dojo, Window Wipe, Paper Jam**. The public-list data
+  also generates the tournament schedule and count labels. It temporarily runs
+  three distinct games once each, preserving totals, ties, retained players,
+  one camera, three-second ready checks and tournament restart. Centered the
+  third camera-menu choice below the two upper choices; native grid has three.
+- Updated relevant browser fixtures to use remaining public games, and explicitly
+  skip dedicated Rocket/Bubble browser cases under the existing hidden-game
+  policy. Generic model/component coverage remains. Full tournament score input
+  now uses camera brushing in Player 2's Window Wipe lane instead of bubbles.
+- Inspected the current application and compared the original EyeToy: Play lineup
+  with Sony's archived manual (pp. 14–15) and regional-name/descriptive references.
+  docs/EYETOY-PLAY-CATALOG.md lists all twelve, three current adaptations, eight
+  other candidates and separately paused Rocket Rumble. Hidden generic prototypes
+  are distinguished from dedicated EyeToy-style adaptations. No new game copied
+  or created before the user's choice.
+- **80 relevant unit/component checks pass across four files**, including four
+  newly hidden direct-route cases and schedule/winner/restart coverage. All
+  **eight targeted Chromium scenarios pass**, including catalog/skip links,
+  hidden-link fallback, full physical menu navigation, complete three-game
+  tournament/restart, portrait containment, all-current-game introductions and
+  stable jitter selection. Reviewed the final camera-catalog capture. These are
+  synthetic observations, not hardware or game-quality certification.
+- Lint, typecheck, production build, integrity and whitespace pass. Artifact
+  **b925fcec0c452d2a37a9**: 51 files, JS 542,604; CSS 159,834; core 2,905,899;
+  optional pose 36,279,145; total 39,185,044 bytes. All unchanged budgets pass;
+  the existing >500 kB bundle advisory remains. No deployment or commit.
+- Evidence: /tmp/catalog-prune-unit.log, /tmp/catalog-prune-build.log,
+  /tmp/catalog-prune-browser.log, /tmp/catalog-prune-browser,
+  /tmp/catalog-prune-lint.log, /tmp/catalog-prune-types.log,
+  /tmp/catalog-prune-integrity.log. Full unit/browser suites were not rerun;
+  this change used relevant checks and retained historical model coverage.
+
+## 2026-11-17 — Cardboard Champ (T36)
+
+- Implemented the user's Boxing Chump choice as an original cardboard robot bout
+  on the existing `punch-arena` route. Written original-game references informed
+  opponent/head/body/dodge mechanics; no original assets or audio were copied.
+- Measured wrist travel and fresh head positions pass through `input/BoxingInput`.
+  Game model/rendering import no camera/media libraries. Independent wrist/player
+  histories, confidence, freshness, cooldown and pause/countdown boundaries block
+  stationary/duplicate/old observations. Missing heads cannot earn dodge points.
+- Articulated robot guard/windup/recoil/knockdown, impact bursts, combo scoring,
+  faster rematches, original thud/whoosh/dodge/bell sounds and three-second local
+  tutorial. Aspect-aware robot proportions and matching hit areas work in narrow
+  multiplayer lanes. Existing reduced-motion, mute, recovery and readiness retained.
+- Public catalog and tournament now four games. Rocket Rumble/Bubble remain hidden.
+  Old generic Punch Arena source retained for history but no longer mounted.
+- **133 relevant unit/component tests across seven files pass**. Nine Chromium
+  scenarios pass (catalog, complete four-round tournament/restart, webcam menus,
+  intro/countdown, portrait and jitter, plus new boxing). Both boxing cases were
+  rerun after the final proportions/readability work and pass: synthetic wrist
+  motion scores, stationary hands stop scoring, replay retains camera, four lanes
+  stay aligned and keyboard scores remain isolated under reduced motion. Reviewed
+  final one-/four-player captures. No physical camera/speaker validation claimed.
+- Lint, typecheck, build and release integrity pass. Artifact
+  **9019530867f253e76159**: 52 files, JS 548,735; CSS 158,786; core 2,920,821;
+  optional pose 36,279,145; total 39,199,966 bytes. Budgets unchanged; existing
+  bundle-size advisory remains. No runtime dependencies/model downloads added.
+- Evidence: `/tmp/boxing-final-tests.log`, `/tmp/boxing-browser.log`,
+  `/tmp/boxing-final-browser.log`, `/tmp/boxing-final-browser`,
+  `/tmp/boxing-final-build.log`, `/tmp/boxing-final-lint.log`.
+  No deployment/commit. Full unrelated test suites were not rerun.
+
+## 2026-11-17 — Clearer, faster boxer attacks
+
+- Fixed the glove's vertical discontinuity on the contact frame and replaced its
+  slow lateral slide with a readable pullback, rapid extending punch, perspective
+  growth, speed strokes, contact ring and continuous retract. Alternating gloves
+  travel in camera space toward the marked danger region, including narrow lanes.
+- Shared timeline: 550 ms anticipation + 140 ms accelerated strike = 690 ms dodge
+  judgement; 90 ms contact hold + 220 ms retract. Previously the forward strike
+  lasted 450 ms and contact came at 1,100 ms. Base attack cadence now 3,500 ms
+  rather than 4,400 ms, with a 2,400 ms floor. Whoosh aligns with strike launch.
+- 22 focused timing/model/audio checks pass, including exact contact boundary,
+  single damage judgement and pause continuity. Both boxing Chromium scenarios
+  pass, covering synthetic wrist scoring, stationary input, replay/camera reuse,
+  four-player geometry and independent keyboard scoring. Reviewed a rendered
+  anticipation/strike/contact sheet at `/tmp/boxing-attack-sheet.png`.
+- Lint and production build/types/release budgets pass. No new assets, models,
+  dependencies, uploads or external calls. Physical webcam feel remains untested.
+- Evidence: `/tmp/boxing-attack-tests.log`, `/tmp/boxing-attack-browser.log`,
+  `/tmp/boxing-attack-lint.log`, `/tmp/boxing-attack-build.log`.
+
+## 2026-11-17 — Keep Ups (T37)
+
+- Implemented the agreed Keep Ups / Soccer Craze inspired game with original
+  local football artwork/tutorial, gravity, spin, squash/release, trails, bunting,
+  touchline, confetti, header bonuses, streaks, golden hoops and automatic re-serves.
+  Layered synthesized thuds, header tones, drop whistle and crowd-style celebrations
+  use shared mute/pause/visibility/exit cleanup. No copied artwork/audio or new model.
+- `KeepUpsInput` converts measured head/wrist/arm/torso geometry to normalized
+  BODY_MOVE points/segments. Fixed 120 Hz substeps and aspect-correct contacts keep
+  the circular football on the actual camera plane. A timestamped pose history
+  fixed valid contacts being skipped when a new frame arrived ahead of simulation.
+  Missing/ambiguous/old/low-confidence inputs cannot create invisible saves; pause
+  and replay clear histories. Pointer/keyboard fallback expires after a short time.
+- Added the fifth catalog card and tournament round. Replaced the duplicated camera
+  route list with guarded catalog-derived routing after the browser test exposed
+  the missing new route. Hidden Rocket Rumble source remains available in development;
+  excluding its unreachable production code kept the existing release budgets.
+- **109 relevant unit/component checks pass across six files**. All **11 targeted
+  Chromium scenarios pass**, including measured-pose one-/four-player scoring,
+  tracking loss, pointer fallback, pause/replay and retained stream, catalog/hidden
+  routes, complete five-game tournament/restart, camera menus, portrait containment,
+  every intro/countdown and jitter stability. All three Keep Ups browser cases pass
+  again after lowering the normal bounce apex below the HUD/removing redundant labels.
+  Reviewed final one-/four-player captures. No physical camera/speaker claim.
+- Lint, types, build, integrity and whitespace pass. Artifact
+  **ae296928249eaac1948a**: 53 files; JS 546,628; CSS 158,786; core 2,928,085;
+  optional pose 36,279,145; total 39,207,230 bytes. All unchanged budgets pass;
+  existing >500 kB bundle advisory remains. No deployment or commit.
+- Evidence: `/tmp/keep-ups-final-tests.log`, `/tmp/keep-ups-final-browser.log`,
+  `/tmp/keep-ups-polish-browser.log`, `/tmp/keep-ups-polish-browser`,
+  `/tmp/keep-ups-final-build.log`, `/tmp/keep-ups-final-lint.log`,
+  `/tmp/keep-ups-integrity.log`. Full unrelated suites not rerun.
+
+## 2026-11-17 — Keep Ups losing conditions and pace
+
+- Shortened Keep Ups from 60 to 30 active seconds and added three lives per player.
+  Each miss costs one life; eliminated players stop receiving balls and scoring.
+  Survivors continue independently, and all players out ends the round early.
+  Replay restores lives; tournament advances on the same completion callback.
+- Gravity/lateral speed now increase during play. Sustained side drift replaces
+  the repeating bounce that could sustain stationary headers. Every six seconds
+  from eight seconds in, a 900 ms directional warning precedes a one-second gust.
+  Added life indicators, readable wind/early-loss feedback, moving gust strokes
+  (suppressed under reduced motion), and updated the minimal introduction/rules.
+- 23 focused model/tournament checks pass, including exactly three misses, early
+  finish, survivor isolation, 30-second perfect-play cap, gust warning boundaries,
+  stationary-vs-following play and replay. Three final Keep Ups Chromium checks
+  pass (one/four players, visible wind, life loss, early results, replay, retained
+  camera and pointer fallback). The five-game browser tournament also passes.
+  The first solo browser check exposed a fake-clock baseline reset in the test;
+  it now advances from captured browser performance time, and the rerun passes.
+- Reviewed the wind warning/lives capture. Lint, types, build and unchanged budgets
+  pass; artifact **8dd66c79c346545a65b6**: JS 547,838; CSS 158,786; core 2,929,295;
+  pose 36,279,145; total 39,208,440 bytes. Existing bundle advisory remains.
+  No new assets/dependencies or deployment. Real-camera difficulty balance is
+  unverified; synthetic tracking is not physical gameplay validation.
+- Evidence: `/tmp/keep-ups-challenge-tests.log`,
+  `/tmp/keep-ups-challenge-final-browser.log`, `/tmp/keep-ups-challenge-browser.log`,
+  `/tmp/keep-ups-challenge-build.log`, `/tmp/keep-ups-challenge-lint.log`.
+
+## 2026-11-17 — Cardboard Champ ring depth and panel cleanup
+
+Removed the floating opponent health/name box. Moved the ring ropes/posts into
+the foreground and raised the top rope across the lower torso, so the robot
+stands behind the ring. Warning/feedback layers remain above the ropes. Reviewed
+the four-player capture; both one-/four-player Chromium cases pass, including
+pose scoring, replay and camera reuse. Lint, types/build/release budgets and
+whitespace pass. Artifact `566271a5978dd5c8b71f`. Evidence:
+`/tmp/boxing-ring-build.log`, `/tmp/boxing-ring-lint.log`,
+`/tmp/boxing-ring-browser.log`, `/tmp/boxing-ring-browser`.
+Visual-only change; no new hardware gameplay claim or deployment.
+
+### Ghost Catcher — 2026-11-17
+- Implemented original friendly paper ghosts with repeated motion-mask rubbing, swelling expressions/progress arcs, flapping bats, pop confetti, escape feedback and local synthesized rubbing/capture/escape sounds. No supplied or third-party assets needed.
+- Added local animated stick-figure tutorial, catalog artwork and sixth public route; retained existing three-second readiness/countdown and five-round tournament schedule. Independent 1–4-player lanes, 45-second limit, five escapes/lives, accelerating waves and combo points.
+- Fixed sixth catalog card overlapping Paper Dojo in camera-navigation mode. Retained hidden Silk Squad source/dev support but removed its production code to preserve release budgets.
+- Validation: 48 focused model/app/tournament/audio tests pass. Six final Chromium gameplay/catalog tests pass, including synthetic camera-pixel capture without pointer input, 1/4-player rubbing, pause/results/replay and one retained camera stream. Both narrow-screen and all-six-game tutorial/countdown browser checks pass. Reviewed rendered four-player game and six-card catalog.
+- Initial catalog browser run failed because of the overlap; final run passes after correction. Initial unit run caught the old five-card assertion; updated to six. Lint, typecheck, build, release integrity and diff whitespace pass. Artifact cf35a17dbb3621eca396: JS 548345, CSS 158863, core 2942669, total 39221814 bytes, unchanged budgets.
+- Physical webcam lighting/arm comfort/multiplayer spacing and speaker playback remain unverified. Written EyeToy references informed mechanics; no claim of frame-by-frame video review. See docs/GHOST-CATCHER.md.
+
+### Ghost Catcher review — 2026-11-17
+- Found and fixed frame-dependent movement: the old 100 ms cap slowed ghosts on long frames while the round timer continued. Fixed 20 ms simulation now produces equal positions/spawns/lives at 16 ms, 250 ms and 3-second update intervals.
+- Mixed input batches cannot reuse stale contact locations with a newer timestamp; view preserves event kinds. Added regression coverage for actual combo points and eliminated-player isolation.
+- Added entrance animation, visible escape warnings, actual awarded points/combo pop labels and explicit life-loss text. Reduced-motion keeps decorative pop travel/expansion stationary. Clear eliminated players' remaining targets without artificial loss feedback.
+- Coalesced duplicate multiplayer sounds per frame, suppressed rub underneath captures and skipped delayed escape sounds after stalls.
+- Verification: 19 focused model/audio tests pass; final 11 model tests rerun after cleanup. Four Chromium scenarios pass: one player, four players with reduced motion, synthetic camera pixels triggering captures, and escape-warning alignment. Reviewed warning screenshot. Lint/typecheck/build/release integrity/diff whitespace pass. Artifact 12487091cc9789533108; JS 549238, CSS 158863, core 2943562 bytes, unchanged limits.
+- No physical webcam, speaker or child playtest performed. No dependencies, external assets, deployments or commits added.
+
+### UFO Juggler — 2026-11-17
+- Researched written Sony manual and published movement analysis; corrected the initial keep-it-airborne description to spin saucers upward. Implemented an original spin/coast rescue game with overheating and engine stalls, rather than duplicating Keep Ups. No original game assets/characters or video-review claims.
+- Added normalized motion-mask control, fresh-frame/duplicate guards, fixed 20 ms flight/heat simulation, three lives, 40-second cap, isolated lanes, close-save points and rescue streaks. After twelve seconds, paired arrivals create simultaneous juggling, bounded at three active saucers per player.
+- Original dome/pilot artwork, rotating rim lights, crayon hatching, engine trails, heat smoke, launch/crash effects, sound synthesis and ascending streak fanfares. Reduced-motion and shared mute/recovery respected. Added generated stick-figure tutorial and icon; no dependencies or supplied assets needed.
+- Catalog now seven; webcam cards occupy unique fitted positions. Existing five-game tournament stays unchanged. Hidden Magic Duel and Fruit Slash remain in source/dev and are excluded from production code to preserve budgets.
+- Verification: 55 initial focused model/audio/App/tournament tests pass. After paired-arrival and streak refinement, all 22 model/audio tests pass (13 UFO model, nine audio). Six initial catalog/gameplay Chromium cases and two narrow-menu/all-seven-intro cases pass. All three UFO cases rerun on final build and pass: 1/4-player spin/launch/pause/replay with a retained camera, reduced-motion multiplayer, and synthetic camera-pixel overheating followed by controlled rescue and paired arrivals. Reviewed flight, overheat, pair and narrow-menu screenshots.
+- Final artifact 35b3215630ce4ea79c08: JS 546635, CSS 158939, core 2950964, total 39230109 bytes. Lint/typecheck/build/release integrity and diff whitespace pass within unchanged budgets. No physical webcam/lighting/arm-comfort/multiplayer-spacing/speaker validation performed. No commits or deployments.
+
+### Multiplayer hand selection repair — 2026-11-17
+- User reported hand-over-multiplayer activation failing. Found two reproducible navigation defects: unconditional release gating blocked the first detected hand already resting over a player-count button; after a scene change, a single shared release anchor could latch to player two and block player one's deliberate movement indefinitely.
+- Added scene reset behavior that preserves release protection only when already armed. Replaced the single release anchor with per-hand observed anchors/release flags. A hand can leave/re-enter or deliberately move to another target without requiring another player's stationary hand to move. The selected hand still has to supply three seconds of fresh observations; stationary-repeat and dialog protections remain tested.
+- Added model/view regressions and browser scenarios with the first observed hand already on the 2-, 3- and 4-player buttons. Restored temporary trace diagnostics after identifying the second-hand lock; no diagnostic state shipped.
+- Validation: 36 focused model/view/readiness tests pass; four final Chromium scenarios pass including the full two-player webcam-only catalog/game/ready/pause/resume/exit/home flow and all three first-detected multiplayer selections. Four-player simultaneous hand readiness also passed separately. Initial full-navigation runs failed reproducibly at the catalog; the final per-hand release fix resolves that failure. Lint, typecheck/build, release integrity and diff whitespace pass. Artifact 6f264a645ce358b7f3cb stays within unchanged budgets.
+- Tests use synthetic measured poses, not physical webcam validation. No commits or deployments.
+
+### Minimal controls and side-by-side results — 2026-11-17
+- Replaced stacked replay/link actions with two matching crayon buttons in a shared two-column result-actions row across all seven public games. Removed visible manual Pause controls and the in-game Show/Hide wireframe toggle.
+- Preserved automatic tab-hidden/camera-disconnect recovery and underlying pose input. Public game Exit buttons now receive keyboard focus after recovery/replay instead of targeting a removed Pause button.
+- Updated existing browser coverage to exercise automatic visibility recovery, assert removed controls, and measure equal-height adjacent result buttons. Rebased obsolete public wireframe-toggle tests on hidden diagnostic geometry/privacy and continued camera ownership; underlying diagnostic implementation remains available internally.
+- Validation: 23 focused view/keyboard tests, one- and four-player UFO result/replay browser cases, full multiplayer webcam navigation with automatic recovery, and hidden-diagnostic geometry/lifecycle browser case pass. Reviewed UFO results screenshot. Initial browser checks failed because the ready helper still waited for the removed Pause button; it now checks Exit game and final runs pass. Lint/types/build/release integrity/whitespace pass. Artifact 64f4aa02bbadd94c5c96, within unchanged budgets. No hardware claims, commits or deployment.
+
+### Fullscreen button — 2026-11-17
+- Added a persistent four-corner player-style fullscreen toggle at bottom right across menus/gameplay/results. Requests the whole document, maintains camera ownership across navigation, tracks native fullscreenchange, and provides keyboard labels/pressed state and an inline retry message for denied activation. Shifted sound controls left to avoid overlap. No new dependencies or policy weakening.
+- Checked Fullscreen API activation/event behavior against MDN. Webcam-generated clicks cannot guarantee entry because browsers require direct activation; failures remain recoverable with a click or Enter.
+- Validation: two unit tests cover toggle/external exit and denied request/retry. Chromium native fullscreen browser test passes through home/catalog/gameplay, mouse and keyboard entry, exit and external exit, checks non-overlapping sound/fullscreen controls, and verifies one retained synthetic camera stream. Reviewed screenshot. Types, lint, build, release integrity and whitespace pass. Artifact 140ba8422426844a740b within unchanged budgets (JS 548365, CSS 159818 bytes). Physical camera and platform-wide fullscreen compatibility not claimed. No commits or deployment.
+
+### Nuovi giochi da implementare — 2026-11-17
+- Salvata la lista richiesta nel backlog, da affrontare uno alla volta in questo ordine:
+  1. T40 — Salto ad ostacoli.
+  2. T41 — Sei canestri (tre per lato): palle in caduta da indirizzare a canestro con testa o altre parti del corpo.
+  3. T42 — Parare la palla tirata in porta.
+  4. T43 — Canguri che saltano ostacoli; proposta da definire: schermo unico e gara a chi va più lontano.
+  5. T44 — Palla da passarsi sopra una rete centrale; chi la fa cadere perde.
+- Tutti in stato pending, nessuna implementazione avviata e nessuna modifica al catalogo pubblico. I prototipi nascosti eventualmente riutilizzabili non equivalgono al completamento di queste richieste. Le due idee a ostacoli restano separate.
+- Verifica della sola pianificazione: JSON valido, identificativi univoci e ordine T40–T44 controllati; nessun test di gioco o hardware eseguito per questa modifica.
+
+### T40 — Jump Rush / salto ad ostacoli — 2026-11-17
+- Implemented the first game in the newly requested list; T41–T44 remain pending. Reworked the hidden Jump Rush prototype and exposed it as the eighth catalog game, with an original hurdle icon and generated local stick-figure movement video. The existing five-game tournament remains unchanged.
+- Replaced motion-centroid camera control with normalized shoulder/hip midpoint events. The input adapter scales the rise threshold to torso size, excludes arms, missing hips and ambiguous same-lane bodies. Added bounded camera/render timestamp-skew handling; existing freshness, lowering-to-rearm, pause/replay and player isolation remain. This measures torso rise, not independently verified foot lift.
+- Forty-second rounds; +10 clears / −5 tracked bumps; warning prompt/tick, hopping star, striped crayon hurdles, impact tilt, point burst and synthesized jump/clear/bump sounds. Shared readiness/countdown, persistent camera, automatic recovery, fullscreen and two adjacent result buttons. Removed prototype explanation/manual pause UI; reduced-motion supported.
+- Kept the hidden Basketball Blitz prototype available in development while excluding its component and stylesheet from production, preserving unchanged release budgets. Initial build caught a redundant narrowed union branch; fixed. A later build exceeded CSS budget before excluding the hidden prototype stylesheet; final build passes.
+- Validation: 126 focused tests pass (29 model, seven view, six torso adapter, 29 App, four tournament, 51 CameraSetup). Updated old CameraSetup assertions that still expected the previously removed Pause button. Two Chromium gameplay scenarios pass with synthetic measured poses for 1/4 players, scoring, result/replay flow and one retained camera. All-eight-game tutorial/navigation flow passes. Narrow-screen catalog test initially selected Ghost Catcher because a second synthetic hand rested on its card during screenshots; parked inactive fixture hands below cards and the final desktop/narrow geometry and webcam tournament-selection check passes. Reviewed one- and four-player gameplay screenshots.
+- Final lint/types/build/release-integrity/whitespace checks pass. Artifact 048bc061e7338700990a: JS 541014, CSS 159127, core 2954107, total 39233252 bytes. No physical webcam jump-comfort, multiplayer-spacing or speaker verification claimed. No commits or deployment.

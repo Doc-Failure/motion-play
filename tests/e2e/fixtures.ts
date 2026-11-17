@@ -33,7 +33,8 @@ const installCamera = ({ denied, person }: { denied?: boolean; person?: boolean 
   const stream = canvas.captureStream(20)
   // A live synthetic camera keeps delivering observations even when the picture
   // is still. Canvas capture only emits frames after drawing to the canvas.
-  window.setInterval(() => context?.fillRect(0, 0, 1, 1), 50)
+  let frame = 0
+  window.setInterval(() => {if(context){context.fillStyle=frame++%2 ? '#000000' : '#ffffff';context.fillRect(0,0,1,1)};(track as CanvasCaptureMediaStreamTrack).requestFrame?.()}, 50)
   const track = stream.getVideoTracks()[0]
   const stop = track.stop.bind(track)
   track.stop = () => { state.stoppedTracks += 1; stop() }
@@ -62,7 +63,7 @@ export const test = base.extend<MediaFixture>({
 
 export { expect }
 
-export async function openApp(page: Page, hash = '#/camera') {
+export async function openApp(page: Page, hash = '#/camera', beforeNavigate?:()=>Promise<void>) {
   const assets = resolve(releaseDirectory, 'assets')
   const script = readdirSync(assets).find((file) => file.endsWith('.js'))
   const style = readdirSync(assets).find((file) => file.endsWith('.css'))
@@ -70,13 +71,46 @@ export async function openApp(page: Page, hash = '#/camera') {
   await page.route('http://motion-play.test/**', async route => {
     const pathname = new URL(route.request().url()).pathname
     const file = resolve(releaseDirectory, pathname === '/' ? 'index.html' : pathname.slice(1))
-    const mime = (file.endsWith('.js') || file.endsWith('.mjs')) ? 'text/javascript' : file.endsWith('.css') ? 'text/css' : file.endsWith('.svg') ? 'image/svg+xml' : file.endsWith('.webp') ? 'image/webp' : file.endsWith('.ttf') ? 'font/ttf' : file.endsWith('.webmanifest') ? 'application/manifest+json' : file.endsWith('.json') ? 'application/json' : file.endsWith('.wasm') ? 'application/wasm' : file.endsWith('.task') ? 'application/octet-stream' : 'text/html'
+    const mime = (file.endsWith('.js') || file.endsWith('.mjs')) ? 'text/javascript' : file.endsWith('.css') ? 'text/css' : file.endsWith('.svg') ? 'image/svg+xml' : file.endsWith('.webp') ? 'image/webp' : file.endsWith('.mp4') ? 'video/mp4' : file.endsWith('.woff2') ? 'font/woff2' : file.endsWith('.ttf') ? 'font/ttf' : file.endsWith('.webmanifest') ? 'application/manifest+json' : file.endsWith('.json') ? 'application/json' : file.endsWith('.wasm') ? 'application/wasm' : file.endsWith('.task') ? 'application/octet-stream' : 'text/html'
     await route.fulfill({body:readFileSync(file),contentType:mime})
   })
+  await beforeNavigate?.()
   await page.goto(`http://motion-play.test/${hash}`)
 }
 
 export async function openCamera(page: Page) {
   await openApp(page)
-  await expect(page.getByRole('heading', { name: 'Bubble Battle', exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Paper Dojo', exact: true })).toBeVisible()
+}
+
+
+/** Exercise the accessible ready gate before legacy game-specific assertions. */
+export async function completeReadyGate(page:Page) {
+  const gate=page.getByLabel('Players ready check',{exact:true})
+  const virtual=await page.evaluate(()=>(window as typeof window&{__testClockInstalled?:boolean}).__testClockInstalled??false)
+  if(virtual)await page.clock.runFor(100)
+  await expect(gate).toBeVisible()
+  const deadline=Date.now()+25000
+  while(await gate.count()){
+    const buttons=gate.getByRole('button',{name:/^Ready Player /})
+    for(let i=0;i<await buttons.count();i++){
+      const b=buttons.nth(i)
+      try {
+        const state=await b.evaluate(el=>({enabled:!(el as HTMLButtonElement).disabled,pressed:el.getAttribute('aria-pressed')}),undefined,{timeout:3000})
+        if(state.enabled&&state.pressed==='false')await b.press('Enter',{timeout:3000})
+      }catch(error){if(await gate.count()===0)break;throw error}
+    }
+    if(virtual)await page.clock.runFor(3150)
+    else await gate.waitFor({state:'detached',timeout:1000}).catch(()=>undefined)
+    if(Date.now()>deadline)break
+  }
+  await expect(gate).toHaveCount(0)
+  await expect(page.getByRole('button',{name:'Exit game',exact:true,includeHidden:true})).toBeEnabled()
+}
+
+/** Exercise automatic recovery now that gameplay has no manual pause control. */
+export async function hideAndRestoreTab(page:Page){
+ await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,get:()=>true});document.dispatchEvent(new Event('visibilitychange'))})
+ await expect(page.getByRole('heading',{name:'Round paused',exact:true})).toBeVisible()
+ await page.evaluate(()=>{Reflect.deleteProperty(document,'hidden');document.dispatchEvent(new Event('visibilitychange'))})
 }

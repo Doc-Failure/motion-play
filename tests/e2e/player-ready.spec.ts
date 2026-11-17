@@ -1,0 +1,38 @@
+import {expect,openApp,test} from './fixtures'
+
+async function installPose(page:import('@playwright/test').Page,players:number){
+ await page.addInitScript(({n})=>Object.assign(window,{__readyPlayers:n,__readyHands:Array(n).fill(false)}),{n:players})
+ await openApp(page,'#/camera/beat-freak',async()=>{await page.route('**/pose/tracker.js',route=>route.fulfill({contentType:'text/javascript',body:`window.createLocalPoseTracker=async()=>({detect:()=>Array.from({length:parent.__readyPlayers},(_,i)=>{const x=1-(i+.5)/parent.__readyPlayers,p=Array.from({length:33},()=>({x,y:.5,visibility:1}));p[0]={x,y:.15,visibility:1};p[11]={x:x-.025,y:.27,visibility:1};p[12]={x:x+.025,y:.27,visibility:1};p[23]={x:x-.02,y:.65,visibility:1};p[24]={x:x+.02,y:.65,visibility:1};p[15]={x,y:parent.__readyHands[i] ? 0.68 : 0.9,visibility:1};p[16]={x,y:.9,visibility:1};for(const j of [17,18,19,20,21,22])p[j].visibility=.1;return p}),close:()=>{}})`}))})
+ await page.getByRole('button',{name:`${players} ${players===1?'player':'players'}`,exact:true}).click()
+ if((await page.evaluate(()=>(window as typeof window&{__testClockInstalled?:boolean}).__testClockInstalled)))await page.clock.runFor(100)
+}
+test('four stationary hands must overlap their own buttons together for three seconds',async({page,installMockCamera})=>{
+ test.setTimeout(45000);await installMockCamera({person:true});await installPose(page,4)
+ const gate=page.getByLabel('Players ready check',{exact:true})
+ await expect(gate).toBeVisible();await expect(gate.getByRole('button',{name:/Ready Player/})).toHaveCount(4)
+ await expect(page.locator('.beat-game header dd').last()).toHaveText('60s')
+ await page.evaluate(()=>Object.assign(window,{__readyHands:[true,true,true,false]}));await page.waitForTimeout(5300)
+ await expect(gate).toBeVisible();await expect(page.getByRole('button',{name:'Ready Player 4',exact:true})).toHaveAttribute('aria-pressed','false')
+ await page.evaluate(()=>Object.assign(window,{__readyHands:[true,true,true,true]}));await page.waitForTimeout(2200)
+ await expect(gate).toBeVisible()
+ await page.evaluate(()=>Object.assign(window,{__readyHands:[false,true,true,true]}));await page.waitForTimeout(250)
+ await page.evaluate(()=>Object.assign(window,{__readyHands:[true,true,true,true]}));await page.waitForTimeout(1800)
+ await expect(gate).toBeVisible()
+ await page.screenshot({path:test.info().outputPath('four-hands-ready.png')})
+ await expect(gate).toHaveCount(0,{timeout:7000})
+ await expect(page.locator('.game-curtain')).toHaveCount(4)
+ const state=await page.evaluate(()=>(window as typeof window&{__mockMediaState:{requests:number;stoppedTracks:number}}).__mockMediaState)
+ expect(state.requests).toBe(1);expect(state.stoppedTracks).toBe(0)
+})
+test('keyboard hold is accessible, and replay waits for a fresh ready hold',async({page,installMockCamera})=>{
+ test.setTimeout(120000)
+ await page.addInitScript(()=>Object.assign(window,{__testClockInstalled:true}));await page.clock.install({time:new Date('2030-01-01')});await page.clock.pauseAt(new Date('2030-01-01T00:01:00Z'))
+ await installMockCamera({person:true});await installPose(page,1)
+ const gate=page.getByLabel('Players ready check',{exact:true}),button=page.getByRole('button',{name:'Ready Player 1',exact:true})
+ await button.press('Enter');await page.clock.runFor(2800);await expect(gate).toBeVisible();await page.clock.runFor(400);await expect(gate).toHaveCount(0)
+ await page.clock.runFor(64000)
+ await expect(page.getByRole('dialog',{name:'Paper Jam results'})).toBeVisible()
+ await page.getByRole('button',{name:'Play again',exact:true}).click();await expect(gate).toBeVisible()
+ await expect(button).toHaveAttribute('aria-pressed','false');await page.clock.runFor(6000);await expect(gate).toBeVisible()
+ await button.press('Enter');await page.clock.runFor(3150);await expect(gate).toHaveCount(0)
+})

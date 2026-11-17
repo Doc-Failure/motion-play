@@ -41,7 +41,6 @@
 .camera-play .car-board > svg > g:not(.car-mud) { opacity: .4; }
 .camera-play .graffiti-board > svg { opacity: .5; }
 .camera-play .paint-board > span.is-painted { opacity: .42; }
-.camera-play .wipe-board > span { background: radial-gradient(ellipse, #a28b69aa 0 25%,#c0a98766 40%,transparent 65%); }
 .camera-play .simon-pad { opacity: .35; }
 .camera-play .simon-pad.is-lit { opacity: .9; }
 .camera-play .mole-hole { background-color: #73534266; }
@@ -122,3 +121,6 @@ html:has(.camera-lobby:not([hidden])), body:has(.camera-lobby:not([hidden])) { o
 
 .camera-distance-cue { position:absolute; z-index:8; top:7rem; left:50%; translate:-50% 0; max-width:85%; padding:.35rem .6rem; border-radius:.5rem; background:#171c26d9; color:#fff9e9; text-align:center; font-size:.75rem; pointer-events:none; }
 @media(max-width:600px){.camera-distance-cue { top:6rem; font-size:.6rem; }}
+
+.result-actions { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1rem; width:min(100%,30rem); margin-top:1rem; }
+.result-actions .crayon-button { width:100%; min-width:0; min-height:3.5rem; margin:0; padding:.7rem 1rem; font-size:clamp(.8rem,2vw,1.1rem); line-height:1.2; text-align:center; text-decoration:none; background:#ffe17a; }

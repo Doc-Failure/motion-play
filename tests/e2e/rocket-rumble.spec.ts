@@ -1,11 +1,13 @@
-import {expect,openApp,test} from './fixtures'
+import {isGameVisible} from '../../src/app/catalog'
+import {completeReadyGate,expect,openApp,test} from './fixtures'
+test.beforeEach(()=>test.skip(!isGameVisible('rocket-rumble'),'Hidden for quality rework; model/component tests retained'))
 async function start(page:import('@playwright/test').Page,players=1){
- await openApp(page,'#/camera/rocket-rumble');await page.getByRole('button',{name:`${players} ${players===1?'player':'players'}`,exact:true}).click();await page.getByRole('button',{name:'Play Rocket Rumble',exact:true}).click()
+ await openApp(page,'#/camera/rocket-rumble');await page.getByRole('button',{name:`${players} ${players===1?'player':'players'}`,exact:true}).click();await completeReadyGate(page)
 }
 test('matching chains launch staggered animated fireworks, pause, results and replay',async({page,installMockCamera})=>{
  test.setTimeout(90000)
  const errors:string[]=[];page.on('pageerror',error=>errors.push(error.message))
- await page.clock.install({time:new Date('2030-01-01')});await page.clock.pauseAt(new Date('2030-01-01T00:01:00Z'))
+ await page.addInitScript(()=>Object.assign(window,{__testClockInstalled:true}));await page.clock.install({time:new Date('2030-01-01')});await page.clock.pauseAt(new Date('2030-01-01T00:01:00Z'))
  await page.addInitScript(()=>{Object.assign(window,{__fireworksNoise:0});const original=AudioBufferSourceNode.prototype.start;AudioBufferSourceNode.prototype.start=function(...args){(window as typeof window&{__fireworksNoise:number}).__fireworksNoise++;return original.apply(this,args)}})
  await installMockCamera({person:true});await start(page);await page.clock.runFor(5500)
  for(const id of [1,6,8]){await page.getByRole('button',{name:new RegExp(`^Tag Sun rocket ${id} for Player 1$`)}).focus();await page.keyboard.press('Enter');await page.clock.runFor(200)}

@@ -1,7 +1,7 @@
 export const catalogCategories = ['Hit & Destroy', 'Catch & Collect', 'Move & Survive', 'Clean & Create', 'Skill & Precision'] as const
 
 export type CatalogCategory = (typeof catalogCategories)[number]
-export type InputKind = 'MOTION_HIT' | 'MOTION_BRUSH' | 'HAND_POSITION' | 'HAND_SWIPE' | 'BODY_MOVE' | 'FREEZE' | 'MIXED'
+export type InputKind = 'ARM_MOVE' | 'HAND_PINCH' | 'MOTION_HIT' | 'MOTION_BRUSH' | 'HAND_POSITION' | 'HAND_SWIPE' | 'BODY_MOVE' | 'FREEZE' | 'MIXED'
 export type Difficulty = 'Easy' | 'Normal' | 'Hard'
 export type CatalogGame = { id: number; slug: string; title: string; rules: string; category: CatalogCategory; input: InputKind; difficulty: Difficulty; mode: 'Competitive' | 'Cooperative' | 'Solo score chase'; players: readonly number[]; available: boolean; colors: readonly [string, string] }
 
@@ -12,7 +12,7 @@ export const catalogGames: readonly CatalogGame[] = [
   game(2, 'whack-a-mole', 'Whack-a-Mole', 'Strike each mole before it ducks back underground.', 'Hit & Destroy', 'MOTION_HIT', 'Easy', 'Competitive', ['#72b779', '#9b6b43'], true),
   game(3, 'meteor-smash', 'Meteor Smash', 'Smash meteors before they crash into your base.', 'Hit & Destroy', 'MOTION_HIT', 'Normal', 'Competitive', ['#7557a8', '#f28c46'], true),
   game(4, 'fruit-slash', 'Fruit Slash', 'Swipe the fruit, but do not slice the bombs.', 'Hit & Destroy', 'HAND_SWIPE', 'Normal', 'Competitive', ['#ee654f', '#72b779'], true),
-  game(5, 'punch-arena', 'Punch Arena', 'Finish fast swipes on pads, matching their arrows.', 'Hit & Destroy', 'HAND_SWIPE', 'Hard', 'Competitive', ['#f28c46', '#4c9ed9'], true),
+  game(5, 'punch-arena', 'Cardboard Champ', 'Jab the cardboard boxer. Duck or lean away from its punches.', 'Hit & Destroy', 'MIXED', 'Normal', 'Competitive', ['#f28c46', '#4c9ed9'], true),
   game(6, 'pinata-party', 'Piñata Party', 'Land repeated hits to shower the party with candy.', 'Hit & Destroy', 'MOTION_HIT', 'Easy', 'Cooperative', ['#e45b9d', '#f5c847'], true),
   game(7, 'monster-defense', 'Monster Defense', 'Stop the silly monsters before they reach the gate.', 'Hit & Destroy', 'MOTION_HIT', 'Normal', 'Cooperative', ['#72b779', '#7557a8'], true),
   game(8, 'balloon-panic', 'Balloon Panic', 'Hit only the balloon color called out on screen.', 'Hit & Destroy', 'MOTION_HIT', 'Normal', 'Competitive', ['#ee654f', '#66c7df'], true),
@@ -26,9 +26,9 @@ export const catalogGames: readonly CatalogGame[] = [
   game(16, 'laser-escape', 'Laser Escape', 'Steer a motion-center marker clear of sweeping laser lines.', 'Move & Survive', 'BODY_MOVE', 'Hard', 'Competitive', ['#e45b9d', '#18334a'], true),
   game(17, 'dance-challenge', 'Dance Challenge', 'Match each simple movement cue to keep the beat.', 'Move & Survive', 'BODY_MOVE', 'Normal', 'Competitive', ['#e45b9d', '#7557a8'], true),
   game(18, 'freeze', 'Freeze!', 'Move with the music, then hold still when it stops.', 'Move & Survive', 'FREEZE', 'Easy', 'Competitive', ['#66c7df', '#7557a8'], true),
-  game(19, 'ninja-training', 'Paper Dojo', 'Swat paper ninjas, avoid marked obstacles, and smash bamboo bundles.', 'Move & Survive', 'MIXED', 'Normal', 'Competitive', ['#477f8e', '#f3c966'], true),
-  game(20, 'jump-rush', 'Jump Rush', 'Rise to trigger a timed hop over incoming hurdles.', 'Move & Survive', 'BODY_MOVE', 'Normal', 'Competitive', ['#72b779', '#f28c46'], true),
-  game(21, 'window-wipe', 'Window Wipe', 'Sweep across the window until every smudge is gone.', 'Clean & Create', 'MOTION_BRUSH', 'Easy', 'Competitive', ['#66c7df', '#fffaf0'], true),
+  game(19, 'ninja-training', 'Paper Dojo', 'Swat paper ninjas and keep clear of marked obstacles.', 'Move & Survive', 'MIXED', 'Normal', 'Competitive', ['#477f8e', '#f3c966'], true),
+  game(20, 'jump-rush', 'Jump Rush', 'Jump as each hurdle reaches the star. Clear as many as you can!', 'Move & Survive', 'BODY_MOVE', 'Normal', 'Competitive', ['#72b779', '#f28c46'], true),
+  game(21, 'window-wipe', 'Window Wipe', 'Sweep away soap, rub out ink spots and race through sparkling windows.', 'Clean & Create', 'MOTION_BRUSH', 'Easy', 'Competitive', ['#66c7df', '#fffaf0'], true),
   game(22, 'paint-splash', 'Paint Splash', 'Cover as much of your canvas with paint as you can.', 'Clean & Create', 'MOTION_BRUSH', 'Easy', 'Competitive', ['#e45b9d', '#f5c847'], true),
   game(23, 'car-wash', 'Car Wash', 'Scrub away the mud to reveal the bright car beneath.', 'Clean & Create', 'MOTION_BRUSH', 'Easy', 'Cooperative', ['#4c9ed9', '#9b6b43'], true),
   game(24, 'pizza-maker', 'Pizza Maker', 'Choose ingredients to copy each tasty pizza order.', 'Clean & Create', 'MOTION_HIT', 'Normal', 'Cooperative', ['#ee654f', '#f5c847'], true),
@@ -41,12 +41,17 @@ export const catalogGames: readonly CatalogGame[] = [
   game(31, 'plate-spinner', 'Plate Spinner', 'Tap each wobbling plate before it tumbles.', 'Skill & Precision', 'MOTION_HIT', 'Hard', 'Competitive', ['#66c7df', '#e45b9d'], true),
   game(32, 'magic-duel', 'Magic Duel', 'Draw the shown hand patterns to cast playful spells.', 'Skill & Precision', 'HAND_SWIPE', 'Hard', 'Competitive', ['#7557a8', '#e45b9d'], true),
   game(33, 'rocket-rumble', 'Rocket Rumble', 'Tag matching rockets, then hit the switch for a fireworks chain.', 'Skill & Precision', 'MOTION_HIT', 'Normal', 'Competitive', ['#7557a8','#f5c847'], true),
+  game(34, 'silk-squad', 'Silk Squad', 'Move your arms to cast webs at runaway robot bugs.', 'Hit & Destroy', 'ARM_MOVE', 'Normal', 'Competitive', ['#7bd3c4','#e99ccf'], true),
+  game(35, 'beat-freak', 'Paper Jam', 'Hit the speakers as the records arrive. Find your groove!', 'Skill & Precision', 'MOTION_HIT', 'Normal', 'Competitive', ['#f39fb8','#78cbd3'], true),
+  game(36, 'keep-ups', 'Keep Ups', 'Three lives. Keep the ball up, beat the wind and aim for golden hoops!', 'Skill & Precision', 'BODY_MOVE', 'Normal', 'Competitive', ['#72b779','#f5c847'], true),
+  game(37, 'ghost-catcher', 'Ghost Catcher', 'Rub rising ghosts until they pop. Swat bats before they escape!', 'Hit & Destroy', 'MOTION_BRUSH', 'Normal', 'Competitive', ['#baa3e0','#b9e9de'], true),
+  game(38, 'ufo-juggler', 'UFO Juggler', 'Wave to spin saucers into orbit. Let hot engines cool!', 'Skill & Precision', 'MOTION_BRUSH', 'Normal', 'Competitive', ['#91cfd0','#b4a2db'], true),
 ]
 
 export const getGameBySlug = (slug: string) => catalogGames.find((entry) => entry.slug === slug)
 
 // The focused public set. Other implementations stay available for later refinement.
-export const visibleGameSlugs = ['rocket-rumble','ninja-training','bubble-battle','window-wipe','whack-a-mole'] as const
+export const visibleGameSlugs = ['ninja-training','window-wipe','beat-freak','punch-arena','keep-ups','ghost-catcher','ufo-juggler','jump-rush'] as const
 export const visibleCatalogGames: readonly CatalogGame[] = visibleGameSlugs.flatMap(slug => {
   const entry = getGameBySlug(slug)
   return entry?.available ? [entry] : []
