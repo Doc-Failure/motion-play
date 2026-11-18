@@ -27,7 +27,7 @@ export const catalogGames: readonly CatalogGame[] = [
   game(17, 'dance-challenge', 'Dance Challenge', 'Match each simple movement cue to keep the beat.', 'Move & Survive', 'BODY_MOVE', 'Normal', 'Competitive', ['#e45b9d', '#7557a8'], true),
   game(18, 'freeze', 'Freeze!', 'Move with the music, then hold still when it stops.', 'Move & Survive', 'FREEZE', 'Easy', 'Competitive', ['#66c7df', '#7557a8'], true),
   game(19, 'ninja-training', 'Paper Dojo', 'Swat paper ninjas and keep clear of marked obstacles.', 'Move & Survive', 'MIXED', 'Normal', 'Competitive', ['#477f8e', '#f3c966'], true),
-  game(20, 'jump-rush', 'Jump Rush', 'Jump as each hurdle reaches the star. Clear as many as you can!', 'Move & Survive', 'BODY_MOVE', 'Normal', 'Competitive', ['#72b779', '#f28c46'], true),
+  game(20, 'jump-rush', 'Jump Rush', 'You control the kangaroo. Jump to clear the incoming hurdles!', 'Move & Survive', 'BODY_MOVE', 'Normal', 'Competitive', ['#72b779', '#f28c46'], true),
   game(21, 'window-wipe', 'Window Wipe', 'Sweep away soap, rub out ink spots and race through sparkling windows.', 'Clean & Create', 'MOTION_BRUSH', 'Easy', 'Competitive', ['#66c7df', '#fffaf0'], true),
   game(22, 'paint-splash', 'Paint Splash', 'Cover as much of your canvas with paint as you can.', 'Clean & Create', 'MOTION_BRUSH', 'Easy', 'Competitive', ['#e45b9d', '#f5c847'], true),
   game(23, 'car-wash', 'Car Wash', 'Scrub away the mud to reveal the bright car beneath.', 'Clean & Create', 'MOTION_BRUSH', 'Easy', 'Cooperative', ['#4c9ed9', '#9b6b43'], true),
@@ -46,12 +46,15 @@ export const catalogGames: readonly CatalogGame[] = [
   game(36, 'keep-ups', 'Keep Ups', 'Three lives. Keep the ball up, beat the wind and aim for golden hoops!', 'Skill & Precision', 'BODY_MOVE', 'Normal', 'Competitive', ['#72b779','#f5c847'], true),
   game(37, 'ghost-catcher', 'Ghost Catcher', 'Rub rising ghosts until they pop. Swat bats before they escape!', 'Hit & Destroy', 'MOTION_BRUSH', 'Normal', 'Competitive', ['#baa3e0','#b9e9de'], true),
   game(38, 'ufo-juggler', 'UFO Juggler', 'Wave to spin saucers into orbit. Let hot engines cool!', 'Skill & Precision', 'MOTION_BRUSH', 'Normal', 'Competitive', ['#91cfd0','#b4a2db'], true),
+  game(39, 'six-hoops', 'Six Hoops', 'Bump falling balls into six baskets with your head and body.', 'Skill & Precision', 'BODY_MOVE', 'Normal', 'Competitive', ['#f5a052','#74d6df'], true),
+  game(40, 'net-rally', 'Net Rally', 'Play 1 vs 1 with two players, solo against a robot, or in teams. First to five!', 'Skill & Precision', 'BODY_MOVE', 'Normal', 'Competitive', ['#74d6df','#ed9ba5'], true),
+  game(41, 'kangaroo-race', 'Kangaroo Race', 'Jump over logs, rocks and gaps. Travel farther than your friends!', 'Move & Survive', 'BODY_MOVE', 'Normal', 'Competitive', ['#d7a16a','#a5d88b'], true),
 ]
 
 export const getGameBySlug = (slug: string) => catalogGames.find((entry) => entry.slug === slug)
 
 // The focused public set. Other implementations stay available for later refinement.
-export const visibleGameSlugs = ['ninja-training','window-wipe','beat-freak','punch-arena','keep-ups','ghost-catcher','ufo-juggler','jump-rush'] as const
+export const visibleGameSlugs = ['ninja-training','window-wipe','beat-freak','punch-arena','keep-ups','ghost-catcher','ufo-juggler','six-hoops','goalkeeper','net-rally','kangaroo-race'] as const
 export const visibleCatalogGames: readonly CatalogGame[] = visibleGameSlugs.flatMap(slug => {
   const entry = getGameBySlug(slug)
   return entry?.available ? [entry] : []

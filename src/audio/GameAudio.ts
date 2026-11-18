@@ -73,6 +73,16 @@ class GameAudio {
     cueNotes[cue].forEach((frequency, index) => this.note(frequency, now + index * .09, cue === 'finish' ? .38 : .19, .7))
   }
 
+  hoops(cue:'bounce'|'swish'|'miss',points=10) {
+    if(!this.enabled||document.hidden)return
+    this.unlock();if(!this.context||!this.master||this.context.state!=='running')return
+    const now=this.context.currentTime
+    if(now-this.lastCue<.08)return;this.lastCue=now
+    if(cue==='bounce'){this.note(170,now,.14,.45,'sine',65);this.note(460,now,.045,.12,'triangle')}
+    else if(cue==='swish'){this.soapNoise(now);[523.25,659.25,783.99].forEach((f,i)=>this.note(f*(points===30?1.25:1),now+i*.06,.25,.26,'triangle'))}
+    else this.note(150,now,.13,.12,'sine',90)
+  }
+
   music(step: number, theme: AudioTheme = 'default') {
     if (!this.enabled || document.hidden || !this.context || this.context.state !== 'running') return
     if(theme==='wash') {

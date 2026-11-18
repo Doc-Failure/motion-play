@@ -522,3 +522,61 @@ A compact four-corner fullscreen button stays at the bottom right across menus a
 - Forty-second rounds, a hurdle every 2.4 seconds, +10 for a timed hop and −5 for a tracked bump. Lowering rearms the next hop. Missing tracking cannot award clears. Up to 150 ms of camera/render skew is accepted without retroactively changing scored hurdles.
 - Dedicated local movement video, three-second ready hold, three-second countdown, jump prompt, animated crayon hurdle/star, success burst and original synthesized cues. Paired replay/catalog actions; automatic recovery remains, no manual pause or wireframe button.
 - Physical webcam jump comfort, lighting, distance and speaker playback remain unverified. Unit and browser fixtures are synthetic evidence only.
+
+
+### Six Hoops — six baskets controlled with head/body (2026-11-18)
+- Ninth public catalog entry, separate from the hidden swipe-based Basketball Blitz prototype. One shared camera court with exactly six hoops: three per side, valued 30/20/10 from top to bottom. The existing five-game tournament schedule is unchanged.
+- Forty-five-second rounds; falling balls arrive more frequently over time, with at most four active balls. Measured head, hand, arm, torso and leg surfaces are normalized by the input adapter; the game converts lane-local input back into shared-court coordinates. No raw camera or pose-library access inside the minigame.
+- Contact offset and measured horizontal body movement determine deflection. Gravity, edge rebounds and a 240 ms contact cooldown govern subsequent flight. Only a descending rim crossing after a body touch scores; the most recent toucher receives the points. Untouched balls and misses award no points. No automatic hoop aiming.
+- Fixed 10 ms physics, bounded fresh-frame history, ambiguity/invalid-input guards, pause/replay reset, shared three-second readiness and countdown. Original local stick-figure demo, basketball artwork, trails, stretching nets, point bursts and synthesized bounce/swish/miss cues; shared mute/reduced-motion/fullscreen controls.
+- Synthetic unit/browser tests do not constitute physical camera or speaker verification. Reachability, contact sensitivity and multiplayer comfort need real-world testing.
+
+### Movement feedback refinement — 2026-11-18
+- Jump Rush now uses an original kangaroo avatar with numbered jersey and a persistent YOU / player label. A continuous parabolic hop replaces the two-position star; brief tracking loss does not snap the visual to ground, while untracked movement still cannot score. Tutorial wording and video identify the player-controlled kangaroo. This refines Jump Rush; the separate planned kangaroo distance-race task remains pending.
+- Six Hoops uses constant gravity, contact-normal reflection relative to measured horizontal/vertical body motion, energy loss, bounded velocities and geometric separation. Glancing contacts redirect rather than forcing every touch upward. Rim endpoints and the actual top/side court boundaries rebound balls; the old invisible ceiling at 10% frame height is removed. Descending-only scoring and last-toucher ownership remain.
+
+
+### Goalkeeper and Net Rally — 2026-11-18
+- Public catalog now eleven games. Four-column camera-menu placement keeps all cards inside the camera frame. Existing five-game tournament unchanged.
+- Goalkeeper replaces the routed legacy prototype with actual normalized head/hand/limb/torso surface collision checks. An animated footballer at the top kicks randomized, slightly curved shots down toward the lower goal. No destination marker is shown. Fresh overlap with the actual moving ball in the lower half saves it. Forty seconds, eight conceded goals per player, ten points plus capped save-streak bonuses. One to four isolated lanes, visible save deflection and goal-net response. No inferred default keeper or stale automatic saves.
+- Net Rally uses one shared court split by a solid central net. Body contact returns the ball over it; letting it fall on your side gives the opponent a point. First side to five wins, or the higher score after sixty seconds; equal scores draw. Solo players stand left against a visible robot paddle with bounded movement/reach. Two to four players form left/right teams by their camera positions; three players split one left/two right. Every member of the winning side receives ten points per rally. Automatic serves and short reset delays avoid extra setup.
+- Original generated local movement videos, canvas artwork/animation, synthesized cues, shared three-second ready hold/countdown, preserved camera, automatic pause/recovery and paired result actions. Inputs remain normalized and local; camera libraries stay outside games. Hidden Dodgeball and Laser Escape implementations stay in source/dev but are excluded from production to preserve existing release budgets.
+- Synthetic tests cover scoring, stale-input rejection, pause/replay, frame cadence, multiplayer and robot beatability. Real webcam timing, comfort, lighting and speaker playback remain to be validated.
+
+
+### Kangaroo Race — final requested game (2026-11-18)
+- A distinct shared-screen race, separate from Jump Rush. One to four numbered, color-coded kangaroos run on visible parallel tracks over the retained camera background. Distance differences visibly separate the runners. The public catalog now has twelve games; existing five-game tournament unchanged.
+- Fresh normalized torso rise produces a smooth 700 ms hop, with lowering required before another jump. Missing body tracking stops distance accumulation. Identical obstacle sequences (logs, rocks, gaps) require progressively different clearance heights. Collisions slow the runner for one second; three collisions end that runner’s attempt. Race ends at 45 seconds or when all runners finish; farthest whole metres wins, with joint winners for ties.
+- Original kangaroo artwork, local movement demo, jump/clear/impact sound cues, distance/life labels, half-second jump warning, shared three-second readiness/countdown, camera persistence, automatic recovery and adjacent results buttons. Minigame receives only normalized events.
+- Physical jump sensitivity, multiplayer spacing, comfort and speaker playback remain unverified; automated pose/media tests are synthetic. All five user-requested games are now implemented; implementation status does not imply hardware validation.
+
+### Ball contact and Net Rally refinement — 2026-11-18
+Keep Ups, Six Hoops and Net Rally share an aspect-correct body-contact resolver.
+Rebounds follow the contact normal and fresh measured surface velocity, including
+light tangential friction, energy loss, geometric separation and a total-speed
+limit. Segment velocity is measured at the contact point. Stale observations and
+large pose jumps cannot supply an impulse. Side/underside contacts work in both
+flight directions; score debounce is separate from physical separation. Keep Ups
+no longer adds invented sideways drift or bounces off an invisible HUD ceiling;
+its existing wind, lives and difficulty progression remain.
+
+Net Rally uses gravity-driven flight without target-seeking shots. The solid net
+has matching rendered/collision bounds, dark-backed mesh, outlined posts, white
+top tape, a NET label and a visible floor. Two players automatically play 1 vs 1:
+P1 left, P2 right, one ball, no robot, rally scores shown directly, first to five
+(or highest score at sixty seconds). Solo keeps the visible angled robot paddle;
+three/four players retain side teams. Each player can contact only their own
+side's ball. Intro instructions and results name the actual players. The hidden
+Dance Challenge prototype remains available in development but is excluded from
+production to keep the existing JavaScript budget intact.
+
+Automated collision and synthetic camera tests are not real-webcam validation.
+Physical contact feel, multi-person tracking and lighting still require testing.
+Keep Ups hoop bonuses require fresh player tracking and rearm only after the
+ball leaves both hoop areas. This prevents overlapping targets in narrow
+four-player lanes from awarding bonuses every physics step. Tiny resting
+contacts still separate physically but do not build the scoring streak.
+
+
+### One kangaroo jumping game — 2026-11-18
+Jump Rush and Kangaroo Race are consolidated into the single public Kangaroo Race entry. It retains the smooth torso-controlled hop, original kangaroo, varied logs/rocks/gaps, three-bump limit, 45-second round and multiplayer distance ranking. The catalog has eleven games. Old camera/jump-rush and games/jump-rush links open Kangaroo Race with its tutorial and standard readiness flow. The old Jump Rush model and tests remain as historical source; its component is no longer routed or bundled.

@@ -128,11 +128,11 @@ test('full-camera menus keep all choices inside the visible frame on a narrow sc
 
 
 test('all visible games show a playing movement demo, only ready buttons, then a bare three-second countdown',async({page,installMockCamera})=>{
- test.setTimeout(100000)
+ test.setTimeout(140000)
  await installMockCamera({person:true});await openApp(page,'#/',()=>installMenuPose(page))
  await page.getByRole('button',{name:'1 player',exact:true}).click()
  await expect(page.getByLabel('Mirrored navigation camera')).toBeVisible()
- const games=[['ninja-training','Paper Dojo'],['window-wipe','Window Wipe'],['beat-freak','Paper Jam'],['punch-arena','Cardboard Champ'],['keep-ups','Keep Ups'],['ghost-catcher','Ghost Catcher'],['ufo-juggler','UFO Juggler'],['jump-rush','Jump Rush']]
+ const games=[['ninja-training','Paper Dojo'],['window-wipe','Window Wipe'],['beat-freak','Paper Jam'],['punch-arena','Cardboard Champ'],['keep-ups','Keep Ups'],['ghost-catcher','Ghost Catcher'],['ufo-juggler','UFO Juggler'],['six-hoops','Six Hoops'],['goalkeeper','Goalkeeper'],['net-rally','Net Rally'],['kangaroo-race','Kangaroo Race']]
  for(const [slug,title] of games){
   await page.getByRole('link',{name:/Game Catalog/}).click()
   await page.getByRole('link',{name:`Play ${title}`,exact:true}).click()

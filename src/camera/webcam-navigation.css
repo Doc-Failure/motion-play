@@ -55,3 +55,12 @@ body.camera-menu-active { height:100vh; overflow:hidden; background:#171c26; }
 .camera-menu-active .catalog-picker .game-card:nth-child(7) { left:37%; top:42%; }
 
 .camera-menu-active .catalog-picker .game-card:nth-child(8) { left:37%; top:67%; }
+
+.camera-menu-active .catalog-picker .game-card:nth-child(9) { left:37%; top:17%; }
+
+.camera-menu-active .catalog-grid:has(.game-card:nth-child(10)) .game-card { width:21%; left:3%; top:17%; }
+.camera-menu-active .catalog-grid:has(.game-card:nth-child(10)) .game-card:nth-child(4n+2) { left:27%; }
+.camera-menu-active .catalog-grid:has(.game-card:nth-child(10)) .game-card:nth-child(4n+3) { left:51%; }
+.camera-menu-active .catalog-grid:has(.game-card:nth-child(10)) .game-card:nth-child(4n+4) { left:75%; }
+.camera-menu-active .catalog-grid:has(.game-card:nth-child(10)) .game-card:nth-child(n+5) { top:42%; }
+.camera-menu-active .catalog-grid:has(.game-card:nth-child(10)) .game-card:nth-child(n+9) { top:67%; }

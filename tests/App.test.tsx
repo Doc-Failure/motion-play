@@ -9,15 +9,15 @@ function visit(hash: string) {
 }
 
 describe('catalog data', () => {
-  it('contains the complete, unique, ordered 38-game specification catalog', () => {
-    const expectedTitles = ['Bubble Battle', 'Whack-a-Mole', 'Meteor Smash', 'Fruit Slash', 'Cardboard Champ', 'Piñata Party', 'Monster Defense', 'Balloon Panic', 'Fruit Catcher', 'Gold Rush', 'Fish Frenzy', 'Supermarket Rush', 'Star Collector', 'Treasure Grab', 'Dodgeball', 'Laser Escape', 'Dance Challenge', 'Freeze!', 'Paper Dojo', 'Jump Rush', 'Window Wipe', 'Paint Splash', 'Car Wash', 'Pizza Maker', 'Graffiti Race', 'Tower Builder', 'Air Pong', 'Goalkeeper', 'Basketball Blitz', 'Simon Says', 'Plate Spinner', 'Magic Duel', 'Rocket Rumble', 'Silk Squad','Paper Jam','Keep Ups','Ghost Catcher','UFO Juggler']
-    expect(catalogGames).toHaveLength(38)
-    expect(catalogGames.map((game) => game.id)).toEqual(Array.from({ length: 38 }, (_, index) => index + 1))
+  it('contains the complete, unique, ordered 41-game specification catalog', () => {
+    const expectedTitles = ['Bubble Battle', 'Whack-a-Mole', 'Meteor Smash', 'Fruit Slash', 'Cardboard Champ', 'Piñata Party', 'Monster Defense', 'Balloon Panic', 'Fruit Catcher', 'Gold Rush', 'Fish Frenzy', 'Supermarket Rush', 'Star Collector', 'Treasure Grab', 'Dodgeball', 'Laser Escape', 'Dance Challenge', 'Freeze!', 'Paper Dojo', 'Jump Rush', 'Window Wipe', 'Paint Splash', 'Car Wash', 'Pizza Maker', 'Graffiti Race', 'Tower Builder', 'Air Pong', 'Goalkeeper', 'Basketball Blitz', 'Simon Says', 'Plate Spinner', 'Magic Duel', 'Rocket Rumble', 'Silk Squad','Paper Jam','Keep Ups','Ghost Catcher','UFO Juggler','Six Hoops','Net Rally','Kangaroo Race']
+    expect(catalogGames).toHaveLength(41)
+    expect(catalogGames.map((game) => game.id)).toEqual(Array.from({ length: 41 }, (_, index) => index + 1))
     expect(catalogGames.map((game) => game.title)).toEqual(expectedTitles)
-    expect(new Set(catalogGames.map((game) => game.slug))).toHaveLength(38)
-    expect(new Set(catalogGames.map((game) => game.title))).toHaveLength(38)
+    expect(new Set(catalogGames.map((game) => game.slug))).toHaveLength(41)
+    expect(new Set(catalogGames.map((game) => game.title))).toHaveLength(41)
     expect(new Set(catalogGames.map((game) => game.category))).toEqual(new Set(catalogCategories))
-    expect(catalogGames.filter((game) => game.available).map((game) => [game.slug, game.players])).toEqual([['bubble-battle', [1, 2, 3, 4]], ['whack-a-mole', [1, 2, 3, 4]], ['meteor-smash', [1, 2, 3, 4]], ['fruit-slash', [1, 2, 3, 4]], ['punch-arena', [1, 2, 3, 4]], ['pinata-party', [1, 2, 3, 4]], ['monster-defense', [1, 2, 3, 4]], ['balloon-panic', [1, 2, 3, 4]], ['fruit-catcher', [1, 2, 3, 4]], ['gold-rush', [1, 2, 3, 4]], ['fish-frenzy', [1, 2, 3, 4]], ['supermarket-rush', [1, 2, 3, 4]], ['star-collector', [1, 2, 3, 4]], ['treasure-grab', [1, 2, 3, 4]], ['dodgeball', [1, 2, 3, 4]], ['laser-escape', [1, 2, 3, 4]], ['dance-challenge', [1, 2, 3, 4]], ['freeze', [1, 2, 3, 4]], ['ninja-training', [1, 2, 3, 4]], ['jump-rush', [1, 2, 3, 4]], ['window-wipe', [1, 2, 3, 4]], ['paint-splash', [1, 2, 3, 4]], ['car-wash', [1, 2, 3, 4]], ['pizza-maker', [1, 2, 3, 4]], ['graffiti-race', [1, 2, 3, 4]], ['tower-builder', [1, 2, 3, 4]], ['air-pong', [1, 2, 3, 4]], ['goalkeeper', [1, 2, 3, 4]], ['basketball-blitz', [1, 2, 3, 4]], ['simon-says', [1, 2, 3, 4]], ['plate-spinner', [1, 2, 3, 4]], ['magic-duel', [1, 2, 3, 4]], ['rocket-rumble', [1, 2, 3, 4]], ['silk-squad', [1, 2, 3, 4]], ['beat-freak', [1, 2, 3, 4]], ['keep-ups', [1, 2, 3, 4]], ['ghost-catcher', [1, 2, 3, 4]], ['ufo-juggler', [1, 2, 3, 4]]])
+    expect(catalogGames.filter((game) => game.available).map((game) => [game.slug, game.players])).toEqual([['bubble-battle', [1, 2, 3, 4]], ['whack-a-mole', [1, 2, 3, 4]], ['meteor-smash', [1, 2, 3, 4]], ['fruit-slash', [1, 2, 3, 4]], ['punch-arena', [1, 2, 3, 4]], ['pinata-party', [1, 2, 3, 4]], ['monster-defense', [1, 2, 3, 4]], ['balloon-panic', [1, 2, 3, 4]], ['fruit-catcher', [1, 2, 3, 4]], ['gold-rush', [1, 2, 3, 4]], ['fish-frenzy', [1, 2, 3, 4]], ['supermarket-rush', [1, 2, 3, 4]], ['star-collector', [1, 2, 3, 4]], ['treasure-grab', [1, 2, 3, 4]], ['dodgeball', [1, 2, 3, 4]], ['laser-escape', [1, 2, 3, 4]], ['dance-challenge', [1, 2, 3, 4]], ['freeze', [1, 2, 3, 4]], ['ninja-training', [1, 2, 3, 4]], ['jump-rush', [1, 2, 3, 4]], ['window-wipe', [1, 2, 3, 4]], ['paint-splash', [1, 2, 3, 4]], ['car-wash', [1, 2, 3, 4]], ['pizza-maker', [1, 2, 3, 4]], ['graffiti-race', [1, 2, 3, 4]], ['tower-builder', [1, 2, 3, 4]], ['air-pong', [1, 2, 3, 4]], ['goalkeeper', [1, 2, 3, 4]], ['basketball-blitz', [1, 2, 3, 4]], ['simon-says', [1, 2, 3, 4]], ['plate-spinner', [1, 2, 3, 4]], ['magic-duel', [1, 2, 3, 4]], ['rocket-rumble', [1, 2, 3, 4]], ['silk-squad', [1, 2, 3, 4]], ['beat-freak', [1, 2, 3, 4]], ['keep-ups', [1, 2, 3, 4]], ['ghost-catcher', [1, 2, 3, 4]], ['ufo-juggler', [1, 2, 3, 4]], ['six-hoops', [1, 2, 3, 4]], ['net-rally', [1, 2, 3, 4]], ['kangaroo-race', [1, 2, 3, 4]]])
     expect(catalogGames.filter((game) => !game.available).every((game) => game.players.join() === '1,2,3,4')).toBe(true)
   })
 
@@ -60,13 +60,15 @@ describe('App navigation', () => {
     expect(screen.getByRole('link', {name: 'Play Paper Dojo'})).toHaveAttribute('href', '#/camera/ninja-training')
     expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
   })
-  it('shows exactly five games under a minimal catalog header', () => {
+  it('shows the selected games under a minimal catalog header', () => {
     visit('#/catalog')
     render(<App />)
     expect(screen.getByRole('heading',{name:'Game Catalog'})).toBeVisible()
     expect(screen.getByRole('link',{name:'← Back to Home'})).toHaveAttribute('href','#/')
-    expect(visibleCatalogGames.map(game => game.slug)).toEqual(['ninja-training','window-wipe','beat-freak','punch-arena','keep-ups','ghost-catcher','ufo-juggler','jump-rush'])
-    expect(screen.getAllByRole('link',{name:/^Play /})).toHaveLength(8)
+    expect(visibleCatalogGames.map(game => game.slug)).toEqual(['ninja-training','window-wipe','beat-freak','punch-arena','keep-ups','ghost-catcher','ufo-juggler','six-hoops','goalkeeper','net-rally','kangaroo-race'])
+    expect(screen.getAllByRole('link',{name:/^Play /})).toHaveLength(11)
+    expect(screen.queryByRole('link',{name:'Play Jump Rush'})).not.toBeInTheDocument()
+    expect(screen.getByRole('link',{name:'Play Kangaroo Race'})).toBeVisible()
     expect(screen.queryByLabelText('Motion Play')).not.toBeInTheDocument()
   })
   it('skips to main content without changing the catalog route', async () => {

@@ -1,0 +1,11 @@
+.race-track { position:absolute; inset:0; overflow:hidden; }
+.race-lane { position:absolute; left:0; width:100%; outline-offset:-3px; }
+.race-lane:focus-visible { outline:3px dashed #ffe17a; }
+.race-ground { position:absolute; bottom:0; width:100%; height:15%; background:#fff6df22; border-top:3px dashed; }
+.race-player-label { position:absolute; left:1%; bottom:4%; font-size:clamp(.65rem,1.5vw,1rem); text-shadow:1px 1px #29313c,-1px -1px #29313c; }
+.race-roo { position:absolute; bottom:13%; width:clamp(3rem,9vw,7rem); height:min(90%,8rem); will-change:transform; }
+.race-roo svg { width:100%; height:100%; }
+.race-obstacle { position:absolute; bottom:12%; width:clamp(2rem,6vw,4rem); height:min(40%,3.5rem); }
+.race-obstacle svg { width:100%; height:100%; stroke:#29313c; stroke-width:3; overflow:visible; }
+.race-cue { position:absolute; right:2%; top:5%; background:#fff6dfdd; border-radius:.4rem; padding:.1rem .4rem; font-size:clamp(.65rem,1.6vw,1rem); }
+.race-cue:empty { display:none; }

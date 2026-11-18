@@ -25,12 +25,17 @@ it('maps mirrored head and arm surfaces without moving them between player lanes
  expect(keepUpsInput([b,b],2,100)).toEqual([])
 })
 
-it('rewards deliberate hoop shots once per hoop and alternates the next target',()=>{
- const m=game();let s=m.update(3000)
- for(let t=3020;t<=60000;t+=20){const b=s.balls[0];m.input([head(t,Math.max(.05,Math.min(.95,b.x+(b.hoop%2?-.04:.04))))]);s=m.update(t)}
- expect(s.balls[0].hoop).toBeGreaterThanOrEqual(2)
- const b=s.balls[0],touchPoints=Array.from({length:b.touches},(_,i)=>15+Math.min(15,i)).reduce((a,b)=>a+b,0)
- expect(s.scores[0].score).toBe(touchPoints+b.hoop*30)
+it('rewards each reached hoop once and alternates the next target',()=>{
+ const m=game()
+ const b=(m as unknown as {balls:import('../src/minigames/keep-ups/KeepUpsModel').Football[]}).balls[0]
+ b.streak=3;b.x=.25;b.y=.2;b.vx=0;b.vy=0;m.input([head(3000,.9,.8)])
+ expect(m.update(3020).scores[0].score).toBe(30)
+ expect(m.update(3040).scores[0].score).toBe(30)
+ expect(m.update(3040).balls[0].hoop).toBe(1)
+ b.y=.5;m.update(3060)
+ b.x=.75;b.y=.2;b.vy=0
+ expect(m.update(3080).scores[0].score).toBe(60)
+ expect(m.update(3080).balls[0].hoop).toBe(2)
 })
 it('does not keep colliding with an older head after a new pose moves out of the way',()=>{
  const m=game();m.input([head(3500)]);m.update(3500)
@@ -72,4 +77,20 @@ it('requires repositioning rather than sustaining an endlessly repeating station
  const active=run(moving,3000,33000)
  expect(s.balls[0].drops).toBe(3);expect(s.phase).toBe('results')
  expect(active.scores[0].score).toBeGreaterThan(s.scores[0].score)
+})
+
+it('does not farm overlapping hoops in a four-player lane or score a bonus without tracking',()=>{
+ const m=game(4,1/3),b=(m as unknown as {balls:import('../src/minigames/keep-ups/KeepUpsModel').Football[]}).balls[0]
+ b.streak=3;b.x=.5;b.y=.2;b.vx=0;b.vy=0
+ expect(m.update(3020).scores[0].score).toBe(0)
+ m.input([head(3020,.9,.8)])
+ expect(m.update(3040).scores[0].score).toBe(30)
+ expect(m.update(3120).scores[0].score).toBe(30)
+ m.input([]);expect(m.update(3200).scores[0].score).toBe(30)
+})
+it('uses the real top boundary rather than the old invisible score-bar ceiling',()=>{
+ const m=game(),b=(m as unknown as {balls:import('../src/minigames/keep-ups/KeepUpsModel').Football[]}).balls[0]
+ b.y=.08;b.vy=-.3
+ expect(m.update(3020).balls[0].y).toBeLessThan(.08)
+ expect(m.update(3200).balls[0].y).toBeGreaterThanOrEqual(.045)
 })

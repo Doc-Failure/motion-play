@@ -7,7 +7,7 @@ import {resolve} from 'node:path'
 const directory=resolve('src/assets/intros');await mkdir(directory,{recursive:true})
 const browser=await chromium.launch({headless:true}),page=await browser.newPage()
 await page.setContent('<canvas width="320" height="180"></canvas>')
-for(const game of (process.env.INTRO_GAME?[process.env.INTRO_GAME]:['bubble-battle','ninja-training','window-wipe','rocket-rumble','beat-freak','punch-arena','keep-ups','ghost-catcher','ufo-juggler','jump-rush'])){
+for(const game of (process.env.INTRO_GAME?[process.env.INTRO_GAME]:['bubble-battle','ninja-training','window-wipe','rocket-rumble','beat-freak','punch-arena','keep-ups','ghost-catcher','ufo-juggler','jump-rush','six-hoops','goalkeeper','net-rally','kangaroo-race'])){
  const frames=await page.evaluate(game=>{
   const canvas=document.querySelector('canvas'),c=canvas.getContext('2d'),output=[]
   const line=(points,color='#29313c',width=5)=>{c.strokeStyle=color;c.lineWidth=width;c.lineCap='round';c.lineJoin='round';c.beginPath();points.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.stroke()}
@@ -16,7 +16,26 @@ for(const game of (process.env.INTRO_GAME?[process.env.INTRO_GAME]:['bubble-batt
    const t=frame/72,phase=frame%18/18,beat=Math.floor(frame/18),s=Math.sin(t*Math.PI*4)
    c.fillStyle='#fff6df';c.fillRect(0,0,320,180)
    let center=160,left=[115,95],right=[205,95]
-   if(game==='jump-rush'){
+   if(game==='goalkeeper'){
+    center=105;const bx=235-100*t,by=35+110*t;right=[140+(bx-140)*t,95+(by-95)*t]
+    circle(235,15,7,'#e8b986');line([[235,23],[235,40]],'#ed705e',9);line([[232,40],[226,52]],'#29313c',4);line([[238,40],[249,45+Math.sin(t*Math.PI)*8]],'#29313c',4)
+    circle(bx,by,5+t*7,'#fff6df');circle(bx,by,2+t*3,'#29313c')
+   }else if(game==='net-rally'){
+    center=95;left=[65,100];right=[135,80];line([[220,80],[220,165]],'#72b779',6);circle(130+t*160,95-Math.sin(t*Math.PI)*65,10,'#ffe17a')
+   }else if(game==='six-hoops'){
+    for(const x of [28,292])for(const y of [50,95,140]){line([[x-15,y],[x-10,y+18],[x+10,y+18],[x+15,y]],'#72b779',2);line([[x-15,y],[x+15,y]],'#f28c46',4)}
+    center=150;left=[115,95];right=[195,85];const contact=.35;
+    const x=t<contact?160:160+(292-160)*(t-contact)/(1-contact),y=t<contact?8+t/contact*25:33+(95-33)*(t-contact)/(1-contact)-Math.sin((t-contact)/(1-contact)*Math.PI)*35;
+    circle(x,y,9,'#f5a052');line([[x-8,y],[x+8,y]],'#29313c',1)
+    }else if((game==='jump-rush'||game==='kangaroo-race')){
+    center=100;left=[75,95];right=[125,95]
+    const hop=Math.max(0,Math.sin((t-.25)*Math.PI*3))*35,ky=117-hop
+    line([[215,ky],[185,ky+22],[165,ky+25]],'#b87f4a',9)
+    circle(211,ky-3,15,'#d7a16a');line([[216,ky+9],[232,ky+20],[208,ky+20]],'#d7a16a',9)
+    line([[220,ky-28],[215,ky-53],[225,ky-35],[235,ky-52]],'#d7a16a',6)
+    circle(225,ky-28,12,'#d7a16a');circle(235,ky-25,7,'#d7a16a');circle(229,ky-31,2,'#29313c')
+    c.fillStyle='#29313c';c.font='12px sans-serif';c.fillText('YOU',199,173)
+
     const x=290-t*300;line([[20,155],[300,155]],'#72b779',4);line([[x,153],[x,123],[x+25,123],[x+25,153]],'#efb56f',6)
    }else if(game==='ufo-juggler'){
     const x=235,y=105-t*80,spin=t<.45||t>.7
@@ -60,11 +79,11 @@ for(const game of (process.env.INTRO_GAME?[process.env.INTRO_GAME]:['bubble-batt
     if(reach>.95){line([[target[0]-15,target[1]-17],[target[0]-22,target[1]-23]],'#f4ba5c',3);line([[target[0]+15,target[1]-17],[target[0]+22,target[1]-23]],'#f4ba5c',3)}
    }
    if(game==='punch-arena'&&t>=.55)c.translate(0,25)
-   if(game==='jump-rush')c.translate(0,-Math.max(0,Math.sin((t-.25)*Math.PI*3))*35)
+   if((game==='jump-rush'||game==='kangaroo-race'))c.translate(0,-Math.max(0,Math.sin((t-.25)*Math.PI*3))*35)
    circle(center,48,12,'#fff6df');line([[center,61],[center,113]]);line([[center,77],[center-18,85],left]);line([[center,77],[center+18,85],right]);line([[center,113],[center-15,147]]);line([[center,113],[center+15,147]])
    circle(...left,4,'#efb56f');circle(...right,4,'#efb56f')
    if(game==='punch-arena'&&t>=.55)c.translate(0,-25)
-   if(game==='jump-rush')c.resetTransform()
+   if((game==='jump-rush'||game==='kangaroo-race'))c.resetTransform()
    output.push(canvas.toDataURL('image/png').split(',')[1])
   }
   return output

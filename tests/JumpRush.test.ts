@@ -119,3 +119,13 @@ describe('Jump Rush normalized motion mechanic', () => {
   })
 
 })
+
+it('animates a continuous hop arc through brief tracking loss instead of snapping down',()=>{
+ const model=game();model.moveBody(input(100,.7));model.moveBody(input(200,.45))
+ expect(model.update(200).lanes[0].hopHeight).toBe(0)
+ expect(model.update(362.5).lanes[0].hopHeight).toBeCloseTo(.75)
+ model.releaseBody(1)
+ expect(model.update(525).lanes[0].hopHeight).toBe(1)
+ expect(model.update(687.5).lanes[0].hopHeight).toBeCloseTo(.75)
+ expect(model.update(850).lanes[0].hopHeight).toBe(0)
+})

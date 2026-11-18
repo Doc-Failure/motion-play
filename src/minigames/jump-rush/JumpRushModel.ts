@@ -11,7 +11,7 @@ export const jumpDistance = .18
 interface Sample { y: number; anchor: number; time: number; armed: boolean }
 interface JumpLane {
   playerId: PlayerId; cleared: number; hits: number; feedback: string
-  position: { x: number; y: number } | null; airborne: boolean
+  position: { x: number; y: number } | null; airborne: boolean; hopHeight: number
 }
 export interface JumpRushSnapshot extends GameSessionSnapshot {
   lanes: JumpLane[]; obstacleX: number; wave: number; impactRemainingMs: number
@@ -23,6 +23,7 @@ export class JumpRushModel {
   private readonly clock = new PauseClock()
   private lanes: JumpLane[] = []
   private samples = new Map<PlayerId, Sample>()
+  private visualJumps = new Map<PlayerId, number>()
   private jumps = new Map<PlayerId, number>()
   private lastInput = new Map<PlayerId, number>()
   private now = 0
@@ -37,8 +38,8 @@ export class JumpRushModel {
     this.clock.reset(timestamp); this.now = timestamp
     this.begins = timestamp + state.countdownRemainingMs; this.ends = this.begins + state.roundRemainingMs
     this.nextImpact = this.begins + jumpImpactMs
-    this.samples.clear(); this.jumps.clear(); this.lastInput.clear()
-    this.lanes = state.scores.map(({ playerId }) => ({ playerId, cleared: 0, hits: 0, feedback: 'Jump when the hurdle reaches the star!', position: null, airborne: false }))
+    this.samples.clear(); this.jumps.clear(); this.visualJumps.clear(); this.lastInput.clear()
+    this.lanes = state.scores.map(({ playerId }) => ({ playerId, cleared: 0, hits: 0, feedback: 'You control the kangaroo. Jump over each hurdle!', position: null, airborne: false, hopHeight: 0 }))
     return this.snapshot()
   }
   update(timestamp: number) {
@@ -82,7 +83,7 @@ export class JumpRushModel {
     // A deliberate downward return rearms the next rise. Holding high never hops again.
     if (previous && !armed && event.y - previous.anchor >= distance - 1e-9) { armed = true; anchor = event.y }
     if (previous && armed && anchor - event.y >= distance - 1e-9) {
-      this.jumps.set(event.playerId, this.now); armed = false; anchor = event.y
+      this.jumps.set(event.playerId, this.now); this.visualJumps.set(event.playerId, this.now); armed = false; anchor = event.y
     } else if (armed) anchor = Math.max(anchor, event.y)
     this.samples.set(event.playerId, { y: event.y, anchor, time: this.now, armed })
     lane.position = { x: event.x, y: event.y }
@@ -109,9 +110,15 @@ export class JumpRushModel {
     if (this.clock.paused) { this.clock.resume(timestamp); this.session.resume(this.clock.time(timestamp)) }
     return this.update(timestamp)
   }
+  private hopHeight(id:PlayerId) {
+    const start=this.visualJumps.get(id)
+    if(start===undefined)return 0
+    const t=Math.max(0,Math.min(1,(this.now-start)/jumpDurationMs))
+    return 4*t*(1-t)
+  }
   private snapshot(): JumpRushSnapshot {
     const elapsed = Math.max(0, this.now - this.begins)
-    return { ...this.session.getSnapshot(), lanes: this.lanes.map(lane => ({ ...lane, position: lane.position && { ...lane.position } })),
+    return { ...this.session.getSnapshot(), lanes: this.lanes.map(lane => ({ ...lane, hopHeight: this.hopHeight(lane.playerId), position: lane.position && { ...lane.position } })),
       wave: Math.floor(elapsed / jumpCycleMs), obstacleX: 1 - (elapsed % jumpCycleMs) / jumpCycleMs,
       impactRemainingMs: Math.max(0, this.nextImpact - this.now) }
   }

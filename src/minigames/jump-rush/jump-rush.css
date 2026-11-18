@@ -5,9 +5,9 @@
 .jump-scenery { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
 .jump-launch,.jump-runner,.jump-hurdle { position:absolute; top:80%; translate:-50% -50%; line-height:1; text-shadow:2px 2px #29313c,-2px -2px #29313c; pointer-events:none; }
 .jump-launch,.jump-runner { left:25%; font-size:clamp(2rem,5vw,4rem); }
-.jump-launch { color:#fff9e9; top:90%; }
-.jump-runner { color:#f5c847; transition:top .12s ease-out,rotate .2s; }
-.jump-runner.is-airborne { top:59%; rotate:18deg; }
+.jump-launch { color:#29313c; top:90%; font-size:clamp(.65rem,1.5vw,1rem); background:#fff6df; padding:.2rem .4rem; border-radius:.4rem; text-shadow:none; white-space:nowrap; }
+.jump-runner { width:clamp(4rem,12vw,9rem); height:25%; will-change:top; }
+.jump-runner svg { width:100%; height:100%; overflow:visible; }
 .jump-hurdle { width:clamp(3rem,8vw,7rem); height:22%; }
 .jump-hurdle svg { width:100%; height:100%; overflow:visible; }
 .jump-hurdle.is-broken { rotate:65deg; opacity:.5; }

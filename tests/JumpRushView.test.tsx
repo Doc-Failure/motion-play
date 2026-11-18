@@ -18,7 +18,7 @@ describe('JumpRush rendered simulation', () => {
   it.each([1,2,3,4] as const)('renders %i lanes and explains the input alternative', playerCount => {
     render(<JumpRush {...props} playerCount={playerCount}/>)
     expect(screen.getAllByRole('group', {name: /Jump Rush play area/})).toHaveLength(playerCount)
-    expect(screen.getByText(/Jump at the star/)).toBeVisible()
+    expect(screen.getByText(/You are the kangaroo/)).toBeVisible()
   })
   it('normalizes pointer input and supports keyboard hopping without key repeat', () => {
     vi.stubGlobal('PointerEvent', MouseEvent)

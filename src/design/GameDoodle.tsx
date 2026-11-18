@@ -1,7 +1,11 @@
+import {Kangaroo} from '../minigames/jump-rush/Kangaroo'
 import type { ReactNode } from 'react'
 
 const star = <path d="m50 12 10 25 27 3-20 18 6 27-23-14-24 13 7-27-19-18 27-2Z" fill="#ffe17a" />
 const drawings: Record<string,ReactNode> = {
+ 'kangaroo-race': <Kangaroo player={1} height={.5}/>,
+ 'net-rally': <><path d="M48 22h8v70h-8Z" fill="#ffe17a"/><path d="M40 25h24v66H40ZM40 40h24M40 55h24M40 70h24" fill="none"/><circle cx="21" cy="29" r="16" fill="#74d6df"/><path d="M5 29h32m-16-16v32M70 70l16-17m-10 2 10-2-2 10"/></>,
+  'six-hoops': <><path d="M8 20h29L32 43H13ZM63 20h29l-5 23H68ZM8 51h29L32 74H13ZM63 51h29l-5 23H68ZM8 81h29l-5 15H13ZM63 81h29l-5 15H68Z" fill="#fff6df"/><path d="M8 20h29m26 0h29M8 51h29m26 0h29M8 81h29m26 0h29" stroke="#f28c46" strokeWidth="6"/><circle cx="50" cy="45" r="14" fill="#f5a052"/><path d="M36 45h28M50 31v28"/></>,
   'jump-rush': <><path d="M12 87V55h64v32M5 87h20m42 0h20" fill="none"/><path d="M12 55h64" stroke="#f28c46" strokeWidth="12"/><circle cx="40" cy="14" r="9" fill="#f5c847"/><path d="m42 26 9 13-20 4-12-11m32 7 16-8 15 9M45 29l-17-7-12 5m29 2 15-12" fill="none"/></>,
   'ufo-juggler': <><ellipse cx="50" cy="40" rx="23" ry="29" fill="#b7e8eb"/><ellipse cx="50" cy="43" rx="12" ry="17" fill="#b8d78b"/><path d="m45 40 0 4m10-4 0 4"/><ellipse cx="50" cy="63" rx="43" ry="16" fill="#b4a2db"/><path d="m27 62 3 0m17 2 4 0m17-2 4 0M36 85l-3 8m17-7v10m14-11 3 8" stroke="#f5c847"/></>,
   'ghost-catcher': <><path d="M20 83V43C20 4 80 4 80 43v40L65 73 50 84 35 73Z" fill="#c5ecdf"/><ellipse cx="39" cy="43" rx="4" ry="7" fill="#382d50"/><ellipse cx="61" cy="43" rx="4" ry="7" fill="#382d50"/><ellipse cx="50" cy="61" rx="7" ry="9" fill="#382d50"/></>,

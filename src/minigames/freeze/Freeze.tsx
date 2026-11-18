@@ -4,7 +4,8 @@ import { useRoundRecovery, type RoundRecoveryProps } from '../../game/useRoundRe
 import type { MotionInputEvent } from '../../input/MotionProcessor'
 import type { PlayerCount, PlayerId } from '../../input/PlayerZoneMapper'
 import { FreezeModel, freezeTargetMs } from './FreezeModel'
-import './freeze.css'
+// Retain the hidden prototype in development without shipping its styles.
+if (import.meta.env.DEV) void import('./freeze.css')
 
 export function Freeze({ playerCount, inputEvents = [], onExit, externalPauseReason, onReconnect }: RoundRecoveryProps & {
   playerCount: PlayerCount; inputEvents?: MotionInputEvent[]; onExit(): void

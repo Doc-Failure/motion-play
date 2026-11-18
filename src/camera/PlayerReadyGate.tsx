@@ -26,7 +26,7 @@ export function PlayerReadyGate({players,sample,aspect,enabled,onComplete,onBack
   return()=>{clearInterval(timer);document.removeEventListener('visibilitychange',reset);window.removeEventListener('blur',reset)}
  },[model])
  return <div className={`player-ready-gate${introGame?' player-ready-gate--intro':''}`} style={{'--ready-y':introGame?'68%':'40%'} as import('react').CSSProperties} role="group" aria-label="Players ready check">
-  {introGame&&<GameIntroDemo game={introGame}/>}
+  {introGame&&<GameIntroDemo game={introGame} players={players}/>}
   <div className="player-ready-gate__instruction" id="player-ready-instructions" role="status"><strong>{enabled?(introGame?'Hand here to start':'Everyone, put a hand on your button'):'Waiting for the camera'}</strong><span>{state.contacts.every(Boolean)?`Hold · ${Math.max(1,Math.ceil((1-state.progress)*holdSeconds))}s`:players>1?`Hold together for ${holdSeconds} seconds to start`:`Hold your hand here for ${holdSeconds} seconds to start`}</span></div>
   <div className="player-ready-gate__lanes" style={{gridTemplateColumns:`repeat(${players},minmax(0,1fr))`}}>{state.contacts.map((contact,p)=><div className="player-ready-gate__lane" key={p}>
    <button className={`player-ready-button${contact?' player-ready-button--held':''}`} type="button" aria-label={`Ready Player ${p+1}`} aria-pressed={contact} aria-describedby="player-ready-instructions" disabled={!enabled}

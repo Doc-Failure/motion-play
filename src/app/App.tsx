@@ -16,6 +16,7 @@ import { syncOfflineCaching } from './offlineCache'
 type Route = { page: 'home' } | { page: 'catalog' } | { page: 'settings' } | { page: 'camera'; game?: PlayableGame; autoPlay?: boolean; tournament?:boolean } | { page: 'detail'; slug: string }
 const routeFromHash = (): Route => {
   const hash = window.location.hash.replace(/^#\/?/, '')
+  if (hash === 'camera/jump-rush' || hash === 'games/jump-rush') return {page:'camera',game:'kangaroo-race'}
   if ((hash.startsWith('camera/') && !isGameVisible(hash.slice(7))) || (hash.startsWith('games/') && !isGameVisible(hash.slice(6)))) return {page:'catalog'}
   if (hash === 'tournament') return {page:'camera',tournament:true}
   if (hash === 'catalog') return { page: 'catalog' }

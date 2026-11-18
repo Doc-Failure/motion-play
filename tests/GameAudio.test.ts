@@ -173,3 +173,18 @@ it('gives UFO engines, launches and crashes distinct pitches and respects mute',
  audio.setEnabled(false);audio.ufo('overheat');expect(pitches).toHaveLength(12);expect(stops.every(stop=>stop.mock.calls.length>=2)).toBe(true)
  audio.stop();vi.unstubAllGlobals()
 })
+
+it('plays distinct basketball contact, swish and miss cues and stops when muted',async()=>{
+ vi.resetModules();const pitches:number[]=[],stops:ReturnType<typeof vi.fn>[]=[];let time=1
+ class HoopsContext {
+  state='running';get currentTime(){return time};destination={}
+  createGain(){return {gain:{value:0,setValueAtTime:vi.fn(),linearRampToValueAtTime:vi.fn(),exponentialRampToValueAtTime:vi.fn()},connect:vi.fn(),disconnect:vi.fn()}}
+  createOscillator(){const stop=vi.fn();stops.push(stop);return {frequency:{set value(v:number){pitches.push(v)},get value(){return 0},setValueAtTime:vi.fn(),exponentialRampToValueAtTime:vi.fn()},type:'',connect:vi.fn(),disconnect:vi.fn(),start:vi.fn(),stop,onended:null}}
+ }
+ vi.stubGlobal('AudioContext',HoopsContext);const {gameAudio:audio}=await import('../src/audio/GameAudio')
+ audio.setEnabled(true);audio.hoops('bounce');expect(pitches).toEqual([170,460]);audio.hoops('bounce');expect(pitches).toHaveLength(2)
+ time+=1;audio.hoops('swish',30);expect(pitches.slice(2)).toEqual([523.25*1.25,659.25*1.25,783.99*1.25])
+ time+=1;audio.hoops('miss');expect(pitches.at(-1)).toBe(150)
+ audio.setEnabled(false);time+=1;audio.hoops('swish');expect(pitches).toHaveLength(6);expect(stops.every(stop=>stop.mock.calls.length>=2)).toBe(true)
+ audio.stop();vi.unstubAllGlobals()
+})

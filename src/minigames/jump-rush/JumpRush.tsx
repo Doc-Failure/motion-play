@@ -1,3 +1,4 @@
+import {Kangaroo} from './Kangaroo'
 import { useEffect, useRef, useState, type PointerEvent } from 'react'
 import { GameFeedback } from '../../game/GameFeedback'
 import { gameAudio } from '../../audio/GameAudio'
@@ -46,15 +47,15 @@ export function JumpRush({ playerCount, inputEvents = [], onExit, externalPauseR
         onBlur={() => setSnapshot(model.releaseBody(lane.playerId))}
         onKeyDown={event => {if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;event.preventDefault();move(lane.playerId,.5,event.key === 'ArrowDown' ? .7 : .45)}}>
         <svg className="jump-scenery" viewBox="0 0 600 500" preserveAspectRatio="none" aria-hidden="true"><path d="M0 430 Q300 412 600 430 L600 500H0Z" fill="#72b77955"/><path d="M0 430 Q300 412 600 430" stroke="#fff5d7" strokeWidth="5" strokeDasharray="15 12"/><path d="M30 450l18-8m75 37 20-9m270-26 19-8m100 37 18-8" stroke="#f5c847" strokeWidth="5"/></svg>
-        <span className="jump-launch" aria-hidden="true">☆</span>
+        <span className="jump-launch">YOU · P{lane.playerId}</span>
         <span className={`jump-hurdle${lane.feedback.startsWith('✕')&&snapshot.obstacleX<.25?' is-broken':''}`} style={{ left: `${snapshot.obstacleX * 100}%` }} aria-label="Incoming hurdle"><svg viewBox="0 0 80 90" aria-hidden="true"><path d="M16 82 18 25 63 22 66 82 M7 82h22m28 0h20" fill="none" stroke="#29313c" strokeWidth="7" strokeLinecap="round"/><path d="m18 27 46-3" stroke="#f28c46" strokeWidth="17"/><path d="m19 24 44-3" stroke="#fff5d7" strokeWidth="7" strokeDasharray="8 9"/><path d="m25 44 32-2" stroke="#f5c847" strokeWidth="4"/></svg></span>
-        <span className={`jump-runner${lane.airborne ? ' is-airborne' : ''}`} aria-label={lane.airborne ? 'Hopping' : 'Grounded'}>★</span>
+        <span className="jump-runner" style={{top:`${76-lane.hopHeight*23}%`}} aria-label={lane.airborne ? 'Hopping' : 'Grounded'}><Kangaroo player={lane.playerId} height={lane.hopHeight}/></span>
         <span className="jump-prompt" data-urgent={snapshot.impactRemainingMs<550}>{lane.airborne?'↑':prompt}</span>
         <span key={`${lane.cleared}-${lane.hits}`} className="jump-burst" aria-hidden="true">{lane.feedback.startsWith('✓')?'✦ +10 ✦':lane.feedback.startsWith('✕')?'−5':''}</span>
       </div>
       <p role="status" aria-label={`Player ${lane.playerId} jump feedback`}>{lane.feedback}</p>
     </section>)}</div>
-    <p id="jump-help">Jump at the star · +10 clear / −5 bump · Keyboard: Down then Up</p>
+    <p id="jump-help">You are the kangaroo — jump to make it hop · +10 clear / −5 bump · Keyboard: Down then Up</p>
     {snapshot.phase === 'countdown' && <div className="game-curtain"><strong>{Math.max(1, Math.ceil(snapshot.countdownRemainingMs / 1000))}</strong></div>}
     {recovery.pauseDialog}
     {snapshot.phase === 'results' && <div className="battle-results" role="dialog" aria-label="Jump Rush results"><h2 ref={recovery.resultsHeading} tabIndex={-1}>{playerCount === 1 ? 'Finish line!' : leaders.length > 1 ? 'It’s a tie!' : `Player ${leaders[0].playerId} wins!`}</h2>{snapshot.scores.map(({playerId, score},i) => <p key={playerId}>Player {playerId}: {score} points · {snapshot.lanes[i].cleared} cleared</p>)}<div className="result-actions"><button className="crayon-button" onClick={() => { heard.current={wave:0,jumps:0,hits:0,cleared:0};setSnapshot(model.start(performance.now())) }}>Play again</button><button className="crayon-button" onClick={onExit}>Back to games</button></div></div>}
