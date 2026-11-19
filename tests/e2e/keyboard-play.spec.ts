@@ -1,5 +1,5 @@
 import { isGameVisible } from '../../src/app/catalog'
-import { completeReadyGate, expect, openApp, test } from './fixtures'
+import { completeReadyGate, hideAndRestoreTab, expect, openApp, test } from './fixtures'
 
 for (const [slug, title] of [['bubble-battle', 'Bubble Battle'], ['window-wipe', 'Window Wipe'], ['whack-a-mole', 'Whack-a-Mole']]) {
   test(`${title} supports keyboard scoring, recovery and replay focus`, async ({ page, installMockCamera }) => {
@@ -12,11 +12,12 @@ for (const [slug, title] of [['bubble-battle', 'Bubble Battle'], ['window-wipe',
     await page.getByRole('button', { name: '4 players', exact: true }).click()
     await page.getByRole('button', { name: 'Play without camera', exact: true }).click();await completeReadyGate(page)
     await page.clock.runFor(5000)
-    const board = page.getByRole('group', { name: `Player 4 ${title} play area` })
+    const board = page.getByRole('group', { name: slug==='window-wipe'?'Team Window Wipe play area':`Player 4 ${title} play area` })
     await board.focus()
+    if(slug==='window-wipe')for(let i=0;i<8;i++)await page.keyboard.press('ArrowRight')
     if (slug === 'bubble-battle') for (let i = 0; i < 9; i++) await page.keyboard.press('ArrowDown')
     await page.keyboard.press('Enter')
-    const scores = page.locator('.bubble-game__header dd')
+    const scores = page.locator(':is(.round-hud,.bubble-game__header) dd')
     const zero = '0'
     await expect(scores.nth(3)).not.toHaveText(zero)
     for (let i = 0; i < 3; i++) await expect(scores.nth(i)).toHaveText(zero)
@@ -35,17 +36,18 @@ for (const [slug, title] of [['bubble-battle', 'Bubble Battle'], ['window-wipe',
       await page.screenshot({ path: test.info().outputPath(`keyboard-${slug}-${viewport.width}.png`) })
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth && document.documentElement.scrollHeight <= innerHeight)).toBe(true)
     }
-    await page.getByRole('button', { name: 'Pause', exact: true }).click()
+    await hideAndRestoreTab(page)
     await expect(page.getByRole('heading', { name: 'Round paused' })).toBeFocused()
     const before = await scores.allTextContents()
     await page.clock.runFor(10000)
     expect(await scores.allTextContents()).toEqual(before)
     await page.getByRole('button', { name: 'Resume round' }).click()
-    await expect(page.getByRole('button', { name: 'Pause', exact: true })).toBeFocused()
+    await expect(page.getByRole('button', { name: 'Exit game', exact: true })).toBeFocused()
     await page.clock.fastForward(65000)
     await expect(page.getByRole('dialog').getByRole('heading')).toBeFocused()
     await page.getByRole('button', { name: /Play again|Wipe again/ }).click();await completeReadyGate(page)
-    await expect(page.getByRole('button', { name: 'Pause', exact: true })).toBeFocused()
+    await page.clock.runFor(3100)
+    await expect(page.getByRole('button', { name: 'Exit game', exact: true })).toBeFocused()
     await expect(page.getByRole('dialog')).toHaveCount(0)
   })
 }

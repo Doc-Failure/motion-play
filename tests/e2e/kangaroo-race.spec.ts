@@ -1,11 +1,29 @@
 import {test,expect,openApp,completeReadyGate,hideAndRestoreTab} from './fixtures'
 for(const players of [1,4] as const)test(`Kangaroo Race ${players} players: body jumps, distance and replay`,async({page,installMockCamera})=>{
- test.setTimeout(45000);await installMockCamera({person:true})
+ test.setTimeout(45000);if(players===4)await page.emulateMedia({reducedMotion:'reduce'});await installMockCamera({person:true})
  await openApp(page,'#/camera/kangaroo-race',async()=>{await page.route('**/pose/tracker.js',r=>r.fulfill({contentType:'text/javascript',body:`window.createLocalPoseTracker=async()=>({detect:()=>{
  const el=parent.document.querySelector('.race-track'),racers=JSON.parse(el?.dataset.racers||'[]');return Array.from({length:${players}},(_,i)=>{
  const r=racers[i],remaining=r?(r.next-r.distance)/10:9,rise=i===0&&remaining<.28&&remaining>0?.09:0,x=1-(i+.5)/${players};const p=Array.from({length:33},()=>({x,y:.5,visibility:0,presence:1}));for(const [id,dx,y]of [[0,0,.25],[7,-.01,.25],[8,.01,.25],[11,-.03,.4],[12,.03,.4],[23,-.025,.65],[24,.025,.65]])p[id]={x:x+dx,y:y-rise,visibility:1,presence:1};return p;});},close:()=>{}})`}))})
  await page.getByRole('button',{name:players===1?'1 player':'4 players',exact:true}).click();await expect(page.getByLabel('Kangaroo Race movement demonstration')).toBeVisible();await completeReadyGate(page)
  await expect(page.locator('.race-game')).toHaveAttribute('data-phase','playing',{timeout:6000})
+ const sprite=page.getByRole('img',{name:'Your kangaroo, Player 1'})
+ await expect(sprite).toHaveAttribute('data-running','true')
+ await expect(sprite.locator('.race-roo__art')).toHaveCSS('background-image',/kangaroo-run\.webp/)
+ const firstFrame=await sprite.getAttribute('data-run-frame')
+ if(players===1)await expect.poll(()=>sprite.getAttribute('data-run-frame')).not.toBe(firstFrame)
+ else await expect(sprite).toHaveAttribute('data-run-frame','0')
+ await page.screenshot({path:test.info().outputPath(`race-running-${players}.png`)})
+ const start=JSON.parse((await page.locator('.race-track').getAttribute('data-racers'))!)[0].distance
+ await expect.poll(async()=>JSON.parse((await page.locator('.race-track').getAttribute('data-racers'))!)[0].distance).toBeGreaterThan(start)
+ await expect.poll(()=>page.locator('.race-cue--jump').count(),{timeout:12000,intervals:[50]}).toBeGreaterThan(0)
+ if(players===4)await expect(page.locator('.race-cue--jump').first()).toHaveCSS('animation-name','none')
+ await page.screenshot({path:test.info().outputPath(`race-warning-${players}.png`)})
+ await expect(sprite).toHaveClass('race-roo__sprite')
+ const art=(await sprite.locator('.race-roo__art').boundingBox())!
+ expect(art.width).toBeCloseTo(art.height,0)
+ if(players===4)await expect(sprite.locator('.race-roo__art')).toHaveCSS('animation-name','none')
+ await expect(sprite).toHaveAttribute('data-pose','jump',{timeout:7000})
+ await page.screenshot({path:test.info().outputPath(`race-jump-${players}.png`)})
  await expect.poll(async()=>JSON.parse((await page.locator('.race-track').getAttribute('data-racers'))!)[0].cleared,{timeout:7000}).toBeGreaterThan(0)
  await expect(page.getByRole('img',{name:'Your kangaroo, Player 1'})).toBeVisible()
  await page.screenshot({path:test.info().outputPath(`race-${players}.png`)})

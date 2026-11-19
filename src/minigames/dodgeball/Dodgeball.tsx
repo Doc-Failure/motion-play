@@ -1,3 +1,5 @@
+import {ChallengeResult} from '../../game/ArcadeRound'
+import {useChallenge} from '../../game/ChallengeContext'
 import { useEffect, useRef, useState, type PointerEvent } from 'react'
 import { GameFeedback } from '../../game/GameFeedback'
 import { useRoundRecovery, type RoundRecoveryProps } from '../../game/useRoundRecovery'
@@ -9,7 +11,8 @@ import './dodgeball.css'
 export function Dodgeball({ playerCount, inputEvents = [], onExit, externalPauseReason, onReconnect }: RoundRecoveryProps & {
   playerCount: PlayerCount; inputEvents?: MotionInputEvent[]; onExit(): void
 }) {
-  const [model] = useState(() => new DodgeballModel({ playerCount }))
+  const challenge = useChallenge()
+  const [model] = useState(() => new DodgeballModel({ playerCount, pressure:challenge?.pressure, roundDurationMs:challenge ? 40000 : undefined }))
   const [snapshot, setSnapshot] = useState(() => model.start(performance.now()))
   const controls = useRef(new Map<PlayerId, number>())
   const results = useRef<HTMLHeadingElement>(null)
@@ -64,6 +67,6 @@ export function Dodgeball({ playerCount, inputEvents = [], onExit, externalPause
     </section>)}</div>
     <p id="dodge-help" className="dodge-help">Webcam motion centers steer a marker, not tracked body outlines. Keep moving to provide a fresh position. Missing input earns no points. Webcam control is unverified. Simulation: move the pointer inside a lane, or focus it and use ← →.</p>
     {recovery.pauseDialog}
-    {snapshot.phase === 'results' && <div className="battle-results" role="dialog" aria-label="Dodgeball results"><h2 ref={results} tabIndex={-1}>{playerCount === 1 ? 'Great dodging!' : leaders.length > 1 ? 'It’s a tie!' : `Player ${leaders[0].playerId} wins!`}</h2>{snapshot.scores.map(({playerId, score}) => <p key={playerId}>Player {playerId}: {score} points</p>)}<button className="crayon-button" onClick={() => { setSnapshot(model.start(performance.now())); document.getElementById('dodge-player-1')?.focus() }}>Play again</button><button className="text-button" onClick={onExit}>Back to setup</button></div>}
+    {snapshot.phase === 'results' && <div className="battle-results" role="dialog" aria-label="Dodgeball results"><h2 ref={results} tabIndex={-1}>{playerCount === 1 ? 'Great dodging!' : leaders.length > 1 ? 'It’s a tie!' : `Player ${leaders[0].playerId} wins!`}</h2><ChallengeResult scores={snapshot.scores}/>{snapshot.scores.map(({playerId, score}) => <p key={playerId}>Player {playerId}: {score} points</p>)}<button className="crayon-button" onClick={() => { setSnapshot(model.start(performance.now())); document.getElementById('dodge-player-1')?.focus() }}>Play again</button><button className="text-button" onClick={onExit}>Back to setup</button></div>}
   </section>
 }

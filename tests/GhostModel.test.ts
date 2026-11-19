@@ -1,9 +1,23 @@
 import {describe,it,expect} from 'vitest'
 import {GhostModel} from '../src/minigames/ghost-catcher/GhostModel'
+import {batPose} from '../src/minigames/ghost-catcher/batPose'
+import {ghostPose} from '../src/minigames/ghost-catcher/ghostPose'
 import type {MotionInputEvent} from '../src/input/MotionProcessor'
 function event(t:number,x=.5,y=.86,playerId:1|2=1):MotionInputEvent{return {kind:'MOTION_BRUSH',playerId,x,y,confidence:.53,timestamp:t}}
 function rub(m:GhostModel,from:number,to:number,playerId:1|2=1){for(let t=from;t<=to;t+=40){const s=m.update(t),g=s.ghosts.find(g=>g.playerId===playerId&&g.state==='rising');if(g)m.input([event(t,g.x,g.y,playerId)])}return m.update(to)}
 describe('Ghost Catcher',()=>{
+ it('shows idle, wave, touch and caught ghost expressions',()=>{
+  expect(ghostPose(0,0,false,false)).toBe(0)
+  expect(ghostPose(600,0,false,false)).toBe(1)
+  expect(ghostPose(600,.2,false,false)).toBe(2)
+  expect(ghostPose(600,1,true,false)).toBe(3)
+  expect(ghostPose(600,0,false,true)).toBe(0)
+ })
+ it('flaps bats and shows touch feedback while respecting reduced motion',()=>{
+  expect([0,140,280,420].map(t=>batPose(t,0,false))).toEqual([0,1,2,1])
+  expect(batPose(280,0,true)).toBe(1)
+  expect(batPose(280,.1,false)).toBe(3)
+ })
  it('requires repeated rubbing, counts a capture once and isolates player scores',()=>{const m=new GhostModel(2);m.start(0);m.update(3000);expect(m.input([event(3000)]).scores[0].score).toBe(0);const s=rub(m,3040,3840);expect(s.scores.map(s=>s.score)).toEqual([25,0]);expect(s.ghosts.find(g=>g.playerId===1)?.state).toBe('caught');expect(m.input([event(3840)]).scores[0].score).toBe(25)})
  it('duplicate samples and dense masks cannot instantly pop a ghost',()=>{const m=new GhostModel(1);m.start(0);m.update(3000);for(let i=0;i<30;i++)m.input(Array(100).fill(event(3000)));expect(m.update(3000).ghosts[0].charge).toBeLessThan(.1)})
  it('rejects stale, future, invalid, wrong-kind and off-target motion',()=>{const m=new GhostModel(1);m.start(0);m.update(3000);m.input([event(2000),event(4000),event(3000,NaN),event(3000,0,0),{...event(3000),confidence:0},{...event(3000),kind:'BODY_MOVE'}]);expect(m.update(3000).ghosts[0].charge).toBe(0)})

@@ -1,24 +1,25 @@
+import type {BodyMask} from '../input/MotionProcessor'
 import type {DetectedHand} from '../input/HandGestureProcessor'
 /** Mirrored measured geometry. Games receive normalized events through input adapters. */
 export interface PosePoint { x:number; y:number; visibility?:number; presence?:number }
-export interface StickBody { neck:PosePoint; torso:PosePoint[]; arms:PosePoint[][]; legs:PosePoint[][]; hands:PosePoint[]; palms?:PosePoint[]; wristIds?:number[]; head?:PosePoint; headRadius:number; x:number }
+export interface StickBody { silhouette?:BodyMask; neck:PosePoint; shoulders?:[PosePoint,PosePoint]; torso:PosePoint[]; arms:PosePoint[][]; armIds?:number[]; legs:PosePoint[][]; legIds?:number[]; hands:PosePoint[]; palms?:PosePoint[]; wristIds?:number[]; head?:PosePoint; headRadius:number; x:number }
 const visible = (p:PosePoint|undefined):p is PosePoint => !!p && Number.isFinite(p.x) && Number.isFinite(p.y)
   && p.x>=0 && p.x<=1 && p.y>=0 && p.y<=1 && (p.visibility??0)>=.6 && (p.presence??1)>=.6
 const mirror = (p:PosePoint):PosePoint => ({...p,x:1-p.x})
 const midpoint = (a:PosePoint,b:PosePoint):PosePoint => ({x:(a.x+b.x)/2,y:(a.y+b.y)/2})
 
-export function stickBodies(poses:PosePoint[][]):StickBody[] {
-  return poses.flatMap(points=>{
+export function stickBodies(poses:PosePoint[][], silhouettes?:BodyMask[]):StickBody[] {
+  return poses.flatMap((points,index)=>{
     const [left,right,hipLeft,hipRight]=[points[11],points[12],points[23],points[24]]
     if(![left,right].every(visible))return []
     const neck=mirror(midpoint(left,right))
     const hip=visible(hipLeft)&&visible(hipRight)?mirror(midpoint(hipLeft,hipRight)):undefined
-    const arms=[[11,13,15],[12,14,16]].flatMap(ids=>{
-      const chain=ids.map(id=>points[id]);return chain.every(visible)?[[neck,...chain.map(mirror)]]:[]
+    const limbs=(indices:number[][],anchor:PosePoint|undefined)=>indices.flatMap((ids,side)=>{
+      const chain=ids.map(id=>points[id])
+      return anchor&&chain.every(visible)?[{side,points:[anchor,...chain.map(mirror)]}]:[]
     })
-    const legs=hip?[[23,25,27],[24,26,28]].flatMap(ids=>{
-      const chain=ids.map(id=>points[id]);return chain.every(visible)?[[hip,...chain.map(mirror)]]:[]
-    }):[]
+    const arms=limbs([[11,13,15],[12,14,16]],neck)
+    const legs=limbs([[23,25,27],[24,26,28]],hip)
     // Nose sits forward of the head, particularly in profile; prefer the ear midpoint.
     const head=visible(points[7])&&visible(points[8])?mirror(midpoint(points[7],points[8]))
       :visible(points[2])&&visible(points[5])?mirror(midpoint(points[2],points[5]))
@@ -34,18 +35,19 @@ export function stickBodies(poses:PosePoint[][]):StickBody[] {
       if(Math.hypot(center.x-wrist.x,center.y-wrist.y)>.15)return mirror(wrist)
       return {...mirror(midpoint(wrist,center)),visibility:Math.min(wrist.visibility??1,...tips.map(p=>p.visibility??1))}
     })
-    return [{neck,torso:hip?[neck,hip]:[],arms,legs,hands:wrists.map(index=>mirror(points[index])),palms,wristIds:wrists,head,headRadius,x:hip?.x??neck.x}]
+    return [{silhouette:silhouettes?.[index],neck,shoulders:[mirror(left),mirror(right)] as [PosePoint,PosePoint],torso:hip?[neck,hip]:[],arms:arms.map(a=>a.points),armIds:arms.map(a=>a.side),legs:legs.map(l=>l.points),legIds:legs.map(l=>l.side),hands:wrists.map(index=>mirror(points[index])),palms,wristIds:wrists,head,headRadius,x:hip?.x??neck.x}]
 
   }).sort((a,b)=>a.x-b.x)
 }
 
 export interface PoseTracker {
-  detect(video:HTMLVideoElement|HTMLCanvasElement,time:number):PosePoint[][]
+  detect(video:HTMLVideoElement|HTMLCanvasElement,time:number,aspect?:number):PosePoint[][]
+  silhouettes?():BodyMask[]
   enableHands?():Promise<boolean>
   detectHands?(frame:HTMLCanvasElement):DetectedHand[]
   close():void
 }
-export function createPoseTracker(players:number,signal?:AbortSignal,withHands=false):Promise<PoseTracker> {
+export function createPoseTracker(players:number,signal?:AbortSignal,withHands=false,withMasks=false):Promise<PoseTracker> {
   // A separate local runtime preserves the main app's connect-src 'none' policy.
   return new Promise((resolve,reject)=>{
     const frame=document.createElement('iframe')
@@ -63,12 +65,12 @@ export function createPoseTracker(players:number,signal?:AbortSignal,withHands=f
     frame.onload=async()=>{
       if(closed)return
       try {
-        const runtime=frame.contentWindow as (Window & {createLocalPoseTracker?:(players:number,withHands?:boolean)=>Promise<PoseTracker>})|null
+        const runtime=frame.contentWindow as (Window & {createLocalPoseTracker?:(players:number,withHands?:boolean,withMasks?:boolean)=>Promise<PoseTracker>})|null
         if(!runtime?.createLocalPoseTracker)throw new Error('Tracking runtime unavailable')
-        const loaded=await runtime.createLocalPoseTracker(players,withHands)
+        const loaded=await runtime.createLocalPoseTracker(players,withHands,withMasks)
         if(closed){loaded.close();return}
         tracker=loaded;window.clearTimeout(timeout)
-        resolve({detect:(video,time)=>loaded.detect(video,time),enableHands:loaded.enableHands?()=>loaded.enableHands!():undefined,detectHands:loaded.detectHands?(frame)=>loaded.detectHands!(frame):undefined,close})
+        resolve({silhouettes:loaded.silhouettes,detect:(video,time,aspect)=>loaded.detect(video,time,aspect),enableHands:loaded.enableHands?()=>loaded.enableHands!():undefined,detectHands:loaded.detectHands?(frame)=>loaded.detectHands!(frame):undefined,close})
       }catch(error){if(!closed){close();reject(error)}}
     }
     if(signal?.aborted){abort();return}

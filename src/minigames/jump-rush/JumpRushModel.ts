@@ -30,14 +30,22 @@ export class JumpRushModel {
   private begins = 0
   private ends = 0
   private nextImpact = 0
-  constructor(options: Partial<GameSessionOptions> = {}) {
+  private readonly impactMs:number
+  private readonly cycleMs:number
+  private readonly hopMs:number
+
+  constructor(options: Partial<GameSessionOptions> & { pressure?:number } = {}) {
+    const pressure = Math.max(-.15,Math.min(1,options.pressure ?? 0))
+    this.impactMs = jumpImpactMs - 350 * pressure
+    this.cycleMs = jumpCycleMs - 470 * pressure
+    this.hopMs = jumpDurationMs - 75 * pressure
     this.session = new GameSession({ roundDurationMs: 40000, ...options, playerCount: options.playerCount ?? 1 })
   }
   start(timestamp: number) {
     const state = this.session.start(timestamp)
     this.clock.reset(timestamp); this.now = timestamp
     this.begins = timestamp + state.countdownRemainingMs; this.ends = this.begins + state.roundRemainingMs
-    this.nextImpact = this.begins + jumpImpactMs
+    this.nextImpact = this.begins + this.impactMs
     this.samples.clear(); this.jumps.clear(); this.visualJumps.clear(); this.lastInput.clear()
     this.lanes = state.scores.map(({ playerId }) => ({ playerId, cleared: 0, hits: 0, feedback: 'You control the kangaroo. Jump over each hurdle!', position: null, airborne: false, hopHeight: 0 }))
     return this.snapshot()
@@ -51,19 +59,19 @@ export class JumpRushModel {
         const sample = this.samples.get(lane.playerId), jump = this.jumps.get(lane.playerId)
         if (!sample || this.nextImpact - sample.time > jumpFreshMs) {
           lane.feedback = 'Step back: keep shoulders and hips visible.'
-        } else if (jump !== undefined && jump <= this.nextImpact && this.nextImpact < jump + jumpDurationMs) {
+        } else if (jump !== undefined && jump <= this.nextImpact && this.nextImpact < jump + this.hopMs) {
           lane.cleared++; this.session.awardScore(lane.playerId, 10); lane.feedback = '✓ Over the hurdle! +10 points.'
         } else {
           lane.hits++; this.session.awardScore(lane.playerId, -5); lane.feedback = '✕ Hurdle bump! −5. Time your next jump!'
         }
       }
-      this.nextImpact += jumpCycleMs
+      this.nextImpact += this.cycleMs
     }
     this.now = time; this.session.update(time)
     for (const lane of this.lanes) {
       const sample = this.samples.get(lane.playerId), jump = this.jumps.get(lane.playerId)
       if (sample && time - sample.time > jumpFreshMs) this.releaseBody(lane.playerId)
-      lane.airborne = this.samples.has(lane.playerId) && jump !== undefined && time < jump + jumpDurationMs
+      lane.airborne = this.samples.has(lane.playerId) && jump !== undefined && time < jump + this.hopMs
     }
     return this.snapshot()
   }
@@ -88,7 +96,7 @@ export class JumpRushModel {
     this.samples.set(event.playerId, { y: event.y, anchor, time: this.now, armed })
     lane.position = { x: event.x, y: event.y }
     const jump = this.jumps.get(event.playerId)
-    lane.airborne = jump !== undefined && this.now < jump + jumpDurationMs
+    lane.airborne = jump !== undefined && this.now < jump + this.hopMs
     return this.snapshot()
   }
   releaseBody(playerId: PlayerId) {
@@ -113,13 +121,13 @@ export class JumpRushModel {
   private hopHeight(id:PlayerId) {
     const start=this.visualJumps.get(id)
     if(start===undefined)return 0
-    const t=Math.max(0,Math.min(1,(this.now-start)/jumpDurationMs))
+    const t=Math.max(0,Math.min(1,(this.now-start)/this.hopMs))
     return 4*t*(1-t)
   }
   private snapshot(): JumpRushSnapshot {
     const elapsed = Math.max(0, this.now - this.begins)
     return { ...this.session.getSnapshot(), lanes: this.lanes.map(lane => ({ ...lane, hopHeight: this.hopHeight(lane.playerId), position: lane.position && { ...lane.position } })),
-      wave: Math.floor(elapsed / jumpCycleMs), obstacleX: 1 - (elapsed % jumpCycleMs) / jumpCycleMs,
+      wave: Math.floor(elapsed / this.cycleMs), obstacleX: 1 - (elapsed % this.cycleMs) / this.cycleMs,
       impactRemainingMs: Math.max(0, this.nextImpact - this.now) }
   }
 }

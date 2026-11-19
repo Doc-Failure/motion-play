@@ -13,9 +13,15 @@ import { CameraSetup, type PlayableGame } from '../camera/CameraSetup'
 import { loadSettings, saveSettings, unlockAchievement } from './localPreferences'
 import { syncOfflineCaching } from './offlineCache'
 
-type Route = { page: 'home' } | { page: 'catalog' } | { page: 'settings' } | { page: 'camera'; game?: PlayableGame; autoPlay?: boolean; tournament?:boolean } | { page: 'detail'; slug: string }
+type Route = { page: 'home' } | { page: 'catalog' } | { page: 'settings' } | { page: 'camera'; game?: PlayableGame; autoPlay?: boolean; workshop?:boolean; tournament?:boolean } | { page: 'detail'; slug: string }
 const routeFromHash = (): Route => {
   const hash = window.location.hash.replace(/^#\/?/, '')
+  if(import.meta.env.DEV && hash.startsWith('workshop/')){
+    const slug=hash.slice('workshop/'.length)
+    if(getGameBySlug(slug)?.available)return {page:'camera',game:slug as PlayableGame,workshop:true}
+    return {page:'catalog'}
+  }
+  if (hash === 'camera/marble-mountain' || hash === 'games/marble-mountain') return {page:'camera',game:'marble-bowling'}
   if (hash === 'camera/jump-rush' || hash === 'games/jump-rush') return {page:'camera',game:'kangaroo-race'}
   if ((hash.startsWith('camera/') && !isGameVisible(hash.slice(7))) || (hash.startsWith('games/') && !isGameVisible(hash.slice(6)))) return {page:'catalog'}
   if (hash === 'tournament') return {page:'camera',tournament:true}
@@ -49,7 +55,7 @@ function PlayerWelcome({onChoose}:{onChoose:(players:PlayerCount)=>void}){
 }
 
 function Catalog() {
-  return <section className="catalog-page catalog-picker" aria-labelledby="catalog-title"><header className="catalog-toolbar"><a className="back-link" href="#/">← Back to Home</a><h1 id="catalog-title">Game Catalog</h1><a className="text-button catalog-tournament" href="#/tournament">{TOURNAMENT_GAME_COUNT}-game tournament</a></header>
+  return <section className="catalog-page catalog-picker" aria-labelledby="catalog-title"><h1 id="catalog-title" className="sr-only">Game Catalog</h1><header className="catalog-toolbar"><a className="back-link" href="#/">← Back to Home</a></header>
     <div className="catalog-grid">{visibleCatalogGames.map(game => <a className="game-card" key={game.slug} href={`#/camera/${game.slug}`} aria-label={`Play ${game.title}`}><GameDoodle slug={game.slug}/><div className="game-card__body"><h2>{game.title}</h2><p className="sr-only">{game.rules}</p></div></a>)}</div></section>
 }
 
@@ -78,5 +84,5 @@ export function App() {
   return <><a className="skip-link" href="#main-content" onClick={(event) => {
     event.preventDefault()
     document.getElementById('main-content')?.focus()
-  }}>Skip to main content</a><main onPointerDown={gameAudio.unlock} onKeyDown={gameAudio.unlock} className="home-shell" id="main-content" tabIndex={-1}>{players!==null&&route.page === 'detail' && <AppHeader />}{players===null?<PlayerWelcome onChoose={choosePlayers}/>:route.page === 'home' ? <Home /> : route.page === 'catalog' ? <Catalog /> : route.page === 'settings' ? <Catalog /> : route.page === 'camera' ? null : <GameDetail slug={route.slug} />}{players!==null&&route.page==='home'&&<button className="change-players" onClick={()=>setPlayers(null)}>{players} {players===1?'player':'players'} · change</button>}<CameraSetup webcamNavigation selectedPlayers={players??undefined} navigationKey={`${window.location.hash}|${players??'choose'}`} active={route.page === 'camera'&&players!==null} initialGame={route.page === 'camera' ? route.game : undefined} autoPlay={route.page === 'camera'&&players!==null} tournament={route.page === 'camera' && route.tournament} />{route.page === 'detail' && <footer className="home-footer"><p><span aria-hidden="true">★</span> Made for 1–4 local players <span aria-hidden="true">★</span></p></footer>}</main><FullscreenButton/></>
+  }}>Skip to main content</a><main onPointerDown={gameAudio.unlock} onKeyDown={gameAudio.unlock} className="home-shell" id="main-content" tabIndex={-1}>{players!==null&&route.page === 'detail' && <AppHeader />}{players===null?<PlayerWelcome onChoose={choosePlayers}/>:route.page === 'home' ? <Home /> : route.page === 'catalog' ? <Catalog /> : route.page === 'settings' ? <Catalog /> : route.page === 'camera' ? null : <GameDetail slug={route.slug} />}{players!==null&&route.page==='home'&&<button className="change-players" onClick={()=>setPlayers(null)}>{players} {players===1?'player':'players'} · change</button>}<CameraSetup workshop={route.page==='camera'&&route.workshop} webcamNavigation selectedPlayers={players??undefined} navigationKey={`${window.location.hash}|${players??'choose'}`} active={route.page === 'camera'&&players!==null} initialGame={route.page === 'camera' ? route.game : undefined} autoPlay={route.page === 'camera'&&players!==null} tournament={route.page === 'camera' && route.tournament} />{route.page === 'detail' && <footer className="home-footer"><p><span aria-hidden="true">★</span> Made for 1–4 local players <span aria-hidden="true">★</span></p></footer>}</main><FullscreenButton/></>
 }

@@ -10,6 +10,7 @@ for(const players of [1,4])test(`UFO Juggler ${players} players: spin, coast, la
  await page.getByRole('button',{name:players===1?'1 player':'4 players',exact:true}).click()
  await expect(page.getByLabel('UFO Juggler movement demonstration')).toBeVisible();await completeReadyGate(page)
  await expect(page.locator('.ufo-game')).toHaveAttribute('data-phase','playing',{timeout:6000})
+ for(let i=1;i<=players;i++)await expect(page.locator('.ufo-game header').getByLabel(`Player ${i}: 3 lives`)).toBeVisible()
  await expect(page.getByRole('button',{name:'Pause',exact:true})).toHaveCount(0)
  await expect(page.locator('.game-wireframe-toggle')).toHaveCount(0)
  const canvas=page.locator('.ufo-game canvas').first(),bounds=await canvas.boundingBox();expect(bounds).toBeTruthy()
@@ -41,8 +42,8 @@ test('synthetic webcam waving overheats when continuous, then launches with cont
  await page.getByRole('button',{name:'1 player',exact:true}).click();await completeReadyGate(page)
  await expect(page.locator('.ufo-game')).toHaveAttribute('data-phase','playing',{timeout:6000})
  await page.evaluate(()=>{const canvas=(window as typeof window&{__cameraFixture:HTMLCanvasElement}).__cameraFixture,c=canvas.getContext('2d')!;let frame=0
-  const state={overheated:false};Object.assign(window,{__ufoPilot:state})
-  const timer=setInterval(()=>{const el=document.querySelector('.ufo-game canvas');if(!el){clearInterval(timer);return}const ships=JSON.parse(el.getAttribute('data-ships')!) as {x:number;y:number;spin:number;cue:string;state:string}[],ship=ships.find(g=>g.state==='flying');if(ship?.cue==='overheat')state.overheated=true
+  const state={overheated:false,peakShips:0};Object.assign(window,{__ufoPilot:state})
+  const timer=setInterval(()=>{const el=document.querySelector('.ufo-game canvas');if(!el){clearInterval(timer);return}const ships=JSON.parse(el.getAttribute('data-ships')!) as {x:number;y:number;spin:number;cue:string;state:string}[],ship=ships.find(g=>g.state==='flying');state.peakShips=Math.max(state.peakShips,ships.filter(s=>s.state==='flying').length);if(ship?.cue==='overheat')state.overheated=true
    c.fillStyle='#607b83';c.fillRect(0,0,320,240)
    for(const current of ships.filter(v=>v.state==='flying'&&(!state.overheated||v.spin<.8))){c.fillStyle=frame%2?'#fff':'#131313';c.fillRect((1-current.x)*320-24,current.y*240-18,48,36)}frame++
   },50)
@@ -50,6 +51,6 @@ test('synthetic webcam waving overheats when continuous, then launches with cont
  await expect.poll(()=>page.evaluate(()=>(window as typeof window&{__ufoPilot:{overheated:boolean}}).__ufoPilot.overheated),{timeout:8000}).toBe(true)
  await page.screenshot({path:test.info().outputPath('ufo-overheat.png')})
  await expect.poll(async()=>Number(await page.locator('.ufo-game header dd').first().textContent()),{timeout:10000}).toBeGreaterThanOrEqual(50)
- await expect.poll(async()=>{const ships=JSON.parse((await page.locator('.ufo-game canvas').getAttribute('data-ships'))!) as Saucer[];return ships.filter(s=>s.state==='flying').length},{timeout:16000}).toBeGreaterThanOrEqual(2)
+ await expect.poll(()=>page.evaluate(()=>(window as typeof window&{__ufoPilot:{peakShips:number}}).__ufoPilot.peakShips),{timeout:16000}).toBeGreaterThanOrEqual(2)
  await page.screenshot({path:test.info().outputPath('ufo-juggling-pair.png')})
 })

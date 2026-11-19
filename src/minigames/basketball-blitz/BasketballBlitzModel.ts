@@ -7,8 +7,14 @@ import type { PlayerCount, PlayerId } from '../../input/PlayerZoneMapper'
 export const basketFlightMs = 650
 export const basketLaunch = { x: .5, y: .8, radius: .16 }
 export const basketRim = { x: .5, y: .25, radius: .12 }
+const rimPositions = [0, -1, 1, -.5, .5]
+export function rimFor(baskets: number, pressure: number) {
+  const reach = .07 + .15 * pressure
+  return { ...basketRim, x: basketRim.x + rimPositions[baskets % rimPositions.length] * reach, radius: basketRim.radius - .035 * pressure }
+}
+
 export interface BasketShot { playerId: PlayerId; fromX: number; fromY: number; aimX: number; launchedAt: number; made: boolean }
-export interface BasketStats { playerId: PlayerId; attempts: number; baskets: number }
+export interface BasketStats { playerId: PlayerId; attempts: number; baskets: number; rimX: number; feedback: string }
 export interface BasketballBlitzSnapshot extends GameSessionSnapshot { shots: BasketShot[]; stats: BasketStats[]; time: number }
 
 /** A shot projects the upward swipe direction onto the rim; no camera knowledge. */
@@ -20,19 +26,21 @@ export class BasketballBlitzModel {
   private lastInput = new Map<PlayerId, number>()
   private nextShot = new Map<PlayerId, number>()
   private now = 0
+  private readonly pressure: number
   private playingAt = 0
   private endsAt = 0
-  constructor(options: { playerCount?: PlayerCount; countdownMs?: number; roundDurationMs?: number } = {}) {
+  constructor(options: { playerCount?: PlayerCount; countdownMs?: number; roundDurationMs?: number; pressure?: number } = {}) {
     const count = options.playerCount ?? 1
+    this.pressure = Math.min(1, Math.max(0, options.pressure ?? 0))
     this.session = new GameSession({ ...options, playerCount: count })
-    this.stats = Array.from({ length: count }, (_, i) => ({ playerId: (i + 1) as PlayerId, attempts: 0, baskets: 0 }))
+    this.stats = Array.from({ length: count }, (_, i) => ({ playerId: (i + 1) as PlayerId, attempts: 0, baskets: 0, rimX: .5, feedback: '' }))
   }
   start(timestamp: number) {
     const state = this.session.start(timestamp)
     this.clock.reset(timestamp); this.now = timestamp; this.playingAt = timestamp + state.countdownRemainingMs
     this.endsAt = this.playingAt + state.roundRemainingMs
     this.shots = []; this.lastInput.clear(); this.nextShot.clear()
-    this.stats = this.stats.map(stat => ({ ...stat, attempts: 0, baskets: 0 }))
+    this.stats = this.stats.map(stat => ({ ...stat, attempts: 0, baskets: 0, rimX: .5, feedback: '' }))
     return this.update(timestamp)
   }
   update(timestamp: number): BasketballBlitzSnapshot {
@@ -42,9 +50,16 @@ export class BasketballBlitzModel {
     for (const shot of [...this.shots].sort((a, b) => a.launchedAt - b.launchedAt)) {
       const landing = shot.launchedAt + basketFlightMs
       if (landing > this.now) continue
-      if (this.session.update(landing).phase === 'playing' && shot.made) {
-        this.session.awardScore(shot.playerId, 2)
-        this.stats.find(stat => stat.playerId === shot.playerId)!.baskets++
+      if (this.session.update(landing).phase === 'playing') {
+        const stat = this.stats[shot.playerId - 1]
+        if (shot.made) {
+          this.session.awardScore(shot.playerId, 2)
+          stat.baskets++
+          stat.rimX = rimFor(stat.baskets, this.pressure).x
+          stat.feedback = 'Basket! +2'
+        } else {
+          stat.feedback = shot.aimX < stat.rimX ? 'Aim a little right' : 'Aim a little left'
+        }
       }
     }
     this.shots = this.shots.filter(shot => shot.launchedAt + basketFlightMs > this.now)
@@ -54,16 +69,17 @@ export class BasketballBlitzModel {
   shoot(event: MotionInputEvent) {
     if (!isValidSwipe(event) || !this.stats.some(stat => stat.playerId === event.playerId) || !this.clock.accepts(event.timestamp)) return this.snapshot()
     const time = this.clock.time(event.timestamp)
-    if (time < this.now || time <= (this.lastInput.get(event.playerId) ?? -Infinity)) return this.snapshot()
+    if (time < this.now - 150 || time <= (this.lastInput.get(event.playerId) ?? -Infinity)) return this.snapshot()
     this.update(event.timestamp)
     if (this.session.getSnapshot().phase !== 'playing') return this.snapshot()
-    this.lastInput.set(event.playerId, time)
     const { fromX, fromY, durationMs } = event.swipe!
     if (time - durationMs < this.playingAt || !this.clock.accepts(event.timestamp - durationMs) || time < (this.nextShot.get(event.playerId) ?? 0)) return this.snapshot()
     const dx = event.x - fromX, rise = fromY - event.y
     if (rise < .08 || rise < Math.abs(dx) || Math.hypot(fromX - basketLaunch.x, fromY - basketLaunch.y) > basketLaunch.radius) return this.snapshot()
     const aimX = fromX + dx * (fromY - basketRim.y) / rise
-    this.shots.push({ playerId: event.playerId, fromX, fromY, aimX, launchedAt: time, made: Math.abs(aimX - basketRim.x) <= basketRim.radius })
+    this.lastInput.set(event.playerId, time)
+    const rim = rimFor(this.stats[event.playerId - 1].baskets, this.pressure)
+    this.shots.push({ playerId: event.playerId, fromX, fromY, aimX, launchedAt: time, made: Math.abs(aimX - rim.x) <= rim.radius })
     this.stats.find(stat => stat.playerId === event.playerId)!.attempts++
     this.nextShot.set(event.playerId, time + basketFlightMs + 150)
     return this.snapshot()

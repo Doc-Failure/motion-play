@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "test": "vitest run",
     "test:e2e": "playwright test --project=chromium",
+    "test:collection": "playwright test --project=collection",
     "test:e2e:cross-browser": "playwright test --project=chromium --project=firefox --project=webkit",
     "test:e2e:offline": "playwright test --project=offline",
     "test:packaging": "node --test scripts/release.test.mjs",

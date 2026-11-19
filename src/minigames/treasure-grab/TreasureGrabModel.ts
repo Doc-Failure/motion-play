@@ -31,11 +31,17 @@ export class TreasureGrabModel {
   private inputNotBefore = 0
   private pausedAt: number | null = null
 
-  constructor(options: { playerCount?: PlayerCount; countdownMs?: number; roundDurationMs?: number; spawnIntervalMs?: number; lifetimeMs?: number } = {}) {
+  private flipped = false
+  private readonly random: () => number
+  private readonly pressure: number
+
+  constructor(options: { pressure?: number; random?: () => number; playerCount?: PlayerCount; countdownMs?: number; roundDurationMs?: number; spawnIntervalMs?: number; lifetimeMs?: number } = {}) {
+    this.pressure = Math.max(-.15, Math.min(1, options.pressure ?? 0))
+    this.random = options.random ?? Math.random
     this.playerCount = options.playerCount ?? 1
     this.session = new GameSession({ ...options, playerCount: this.playerCount })
-    this.spawnIntervalMs = options.spawnIntervalMs ?? 1_800
-    this.lifetimeMs = options.lifetimeMs ?? 3_000
+    this.spawnIntervalMs = options.spawnIntervalMs ?? (1800 - 580 * this.pressure)
+    this.lifetimeMs = options.lifetimeMs ?? (3000 - 1020 * this.pressure)
     if (!Number.isFinite(this.spawnIntervalMs) || this.spawnIntervalMs < 100 || !Number.isFinite(this.lifetimeMs) || this.lifetimeMs < 100) throw new Error('Treasure timing must be finite and at least 100ms.')
   }
 
@@ -46,6 +52,7 @@ export class TreasureGrabModel {
     this.lastPick = { 1: -Infinity, 2: -Infinity, 3: -Infinity, 4: -Infinity }
     this.feedback = { 1: '', 2: '', 3: '', 4: '' }
     this.nextId = 1
+    this.flipped = this.pressure > 0 && this.random() < .5
     this.wave = 0
     this.pausedAt = null
     this.lastTimestamp = timestamp
@@ -64,9 +71,9 @@ export class TreasureGrabModel {
           const playerId = (index + 1) as PlayerId
           if (this.items.filter((item) => item.playerId === playerId).length <= 6) {
             const [x, y] = positions[this.wave % positions.length]
-            this.items.push({ id: this.nextId++, playerId, x, y, kind: 'treasure', spawnedAt: this.nextSpawnAt, remaining: 1 })
+            this.items.push({ id: this.nextId++, playerId, x:this.flipped ? 1-x : x, y:this.flipped ? 1-y : y, kind: 'treasure', spawnedAt: this.nextSpawnAt, remaining: 1 })
             const [curseX, curseY] = cursePositions[this.wave % cursePositions.length]
-            this.items.push({ id: this.nextId++, playerId, x: curseX, y: curseY, kind: 'curse', spawnedAt: this.nextSpawnAt, remaining: 1 })
+            this.items.push({ id: this.nextId++, playerId, x: this.flipped ? 1-curseX : curseX, y: this.flipped ? 1-curseY : curseY, kind: 'curse', spawnedAt: this.nextSpawnAt, remaining: 1 })
           }
         }
         this.wave += 1

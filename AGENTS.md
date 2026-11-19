@@ -27,3 +27,17 @@ user's requested outcome.
   without explicit authorization.
 - Keep dependencies concise, maintained, and justified. Never expose secrets,
   weaken privacy, add tracking, or upload camera data.
+
+## Game improvement workflow
+
+Before modifying any mini-game:
+
+1. Read GAME_IMPROVEMENT_TRACKER.md.
+2. Resume the highest-priority unfinished task.
+3. Implement and test the change.
+4. Update tracker and progress files.
+5. Continue with the next task.
+
+Never mark untested functionality as complete.
+Never abandon unfinished games silently.
+Preserve existing working functionality.

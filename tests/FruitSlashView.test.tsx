@@ -17,7 +17,7 @@ describe('Fruit Slash rendered simulation',()=>{
   it.each([1,2,3,4] as const)('renders %i lanes with explicit simulation controls',playerCount=>{
     render(<FruitSlash {...props} playerCount={playerCount}/> )
     expect(screen.getAllByRole('group',{name:/Fruit Slash play area/})).toHaveLength(playerCount)
-    expect(screen.getByText(/hand tracking unavailable/)).toBeVisible()
+    expect(screen.getByText(/Sweep your hand across the fruit/)).toBeVisible()
   })
   it('normalizes pointer strokes, requires speed, and breaks strokes on leave',()=>{
     render(<FruitSlash {...props}/>);tick(4100)

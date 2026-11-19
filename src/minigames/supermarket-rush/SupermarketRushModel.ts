@@ -30,11 +30,14 @@ export class SupermarketRushModel {
   private inputNotBefore = 0
   private pausedAt: number | null = null
 
-  constructor(options: { playerCount?: PlayerCount; countdownMs?: number; roundDurationMs?: number; spawnIntervalMs?: number; travelMs?: number } = {}) {
+  private readonly pressure: number
+
+  constructor(options: { pressure?: number; playerCount?: PlayerCount; countdownMs?: number; roundDurationMs?: number; spawnIntervalMs?: number; travelMs?: number } = {}) {
+    this.pressure = Math.max(-.15, Math.min(1, options.pressure ?? 0))
     this.playerCount = options.playerCount ?? 1
     this.session = new GameSession({ ...options, playerCount: this.playerCount })
-    this.spawnIntervalMs = options.spawnIntervalMs ?? 1_800
-    this.travelMs = options.travelMs ?? 5_400
+    this.spawnIntervalMs = options.spawnIntervalMs ?? (1800 - 570 * this.pressure)
+    this.travelMs = options.travelMs ?? (5400 - 1140 * this.pressure)
     if (!Number.isFinite(this.spawnIntervalMs) || this.spawnIntervalMs < 100 || !Number.isFinite(this.travelMs) || this.travelMs < 100) throw new Error('Grocery timing must be finite and at least 100ms.')
   }
 
@@ -62,7 +65,7 @@ export class SupermarketRushModel {
         for (let index = 0; index < this.playerCount; index += 1) {
           const playerId = (index + 1) as PlayerId
           if (this.items.filter((item) => item.playerId === playerId).length < 4) {
-            this.items.push({ id: this.nextId++, playerId, kind: groceries[this.wave % groceries.length], x: .88, y: .5, spawnedAt: this.nextSpawnAt })
+            this.items.push({ id: this.nextId++, playerId, kind: groceries[this.wave % groceries.length], x: .88, y: .5 + [0, -.18, .18][this.wave % 3] * this.pressure, spawnedAt: this.nextSpawnAt })
           }
         }
         this.wave += 1

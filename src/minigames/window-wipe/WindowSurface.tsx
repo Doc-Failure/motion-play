@@ -1,6 +1,5 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 import { type WindowWipeSnapshot } from './WindowWipeModel'
-import type { PlayerId } from '../../input/PlayerZoneMapper'
 
 function random(seed:number){return()=>{seed=(seed*16807)%2147483647;return (seed-1)/2147483646}}
 const palettes=[['#d3e7f1','#fff4e9','#adccd9'],['#e9dbf3','#fff5e5','#c2a8d3'],['#d7eddd','#fff6d6','#a5cbb7']]
@@ -26,7 +25,7 @@ function foam(ctx:CanvasRenderingContext2D,width:number,height:number,index:numb
 function sparkle(ctx:CanvasRenderingContext2D,x:number,y:number,r:number){ctx.beginPath();ctx.moveTo(x,y-r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.quadraticCurveTo(x,y,x,y+r);ctx.quadraticCurveTo(x,y,x-r,y);ctx.quadraticCurveTo(x,y,x,y-r);ctx.fill()}
 
 /** Model-owned brush discs drive paint; the hidden coverage grid never becomes artwork. */
-export function WindowSurface({snapshot,id,index}:{snapshot:WindowWipeSnapshot;id:PlayerId;index:number}){
+export function WindowSurface({snapshot,index}:{snapshot:WindowWipeSnapshot;index:number}){
  const mask=useRef<HTMLCanvasElement>(null),particles=useRef<HTMLCanvasElement>(null),painted=useRef({index:-1,count:0,width:0,height:0})
  const [size,setSize]=useState({width:640,height:480})
  const reduced=()=>document.documentElement.classList.contains('reduce-motion')||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
@@ -40,7 +39,7 @@ export function WindowSurface({snapshot,id,index}:{snapshot:WindowWipeSnapshot;i
   // jsdom has no raster context. Browser acceptance exercises the real renderer.
   if(typeof CanvasRenderingContext2D==='undefined')return
   const ctx=mask.current?.getContext('2d'),fx=particles.current?.getContext('2d');if(!ctx||!fx)return
-  const {width,height}=size,dabs=snapshot.dabs[id],prior=painted.current
+  const {width,height}=size,dabs=snapshot.dabs,prior=painted.current
   const reset=prior.index!==index||prior.width!==width||prior.height!==height||dabs.length<prior.count
   if(reset){foam(ctx,width,height,index);prior.count=0}
   ctx.globalCompositeOperation='destination-out';ctx.fillStyle='#000'
@@ -52,7 +51,7 @@ export function WindowSurface({snapshot,id,index}:{snapshot:WindowWipeSnapshot;i
   ctx.globalCompositeOperation='source-over';painted.current={index,count:dabs.length,width,height}
   fx.clearRect(0,0,width,height)
   const small=Math.min(width,height),still=reduced()
-  for(const effect of snapshot.effects.filter(e=>e.playerId===id)){
+  for(const effect of snapshot.effects){
    const age=(snapshot.elapsed-effect.born)/1000;if(age<0||age>1.2)continue
    const count=effect.kind==='window'?20:effect.kind==='pop'?11:5
    for(let i=0;i<count;i++){
@@ -65,8 +64,8 @@ export function WindowSurface({snapshot,id,index}:{snapshot:WindowWipeSnapshot;i
    }
   }
   fx.globalAlpha=1
- },[snapshot,id,index,size])
- return <><canvas ref={mask} className={`wipe-foam${snapshot.celebrating[id]?' wipe-foam--cleared':''}`} width={size.width} height={size.height} aria-hidden="true"/><canvas ref={particles} className="wipe-particles" width={size.width} height={size.height} aria-hidden="true"/></>
+ },[snapshot,index,size])
+ return <><canvas ref={mask} className={`wipe-foam${snapshot.celebrating?' wipe-foam--cleared':''}`} width={size.width} height={size.height} aria-hidden="true"/><canvas ref={particles} className="wipe-particles" width={size.width} height={size.height} aria-hidden="true"/></>
 }
 
 export function WindowFrame(){return <svg className="wipe-frame" viewBox="0 0 400 600" preserveAspectRatio="none" aria-hidden="true"><g fill="none" strokeLinejoin="round"><path d="M7 5 393 8 396 590 4 595Z" stroke="#334f58" strokeWidth="13"/><path d="M9 9 390 12 391 587 9 590Z" stroke="#edc487" strokeWidth="8"/><path d="m14 17 372 1m1 2 1 559M18 581l361-2M16 24l-1 550" stroke="#fff0be" strokeWidth="2"/><path d="m3 594 392-2" stroke="#334f58" strokeWidth="13"/><path d="m3 590 392-2" stroke="#e4ac68" strokeWidth="9"/></g></svg>}

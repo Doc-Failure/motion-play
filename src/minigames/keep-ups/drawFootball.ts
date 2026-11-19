@@ -9,7 +9,6 @@ export function drawFootball(c:CanvasRenderingContext2D,b:Football,time:number,w
  line([[0,h*.92],[w*.5,h*.925],[w,h*.92]])
  for(let i=0;i<7;i++){const x=i*w/6;line([[x,h*.1],[x+w/12,h*.105]],'#fff3d599',1);c.beginPath();c.moveTo(x,h*.1);c.lineTo(x+Math.min(16,w/15),h*.105);c.lineTo(x+Math.min(8,w/30),h*.14);c.closePath();c.fillStyle=['#f4bd72','#a0d9d6','#e5a8be'][i%3];c.fill()}
  const lives=Math.max(0,KEEP_UPS_LIVES-b.drops)
- text('♥'.repeat(lives)+'♡'.repeat(KEEP_UPS_LIVES-lives),w*.5,h*.71,Math.min(22,w*.1))
  if(!lives){text('OUT OF LIVES',w*.5,h*.45,Math.min(26,w*.11));return}
  const wind=footballWind(time)
  if(wind.warning||wind.active)text(`${wind.direction>0?'→':'←'} ${wind.warning?'Wind coming!':'GUST!'}`,w*.5,h*.64,Math.min(22,w*.1))

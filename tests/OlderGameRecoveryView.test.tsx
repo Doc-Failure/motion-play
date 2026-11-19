@@ -30,16 +30,23 @@ for (const Game of games) describe(`${Game.name} recovery controls`, () => {
     advance(time)
     const boards = container.querySelector('[class*="-boards"]')!
     const before = boards.innerHTML
-    const timeBefore = container.querySelector('dl > div:last-child dd')!.textContent
-    const pause = screen.getByRole('button', { name: 'Pause' })
-    fireEvent.click(pause)
+    const timer = screen.getByText(/^Time(?: remaining)?$/, { selector: 'dt, dt span' }).closest('dt')!.nextElementSibling!
+    const timeBefore = timer.textContent
+    const automatic = Game === WindowWipe
+    const focusTarget = screen.getByRole('button', { name: automatic ? 'Exit game' : 'Pause' })
+    if (automatic) {
+      vi.spyOn(document, 'hidden', 'get').mockReturnValue(true)
+      fireEvent(document, new Event('visibilitychange'))
+      vi.spyOn(document, 'hidden', 'get').mockReturnValue(false)
+      fireEvent(document, new Event('visibilitychange'))
+    } else fireEvent.click(focusTarget)
     expect(screen.getByRole('heading', { name: 'Round paused' })).toHaveFocus()
     const pausedBoard = boards.innerHTML
     advance(20000)
     expect(boards.innerHTML).toBe(pausedBoard)
-    expect(container.querySelector('dl > div:last-child dd')).toHaveTextContent(timeBefore!)
+    expect(timer).toHaveTextContent(timeBefore!)
     fireEvent.click(screen.getByRole('button', { name: 'Resume round' }))
-    expect(pause).toHaveFocus()
+    expect(focusTarget).toHaveFocus()
     expect(boards.innerHTML).toBe(before)
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     vi.spyOn(document, 'hidden', 'get').mockReturnValue(true)
@@ -54,8 +61,8 @@ for (const Game of games) describe(`${Game.name} recovery controls`, () => {
     expect(screen.getByRole('dialog')).toBeVisible()
     fireEvent.click(screen.getByRole('button', { name: 'Resume round' }))
     advance(41500)
-    if (time === 1000) expect(screen.getAllByText('1', { selector: '.game-curtain strong' })).toHaveLength(4)
-    else expect(container.querySelector('dl > div:last-child dd')).not.toHaveTextContent(timeBefore!)
+    if (time === 1000) expect(screen.getAllByText('1', { selector: '.game-curtain strong' })).toHaveLength(Game===WindowWipe?1:4)
+    else expect(timer).not.toHaveTextContent(timeBefore!)
   })
 
   it('keeps replay blocked during camera failure and preserves countdown until explicit resume', () => {

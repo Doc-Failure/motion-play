@@ -21,6 +21,7 @@ export interface BubbleBattleSnapshot extends GameSessionSnapshot {
 
 export interface BubbleBattleOptions {
   aspectRatio?: number
+  pressure?: number
   playerCount?: PlayerCount
   countdownMs?: number
   roundDurationMs?: number
@@ -40,19 +41,23 @@ export class BubbleBattleModel {
   private readonly random: () => number
   private readonly playerIds: PlayerId[]
   private targets: BubbleTarget[] = []
+  private lastHazard = false
   private nextTargetId = 1
   private nextSpawnAt: number | null = null
   private lastUpdateAt: number | null = null
   private lastResults = emptyResults()
 
+  private readonly pressure: number
+
   constructor(options: BubbleBattleOptions = {}) {
+    this.pressure = Math.max(-.15, Math.min(1, options.pressure ?? 0))
     this.aspectRatio = options.aspectRatio && options.aspectRatio > 0 ? options.aspectRatio : 1
     this.session = new GameSession({
       playerCount: options.playerCount ?? 1,
       countdownMs: options.countdownMs,
       roundDurationMs: options.roundDurationMs,
     })
-    this.spawnIntervalMs = options.spawnIntervalMs ?? 850
+    this.spawnIntervalMs = options.spawnIntervalMs ?? (850 - 250 * this.pressure)
     this.random = options.random ?? Math.random
     this.playerIds = Array.from({ length: options.playerCount ?? 1 }, (_, index) => (index + 1) as PlayerId)
   }
@@ -60,6 +65,7 @@ export class BubbleBattleModel {
   start(timestamp: number): BubbleBattleSnapshot {
     this.clock.reset(timestamp)
     this.targets = []
+    this.lastHazard = false
     this.nextTargetId = 1
     this.nextSpawnAt = null
     this.lastUpdateAt = timestamp
@@ -77,13 +83,16 @@ export class BubbleBattleModel {
       if (this.nextSpawnAt === null) this.nextSpawnAt = now
       const elapsed = before.phase === 'playing' && this.lastUpdateAt !== null ? now - this.lastUpdateAt : 0
       this.targets = this.targets
-        .map((target) => ({ ...target, y: target.y - elapsed * (target.kind === 'bomb' ? 0.000045 : 0.000065) }))
+        .map((target) => ({ ...target, y: target.y - elapsed * (target.kind === 'bomb' ? 0.00009 : 0.00014) * (1 + .4 * this.pressure) }))
         .filter((target) => target.y + target.radius >= 0)
       const spawnSteps = Math.floor((now - this.nextSpawnAt) / this.spawnIntervalMs) + 1
-      const usefulSteps = Math.min(spawnSteps, 7)
+      const usefulSteps = Math.min(spawnSteps, 1)
       for (let step = 0; step < usefulSteps; step += 1) {
+        // Give all lanes the same wave value and always open with a chance to score.
+        const hazard = this.nextTargetId > 1 && !this.lastHazard && this.random() < .14 + .12 * this.pressure
+        this.lastHazard = hazard
         for (const playerId of this.playerIds) {
-          if (this.targets.filter((target) => target.playerId === playerId).length < 7) this.targets.push(this.createTarget(playerId))
+          if (this.targets.filter((target) => target.playerId === playerId).length < 7) this.targets.push(this.createTarget(playerId, hazard ? 'bomb' : 'bubble'))
         }
       }
       this.nextSpawnAt += spawnSteps * this.spawnIntervalMs
@@ -130,15 +139,19 @@ export class BubbleBattleModel {
     this.targets = targets.map((target) => ({ ...target }))
   }
 
-  private createTarget(playerId: PlayerId): BubbleTarget {
-    const kind: BubbleTargetKind = this.random() < 0.2 ? 'bomb' : 'bubble'
-    const radius = kind === 'bomb' ? 0.065 : 0.075 + this.random() * 0.035
+  private createTarget(playerId: PlayerId, kind: BubbleTargetKind): BubbleTarget {
+    const radius = kind === 'bomb' ? .065 : (.087 + this.random() * .025) * (1 - .15 * this.pressure)
+    // Choose the farthest of three entrance columns when a recent target is still there.
+    const preferred = radius + this.random() * (1 - radius * 2)
+    const near = this.targets.filter(t => t.playerId === playerId && t.y > .62)
+    const clearance = (x:number) => Math.min(...near.map(t=>Math.abs(t.x-x)))
+    const x = clearance(preferred) >= .23 ? preferred : [.18,.5,.82].reduce((best,col)=>clearance(col)>clearance(best)?col:best)
     return {
       id: this.nextTargetId++,
       playerId,
       kind,
-      x: radius + this.random() * (1 - radius * 2),
-      y: 1 + radius,
+      x,
+      y: .91 - radius,
       radius,
     }
   }

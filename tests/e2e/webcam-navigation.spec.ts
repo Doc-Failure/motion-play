@@ -45,14 +45,14 @@ test('webcam chooses players once, then catalog, ready, pause, resume, exit and 
  await expect(page.locator('.webcam-navigation__hand')).toHaveCount(1)
  await choose(page,'.welcome-players button[aria-label="2 players"]')
  await choose(page,'a[href="#/catalog"]');await expect(page.getByRole('heading',{name:'Game Catalog',exact:true,level:1})).toBeVisible()
- await choose(page,'a[href="#/camera/beat-freak"]')
+ await choose(page,'a[href="#/camera/window-wipe"]')
  await expect(page.getByLabel('Players ready check',{exact:true})).toBeVisible()
  await page.evaluate(()=>Object.assign(window,{__readyAll:true}))
  await expect(page.getByLabel('Players ready check',{exact:true})).toHaveCount(0,{timeout:10000})
  await page.evaluate(()=>Object.assign(window,{__readyAll:false}));await page.waitForTimeout(3300)
- await hideAndRestoreTab(page);await expect(page.getByRole('dialog',{name:'Paper Jam paused'})).toBeVisible()
- await choose(page,'.battle-results button:first-of-type');await expect(page.getByRole('dialog',{name:'Paper Jam paused'})).toHaveCount(0)
- await choose(page,'.bubble-game__header button:last-of-type');await expect(page.getByRole('heading',{name:'Game Catalog',exact:true,level:1})).toBeVisible()
+ await hideAndRestoreTab(page);await expect(page.getByRole('dialog',{name:'Window Wipe paused'})).toBeVisible()
+ await choose(page,'.battle-results button:first-of-type');await expect(page.getByRole('dialog',{name:'Window Wipe paused'})).toHaveCount(0)
+ await choose(page,'.round-hud__exit');await expect(page.getByRole('heading',{name:'Game Catalog',exact:true,level:1})).toBeVisible()
  await choose(page,'.catalog-toolbar .back-link');await expect(page.getByRole('heading',{name:'Motion Play!'})).toBeVisible()
  expect(await page.evaluate(()=>(window as typeof window&{__mockMediaState:{requests:number;stoppedTracks:number}}).__mockMediaState)).toMatchObject({requests:1,stoppedTracks:0})
  await page.screenshot({path:test.info().outputPath('webcam-home.png')})
@@ -67,7 +67,7 @@ test('five-game tournament adds points and advances every round with webcam-read
  await expect(page.locator('.webcam-navigation__hand')).toHaveCount(1)
  await choose(page,'.welcome-players button[aria-label="2 players"]')
  await choose(page,'a[href="#/tournament"]')
- const titles=['Paper Dojo','Window Wipe','Paper Jam','Cardboard Champ','Keep Ups']
+ const titles=['Paper Dojo','Window Wipe','Cardboard Champ','Keep Ups','Ghost Catcher']
  for(let round=0;round<titles.length;round++){
   await expect(page.getByLabel('Players ready check',{exact:true})).toBeVisible()
   await page.evaluate(()=>Object.assign(window,{__readyAll:true}))
@@ -120,7 +120,9 @@ test('full-camera menus keep all choices inside the visible frame on a narrow sc
   expect(geometry).toEqual({scroll:true,inside:true})
   await page.screenshot({path:test.info().outputPath(`camera-catalog-${viewport.width}.png`)})
  }
- await choose(page,'.catalog-tournament')
+ await choose(page,'.catalog-toolbar .back-link')
+ await expect(page.getByRole('heading',{name:'Motion Play!'})).toBeVisible()
+ await choose(page,'a[href="#/tournament"]')
  await expect(page.getByLabel('Players ready check',{exact:true})).toBeVisible()
  expect(await page.evaluate(()=>(window as typeof window&{__mockMediaState:{requests:number}}).__mockMediaState.requests)).toBe(1)
  await page.screenshot({path:test.info().outputPath('webcam-tournament-mobile.png')})
@@ -132,7 +134,7 @@ test('all visible games show a playing movement demo, only ready buttons, then a
  await installMockCamera({person:true});await openApp(page,'#/',()=>installMenuPose(page))
  await page.getByRole('button',{name:'1 player',exact:true}).click()
  await expect(page.getByLabel('Mirrored navigation camera')).toBeVisible()
- const games=[['ninja-training','Paper Dojo'],['window-wipe','Window Wipe'],['beat-freak','Paper Jam'],['punch-arena','Cardboard Champ'],['keep-ups','Keep Ups'],['ghost-catcher','Ghost Catcher'],['ufo-juggler','UFO Juggler'],['six-hoops','Six Hoops'],['goalkeeper','Goalkeeper'],['net-rally','Net Rally'],['kangaroo-race','Kangaroo Race']]
+ const games=[['ninja-training','Paper Dojo'],['window-wipe','Window Wipe'],['punch-arena','Cardboard Champ'],['keep-ups','Keep Ups'],['ghost-catcher','Ghost Catcher'],['ufo-juggler','UFO Juggler'],['six-hoops','Six Hoops'],['goalkeeper','Goalkeeper'],['net-rally','Net Rally'],['kangaroo-race','Kangaroo Race'],['marble-bowling','Marble Bowling'],['shadow-snap','Shadow Snap']]
  for(const [slug,title] of games){
   await page.getByRole('link',{name:/Game Catalog/}).click()
   await page.getByRole('link',{name:`Play ${title}`,exact:true}).click()

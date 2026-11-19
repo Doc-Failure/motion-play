@@ -10,11 +10,11 @@ No source-game artwork, soundtrack, recordings or code are used.
 
 Sweep soap away to uncover the mirrored live camera. Rub the three ink spots
 back and forth: their dots show three remaining passes, then a bubble pop and
-sparkles confirm removal. Clean at least 94% of the soap and all spots to finish
+sparkles confirm removal. Clean at least 86% of the soap on the opening pane and all spots to finish
 a pane; remaining crumbs clear automatically. A short sparkle celebration lifts
-the foam before a new colored window arrives. Each player progresses independently.
+the foam before a new colored window arrives. The whole crew advances together.
 
-A round lasts 60 seconds, with one to four side-by-side camera lanes. Soap earns
+A round lasts 42 seconds. One to four players share one full-width pane. The player who reveals fresh foam or finishes an ink spot earns its points. Contributors split the completion bonus. Soap earns
 one point per percentage removed, each ink spot earns ten points, and a finished
 window adds fifty points (180 total for a complete window). The next window resets
 coverage, not points. Standalone and tournament play share the same scoring.

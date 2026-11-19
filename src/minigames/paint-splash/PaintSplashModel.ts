@@ -1,3 +1,4 @@
+import {brushStroke} from './brushStroke'
 import { PauseClock } from '../../game/PauseClock'
 import { GameSession, type GameSessionSnapshot } from '../../game/GameSession'
 import type { MotionInputEvent } from '../../input/MotionProcessor'
@@ -16,10 +17,16 @@ export class PaintSplashModel {
   private readonly clock = new PauseClock()
   private readonly session: GameSession
   private readonly playerIds: PlayerId[]
+  private begins = 0
+  private strokes = new Map<PlayerId,MotionInputEvent>()
   private painted = emptyPaint()
   private lastTimestamp: number | null = null
 
-  constructor(options: { playerCount?: PlayerCount; countdownMs?: number; roundDurationMs?: number } = {}) {
+  private readonly radius:number
+
+  constructor(options: { pressure?:number; playerCount?: PlayerCount; countdownMs?: number; roundDurationMs?: number } = {}) {
+    const pressure = Math.max(-.15,Math.min(1,options.pressure ?? 0))
+    this.radius = .145 - .037 * pressure
     const playerCount = options.playerCount ?? 1
     this.session = new GameSession({ playerCount, countdownMs: options.countdownMs, roundDurationMs: options.roundDurationMs })
     this.playerIds = Array.from({ length: playerCount }, (_, index) => (index + 1) as PlayerId)
@@ -28,9 +35,10 @@ export class PaintSplashModel {
   start(timestamp: number) {
     this.clock.reset(timestamp)
 
+    this.strokes.clear()
     this.painted = emptyPaint()
     this.lastTimestamp = timestamp
-    this.session.start(timestamp)
+    this.begins = timestamp + this.session.start(timestamp).countdownRemainingMs
     return this.snapshot(timestamp)
   }
 
@@ -38,6 +46,7 @@ export class PaintSplashModel {
     const state = this.update(timestamp)
     if (state.phase !== 'playing' && state.phase !== 'countdown') return state
     this.session.pause(this.lastTimestamp!)
+    this.strokes.clear()
     this.clock.pause(timestamp)
     return this.snapshot(this.lastTimestamp!)
   }
@@ -59,16 +68,23 @@ export class PaintSplashModel {
   }
 
   brush(event: MotionInputEvent) {
-    if (!this.clock.accepts(event.timestamp)) return this.snapshot(this.lastTimestamp ?? 0)
-    this.update(event.timestamp)
+    const previous = this.strokes.get(event.playerId)
+    if (event.kind!=='MOTION_BRUSH' || !this.playerIds.includes(event.playerId)
+      || ![event.timestamp,event.x,event.y,event.confidence].every(Number.isFinite)
+      || event.x<0 || event.x>1 || event.y<0 || event.y>1 || event.confidence<.15 || event.confidence>1
+      || !this.clock.accepts(event.timestamp) || this.clock.time(event.timestamp)<(this.lastTimestamp ?? 0)-150
+      || (previous && event.timestamp<previous.timestamp)) return this.snapshot(this.lastTimestamp ?? 0)
+    const state = this.update(event.timestamp)
+    if (state.phase!=='playing' || this.clock.time(event.timestamp) < this.begins) return state
     const now = this.lastTimestamp!
-    if (event.kind !== 'MOTION_BRUSH' || event.confidence < .15 || !this.playerIds.includes(event.playerId) || this.session.getSnapshot().phase !== 'playing') return this.snapshot(now)
+    const touches = brushStroke(previous,event,this.radius)
+    this.strokes.set(event.playerId,event)
     const cells = this.painted[event.playerId]
     const before = cells.size
     for (let row = 0; row < PAINT_ROWS; row += 1) for (let column = 0; column < PAINT_COLUMNS; column += 1) {
       const x = (column + .5) / PAINT_COLUMNS
       const y = (row + .5) / PAINT_ROWS
-      if (Math.hypot(event.x - x, event.y - y) <= .13) cells.add(row * PAINT_COLUMNS + column)
+      if (touches(x,y)) cells.add(row * PAINT_COLUMNS + column)
     }
     this.session.awardScore(event.playerId, cells.size - before)
     if (this.playerIds.every((playerId) => this.painted[playerId].size === TOTAL_CELLS)) this.session.finish(now)

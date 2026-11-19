@@ -29,7 +29,15 @@ export class FreezeModel {
   private begins = 0
   private ends = 0
   private cueIndex = 0
-  constructor(options: Partial<GameSessionOptions> = {}) {
+  private readonly warningMs:number
+  private readonly moveMs:number
+  readonly targetMs:number
+
+  constructor(options: Partial<GameSessionOptions> & { pressure?:number } = {}) {
+    const pressure = Math.max(-.15,Math.min(1,options.pressure ?? 0))
+    this.warningMs = freezeWarningMs - 125 * pressure
+    this.moveMs = freezeMoveMs - 450 * pressure
+    this.targetMs = freezeTargetMs + 300 * pressure
     this.session = new GameSession({ ...options, playerCount: options.playerCount ?? 1 })
   }
   start(timestamp: number) {
@@ -44,7 +52,7 @@ export class FreezeModel {
     if (!Number.isFinite(timestamp) || this.session.getSnapshot().phase === 'results') return this.snapshot()
     this.now = Math.min(this.ends, Math.max(this.now, this.clock.time(timestamp)))
     this.session.update(this.now)
-    const index = Math.max(0, Math.floor((this.now - this.begins) / freezeCycleMs))
+    const index = Math.max(0, Math.floor((this.now - this.begins) / (this.moveMs + this.warningMs + freezeHoldMs)))
     if (index !== this.cueIndex) {
       this.cueIndex = index; this.samples.clear()
       for (const lane of this.lanes) Object.assign(lane, { armed: false, failed: false, awarded: false, heldMs: 0, feedback: 'Move to join this cue!' })
@@ -58,7 +66,7 @@ export class FreezeModel {
   input(event: MotionInputEvent) {
     const lane = this.lanes.find(lane => lane.playerId === event.playerId)
     if (!lane || event.kind !== 'FREEZE' || !Number.isFinite(event.timestamp) || !this.clock.accepts(event.timestamp)
-      || this.clock.time(event.timestamp) < Math.max(this.now, this.begins)
+      || this.clock.time(event.timestamp) < Math.max(this.now - 32, this.begins)
       || event.timestamp <= (this.lastInput.get(event.playerId) ?? -Infinity)) return this.snapshot()
     const state = this.update(event.timestamp)
     if (state.phase !== 'playing') return state
@@ -66,11 +74,13 @@ export class FreezeModel {
     if (![event.x, event.y, event.confidence, event.activity].every(value => typeof value === 'number' && Number.isFinite(value))
       || event.x < 0 || event.x > 1 || event.y < 0 || event.y > 1 || event.confidence < .6 || event.confidence > 1
       || event.activity! < 0 || event.activity! > 1) return this.release(event.playerId)
-    const moving = event.activity! >= freezeActivityThreshold
+    // Separate movement and stillness thresholds so minor camera noise cannot break a hold.
+    const moving = event.activity! >= (state.cue === 'Move!' ? freezeActivityThreshold : .028)
     if (state.cue === 'Move!') {
       if (moving) { lane.armed = true; lane.feedback = 'Nice wiggle! Watch for Freeze!' }
       return this.snapshot()
     }
+    if (this.clock.time(event.timestamp) < this.begins + this.cueIndex*(this.moveMs+this.warningMs+freezeHoldMs)+this.moveMs+this.warningMs) return this.snapshot()
     if (state.cue !== 'Freeze!' || !lane.armed || lane.failed) return this.snapshot()
     if (moving) {
       lane.failed = true; lane.heldMs = 0; lane.feedback = 'A wiggle! −5. Try the next cue!'
@@ -79,7 +89,7 @@ export class FreezeModel {
       const previous = this.samples.get(event.playerId)
       if (previous !== undefined) lane.heldMs += this.now - previous
       this.samples.set(event.playerId, this.now)
-      if (!lane.awarded && lane.heldMs >= freezeTargetMs) {
+      if (!lane.awarded && lane.heldMs >= this.targetMs) {
         lane.awarded = true; lane.freezes++; lane.feedback = '✓ Super statue! +10. Keep still!'
         this.session.awardScore(event.playerId, 10)
       } else if (!lane.awarded) lane.feedback = 'Hold that statue…'
@@ -107,10 +117,10 @@ export class FreezeModel {
   }
   private snapshot(): FreezeSnapshot {
     const state = this.session.getSnapshot()
-    const elapsed = Math.max(0, this.now - this.begins - this.cueIndex * freezeCycleMs)
-    const boundary = elapsed < freezeMoveMs ? freezeMoveMs : elapsed < freezeMoveMs + freezeWarningMs ? freezeMoveMs + freezeWarningMs : freezeCycleMs
+    const elapsed = Math.max(0, this.now - this.begins - this.cueIndex * (this.moveMs + this.warningMs + freezeHoldMs))
+    const boundary = elapsed < this.moveMs ? this.moveMs : elapsed < this.moveMs + this.warningMs ? this.moveMs + this.warningMs : (this.moveMs + this.warningMs + freezeHoldMs)
     return { ...state, lanes: this.lanes.map(lane => ({ ...lane })), cueIndex: this.cueIndex,
-      cue: elapsed < freezeMoveMs ? 'Move!' : elapsed < freezeMoveMs + freezeWarningMs ? 'Ready…' : 'Freeze!',
+      cue: elapsed < this.moveMs ? 'Move!' : elapsed < this.moveMs + this.warningMs ? 'Ready…' : 'Freeze!',
       cueRemainingMs: Math.max(0, boundary - elapsed) }
   }
 }

@@ -2,7 +2,9 @@ import {hideAndRestoreTab} from './fixtures'
 import type {Page} from '@playwright/test'
 import {expect,openApp,test,completeReadyGate} from './fixtures'
 async function start(page:Page,players=1){
- await openApp(page,'#/camera/window-wipe')
+ await openApp(page,'#/camera/window-wipe',async()=>{
+  await page.route('**/pose/tracker.js',route=>route.fulfill({contentType:'text/javascript',body:'window.createLocalPoseTracker=async()=>({detect:()=>[],close:()=>{}})'}))
+ })
  await page.getByRole('button',{name:`${players} ${players===1?'player':'players'}`,exact:true}).click()
  await completeReadyGate(page)
  await page.clock.runFor(3200)
@@ -83,7 +85,7 @@ test('real motion-mask samples erase only their mirrored player lane with no scr
  const scores=page.locator('.wipe-game header dd')
  await expect(scores.nth(3)).not.toHaveText('0')
  for(let i=0;i<3;i++)await expect(scores.nth(i)).toHaveText('0')
- for(const id of [1,2,3,4])await expect(page.getByRole('group',{name:`Player ${id} Window Wipe play area`})).toBeVisible()
+ await expect(page.getByRole('group',{name:'Team Window Wipe play area'})).toBeVisible()
  await page.screenshot({path:test.info().outputPath('four-player-washing.png')})
  await page.setViewportSize({width:390,height:844});await page.clock.runFor(100)
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth&&document.documentElement.scrollHeight<=innerHeight)).toBe(true)

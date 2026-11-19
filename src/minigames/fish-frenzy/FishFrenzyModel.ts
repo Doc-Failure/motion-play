@@ -30,7 +30,10 @@ export class FishFrenzyModel {
   private pausedAt: number | null = null
   private nextId = 1
 
-  constructor(options: { playerCount?: PlayerCount; countdownMs?: number; roundDurationMs?: number; random?: () => number } = {}) {
+  private readonly pressure: number
+
+  constructor(options: { pressure?: number; playerCount?: PlayerCount; countdownMs?: number; roundDurationMs?: number; random?: () => number } = {}) {
+    this.pressure = Math.max(-.15, Math.min(1, options.pressure ?? 0))
     this.playerCount = options.playerCount ?? 1
     this.random = options.random ?? Math.random
     this.session = new GameSession({ ...options, playerCount: this.playerCount })
@@ -57,14 +60,14 @@ export class FishFrenzyModel {
     if (phase === 'playing' || phase === 'countdown') {
       // Spawn by the round clock, so random draws and paths do not depend on render cadence.
       while (this.nextSpawnAt <= now && this.nextSpawnAt < this.roundEnd) {
+        const roll = this.random()
+        const kind = roll < .6 ? 'minnow' : roll < .9 ? 'silver' : 'golden'
         for (let index = 0; index < this.playerCount; index++) {
-          const roll = this.random()
-          const kind = roll < .6 ? 'minnow' : roll < .9 ? 'silver' : 'golden'
           this.fish.push({ id: this.nextId++, playerId: (index + 1) as PlayerId, kind,
             y: .2 + this.random() * .6, direction: this.random() < .5 ? 1 : -1,
-            spawnedAt: this.nextSpawnAt, swimsForMs: fishKinds[kind].swimsForMs })
+            spawnedAt: this.nextSpawnAt, swimsForMs: fishKinds[kind].swimsForMs * (1 - this.pressure * .22) })
         }
-        this.nextSpawnAt += 1100
+        this.nextSpawnAt += 1100 - 300 * this.pressure
       }
       this.fish = this.fish.filter((fish) => {
         if (fish.spawnedAt + fish.swimsForMs <= Math.min(now, this.roundEnd)) {
@@ -91,7 +94,7 @@ export class FishFrenzyModel {
     this.lastInput.set(event.playerId, event.timestamp)
     this.nets.set(event.playerId, { playerId: event.playerId, x: event.x, y: event.y, timestamp: event.timestamp })
     const fish = this.fish.find((fish) => fish.playerId === event.playerId && fish.spawnedAt <= event.timestamp
-      && ((this.position(fish, event.timestamp).x - event.x) / .12) ** 2 + ((fish.y - event.y) / .15) ** 2 <= 1)
+      && ((this.position(fish, event.timestamp).x - event.x) / .12) ** 2 + ((this.position(fish, event.timestamp).y - event.y) / .15) ** 2 <= 1)
     if (fish) {
       this.fish = this.fish.filter((item) => item.id !== fish.id)
       this.caught[event.playerId - 1]++
@@ -122,7 +125,8 @@ export class FishFrenzyModel {
 
   private position(fish: StoredFish, time: number): SwimmingFish {
     const progress = Math.max(0, Math.min(1, (time - fish.spawnedAt) / fish.swimsForMs))
-    return { ...fish, x: fish.direction === 1 ? .12 + progress * .76 : .88 - progress * .76 }
+    const y = fish.y + Math.sin(progress * Math.PI * 2) * .075 * this.pressure
+    return { ...fish, y, x: fish.direction === 1 ? .12 + progress * .76 : .88 - progress * .76 }
   }
 
   private snapshot(): FishFrenzySnapshot {

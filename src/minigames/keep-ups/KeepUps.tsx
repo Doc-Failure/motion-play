@@ -1,3 +1,6 @@
+import { RoundHud } from '../../game/RoundHud'
+import {ChallengeResult} from '../../game/ArcadeRound'
+import {useChallenge} from '../../game/ChallengeContext'
 import {useContext,useEffect,useRef,useState} from 'react'
 import {InputFeedbackContext} from '../../game/InputFeedbackContext'
 import {GameFeedback} from '../../game/GameFeedback'
@@ -21,7 +24,8 @@ function Pitch({ball,time,enabled,onInput}:{ball:Football;time:number;enabled:bo
 }
 export function KeepUps({playerCount,inputEvents=[],onExit,onComplete,trackingHint,externalPauseReason,onReconnect}:RoundRecoveryProps&{trackingHint?:string;playerCount:PlayerCount;inputEvents?:MotionInputEvent[];onExit():void;onComplete?:(scores:{playerId:PlayerId;score:number}[])=>void}){
  const {aspectRatio=4/3}=useContext(InputFeedbackContext)
- const [model]=useState(()=>new KeepUpsModel(playerCount,aspectRatio)),[snapshot,setSnapshot]=useState(()=>model.start(performance.now()))
+ const pressure=useChallenge()?.pressure??0
+ const [model]=useState(()=>new KeepUpsModel(playerCount,aspectRatio,pressure)),[snapshot,setSnapshot]=useState(()=>model.start(performance.now()))
  const manual=useRef(new Map<PlayerId,MotionInputEvent>())
  const heard=useRef(new Map<number,number>()),completed=useRef(false)
  const recovery=useRoundRecovery({model,snapshot,setSnapshot,title:'Keep Ups',externalPauseReason,onReconnect,onExit})
@@ -30,11 +34,11 @@ export function KeepUps({playerCount,inputEvents=[],onExit,onComplete,trackingHi
  useEffect(()=>{model.input([...inputEvents,...[...manual.current.values()].filter(e=>performance.now()-e.timestamp<200)])},[model,inputEvents])
  useEffect(()=>{if(snapshot.phase!=='playing')return;for(const b of snapshot.balls)if(b.cue&&b.serial>(heard.current.get(b.playerId)??0)){heard.current.set(b.playerId,b.serial);gameAudio.football(b.cue,b.streak)}},[snapshot])
  useEffect(()=>{if(snapshot.phase==='results'&&!completed.current){completed.current=true;onComplete?.(snapshot.scores)}},[snapshot,onComplete])
- return <section className="keep-ups-game" data-phase={snapshot.phase} aria-labelledby="keep-ups-title"><GameFeedback snapshot={snapshot} musicPaused scoreFeedback={false}/>
- <header className="bubble-game__header"><h1 id="keep-ups-title">Keep Ups</h1><dl>{snapshot.scores.map(s=><div key={s.playerId}><dt>P{s.playerId}</dt><dd>{s.score}</dd></div>)}<div><dt>Time</dt><dd>{Math.ceil(snapshot.roundRemainingMs/1000)}s</dd></div></dl><button ref={recovery.exitButtonRef} className="text-button" onClick={onExit}>Exit game</button></header>
+ return <section className="keep-ups-game" data-phase={snapshot.phase} aria-labelledby="keep-ups-title"><GameFeedback contact={()=>snapshot.balls.find(b=>snapshot.elapsed-b.cueAt<600&&b.cue)?.cue} regions={()=>snapshot.balls.map(b=>({...b,rx:.045/aspectRatio,ry:.045}))} snapshot={snapshot} musicPaused scoreFeedback={false}/>
+ <RoundHud title="Keep Ups" titleId="keep-ups-title" snapshot={snapshot} onExit={onExit} exitRef={recovery.exitButtonRef}>{snapshot.scores.map(s=><div key={s.playerId}><dt>P{s.playerId}</dt><dd>{s.score}</dd><span className="football-lives" aria-label={`Player ${s.playerId}: ${Math.max(0,KEEP_UPS_LIVES-snapshot.balls[s.playerId-1].drops)} lives`}>♥{Math.max(0,KEEP_UPS_LIVES-snapshot.balls[s.playerId-1].drops)}</span></div>)}</RoundHud>
  <div className="football-boards">{snapshot.balls.map(b=><Pitch key={b.playerId} ball={b} time={snapshot.elapsed} enabled={snapshot.phase==='playing'&&b.drops<KEEP_UPS_LIVES} onInput={e=>{manual.current.set(e.playerId,e);model.input([...inputEvents,...[...manual.current.values()].filter(v=>performance.now()-v.timestamp<200)])}}/>)}</div>
  <p role="status">{trackingHint??'Three lives. Keep moving, watch the wind, and aim for the hoops!'}</p>
  {snapshot.phase==='countdown'&&<div className="game-curtain"><strong>{Math.ceil(snapshot.countdownRemainingMs/1000)}</strong></div>}{recovery.pauseDialog}
- {snapshot.phase==='results'&&<div className="battle-results" role="dialog" aria-label="Keep Ups results"><h2 ref={recovery.resultsHeading} tabIndex={-1}>{snapshot.balls.every(b=>b.drops>=KEEP_UPS_LIVES)?'Out of lives!':'Full time!'}</h2>{snapshot.scores.map((s,i)=><p key={s.playerId}>Player {s.playerId}: {s.score} points · best streak {snapshot.balls[i].best}</p>)}<div className="result-actions"><button className="crayon-button" onClick={()=>{completed.current=false;heard.current.clear();manual.current.clear();setSnapshot(model.start(performance.now()))}}>Play again</button><button className="crayon-button" onClick={onExit}>Back to games</button></div></div>}
+ {snapshot.phase==='results'&&<div className="battle-results" role="dialog" aria-label="Keep Ups results"><h2 ref={recovery.resultsHeading} tabIndex={-1}>{snapshot.balls.every(b=>b.drops>=KEEP_UPS_LIVES)?'Out of lives!':'Full time!'}</h2>{snapshot.scores.map((s,i)=><p key={s.playerId}>Player {s.playerId}: {s.score} points · best streak {snapshot.balls[i].best}</p>)}<ChallengeResult scores={snapshot.scores}/><div className="result-actions"><button className="crayon-button" onClick={()=>{completed.current=false;heard.current.clear();manual.current.clear();setSnapshot(model.start(performance.now()))}}>Play again</button><button className="crayon-button" onClick={onExit}>Back to games</button></div></div>}
  </section>
 }

@@ -1,87 +1,86 @@
 import {describe,it,expect} from 'vitest'
-import {BeatModel,beatChart,beatPads,GOOD_MS} from '../src/minigames/beat-freak/BeatModel'
+import {BeatModel,beatChart,beatPads} from '../src/minigames/beat-freak/BeatModel'
 import {BeatScheduler} from '../src/minigames/beat-freak/BeatScheduler'
 import type {MotionInputEvent} from '../src/input/MotionProcessor'
 const event=(time=2400,pad=0,playerId:1|2|3|4=1):MotionInputEvent=>({playerId,kind:'MOTION_HIT',...beatPads[pad],confidence:1,timestamp:time})
 const game=(players:1|2|3|4=1)=>new BeatModel({countdownMs:0,playerCount:players,aspectRatio:1})
-describe('original Paper Jam chart and scoring',()=>{
- it('starts with a count-in, previews records and progresses into offbeats and paired accents',()=>{
-  const chart=beatChart();expect(chart[0]).toMatchObject({at:2400,pad:0})
-  expect(chart.every(n=>n.at<60000-GOOD_MS)).toBe(true)
-  expect(new Set(chart.map(n=>n.id)).size).toBe(chart.length)
-  expect(chart.some(n=>n.at>=20000&&n.at%600===300)).toBe(true)
-  expect(chart.some((n,i)=>i>0&&n.at>=40000&&n.at===chart[i-1].at&&n.pad!==chart[i-1].pad)).toBe(true)
-  const m=game();m.start(0);expect(m.update(999).notes).toEqual([])
-  expect(m.update(1000).notes[0].progress).toBe(0)
-  expect(m.update(1700).notes[0].progress).toBe(.5)
- })
- it.each([[-210,'good',10],[-85,'perfect',15],[0,'perfect',15],[85,'perfect',15],[210,'good',10]] as const)('judges capture offset %i as %s', (offset,kind,score)=>{
-  const m=game();m.start(0);const hit=m.hit(event(2400+offset))
-  expect(hit.scores[0].score).toBe(score);expect(hit.judgments.at(-1)?.kind).toBe(kind)
- })
- it('accepts consecutive valid strikes only 180 ms apart without a generic hit cooldown',()=>{
+describe('Paper Jam timing and musician parts',()=>{
+ it('teaches two reachable speakers with a single pulse every two beats',()=>{
   const m=game();m.start(0)
-  expect(m.hit(event(2610,0)).hits[1]).toBe(1)
-  const second=m.hit(event(2790,1))
-  expect(second.hits[1]).toBe(2);expect(second.scores[0].score).toBe(20)
+  expect(m.stage).toHaveLength(2)
+  expect(m.chart[0]).toMatchObject({at:1200,pad:0})
+  expect(m.chart.every((n,i)=>n.at===(i+1)*1200&&n.pad<2)).toBe(true)
+  expect(m.update(149).notes).toEqual([])
+  expect(m.update(150).notes[0].progress).toBe(0)
+  expect(m.update(1620).notes).toHaveLength(1)
+  expect(m.update(1621).notes.map(n=>n.at)).toEqual([2400])
  })
- it('rejects early, late, wrong-pad and unrelated gestures without phantom points',()=>{
+ it('introduces four instruments, offbeats and then paired accents on advanced charts',()=>{
+  const normal=beatChart(42000,.5),expert=beatChart(42000,.9)
+  expect(new Set(normal.map(n=>n.pad)).size).toBe(4)
+  expect(normal.some(n=>n.at%600===300)).toBe(true)
+  expect(normal.some((n,i)=>n.at===normal[i-1]?.at)).toBe(false)
+  expect(expert.some((n,i)=>n.at===expert[i-1]?.at)).toBe(true)
+  expect(new Set(expert.map(n=>n.id)).size).toBe(expert.length)
+ })
+ it.each([[-301,0],[-300,10],[-130,15],[130,15],[420,10],[421,0]])('grades beginner offset %i', (offset,score)=>{
   const m=game();m.start(0)
-  expect(m.hit(event(2189)).scores[0].score).toBe(0)
-  expect(m.hit(event(2400,1)).scores[0].score).toBe(0)
-  expect(m.hit({...event(),kind:'HAND_POSITION'}).scores[0].score).toBe(0)
-  expect(m.hit(event(2611)).scores[0].score).toBe(0)
+  expect(m.hit({...event(1200+offset),...m.stage[0]}).scores[0].score).toBe(score)
  })
- it('judges a delayed on-time capture against capture time instead of render time',()=>{
-  const m=game();m.start(0);m.update(2500)
-  const hit=m.hit(event(2400));expect(hit.judgments.at(-1)?.kind).toBe('perfect')
-  expect(hit.scores[0].score).toBe(15)
-  expect(m.hit(event(2400)).scores[0].score).toBe(15)
+ it('accepts an on-time capture arriving after a render, then consumes its note exactly once',()=>{
+  const m=game();m.start(0);m.update(1290)
+  const sample={...event(1200),...m.stage[0]}
+  expect(m.hit(sample).scores[0].score).toBe(15)
+  expect(m.hit(sample).scores[0].score).toBe(15)
  })
- it.each([1,2,3,4] as const)('uses identical charts and isolates scoring with %i players',players=>{
+ it.each([1,2,3,4] as const)('assigns every note once and balances opportunities for %i musicians',players=>{
   const m=game(players);m.start(0)
-  const score=m.hit(event(2400,0,players))
-  expect(score.scores.map(s=>s.score)).toEqual(Array.from({length:players},(_,i)=>i===players-1?15:0))
+  const parts=Array<number>(players).fill(0)
+  for(const note of m.chart){
+   const pad=m.stage[note.pad],owner=pad.owner,x=pad.x*players-owner+1
+   if(players>1){
+    const other=(owner%players+1) as 1|2|3|4
+    const before=m.update(note.at)
+    const wrong=m.stage.find(p=>p.owner===other)!
+    // An attempt before this musician's turn cannot consume another part.
+    if(!m.chart.some(n=>n.at===note.at&&m.stage[n.pad].owner===other)){
+     expect(m.hit({...event(note.at,0,other),x:wrong.x*players-other+1,y:wrong.y}).scores).toEqual(before.scores)
+    }
+   }
+   m.hit({...event(note.at,0,owner),x,y:pad.y});parts[owner-1]++
+  }
+  const final=m.update(60000)
+  expect(Object.values(final.hits).slice(0,players)).toEqual(parts)
+  expect(Math.max(...parts)-Math.min(...parts)).toBeLessThanOrEqual(1)
+  expect(Object.values(final.misses)).toEqual([0,0,0,0])
  })
- it('supports two distinct strikes from one camera capture without replaying a note',()=>{
+ it('builds combos, breaks on a missed cue, and rejects pre-resume captures',()=>{
   const m=game();m.start(0)
-  const chart=m.chart,pair=chart.find((n,i)=>i>0&&n.at===chart[i-1].at)!,notes=chart.filter(n=>n.at===pair.at)
-  m.update(pair.at)
-  const before=m.hit(event(pair.at,notes[0].pad))
-  const both=m.hit(event(pair.at,notes[1].pad))
-  expect(both.hits[1]).toBe(before.hits[1]+1)
-  expect(m.hit(event(pair.at,notes[1].pad)).hits[1]).toBe(both.hits[1])
- })
- it('builds multipliers and breaks the combo when a note is missed',()=>{
-  const m=game();m.start(0)
-  for(const note of m.chart.slice(0,9))m.hit(event(note.at,note.pad))
-  const streak=m.update(7300);expect(streak.combo[1]).toBe(9);expect(streak.best[1]).toBe(9)
-  expect(streak.scores[0].score).toBe(8*15+30)
-  const missed=m.update(m.chart[9].at+361)
-  expect(missed.combo[1]).toBe(0);expect(missed.misses[1]).toBe(1)
- })
- it('keeps tall-lane collision bounds circular in camera pixels',()=>{
-  const m=new BeatModel({countdownMs:0,aspectRatio:.25});m.start(0)
-  expect(m.hit({...event(),y:beatPads[0].y+.05}).scores[0].score).toBe(0)
-  expect(m.hit({...event(),y:beatPads[0].y+.02}).scores[0].score).toBe(15)
- })
- it.each([{x:NaN},{y:Infinity},{x:-.1},{y:1.1},{confidence:NaN},{confidence:.2},{confidence:2},{timestamp:NaN},{playerId:4 as const}])('rejects invalid input before clock changes: %j',extra=>{
-  const m=game();m.start(0)
-  expect(m.hit({...event(),...extra}).roundRemainingMs).toBe(60000)
- })
- it('freezes records, judgments and audio clock through a long pause; rejects pre-resume input',()=>{
-  const m=game();m.start(0);const paused=m.pause(1700)
+  for(const n of m.chart.slice(0,9))m.hit({...event(n.at),...m.stage[n.pad]})
+  const paused=m.pause(m.chart[8].at+10)
+  expect(paused.scores[0].score).toBe(150)
   expect(m.update(30000).notes).toEqual(paused.notes)
-  expect(m.playbackAt(30000)).toMatchObject({phase:'paused',elapsed:1700})
-  m.resume(30000);expect(m.hit(event(29950)).scores[0].score).toBe(0)
-  expect(m.hit(event(30700)).scores[0].score).toBe(15)
+  m.resume(30000);expect(m.hit({...event(29000),...m.stage[0]}).scores).toEqual(paused.scores)
+  expect(m.update(32000).combo[1]).toBe(0)
  })
- it('resolves the same missed notes on fine/coarse ticks, then replays cleanly',()=>{
+ it('judges simultaneous accents separately at higher levels',()=>{
+  const m=new BeatModel({playerCount:1,pressure:1,countdownMs:0})
+  m.start(0)
+  const pair=m.chart.filter((n,i,a)=>a.some((o,j)=>i!==j&&o.at===n.at)).slice(0,2)
+  expect(m.hitFrame(pair.map(n=>({...event(n.at),...m.stage[n.pad]}))).hits[1]).toBe(2)
+ })
+ it('rejects a wrong instrument, stale, invalid or missing motion',()=>{
+  const m=game();m.start(0);const sample={...event(1200),...m.stage[0]}
+  for(const extra of [m.stage[1],{x:NaN},{y:Infinity},{confidence:.1},{timestamp:NaN},{kind:'HAND_POSITION' as const}]){
+   expect(m.hit({...sample,...extra}).scores[0].score).toBe(0)
+  }
+ })
+ it('resolves missed notes consistently and resets replay',()=>{
   const a=game(4),b=game(4);a.start(0);b.start(0)
-  for(let time=50;time<=60000;time+=50)a.update(time)
+  for(let t=50;t<=60000;t+=50)a.update(t)
   const fine=a.update(60000),coarse=b.update(60000)
-  expect(coarse.misses).toEqual(fine.misses);expect(coarse.misses[1]).toBe(b.chart.length)
-  expect(coarse.scores).toEqual(fine.scores);expect(coarse.phase).toBe('results')
+  expect(coarse.misses).toEqual(fine.misses)
+  expect(Object.values(coarse.misses).reduce((a,b)=>a+b,0)).toBe(b.chart.length)
   expect(b.start(61000)).toMatchObject({hits:{1:0,2:0,3:0,4:0},elapsed:0,judgments:[]})
  })
 })
@@ -99,4 +98,27 @@ describe('audio-grid scheduler',()=>{
   expect(steps).toEqual([0,14])
   s.pump(60000,60000,play);expect(steps).toEqual([0,14])
  })
+})
+
+it('shows only the active call and accepts a late, off-center beginner swat',()=>{
+ const m=new BeatModel({countdownMs:0,aspectRatio:16/9})
+ const first=m.start(0);expect(first.notes).toHaveLength(0)
+ const cue=m.update(1550).notes[0],pad=m.stage[cue.pad]
+ const s=m.hit({...event(1550),x:pad.x+.07,y:pad.y+.04})
+ expect(s.scores[0].score).toBe(10)
+ expect(s.notes.every(n=>n.id!==cue.id)).toBe(true)
+})
+it('keeps speaker hitboxes circular on a narrow stage and applies solo retry assistance',()=>{
+ const m=new BeatModel({countdownMs:0,aspectRatio:.5,pressure:-.15});m.start(0)
+ expect(m.hitRadiusY).toBeCloseTo(m.hitRadiusX*.5)
+ const sample={...event(1650),...m.stage[0]}
+ expect(m.hit({...sample,y:sample.y+m.hitRadiusY+.01}).scores[0].score).toBe(0)
+ expect(m.hit({...sample,y:sample.y+m.hitRadiusY-.01}).scores[0].score).toBe(10)
+})
+it('accepts two distinct advanced strikes 180 ms apart across adjacent beats',()=>{
+ const m=new BeatModel({countdownMs:0,pressure:1})
+ m.start(0)
+ const a=m.chart.find(n=>n.at===4800)!,b=m.chart.find(n=>n.at===5400)!
+ expect(m.hit({...event(a.at+210),...m.stage[a.pad]}).hits[1]).toBe(1)
+ expect(m.hit({...event(b.at-210),...m.stage[b.pad]}).hits[1]).toBe(2)
 })

@@ -1,17 +1,21 @@
 import { useEffect, useRef, useState, type PointerEvent } from 'react'
+import { ChallengeResult } from '../../game/ArcadeRound'
+import { useChallenge } from '../../game/ChallengeContext'
 import { GameFeedback } from '../../game/GameFeedback'
 import { useRoundRecovery, type RoundRecoveryProps } from '../../game/useRoundRecovery'
 import { HandSwipeTracker } from '../../input/HandSwipe'
 import type { MotionInputEvent } from '../../input/MotionProcessor'
 import type { PlayerCount, PlayerId } from '../../input/PlayerZoneMapper'
-import { basketFlightMs, BasketballBlitzModel } from './BasketballBlitzModel'
+import { basketFlightMs, BasketballBlitzModel, rimFor } from './BasketballBlitzModel'
 // This prototype is hidden from the production catalog.
 if (import.meta.env.DEV) void import('./basketball-blitz.css')
 
 export function BasketballBlitz({ playerCount, inputEvents = [], onExit, externalPauseReason, onReconnect }: RoundRecoveryProps & {
   playerCount: PlayerCount; inputEvents?: MotionInputEvent[]; onExit(): void
 }) {
-  const [initial] = useState(() => { const model = new BasketballBlitzModel({ playerCount }); return { model, snapshot: model.start(performance.now()) } })
+  const challenge = useChallenge()
+  const pressure = Math.max(0, challenge?.pressure ?? 0)
+  const [initial] = useState(() => { const model = new BasketballBlitzModel({ playerCount, pressure, roundDurationMs:challenge ? 36000 : undefined }); return { model, snapshot: model.start(performance.now()) } })
   const { model } = initial
   const [snapshot, setSnapshot] = useState(initial.snapshot)
   const tracker = useRef(new HandSwipeTracker())
@@ -41,7 +45,7 @@ export function BasketballBlitz({ playerCount, inputEvents = [], onExit, externa
   return <section className="basket-game" aria-labelledby="basket-title">
     <GameFeedback snapshot={snapshot}/>
     <header className="bubble-game__header"><h1 id="basket-title">Basketball Blitz</h1><dl><div><dt>Time</dt><dd>{Math.ceil(snapshot.roundRemainingMs / 1000)}s</dd></div></dl>{recovery.pauseButton}<button className="text-button" onClick={onExit}>Exit game</button></header>
-    <p className="basket-rules">Swipe up from the ball toward the hoop · Basket +2. Pointer / keyboard simulation; hand tracking unavailable.</p>
+    <p className="basket-rules">Swipe up from the ball toward the hoop · Basket +2. Watch where the hoop moves after a basket.</p>
     <div className="basket-boards">{snapshot.scores.map(({ playerId, score }) => <section className="basket-player" key={playerId}>
       <h2>Player {playerId}<span>{score} points</span></h2>
       <p>{snapshot.stats[playerId - 1].baskets} / {snapshot.stats[playerId - 1].attempts} baskets</p>
@@ -52,15 +56,17 @@ export function BasketballBlitz({ playerCount, inputEvents = [], onExit, externa
           if (event.key !== 'ArrowUp') return
           event.preventDefault()
           if (event.repeat) return
-          setSnapshot(model.shoot({ playerId, kind: 'HAND_SWIPE', x: .5, y: .5, confidence: 1, timestamp: performance.now(), swipe: { fromX: .5, fromY: .8, durationMs: 120 } }))
+          setSnapshot(model.shoot({ playerId, kind: 'HAND_SWIPE', x: .5 + (snapshot.stats[playerId - 1].rimX - .5) * .3 / .55, y: .5, confidence: 1, timestamp: performance.now(), swipe: { fromX: .5, fromY: .8, durationMs: 120 } }))
         }}>
         <svg className="basket-art" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+          <g transform={`translate(${100*snapshot.stats[playerId-1].rimX} 0) scale(${rimFor(0,pressure).radius/.12} 1) translate(-50 0)`}>
           <path d="M34 12 L67 13 L68 27 L33 26Z" fill="#fff9e944" stroke="#29313c" strokeWidth="1"/>
           <path d="M39 26 L43 38 L58 37 L62 26 M44 27 L49 37 M55 27 L51 37" fill="none" stroke="#fff9e9" strokeWidth="1"/>
           <path d="M38 25 Q50 22 62 25 Q51 29 38 25Z" fill="none" stroke="#f28c46" strokeWidth="2"/>
+          </g>
           <ellipse cx="50" cy="80" rx="16" ry="16" fill="#ffe17a22" stroke="#ffe17a" strokeWidth="1" strokeDasharray="3 2"/>
         </svg>
-        <span className="basket-launch-label">Swipe up ↑</span>
+        <span className="basket-launch-label">{snapshot.stats[playerId-1].feedback || 'Swipe up ↑'}</span>
         {!snapshot.shots.some(shot => shot.playerId === playerId) && <span className="basket-ball" style={{left:'50%',top:'80%'}} role="img" aria-label="Basketball ready"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M2 20 Q20 15 38 21 M20 2 Q15 20 21 38 M6 7 Q30 19 33 34 M33 6 Q8 19 7 33" fill="none" stroke="currentColor" strokeWidth="2"/></svg></span>}
         {snapshot.shots.filter(shot => shot.playerId === playerId).map(shot => {
           const t = Math.min(1, (snapshot.time - shot.launchedAt) / basketFlightMs)
@@ -71,6 +77,6 @@ export function BasketballBlitz({ playerCount, inputEvents = [], onExit, externa
     </section>)}</div>
     <p id="basket-help" className="basket-help">Start a quick pointer or touch swipe inside the dotted circle and aim up at the hoop. Focus a lane and press Arrow Up to simulate an accurate shot. Wait for each ball to land before shooting again.</p>
     {recovery.pauseDialog}
-    {snapshot.phase === 'results' && <div className="battle-results" role="dialog" aria-label="Basketball Blitz results"><h2 ref={results} tabIndex={-1}>Great shooting!</h2>{snapshot.scores.map(({ playerId, score }) => <p key={playerId}>Player {playerId}: {score} points</p>)}<button className="crayon-button" onClick={() => { tracker.current.reset(); pointers.current.clear(); setSnapshot(model.start(performance.now())); document.getElementById('basket-player-1')?.focus() }}>Play again</button><button className="text-button" onClick={onExit}>Back to setup</button></div>}
+    {snapshot.phase === 'results' && <div className="battle-results" role="dialog" aria-label="Basketball Blitz results"><h2 ref={results} tabIndex={-1}>Great shooting!</h2>{snapshot.scores.map(({ playerId, score }) => <p key={playerId}>Player {playerId}: {score} points</p>)}<ChallengeResult scores={snapshot.scores}/><button className="crayon-button" onClick={() => { tracker.current.reset(); pointers.current.clear(); setSnapshot(model.start(performance.now())); document.getElementById('basket-player-1')?.focus() }}>Play again</button><button className="text-button" onClick={onExit}>Back to setup</button></div>}
   </section>
 }

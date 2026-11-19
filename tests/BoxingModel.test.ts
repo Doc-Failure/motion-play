@@ -41,3 +41,10 @@ it('judges a punch at visual contact once, after the shortened warning',()=>{
  expect(m.update(9999).boxers[0].attack).toBe(3500)
  expect(m.update(10000).boxers[0].attack).toBe(7000)
 })
+
+it('awards the dodge counter once within the recovery window',()=>{
+ const m=game();m.update(6500);m.input(hand(7150,.5,.65,{kind:'BODY_MOVE'}));m.update(7190)
+ const counter=punch(m,7350)
+ expect(counter.boxers[0].cue).toBe('counter');expect(counter.scores[0].score).toBe(37)
+ expect(punch(m,7700).scores[0].score).toBe(48)
+})

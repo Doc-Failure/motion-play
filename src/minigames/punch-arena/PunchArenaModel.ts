@@ -12,6 +12,7 @@ const spawnMs = 1200
 export const punchRadius = .12
 
 export class PunchArenaModel {
+  private readonly pressure:number
   private readonly session: GameSession
   private readonly clock = new PauseClock()
   private readonly players: PlayerId[]
@@ -24,7 +25,8 @@ export class PunchArenaModel {
   private nextSpawnAt = 0
   private nextId = 1
 
-  constructor(options: { playerCount?: PlayerCount; countdownMs?: number; roundDurationMs?: number; random?: () => number } = {}) {
+  constructor(options: { playerCount?: PlayerCount; countdownMs?: number; pressure?:number; roundDurationMs?: number; random?: () => number } = {}) {
+    this.pressure=Math.max(0,Math.min(1,options.pressure??0))
     const count = options.playerCount ?? 1
     this.session = new GameSession({ ...options, playerCount: count })
     this.players = Array.from({ length: count }, (_, i) => (i + 1) as PlayerId)
@@ -51,9 +53,9 @@ export class PunchArenaModel {
           const roll = this.random()
           this.targets.push({ id: this.nextId++, playerId, direction: roll < .25 ? 'left' : roll < .5 ? 'right' : roll < .75 ? 'up' : 'down', x: .3 + this.random() * .4, y: .3 + this.random() * .4, spawnedAt: this.nextSpawnAt })
         }
-        this.nextSpawnAt += spawnMs
+        this.nextSpawnAt += spawnMs-200*this.pressure
       }
-      this.targets = this.targets.filter(item => this.now - item.spawnedAt < lifetimeMs)
+      this.targets = this.targets.filter(item => this.now - item.spawnedAt < lifetimeMs-110*this.pressure)
       this.trails = this.trails.filter(trail => this.now - trail.timestamp <= 180)
     } else if (state.phase === 'results') { this.targets = []; this.trails = [] }
     return this.snapshot()
@@ -62,7 +64,7 @@ export class PunchArenaModel {
   punch(event: MotionInputEvent) {
     if (!Number.isFinite(event.timestamp) || !this.clock.accepts(event.timestamp) || !this.players.includes(event.playerId) || event.kind !== 'HAND_SWIPE') return this.snapshot()
     const time = this.clock.time(event.timestamp)
-    if (time < this.now || time <= (this.lastInput.get(event.playerId) ?? -Infinity)) return this.snapshot()
+    if (time < this.now-180 || time < this.playingAt || time <= (this.lastInput.get(event.playerId) ?? -Infinity)) return this.snapshot()
     this.update(event.timestamp)
     if (this.session.getSnapshot().phase !== 'playing') return this.snapshot()
     this.lastInput.set(event.playerId, time)
@@ -75,7 +77,7 @@ export class PunchArenaModel {
     // One pad per player per beat also prevents repeated scoring from one stroke.
     this.targets = this.targets.filter(item => {
       if (item.playerId !== event.playerId || time - event.swipe!.durationMs < item.spawnedAt) return true
-      if (Math.hypot(item.x - event.x, item.y - event.y) > punchRadius) return true
+      if (Math.hypot(item.x - event.x, item.y - event.y) > punchRadius-.02*this.pressure) return true
       const dx = event.x - fromX, dy = event.y - fromY
       const direction = Math.abs(dx) >= Math.abs(dy) ? dx > 0 ? 'right' : 'left' : dy > 0 ? 'down' : 'up'
       this.session.awardScore(event.playerId, item.direction === direction ? 10 : -5)

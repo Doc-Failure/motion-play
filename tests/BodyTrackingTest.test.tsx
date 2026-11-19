@@ -47,7 +47,7 @@ it('draws actual detector output, clears empty results and releases the runtime 
   const ref=video(),tracker={detect:vi.fn().mockReturnValue([pose()]),close:vi.fn()},create=vi.fn().mockResolvedValue(tracker)
   const {container,unmount}=render(<BodyTrackingTest videoRef={ref} players={2} createTracker={create}/>)
   await act(async()=>{await Promise.resolve()})
-  expect(create).toHaveBeenCalledWith(2,expect.any(AbortSignal),false)
+  expect(create).toHaveBeenCalledWith(2,expect.any(AbortSignal),false,false)
   expect(screen.getByRole('status')).toHaveTextContent('1 of 2 bodies visible')
   expect(container.querySelectorAll('polyline')).toHaveLength(5)
   tracker.detect.mockReturnValue([]);ref.current.currentTime=2
@@ -208,7 +208,7 @@ it('emits arm casts with hidden sticks, skips fingers and resets movement during
  expect(events.mock.lastCall![0].some((e:{kind:string})=>e.kind==='ARM_MOVE')).toBe(false)
  points[15].y=.4;ref.current.currentTime=3;act(()=>vi.advanceTimersByTime(100))
  expect(events.mock.lastCall![0].some((e:{kind:string})=>e.kind==='ARM_MOVE')).toBe(true)
- expect(tracker.detectHands).not.toHaveBeenCalled();expect(create).toHaveBeenCalledWith(1,expect.any(AbortSignal),false)
+ expect(tracker.detectHands).not.toHaveBeenCalled();expect(create).toHaveBeenCalledWith(1,expect.any(AbortSignal),false,false)
 })
 
 it('keeps navigation pose samples while restoring live video when diagnostic sticks are hidden',async()=>{

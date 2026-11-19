@@ -30,7 +30,13 @@ export class PizzaMakerModel {
   private inputNotBefore = 0
   private pausedAt: number | null = null
 
-  constructor(options: { playerCount?: PlayerCount; countdownMs?: number; roundDurationMs?: number } = {}) {
+  private readonly serveDelay:number
+  private readonly tripleEvery:number
+
+  constructor(options: { pressure?:number; playerCount?: PlayerCount; countdownMs?: number; roundDurationMs?: number } = {}) {
+    const pressure = Math.max(-.15,Math.min(1,options.pressure ?? 0))
+    this.serveDelay = 900 - 300 * pressure
+    this.tripleEvery = pressure >= .25 ? Math.max(2,6-Math.round(4*pressure)) : Infinity
     this.playerCount = options.playerCount ?? 1
     this.session = new GameSession({ ...options, playerCount: this.playerCount })
   }
@@ -52,9 +58,10 @@ export class PizzaMakerModel {
     if (state.phase === 'playing') {
       for (const order of this.orders) {
         if (order.added.length === order.requested.length && now >= order.readyAt) {
-          order.requested = [...recipes[order.completed % recipes.length]]
+          order.requested = order.completed % this.tripleEvery === 1 && this.tripleEvery!==Infinity
+            ? [...ingredients] : [...recipes[order.completed % recipes.length]]
           order.added = []
-          order.feedback = 'New order! Match both toppings in any order.'
+          order.feedback = order.requested.length===3 ? 'Supreme! Add all three toppings.' : 'New order! Match both toppings in any order.'
           // A delayed capture from the previous pizza must not select a new topping.
         }
       }
@@ -84,7 +91,7 @@ export class PizzaMakerModel {
       order.feedback = `✓ ${target.kind} added! +10 points.`
       if (order.added.length === order.requested.length) {
         order.completed += 1
-        order.readyAt = event.timestamp + 900
+        order.readyAt = event.timestamp + this.serveDelay
         this.session.awardScore(event.playerId, 20)
         order.feedback = '✓ Pizza served! +20 bonus points. A new order is coming.'
         if (this.orders.reduce((sum, entry) => sum + entry.completed, 0) >= this.playerCount * 3) this.session.finish(this.lastTimestamp)

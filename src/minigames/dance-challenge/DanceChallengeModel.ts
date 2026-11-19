@@ -7,7 +7,7 @@ export const danceCycleMs = 2400
 export const danceWarningMs = 800
 export const danceWindowMs = 1200
 export const danceFreshMs = 350
-export const danceDistance = .18
+export const danceDistance = .15
 export const danceCues = ['left', 'right', 'up', 'down'] as const
 export type DanceCue = typeof danceCues[number]
 interface DanceLane { playerId: PlayerId; matched: boolean; matches: number; feedback: string; position: { x: number; y: number } | null }
@@ -25,7 +25,17 @@ export class DanceChallengeModel {
   private now = 0
   private begins = 0
   private cueIndex = 0
-  constructor(options: Partial<GameSessionOptions> = {}) {
+  private readonly warningMs:number
+  private readonly windowMs:number
+  private readonly cycleMs:number
+  private readonly travel:number
+
+  constructor(options: Partial<GameSessionOptions> & { pressure?:number } = {}) {
+    const pressure = Math.max(-.15,Math.min(1,options.pressure ?? 0))
+    this.warningMs = danceWarningMs - 200 * pressure
+    this.windowMs = danceWindowMs - 230 * pressure
+    this.cycleMs = danceCycleMs - 540 * pressure
+    this.travel = danceDistance + .038 * pressure
     this.session = new GameSession({ ...options, playerCount: options.playerCount ?? 1 })
   }
   start(timestamp: number) {
@@ -39,7 +49,7 @@ export class DanceChallengeModel {
     if (!Number.isFinite(timestamp)) return this.snapshot()
     this.now = Math.max(this.now, this.clock.time(timestamp))
     this.session.update(this.now)
-    const index = Math.max(0, Math.floor((this.now - this.begins) / danceCycleMs))
+    const index = Math.max(0, Math.floor((this.now - this.begins) / this.cycleMs))
     if (index !== this.cueIndex) {
       this.cueIndex = index; this.samples.clear()
       for (const lane of this.lanes) { lane.matched = false; lane.feedback = 'Watch the arrow, then move on Go!' }
@@ -53,12 +63,12 @@ export class DanceChallengeModel {
   moveBody(event: MotionInputEvent) {
     const lane = this.lanes.find(lane => lane.playerId === event.playerId)
     if (!lane || event.kind !== 'BODY_MOVE' || !Number.isFinite(event.timestamp) || !this.clock.accepts(event.timestamp)
-      || this.clock.time(event.timestamp) < Math.max(this.begins, this.now)
+      || this.clock.time(event.timestamp) < Math.max(this.begins, this.now - 32)
       || event.timestamp <= (this.lastInput.get(event.playerId) ?? -Infinity)) return this.snapshot()
     const state = this.update(event.timestamp)
     if (state.phase !== 'playing') return state
     this.lastInput.set(event.playerId, event.timestamp)
-    if (![event.x, event.y, event.confidence].every(Number.isFinite) || event.x < 0 || event.x > 1 || event.y < 0 || event.y > 1 || event.confidence < .6 || event.confidence > 1 || !state.active) {
+    if (![event.x, event.y, event.confidence].every(Number.isFinite) || event.x < 0 || event.x > 1 || event.y < 0 || event.y > 1 || event.confidence < .6 || event.confidence > 1 || !state.active || this.clock.time(event.timestamp)<this.begins+this.cueIndex*this.cycleMs+this.warningMs) {
       this.releaseBody(event.playerId); return this.snapshot()
     }
     const previous = this.samples.get(event.playerId)
@@ -66,7 +76,7 @@ export class DanceChallengeModel {
     const dx = fresh ? event.x - previous.anchorX : 0, dy = fresh ? event.y - previous.anchorY : 0
     const travel = state.cue === 'left' ? -dx : state.cue === 'right' ? dx : state.cue === 'up' ? -dy : dy
     const cross = state.cue === 'left' || state.cue === 'right' ? Math.abs(dy) : Math.abs(dx)
-    if (!lane.matched && travel >= danceDistance - 1e-9 && travel > cross) {
+    if (!lane.matched && travel >= this.travel - 1e-9 && travel > cross) {
       lane.matched = true; lane.matches++; lane.feedback = '✓ Nice move! +10 points.'
       this.session.awardScore(event.playerId, 10)
     }
@@ -95,10 +105,10 @@ export class DanceChallengeModel {
   }
   private snapshot(): DanceChallengeSnapshot {
     const state = this.session.getSnapshot()
-    const elapsed = this.now - this.begins - this.cueIndex * danceCycleMs
+    const elapsed = this.now - this.begins - this.cueIndex * this.cycleMs
     return { ...state, lanes: this.lanes.map(lane => ({ ...lane, position: lane.position && { ...lane.position } })),
-      cue: danceCues[this.cueIndex % danceCues.length], cueIndex: this.cueIndex,
-      active: state.phase === 'playing' && elapsed >= danceWarningMs && elapsed < danceWarningMs + danceWindowMs,
-      cueRemainingMs: Math.max(0, danceWarningMs + danceWindowMs - elapsed) }
+      cue: danceCues[(this.cueIndex + Math.floor(this.cueIndex/4)) % danceCues.length], cueIndex: this.cueIndex,
+      active: state.phase === 'playing' && elapsed >= this.warningMs && elapsed < this.warningMs + this.windowMs,
+      cueRemainingMs: Math.max(0, this.warningMs + this.windowMs - elapsed) }
   }
 }

@@ -1,3 +1,6 @@
+import {useLegacyReadyGate} from '../../game/useLegacyReadyGate'
+import {ChallengeResult} from '../../game/ArcadeRound'
+import {useChallenge} from '../../game/ChallengeContext'
 import { GameFeedback } from '../../game/GameFeedback'
 import { useEffect, useRef, useState, type PointerEvent } from 'react'
 import type { MotionInputEvent } from '../../input/MotionProcessor'
@@ -11,8 +14,11 @@ export function TreasureGrab({ playerCount, inputEvents = [], onExit, externalPa
   externalPauseReason?: string | null
   onReconnect?(): void
 }) {
-  const [model] = useState(() => new TreasureGrabModel({ playerCount }))
+  const challenge = useChallenge()
+  const pressure = challenge?.pressure ?? 0
+  const [model] = useState(() => new TreasureGrabModel({ pressure, roundDurationMs: challenge ? 36_000 : undefined, playerCount }))
   const [snapshot, setSnapshot] = useState(() => model.start(performance.now()))
+  useLegacyReadyGate(snapshot.phase,externalPauseReason,()=>setSnapshot(model.resume(performance.now())))
   const [pauseReason, setPauseReason] = useState<string | null>(null)
   const pauseHeadingRef = useRef<HTMLHeadingElement>(null)
   const resultsRef = useRef<HTMLHeadingElement>(null)
@@ -85,6 +91,6 @@ export function TreasureGrab({ playerCount, inputEvents = [], onExit, externalPa
     </div>
     <p className="treasure-help">Wave at a chest, click it, or focus its button and press Enter or Space. Leave a moment between grabs. Rings show time left; missed objects cost nothing.</p>
     {snapshot.phase === 'paused' && <div className="battle-results" role="dialog" aria-label="Treasure Grab paused"><h2 ref={pauseHeadingRef} tabIndex={-1}>Treasure hunt paused</h2><p>{externalPauseReason || pauseReason}</p><button className="crayon-button" type="button" disabled={Boolean(externalPauseReason)} onClick={() => { setSnapshot(model.resume(performance.now())); setPauseReason(null) }}>Resume</button>{externalPauseReason && onReconnect && <button className="crayon-button" type="button" onClick={onReconnect}>Reconnect camera</button>}<button className="text-button" type="button" onClick={onExit}>Back to setup</button></div>}
-    {snapshot.phase === 'results' && <div className="battle-results" role="dialog" aria-label="Treasure Grab results"><h2 ref={resultsRef} tabIndex={-1}>Your treasure haul!</h2><div className="battle-results__scores">{snapshot.scores.map(({ playerId, score }) => <p key={playerId}><strong>Player {playerId}</strong><span>{score} points</span></p>)}</div><button className="crayon-button crayon-button--primary" type="button" onClick={() => setSnapshot(model.start(performance.now()))}>Play again</button><button className="text-button" type="button" onClick={onExit}>Back to setup</button></div>}
+    {snapshot.phase === 'results' && <div className="battle-results" role="dialog" aria-label="Treasure Grab results"><h2 ref={resultsRef} tabIndex={-1}>Your treasure haul!</h2><ChallengeResult scores={snapshot.scores}/><div className="battle-results__scores">{snapshot.scores.map(({ playerId, score }) => <p key={playerId}><strong>Player {playerId}</strong><span>{score} points</span></p>)}</div><button className="crayon-button crayon-button--primary" type="button" onClick={() => setSnapshot(model.start(performance.now()))}>Play again</button><button className="text-button" type="button" onClick={onExit}>Back to setup</button></div>}
   </section>
 }

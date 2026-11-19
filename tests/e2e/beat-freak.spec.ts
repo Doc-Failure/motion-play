@@ -1,7 +1,9 @@
+import {isGameVisible} from '../../src/app/catalog'
 import {hideAndRestoreTab} from './fixtures'
 import type {Page} from '@playwright/test'
 import {expect,openApp,test,completeReadyGate} from './fixtures'
-import {beatChart,beatPads} from '../../src/minigames/beat-freak/BeatModel'
+import {beatChart} from '../../src/minigames/beat-freak/BeatModel'
+test.beforeEach(() => test.skip(!isGameVisible('beat-freak'), 'Paper Jam is retired.'))
 async function start(page:Page,players=1){
  await openApp(page,'#/camera/beat-freak')
  await page.getByRole('button',{name:`${players} ${players===1?'player':'players'}`,exact:true}).click()
@@ -18,13 +20,13 @@ test('records arrive on the beat, keyboard instruments build combos, audio sched
  })
  await page.clock.install({time:new Date('2030-01-01T00:00:00Z')});await page.clock.pauseAt(new Date('2030-01-01T00:01:00Z'))
  await installMockCamera({person:true});await start(page)
- await until(page,1600);await expect(page.locator('.beat-note').first()).toBeVisible()
+ await until(page,350);await expect(page.locator('.beat-note').first()).toBeVisible()
  const first=await page.locator('.beat-note').first().getAttribute('style');await page.clock.runFor(200)
  expect(await page.locator('.beat-note').first().getAttribute('style')).not.toBe(first)
  await page.screenshot({path:test.info().outputPath('paper-jam-records.png')})
  const board=page.getByRole('group',{name:'Player 1 Paper Jam play area'})
  for(const note of beatChart().slice(0,8)){
-  await until(page,note.at);await board.focus();await page.keyboard.press(String(note.pad+1))
+  await until(page,note.at);await expect(page.locator('.beat-call[data-ready=true]')).toContainText('HIT!');await board.focus();await page.keyboard.press(String(note.pad+1))
  }
  await expect(page.locator('.beat-game header dd').first()).toHaveText('120')
  await expect(page.locator('.beat-combo strong')).toHaveText('8')
@@ -39,7 +41,7 @@ test('records arrive on the beat, keyboard instruments build combos, audio sched
  await expect(page.locator('.beat-game header dd').last()).toHaveText(clock!)
  expect(await page.evaluate(()=>(window as typeof window&{__beatAudio:{notes:number}}).__beatAudio.notes)).toBe(notes)
  await page.getByRole('button',{name:'Resume round'}).click()
- await until(page,7200);await board.focus();await page.keyboard.press('3')
+ await until(page,beatChart()[8].at);await board.focus();await page.keyboard.press(String(beatChart()[8].pad+1))
  await expect(page.locator('.beat-game header dd').first()).toHaveText('150')
  await page.getByRole('button',{name:'Mute game sound'}).click()
  const muted=await page.evaluate(()=>(window as typeof window&{__beatAudio:{notes:number}}).__beatAudio.notes)
@@ -59,15 +61,15 @@ test('four-player mirrored camera motion hits only its speaker lane and layouts 
  test.setTimeout(60000)
  await page.addInitScript(()=>Object.assign(window,{__testClockInstalled:true}));await page.clock.install({time:new Date('2030-01-01T00:00:00Z')});await page.clock.pauseAt(new Date('2030-01-01T00:01:00Z'))
  await installMockCamera({person:true});await start(page,4)
- await until(page,2240)
+ await until(page,2220)
  await page.evaluate(({x,y})=>{
   const c=(window as typeof window&{__cameraFixture:HTMLCanvasElement}).__cameraFixture,ctx=c.getContext('2d')!;let frame=0
   window.setInterval(()=>{ctx.fillStyle=frame++%2?'#fff':'#182033';ctx.fillRect((x-.025)*c.width,(y-.03)*c.height,.05*c.width,.06*c.height)},50)
- },{x:1-(3+beatPads[0].x)/4,y:beatPads[0].y})
+ },{x:1-3.5/4,y:.55})
  await page.clock.runFor(350)
  const scores=page.locator('.beat-game header dd')
  await expect(scores.nth(3)).not.toHaveText('0');for(let i=0;i<3;i++)await expect(scores.nth(i)).toHaveText('0')
- await expect(page.locator('.beat-speaker')).toHaveCount(16)
+ await expect(page.locator('.beat-speaker')).toHaveCount(4)
  await expect(page.locator('.camera-arena .body-test')).toBeHidden()
  await page.screenshot({path:test.info().outputPath('paper-jam-four-player.png')})
  await page.setViewportSize({width:390,height:844});await page.clock.runFor(100)

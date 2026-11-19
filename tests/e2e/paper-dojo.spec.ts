@@ -1,4 +1,4 @@
-import { completeReadyGate, expect, openApp, test } from './fixtures'
+import { completeReadyGate, hideAndRestoreTab, expect, openApp, test } from './fixtures'
 import { isGameVisible } from '../../src/app/catalog'
 
 test.beforeEach(() => {
@@ -17,15 +17,19 @@ test('original towers and articulated ninjas support continuous play, pause and 
   await page.clock.runFor(4200)
   const ninja=page.getByRole('button',{name:'Swat Player 1 ninja 1',exact:true})
   await expect(ninja).toBeEnabled()
+  const attack=ninja.locator('[data-sprite="attack"]')
+  await expect(attack).toBeVisible()
+  await expect(attack).toHaveCSS('background-image',/ninja-attack\.webp/)
   const before=await ninja.getAttribute('style')
   await page.clock.runFor(200)
   expect(await ninja.getAttribute('style')).not.toBe(before)
   await page.screenshot({path:test.info().outputPath('dojo-flight.png')})
   await ninja.focus();await page.keyboard.press('Enter')
   await expect(page.locator('.dojo-effect--hit')).toBeVisible()
+  await expect(page.locator('.dojo-effect--hit [data-sprite="hit"]')).toBeVisible()
   await expect(page.locator('.dojo-game header dd').first()).toHaveText('10')
   await page.screenshot({path:test.info().outputPath('dojo-impact.png')})
-  await page.getByRole('button',{name:'Pause',exact:true}).click()
+  await hideAndRestoreTab(page)
   const remaining=await page.locator('.dojo-game header dd').last().textContent()
   await page.clock.runFor(5000)
   await expect(page.locator('.dojo-game header dd').last()).toHaveText(remaining!)
@@ -79,7 +83,7 @@ test('four-player lanes retain a clear camera center and one consistent local fo
   for(const id of [1,2,3,4])await expect(page.getByLabel(`Player ${id} Paper Dojo play area`)).toBeVisible()
   expect(await page.evaluate(()=>document.fonts.check('16px "Motion Hand"'))).toBe(true)
   expect(await page.locator('#dojo-title').evaluate(e=>getComputedStyle(e).fontFamily)).toContain('Motion Hand')
-  expect(await page.getByRole('button',{name:'Pause',exact:true}).evaluate(e=>getComputedStyle(e).fontFamily)).toContain('Motion Hand')
+  expect(await page.getByRole('button',{name:'Exit game',exact:true}).evaluate(e=>getComputedStyle(e).fontFamily)).toContain('Motion Hand')
   await page.screenshot({path:test.info().outputPath('dojo-four-players.png')})
   await page.setViewportSize({width:390,height:844})
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)

@@ -13,7 +13,8 @@ export class RocketModel {
  private elapsed=0
  private lastTime=0
  private notBefore=0
- private nextWave=0
+ private nextWave=counts()
+ private readonly pressure:number
  private id=1
  private aspect=1
  private rockets:Rocket[]=[]
@@ -22,22 +23,32 @@ export class RocketModel {
  private best=counts()
  private cooldown={1:-Infinity,2:-Infinity,3:-Infinity,4:-Infinity}
  private history=new Map<string,number>()
- constructor(options:GameSessionOptions&{aspectRatio?:number}){this.session=new GameSession(options);this.duration=options.roundDurationMs??60000;this.players=options.playerCount;this.setAspectRatio(options.aspectRatio??1)}
+ constructor(options:GameSessionOptions&{aspectRatio?:number;pressure?:number}){this.pressure=Math.max(0,Math.min(1,options.pressure??0));this.session=new GameSession(options);this.duration=options.roundDurationMs??60000;this.players=options.playerCount;this.setAspectRatio(options.aspectRatio??1)}
  setAspectRatio(value:number){if(Number.isFinite(value)&&value>0)this.aspect=value}
- start(time:number){this.session.start(time);this.elapsed=0;this.lastTime=time;this.notBefore=time+this.session.getSnapshot().countdownRemainingMs;this.nextWave=0;this.id=1;this.rockets=[];this.bursts=[];this.chains=counts();this.best=counts();this.cooldown={1:-Infinity,2:-Infinity,3:-Infinity,4:-Infinity};this.history.clear();return this.update(time)}
+ start(time:number){this.session.start(time);this.elapsed=0;this.lastTime=time;this.notBefore=time+this.session.getSnapshot().countdownRemainingMs;this.nextWave=counts();this.id=1;this.rockets=[];this.bursts=[];this.chains=counts();this.best=counts();this.cooldown={1:-Infinity,2:-Infinity,3:-Infinity,4:-Infinity};this.history.clear();return this.update(time)}
  update(time:number){
   if(!Number.isFinite(time))throw new Error('Time must be finite')
   const now=Math.max(time,this.lastTime),s=this.session.update(now);this.lastTime=now
   if(s.phase==='playing'||s.phase==='results'){
    this.elapsed=this.duration-s.roundRemainingMs
-   while(this.nextWave<this.duration&&this.nextWave<=this.elapsed){
-    const born=this.nextWave,wave=Math.floor(born/6000)
-    this.rockets=this.rockets.filter(r=>born<r.expires)
-    for(let p=1;p<=this.players;p++)for(let i=0;i<9;i++){
-     if(this.rockets.filter(r=>r.playerId===p).length>=12)break
-     this.rockets.push({id:this.id++,playerId:p as PlayerId,color:(i+Math.floor(i/3)+wave)%3,born:born+i*130,expires:Math.min(born+(born>=45000?6000:8500),born<45000?45000:Infinity),x:[.2,.5,.8][i%3],y:[.25,.43,.61][Math.floor(i/3)],selected:false})
+   const seats=Object.keys(this.nextWave).map(Number).slice(0,this.players) as PlayerId[]
+   const finaleAt=this.duration*.75
+   let born=Math.min(...seats.map(p=>this.nextWave[p]))
+   while(born<this.duration && born<=this.elapsed){
+    for(const p of seats.filter(id=>this.nextWave[id]===born)){
+     this.rockets=this.rockets.filter(r=>r.playerId!==p)
+     const finale=born>=finaleAt
+     const window=(finale?6000:8500)-this.pressure*(finale?800:1500)
+     const untilFinale=finaleAt-born
+     // Do not deal a rack immediately before the finale with too little time for a pair.
+     const expires=!finale && untilFinale>=3400 && untilFinale<window ? finaleAt : born+window
+     const wave=Math.floor(born/6000)
+     for(let i=0;i<9;i++){
+      this.rockets.push({id:this.id++,playerId:p,color:(i+Math.floor(i/3)+wave)%3,born:born+i*100,expires,x:[.2,.5,.8][i%3],y:[.25,.43,.61][Math.floor(i/3)],selected:false})
+     }
+     this.nextWave[p]=expires
     }
-    this.nextWave=Math.min(born+(born>=45000?6000:8500),born<45000?45000:Infinity)
+    born=Math.min(...seats.map(p=>this.nextWave[p]))
    }
    this.rockets=this.rockets.filter(r=>this.elapsed<r.expires)
    this.bursts=this.bursts.filter(b=>this.elapsed-b.at<1800)
@@ -45,7 +56,7 @@ export class RocketModel {
   if(s.phase==='results')this.rockets=[]
   return this.snapshot()
  }
- private position(r:Rocket){const age=this.elapsed-r.born;return {...r,y:age<900?1.08+(r.y-1.08)*Math.sin(Math.max(0,age)/900*Math.PI/2):r.y+Math.sin((age-900)/900+r.id)*.018}}
+ private position(r:Rocket){const age=this.elapsed-r.born;return {...r,x:r.x+(age<900?0:Math.sin((age-900)/1000)*.024*this.pressure),y:age<900?1.08+(r.y-1.08)*Math.sin(Math.max(0,age)/900*Math.PI/2):r.y+Math.sin((age-900)/900+r.id)*.018}}
  hit(e:MotionInputEvent){
   if(e.kind!=='MOTION_HIT'||!Number.isInteger(e.playerId)||e.playerId<1||e.playerId>this.players||!Number.isFinite(e.timestamp)||e.timestamp<this.notBefore||e.timestamp<this.lastTime-120||!Number.isFinite(e.confidence)||e.confidence<.25||e.confidence>1||![e.x,e.y].every(v=>Number.isFinite(v)&&v>=0&&v<=1))return this.snapshot()
   const prior=this.history.get(`${e.playerId}:${e.x}:${e.y}`)
@@ -60,7 +71,10 @@ export class RocketModel {
    const points=10*chosen.length*chosen.length
    this.session.awardScore(e.playerId,points);this.chains[e.playerId]++;this.best[e.playerId]=Math.max(this.best[e.playerId],chosen.length)
    chosen.forEach((r,i)=>{const pos=this.position(r);this.bursts.push({id:this.id++,playerId:e.playerId,color:r.color,x:pos.x,y:Math.max(.2,pos.y-.13),at:this.elapsed+180+i*140,size:chosen.length,points:i===0?points:0})})
-   this.rockets=this.rockets.filter(r=>!chosen.includes(r));this.cooldown[e.playerId]=this.elapsed;return this.snapshot()
+   // A leftover singleton can never form a chain. Clear it with its set so it cannot lock selection.
+   this.rockets=this.rockets.filter(r=>r.playerId!==e.playerId||r.color!==chosen[0].color)
+   if(!this.rockets.some(r=>r.playerId===e.playerId))this.nextWave[e.playerId]=Math.min(this.nextWave[e.playerId],this.elapsed+420)
+   this.cooldown[e.playerId]=this.elapsed;return this.snapshot()
   }
   const target=this.rockets.find(r=>{const p=this.position(r);return r.playerId===e.playerId&&!r.selected&&this.elapsed-r.born>=900&&((e.x-p.x)/(.09*sx))**2+((e.y-p.y)/(.09*sy))**2<=1})
   if(target&&(!chosen.length||chosen[0].color===target.color)){target.selected=true;this.cooldown[e.playerId]=this.elapsed}
@@ -68,6 +82,6 @@ export class RocketModel {
  }
  pause(time:number){const s=this.update(time);if(s.phase==='playing'||s.phase==='countdown')this.session.pause(this.lastTime);return this.snapshot()}
  resume(time:number){this.session.resume(time);this.lastTime=time;this.notBefore=time;return this.snapshot()}
- snapshot(){return {...this.session.getSnapshot(),elapsed:this.elapsed,rockets:this.rockets.filter(r=>this.elapsed>=r.born).map(r=>this.position(r)),bursts:this.bursts.map(b=>({...b})),chains:{...this.chains},best:{...this.best},finale:this.elapsed>=45000}}
+ snapshot(){return {...this.session.getSnapshot(),elapsed:this.elapsed,rockets:this.rockets.filter(r=>this.elapsed>=r.born).map(r=>this.position(r)),bursts:this.bursts.map(b=>({...b})),chains:{...this.chains},best:{...this.best},finale:this.elapsed>=this.duration*.75}}
 }
 export type RocketSnapshot=ReturnType<RocketModel['snapshot']>

@@ -6,7 +6,8 @@ export interface MotionFrame { width: number; height: number; data: Uint8Clamped
 /** HAND_SWIPE ends at (x,y); swipe supplies its player-local origin and elapsed
  * milliseconds. Velocity is derived from this segment, never trusted from callers.
  * Frame differencing cannot produce hand swipes. */
-export interface MotionInputEvent { playerId: PlayerId; kind: 'UI_POINTER' | 'ARM_POSITION' | 'ARM_MOVE' | 'HAND_PINCH' | 'MOTION_HIT' | 'MOTION_BRUSH' | 'HAND_POSITION' | 'HAND_SWIPE' | 'BODY_MOVE' | 'FREEZE'; x: number; y: number; confidence: number; timestamp: number; pointerId?:string; origin?:{x:number;y:number}; activity?: number; swipe?: { fromX: number; fromY: number; durationMs: number } }
+export interface BodyMask {width:number; height:number; cells:Uint8Array}
+export interface MotionInputEvent { playerId: PlayerId; kind: 'BODY_MASK' | 'UI_POINTER' | 'ARM_POSITION' | 'ARM_MOVE' | 'HAND_PINCH' | 'MOTION_HIT' | 'MOTION_BRUSH' | 'HAND_POSITION' | 'HAND_SWIPE' | 'BODY_MOVE' | 'FREEZE'; x: number; y: number; confidence: number; timestamp: number; pointerId?:string; coordinateSpace?:'court'; bodyMask?:BodyMask; origin?:{x:number;y:number}; activity?: number; swipe?: { fromX: number; fromY: number; durationMs: number } }
 export interface ZoneMotion { playerId: PlayerId; activePixels: number; activity: number; centroid: { x: number; y: number } | null }
 export interface MotionResult { mask: Uint8ClampedArray; width: number; height: number; threshold: number; zones: ZoneMotion[]; events: MotionInputEvent[]; positions?: MotionInputEvent[]; freezeSamples?: MotionInputEvent[] }
 export interface MotionOptions { spatialSampling?: boolean; sensitivity?: number; smoothing?: number; minimumNeighbors?: number; minimumZoneActivity?: number; debounceMs?: number }
@@ -72,7 +73,8 @@ export class MotionProcessor {
     }
     for (let pixel = 0; pixel < gray.length; pixel += 1) {
       const difference = Math.abs(gray[pixel] - this.previous[pixel] - exposureChange)
-      smoothed[pixel] = smoothed[pixel] * this.smoothing + difference * (1 - this.smoothing)
+      const weight=difference<threshold*.5?this.smoothing*.4:this.smoothing
+      smoothed[pixel] = smoothed[pixel] * weight + difference * (1 - weight)
       candidate[pixel] = smoothed[pixel] >= threshold ? 1 : 0
     }
     for (let y = 0; y < frame.height; y += 1) for (let x = 0; x < frame.width; x += 1) {

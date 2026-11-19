@@ -1,3 +1,6 @@
+import {useLegacyReadyGate} from '../../game/useLegacyReadyGate'
+import {ChallengeResult} from '../../game/ArcadeRound'
+import {useChallenge} from '../../game/ChallengeContext'
 import { GameFeedback } from '../../game/GameFeedback'
 import { useEffect, useRef, useState, type PointerEvent } from 'react'
 import type { MotionInputEvent } from '../../input/MotionProcessor'
@@ -11,13 +14,18 @@ export function PizzaMaker({ playerCount, inputEvents = [], onExit, externalPaus
   externalPauseReason?: string | null
   onReconnect?(): void
 }) {
-  const [model] = useState(() => new PizzaMakerModel({ playerCount }))
+  const challenge = useChallenge()
+  const [model] = useState(() => new PizzaMakerModel({ playerCount, pressure:challenge?.pressure, roundDurationMs:challenge ? 40000 : undefined }))
   const [snapshot, setSnapshot] = useState(() => model.start(performance.now()))
   const [pauseReason, setPauseReason] = useState<string | null>(null)
   const pauseHeadingRef = useRef<HTMLHeadingElement>(null)
   const resultsRef = useRef<HTMLHeadingElement>(null)
   const pauseButtonRef = useRef<HTMLButtonElement>(null)
   const previousPhaseRef = useRef(snapshot.phase)
+  useLegacyReadyGate(snapshot.phase,externalPauseReason,()=>{
+    setSnapshot(model.resume(performance.now()))
+    setPauseReason(null)
+  })
   useEffect(() => {
     let frame = 0
     const tick = (time: number) => { setSnapshot(model.update(time)); frame = requestAnimationFrame(tick) }
@@ -58,7 +66,7 @@ export function PizzaMaker({ playerCount, inputEvents = [], onExit, externalPaus
       <button ref={pauseButtonRef} className="text-button" type="button" disabled={snapshot.phase !== 'playing' && snapshot.phase !== 'countdown'} onClick={() => { setSnapshot(model.pause(performance.now())); setPauseReason('Take a breather!') }}>Pause</button>
       <button className="text-button" type="button" onClick={onExit}>Exit game</button>
     </header>
-    <p className="pizza-rules">Match both toppings in any order: +10 each, +20 per pizza. Wrong or repeated toppings cost 5. Serve {snapshot.teamGoal} pizzas together!</p>
+    <p className="pizza-rules">Match the requested toppings in any order: +10 each, +20 per pizza. Wrong or repeated toppings cost 5. Serve {snapshot.teamGoal} pizzas together!</p>
     <div className={`pizza-boards pizza-boards--${playerCount}`}>
       {snapshot.scores.map(({ playerId, score }) => {
         const order = snapshot.orders.find((entry) => entry.playerId === playerId)!
@@ -84,7 +92,7 @@ export function PizzaMaker({ playerCount, inputEvents = [], onExit, externalPaus
     </div>
     <p className="pizza-help">Wave at a topping, click it, or focus its button and press Enter or Space. Leave a moment between picks. Each player has their own order.</p>
     {snapshot.phase === 'paused' && <div className="battle-results" role="dialog" aria-label="Pizza Maker paused"><h2 ref={pauseHeadingRef} tabIndex={-1}>Kitchen paused</h2><p>{externalPauseReason || pauseReason}</p><button className="crayon-button" type="button" disabled={Boolean(externalPauseReason)} onClick={() => { setSnapshot(model.resume(performance.now())); setPauseReason(null) }}>Resume</button>{externalPauseReason && onReconnect && <button className="crayon-button" type="button" onClick={onReconnect}>Reconnect camera</button>}<button className="text-button" type="button" onClick={onExit}>Back to setup</button></div>}
-    {snapshot.phase === 'results' && <div className="battle-results" role="dialog" aria-label="Pizza Maker results"><h2 ref={resultsRef} tabIndex={-1}>{snapshot.teamPizzas >= snapshot.teamGoal ? "Tasty teamwork!" : "Pizza party complete!"}</h2><p>Team pizzas: {snapshot.teamPizzas} / {snapshot.teamGoal}</p><div className="battle-results__scores">{snapshot.scores.map(({ playerId, score }) => <p key={playerId}><strong>Player {playerId}</strong><span>{score} points</span></p>)}</div><button className="crayon-button crayon-button--primary" type="button" onClick={() => setSnapshot(model.start(performance.now()))}>Play again</button><button className="text-button" type="button" onClick={onExit}>Back to setup</button></div>}
+    {snapshot.phase === 'results' && <div className="battle-results" role="dialog" aria-label="Pizza Maker results"><h2 ref={resultsRef} tabIndex={-1}>{snapshot.teamPizzas >= snapshot.teamGoal ? "Tasty teamwork!" : "Pizza party complete!"}</h2><ChallengeResult scores={snapshot.scores}/><p>Team pizzas: {snapshot.teamPizzas} / {snapshot.teamGoal}</p><div className="battle-results__scores">{snapshot.scores.map(({ playerId, score }) => <p key={playerId}><strong>Player {playerId}</strong><span>{score} points</span></p>)}</div><button className="crayon-button crayon-button--primary" type="button" onClick={() => setSnapshot(model.start(performance.now()))}>Play again</button><button className="text-button" type="button" onClick={onExit}>Back to setup</button></div>}
   </section>
 }
 

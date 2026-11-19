@@ -8,17 +8,9 @@ scoring. No source-game artwork, soundtrack, recordings or code are imported.
 
 ## Interaction
 
-Four instruments surround each player's live camera lane: Kick, Clap, Pluck and
-Chime. Records travel from the center toward their matching speaker over 1.4
-seconds. Strike the speaker as its record arrives. A growing timing ring and
-color, instrument name and number identify the destination. Fresh camera motion
-is sufficient; no finger pose or hand-shape recognition is needed.
+A 42-second round opens with two large speakers in solo play. The cue on the speaker changes from **Get ready** to **HIT!** during the scoring window. In a band, two to four musicians each start with one numbered instrument. Three and four musicians answer in alternating groups. Every note has one owner. Team progression adds the individual contributions.
 
-The 60-second score starts with four count-in beats at 100 BPM, then progresses
-from quarter notes to offbeat pickups and paired accents. Every player receives
-an identical deterministic chart. There is no early elimination. Perfect timing
-(±85 ms) earns 15 points; Good timing (±210 ms) earns 10. Consecutive hits build
-multipliers, up to ×3, while a missed note resets only that player's streak.
+The first call lands at 1.2 seconds. Levels 1–2 allow one call every two beats. Level 3 introduces more instruments, level 4 adds offbeats, and level 6 introduces paired accents. At opening difficulty, a swat from 300 ms early to 420 ms late earns 10 points. A hit within 130 ms of the beat earns 15. The level-one goal is 40 points. Each eight consecutive hits increases the multiplier, up to 3×.
 
 Only normalized MOTION_HIT samples enter BeatModel. Collision circles use the
 same cqmin radii as the rendered speakers. Player ownership, coordinate/range/
@@ -29,8 +21,8 @@ on-time captured input after a newer render tick. Camera frames, pose and media
 libraries stay outside the game.
 
 Native speaker buttons support pointer/touch and Tab + Enter/Space. The play area
-also supports its shared arrow/aim fallback and keys 1–4 on release; holding a
-number key cannot repeatedly score. Browser modifier shortcuts are preserved.
+also supports its shared arrow/aim fallback and the displayed number keys on press. Holding a
+number key cannot repeatedly score. Pointer and touch strikes register on contact. Browser modifier shortcuts are preserved.
 
 ## Sound and animation
 
@@ -45,15 +37,13 @@ joins the current beat. Replay starts a fresh timeline.
 Original kick/snare/hi-hat/bass/plucked accompaniment plays quietly underneath.
 Successful strikes add their instrument voice, with a subtle perfect accent and
 streak chime. Speakers thump, records spin, timing rings fill, judgments sparkle,
-the turntable pulses and a small meter follows the beat. Reduced motion removes
-spins, thumps, pulsing and decorative meter motion; essential record travel stays
+the advanced chart adds a pulsing turntable. Reduced motion removes
+spins, thumps, pulsing; essential record travel stays
 visible. Score text, labels and timing rings work without sound or color alone.
 
 ## Integration and verification
 
-Paper Jam occupies the fifth public catalog slot, temporarily replacing
-Whack-a-Mole, whose implementation is preserved. It is the fourth competitive
-round in the five-game tournament. Initial/replay starts use the existing
+Paper Jam is the third round of the five-game tournament. Initial/replay starts use the existing
 simultaneous three-second ready check. Camera retention, navigation, sound mute,
 external recovery, visibility pause and completion-once behavior remain shared.
 Body diagnostics start hidden and can be enabled through the existing test control.

@@ -26,9 +26,9 @@ describe('Plate Spinner normalized input model', () => {
   it('requires wobble, rescues once, isolates plates and permits delayed captures after a render', () => {
     const model = new PlateSpinnerModel({ playerCount: 2, countdownMs: 0 })
     model.start(0)
-    expect(model.hit(event(2099)).scores[0].score).toBe(0)
-    expect(model.hit(event(2100)).scores[0].score).toBe(10)
-    expect(model.hit(event(2100)).scores[0].score).toBe(10)
+    expect(model.hit(event(1799)).scores[0].score).toBe(0)
+    expect(model.hit(event(1800)).scores[0].score).toBe(10)
+    expect(model.hit(event(1800)).scores[0].score).toBe(10)
     expect(model.hit(event(4200)).scores[0].score).toBe(20)
     const state = model.update(4300)
     expect(state.plates[1].expiresAt).toBe(7000)

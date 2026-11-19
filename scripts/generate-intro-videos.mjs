@@ -7,7 +7,7 @@ import {resolve} from 'node:path'
 const directory=resolve('src/assets/intros');await mkdir(directory,{recursive:true})
 const browser=await chromium.launch({headless:true}),page=await browser.newPage()
 await page.setContent('<canvas width="320" height="180"></canvas>')
-for(const game of (process.env.INTRO_GAME?[process.env.INTRO_GAME]:['bubble-battle','ninja-training','window-wipe','rocket-rumble','beat-freak','punch-arena','keep-ups','ghost-catcher','ufo-juggler','jump-rush','six-hoops','goalkeeper','net-rally','kangaroo-race'])){
+for(const game of (process.env.INTRO_GAME?[process.env.INTRO_GAME]:['bubble-battle','ninja-training','window-wipe','rocket-rumble','beat-freak','punch-arena','keep-ups','ghost-catcher','ufo-juggler','jump-rush','six-hoops','goalkeeper','net-rally','kangaroo-race','marble-bowling','shadow-snap'])){
  const frames=await page.evaluate(game=>{
   const canvas=document.querySelector('canvas'),c=canvas.getContext('2d'),output=[]
   const line=(points,color='#29313c',width=5)=>{c.strokeStyle=color;c.lineWidth=width;c.lineCap='round';c.lineJoin='round';c.beginPath();points.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.stroke()}
@@ -16,7 +16,31 @@ for(const game of (process.env.INTRO_GAME?[process.env.INTRO_GAME]:['bubble-batt
    const t=frame/72,phase=frame%18/18,beat=Math.floor(frame/18),s=Math.sin(t*Math.PI*4)
    c.fillStyle='#fff6df';c.fillRect(0,0,320,180)
    let center=160,left=[115,95],right=[205,95]
-   if(game==='goalkeeper'){
+   if(game==='shadow-snap'){
+    const lift=Math.min(1,t*1.7)
+    const figure=(pose,color)=>{
+     circle(160,47,13,color,color);line([[160,60],[160,105]],color,24)
+     for(const sign of [-1,1]){
+      line([[160+sign*8,70],[160+sign*27,68-15*pose],[160+sign*38,92-66*pose]],color,12)
+      line([[160+sign*5,105],[160+sign*13,139],[160+sign*18,156]],color,13)
+     }
+    }
+    c.fillStyle='#d7af7c';c.fillRect(0,0,320,180)
+    figure(1,'#534552')
+    figure(lift,lift===1?'#73bcaa':'#bb6654')
+    if(lift===1)line([[219,73],[229,84],[247,61]],'#187751',6)
+    output.push(canvas.toDataURL('image/png').split(',')[1]);continue
+   }else if(game==='marble-bowling'){
+    center=82;left=[58,107]
+    const sweep=Math.max(0,Math.min(1,(t-.18)*4)),roll=Math.max(0,Math.min(1,(t-.40)*2.9))
+    right=[119+12*sweep,130-65*sweep]
+    line([[175,150],[195,40],[267,40],[286,150]],'#c7a26b',4)
+    for(const [x,y] of [[219,63],[241,63],[230,73]]){
+     c.save();c.translate(x,y);c.rotate(Math.max(0,Math.min(1,(t-.72)*7))*(x<230?-1:1)*1.25)
+     line([[0,0],[0,-10]],'#393242',10);line([[0,0],[0,-10]],'#fff5da',6);line([[-2,-7],[2,-7]],'#de6556',2);c.restore()
+    }
+    circle(230,135-66*roll,8,'#70d5db')
+   }else if(game==='goalkeeper'){
     center=105;const bx=235-100*t,by=35+110*t;right=[140+(bx-140)*t,95+(by-95)*t]
     circle(235,15,7,'#e8b986');line([[235,23],[235,40]],'#ed705e',9);line([[232,40],[226,52]],'#29313c',4);line([[238,40],[249,45+Math.sin(t*Math.PI)*8]],'#29313c',4)
     circle(bx,by,5+t*7,'#fff6df');circle(bx,by,2+t*3,'#29313c')
@@ -61,11 +85,12 @@ for(const game of (process.env.INTRO_GAME?[process.env.INTRO_GAME]:['bubble-batt
     left=[95+s*35,80+Math.cos(t*Math.PI*4)*30];right=[225-s*35,80+Math.cos(t*Math.PI*4)*30]
     line([[70,75],[115,55],[85,110]],'#fff',16);line([[215,75],[250,95],[220,120]],'#fff',16)
    }else if(game==='beat-freak'){
-    const pads=[[66,40],[254,40],[66,126],[254,126]],colors=['#eea67b','#e99eb2','#73c7cf','#b8a1dc'],p=pads[beat]
-    pads.forEach(([x,y],i)=>{c.fillStyle=colors[i];c.strokeStyle='#29313c';c.lineWidth=2;c.fillRect(x-19,y-19,38,38);c.strokeRect(x-19,y-19,38,38);circle(x,y,11,'#fff6df')})
-    circle(160+(p[0]-160)*phase,82+(p[1]-82)*phase,8,colors[beat])
-    const hand=[160+(p[0]-160)*Math.min(1,phase*1.2),85+(p[1]-85)*Math.min(1,phase*1.2)];if(p[0]<160)left=hand;else right=hand
-    if(phase>.8)circle(p[0],p[1],7,'#7dcba4')
+    const turn=Math.floor(t*2),progress=t*2-turn,pads=[66,254],x=pads[turn]
+    pads.forEach((px,i)=>{c.fillStyle=i?'#e99eb2':'#eea67b';c.strokeStyle='#29313c';c.lineWidth=3;c.fillRect(px-23,60,46,46);c.strokeRect(px-23,60,46,46);circle(px,83,14,'#fff6df')})
+    c.fillStyle=progress>.53?'#ffe17a':'#fff6df';c.fillRect(x-39,29,78,23);c.strokeRect(x-39,29,78,23)
+    c.fillStyle='#29313c';c.textAlign='center';c.font='bold 14px sans-serif';c.fillText(progress>.53?'HIT!':'Get ready',x,46)
+    const reach=Math.max(0,Math.min(1,(progress-.53)*7,(1-progress)*7)),rest=turn?204:116,hand=[rest+(x-rest)*reach,93-10*reach]
+    if(turn)right=hand;else left=hand
    }else if(game==='rocket-rumble'){
     for(const x of [76,244]){c.fillStyle='#f5cf70';c.strokeStyle='#29313c';c.lineWidth=2;c.beginPath();c.moveTo(x-9,66);c.lineTo(x,47);c.lineTo(x+9,66);c.lineTo(x+8,90);c.lineTo(x-8,90);c.closePath();c.fill();c.stroke()}
     c.fillStyle='#7ba5b0';c.fillRect(146,138,28,13);line([[160,138],[160,119]],'#29313c',4);line([[149,118],[172,118]],'#ef9eab',7)
@@ -88,7 +113,7 @@ for(const game of (process.env.INTRO_GAME?[process.env.INTRO_GAME]:['bubble-batt
   }
   return output
  },game)
- const child=spawn(process.env.FFMPEG_PATH??'ffmpeg',['-loglevel','error','-y','-f','image2pipe','-framerate','24','-i','pipe:0','-an','-c:v','libx264','-preset','slow','-crf','30','-pix_fmt','yuv420p','-movflags','+faststart',resolve(directory,`${game}.mp4`)],{stdio:['pipe','inherit','inherit']})
+ const child=spawn(process.env.FFMPEG_PATH??'ffmpeg',['-loglevel','error','-y','-f','image2pipe','-framerate','24','-i','pipe:0','-an',...(['marble-bowling','shadow-snap'].includes(game)?['-vf','fps=12,scale=192:108']:[]),'-c:v','libx264','-preset','slow','-crf',game==='marble-bowling'?'34':'30','-pix_fmt','yuv420p','-movflags','+faststart',resolve(directory,`${game}.mp4`)],{stdio:['pipe','inherit','inherit']})
  for(const frame of frames)if(!child.stdin.write(Buffer.from(frame,'base64')))await new Promise(resolve=>child.stdin.once('drain',resolve))
  child.stdin.end();await new Promise((resolve,reject)=>child.once('exit',code=>code===0?resolve():reject(new Error(`ffmpeg ${code}`))))
  process.stdout.write(`${game}: rendered 3 second tutorial\n`)

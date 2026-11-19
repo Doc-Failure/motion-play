@@ -51,8 +51,8 @@ describe('Magic Duel ordered spatial patterns', () => {
     expect(game().trace(input(200,1,extra)).progress[0].step).toBe(0)
   })
   it('rejects stale, duplicate and countdown-crossing events',()=>{
-    const m=game();m.update(250);expect(m.trace(input()).progress[0].step).toBe(0)
-    m.trace(input(300));expect(m.trace(input(300)).progress[0].step).toBe(1)
+    const m=game();m.update(400);expect(m.trace(input()).progress[0].step).toBe(0)
+    m.trace(input(450));expect(m.trace(input(450)).progress[0].step).toBe(1)
     expect(m.trace(input(290)).progress[0].step).toBe(1)
     const countdown=new MagicDuelModel();countdown.start(0)
     expect(countdown.trace(input()).progress[0].step).toBe(0)

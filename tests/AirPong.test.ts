@@ -20,6 +20,7 @@ describe('Air Pong model', () => {
     model.start(0)
     expect(model.moveHand(hand(1, .8, 1, 'MOTION_HIT')).paddles[0].y).toBe(.5)
     expect(model.moveHand(hand(1, .8, 2, 'HAND_POSITION', .2)).paddles[0].y).toBe(.5)
+    model.moveHand(hand(1, .8, 3))
     model.setBall({ playerId: 1, x: .11, y: .05, velocityX: -.00024, velocityY: 0 })
     expect(model.update(102).scores[0].score).toBe(-5)
   })

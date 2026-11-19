@@ -4,6 +4,7 @@
 .webcam-menu-frame .pose-matched-frame { z-index:1; }
 .webcam-navigation { position:fixed; inset:0; z-index:100; pointer-events:none; }
 .webcam-navigation__enable { position:absolute; bottom:1rem; left:50%; translate:-50% 0; pointer-events:auto; }
+.webcam-navigation__enable:disabled { opacity:1; color:#29313c; background:#fff8e9; cursor:wait; }
 .webcam-navigation__instruction { position:absolute; bottom:.45rem; left:50%; translate:-50% 0; max-width:95%; padding:.35rem .7rem; border:2px solid #29313c; border-radius:.65rem; background:#fff8e9ed; color:#29313c; font-size:.7rem; text-align:center; }
 .webcam-navigation__instruction button { pointer-events:auto; margin-left:.4rem; }
 .webcam-navigation__hand { position:absolute; translate:-50% -50%; width:16px; height:16px; border:3px solid #fff8da; border-radius:50%; background:#64dcae88; box-shadow:0 0 0 2px #243844; }
@@ -16,51 +17,22 @@ body.camera-menu-active { height:100vh; overflow:hidden; background:#171c26; }
 .camera-menu-active .reference-home { position:absolute; inset:0; min-height:0; background:transparent; }
 .camera-menu-active .generated-home-scene,.camera-menu-active .reference-home .section-heading,.camera-menu-active .reference-home .intro { display:none; }
 .camera-menu-active .reference-home .hero { position:absolute; inset:4% 0 auto; width:100%; height:auto; min-height:0; margin:0; padding:0; }
-.camera-menu-active .hero-copy { padding:.3rem .8rem; border-radius:1rem; background:#fff8e9ed; }
+.camera-menu-active .hero-copy { padding:.3rem .8rem; border-radius:1rem; background:#ffe7a6ed; }
 .camera-menu-active .reference-home .hero h1 { font-size:clamp(1.4rem,5cqw,3rem); line-height:1.1; }
 .camera-menu-active .reference-home .play-menu,.camera-menu-active .reference-home .action-grid { position:absolute; inset:0; width:100%; height:100%; margin:0; padding:0; display:block; }
 .camera-menu-active .reference-home .action-card { position:absolute; top:38%; left:5%; width:30%; height:32%; min-height:0; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; gap:.3rem; padding:.6rem; }
 .camera-menu-active .reference-home .action-card:nth-child(2) { left:65%; }
 .camera-menu-active .reference-home .action-icon { width:8cqh; height:8cqh; min-height:0; }
 .camera-menu-active .reference-home .action-card h3 { margin:0; font-size:clamp(.85rem,2.4cqw,1.6rem); line-height:1.15; }
-.camera-menu-active .catalog-picker { position:absolute; inset:0; width:100%; min-height:0; margin:0; padding:0; }
-.camera-menu-active .catalog-toolbar { position:absolute; z-index:2; top:3%; left:3%; right:3%; display:grid; grid-template-columns:1fr auto 1fr; gap:.4rem; margin:0; }
-.camera-menu-active .catalog-picker .catalog-toolbar h1 { grid-column:2; align-self:center; font-size:clamp(.8rem,3cqw,1.8rem); padding:.2rem .5rem; border-radius:.6rem; background:#fff8e9ed; }
-.camera-menu-active .catalog-toolbar .back-link,.camera-menu-active .catalog-tournament { padding:.4rem; border:2px solid #29313c; border-radius:.6rem; background:#fff8e9ed; font-size:clamp(.6rem,1.5cqw,1rem); align-self:center; text-align:center; }
-.camera-menu-active .catalog-tournament { justify-self:end; }
-.camera-menu-active .catalog-grid { position:absolute; inset:0; display:block; margin:0; pointer-events:none; }
-.camera-menu-active .catalog-picker .game-card { position:absolute; left:4%; top:17%; width:26%; height:19%; min-height:0; margin:0; padding:.35rem; gap:.1rem; pointer-events:auto; }
-.camera-menu-active .catalog-picker .game-card:nth-child(2) { left:70%; }
-.camera-menu-active .catalog-picker .game-card:nth-child(3) { left:4%; top:42%; }
-.camera-menu-active .catalog-picker .game-card:nth-child(4) { left:70%; top:42%; }
-.camera-menu-active .catalog-picker .game-card:nth-child(5) { left:4%; top:67%; }
-.camera-menu-active .catalog-picker .game-card:nth-child(6) { left:70%; top:67%; }
-.camera-menu-active .game-card .game-doodle { height:55%; width:auto; max-width:65%; flex:0 0 auto; }
-.camera-menu-active .game-card__body { padding:0; }
-.camera-menu-active .catalog-picker .game-card h2 { font-size:clamp(.75rem,2cqw,1.25rem); margin:0; line-height:1.1; }
-.catalog-tournament { justify-self:end; font-size:.8rem; border:3px solid #29313c; border-radius:.7rem; padding:.5rem .7rem; color:#29313c; background:#ffe17a; text-decoration:none; }
 .camera-play .tournament-results { position:absolute; inset:8% 8% auto; margin:0; width:84%; min-height:0; max-height:84%; overflow:auto; padding:1rem; }
 .camera-play .tournament-results h1 { font-size:clamp(1.2rem,3.5vw,2.8rem); }
 .camera-play .tournament-results li { padding:.3rem .6rem; font-size:.9rem; }
 .camera-play .tournament-ribbon { top:4rem; left:.5rem; right:.5rem; padding:.25rem .5rem; gap:.4rem; font-size:.65rem; border:0; border-radius:.5rem; pointer-events:none; }
-@media(max-width:600px){.catalog-tournament { justify-self:start; }.camera-play .tournament-results { inset:3% 3% auto; width:94%; max-height:94%; gap:.4rem; padding:.5rem; }.camera-play .tournament-results h1 { font-size:1rem; }}
+@media(max-width:600px){.camera-play .tournament-results { inset:3% 3% auto; width:94%; max-height:94%; gap:.4rem; padding:.5rem; }.camera-play .tournament-results h1 { font-size:1rem; }}
 .welcome-players { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.7rem; width:min(90%,45rem); margin:2rem auto; }
-.player-welcome .welcome-players button { min-width:0; aspect-ratio:auto; display:grid; justify-items:center; min-height:7rem; padding:1rem; border:0; border-radius:0; background:transparent url('../assets/home/catalog-panel.webp') center/100% 100% no-repeat; cursor:pointer; }.welcome-players strong { font-size:2rem; }.welcome-players span { font-size:.85rem; }
-.change-players { position:absolute; right:1rem; top:1rem; z-index:12; padding:.4rem .6rem; border:2px solid #29313c; border-radius:.6rem; background:#fff6df; font-size:.7rem; cursor:pointer; }
-.camera-menu-active .welcome-players { position:absolute; left:8%; right:8%; top:38%; width:84%; height:30%; margin:0; }.camera-menu-active .welcome-players button { min-height:0; padding:.5rem; }.camera-menu-active .welcome-players strong { font-size:clamp(1rem,5cqw,3rem); }.camera-menu-active .welcome-players span { font-size:clamp(.65rem,2cqw,1rem); }
+.player-welcome .welcome-players button { min-width:0; aspect-ratio:auto; display:grid; justify-items:center; min-height:7rem; padding:1rem; border:0; border-radius:0; background:transparent url('../assets/home/catalog-panel.webp') center/100% 100% no-repeat; cursor:pointer; }.welcome-players strong { font-size:2rem; }.welcome-players span { font-size:.85rem; font-weight:700; color:#20252b; background:#fff8e9; border-radius:.35rem; padding:.08rem .35rem; }
+.change-players { position:absolute; left:50%; top:78%; translate:-50% 0; z-index:12; padding:.4rem .6rem; border:2px solid #29313c; border-radius:.6rem; background:#c7eef2; color:#193d4e; font-size:.7rem; cursor:pointer; }
+.camera-menu-active .welcome-players { position:absolute; left:8%; right:8%; top:38%; width:84%; height:30%; margin:0; }.camera-menu-active .welcome-players button { min-height:0; padding:.5rem; }.camera-menu-active .welcome-players strong { font-size:clamp(1rem,5cqw,3rem); }.camera-menu-active .welcome-players span { font-size:clamp(.75rem,2cqw,1rem); font-weight:700; color:#20252b; background:#fff8e9; border-radius:.35rem; padding:.08rem .35rem; }
 .camera-menu-active .generated-home-scene { display:block; pointer-events:none; }.camera-menu-active .generated-home-scene .generated-title-cloud,.camera-menu-active .generated-garden { display:none; }.camera-menu-active .generated-child { top:auto; bottom:1%; width:12%; opacity:.8; }.camera-menu-active .generated-child--left { left:0; }.camera-menu-active .generated-child--right { right:0; }.camera-menu-active .generated-rainbow { width:18%; right:0; top:0; }.camera-menu-active .generated-sun { width:19%; top:0; left:0; }
 
 .camera-menu-active .player-welcome .welcome-players .action-card { position:static; width:100%; height:100%; min-height:0; padding:.4rem; }
-
-.camera-menu-active .catalog-picker .game-card:nth-child(7) { left:37%; top:42%; }
-
-.camera-menu-active .catalog-picker .game-card:nth-child(8) { left:37%; top:67%; }
-
-.camera-menu-active .catalog-picker .game-card:nth-child(9) { left:37%; top:17%; }
-
-.camera-menu-active .catalog-grid:has(.game-card:nth-child(10)) .game-card { width:21%; left:3%; top:17%; }
-.camera-menu-active .catalog-grid:has(.game-card:nth-child(10)) .game-card:nth-child(4n+2) { left:27%; }
-.camera-menu-active .catalog-grid:has(.game-card:nth-child(10)) .game-card:nth-child(4n+3) { left:51%; }
-.camera-menu-active .catalog-grid:has(.game-card:nth-child(10)) .game-card:nth-child(4n+4) { left:75%; }
-.camera-menu-active .catalog-grid:has(.game-card:nth-child(10)) .game-card:nth-child(n+5) { top:42%; }
-.camera-menu-active .catalog-grid:has(.game-card:nth-child(10)) .game-card:nth-child(n+9) { top:67%; }

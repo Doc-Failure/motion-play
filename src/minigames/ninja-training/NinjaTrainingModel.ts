@@ -15,6 +15,7 @@ const counters = ():Record<PlayerId,number> => ({1:0,2:0,3:0,4:0})
 export class NinjaTrainingModel {
   private readonly session:GameSession
   private readonly count:PlayerCount
+  private readonly pressure:number
   private readonly duration:number
   private aspect:number
   private ninjas:PaperNinja[]=[]
@@ -25,8 +26,8 @@ export class NinjaTrainingModel {
   private contacts=counters()
   private struck=new Set<string>()
   private inputHistory=new Map<string,{timestamp:number; points:Set<string>}>()
-  constructor(options:{playerCount?:PlayerCount; countdownMs?:number; roundDurationMs?:number; aspectRatio?:number}={}) {
-    this.count=options.playerCount??1; this.duration=options.roundDurationMs??60_000
+  constructor(options:{playerCount?:PlayerCount; countdownMs?:number; roundDurationMs?:number; aspectRatio?:number;pressure?:number}={}) {
+    this.pressure=options.pressure??0;this.count=options.playerCount??1; this.duration=options.roundDurationMs??60_000
     this.session=new GameSession({...options,playerCount:this.count})
     this.aspect=options.aspectRatio??1
   }
@@ -54,13 +55,13 @@ export class NinjaTrainingModel {
       while(this.nextSpawn<=elapsed) {
         const at=this.nextSpawn
         this.expire(at)
-        const wave=Math.floor(at/6000), flightMs=Math.max(1200,2500-wave*110)
+        const wave=Math.floor(at/6000), flightMs=Math.max(1200,2500-wave*110-300*this.pressure)
         for(let i=1;i<=this.count;i++) {
           const playerId=i as PlayerId
-          if(this.ninjas.filter(n=>n.playerId===playerId).length<5) this.ninjas.push({id:this.nextId++,playerId,side:(this.wave%2?1:-1),level:Math.floor(this.wave/2)%3,born:at,flightMs,x:0,y:0,progress:0,pose:'run'})
+          if(this.ninjas.filter(n=>n.playerId===playerId).length<5) this.ninjas.push({id:this.nextId++,playerId,side:([ -1,1,-1,1,1,-1,1,-1 ] as const)[this.wave%8],level:Math.floor(this.wave/2)%3,born:at,flightMs,x:0,y:0,progress:0,pose:'run'})
         }
         this.wave++
-        this.nextSpawn+=Math.max(650,1550-Math.floor(at/6000)*90)
+        this.nextSpawn+=Math.max(650,1550-Math.floor(at/6000)*90-190*this.pressure)
       }
       this.expire(elapsed)
       this.elapsed=elapsed
@@ -129,7 +130,7 @@ export class NinjaTrainingModel {
   }
   private position(n:PaperNinja,at:number):PaperNinja {
     const age=Math.max(0,at-n.born), progress=Math.max(0,Math.min(1,(age-850)/n.flightMs)), startY=[.44,.655,.87][n.level]-.1*Math.min(1,this.aspect)
-    const distance=age<350?.03+.06*age/350:age<850?.09:.1+.4*progress
+    const distance=age<350?.10+.05*age/350:age<850?.15:.15+.35*progress
     return {...n,x:n.side===-1?distance:1-distance,y:startY+(.55-startY)*progress-Math.sin(progress*Math.PI)*.19,progress,pose:age<350?'run':age<850?'ready':'leap'}
   }
   private overlaps(a:{x:number;y:number},b:{x:number;y:number},radius:number) {

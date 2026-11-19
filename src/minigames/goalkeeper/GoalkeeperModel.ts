@@ -17,12 +17,15 @@ export class GoalkeeperModel {
   private readonly session: GameSession
   private readonly players: PlayerId[]
   private keepers = new Map<PlayerId, Keeper>()
+  private observations=new Map<PlayerId,number>()
+  private readonly pressure:number
   private shots = new Map<PlayerId, GoalShot>()
   private saveCounts = new Map<PlayerId, number>()
   private shotNumbers = new Map<PlayerId, number>()
   private lastTimestamp: number | null = null
 
-  constructor(options: { playerCount?: PlayerCount; countdownMs?: number; roundDurationMs?: number } = {}) {
+  constructor(options: { playerCount?: PlayerCount; countdownMs?: number; pressure?:number; roundDurationMs?: number } = {}) {
+    this.pressure=Math.max(0,Math.min(1,options.pressure??0))
     const count = options.playerCount ?? 1
     this.session = new GameSession({ playerCount: count, countdownMs: options.countdownMs, roundDurationMs: options.roundDurationMs })
     this.players = Array.from({ length: count }, (_, index) => (index + 1) as PlayerId)
@@ -30,6 +33,7 @@ export class GoalkeeperModel {
 
   start(timestamp: number) {
     this.clock.reset(timestamp)
+    this.observations.clear()
 
     this.keepers.clear(); this.shots.clear(); this.saveCounts.clear(); this.shotNumbers.clear(); this.lastTimestamp = timestamp
     for (const playerId of this.players) {
@@ -44,6 +48,7 @@ export class GoalkeeperModel {
     const state = this.update(timestamp)
     if (state.phase !== 'playing' && state.phase !== 'countdown') return state
     this.session.pause(this.lastTimestamp!)
+    this.observations.clear()
     this.clock.pause(timestamp)
     return this.snapshot(this.lastTimestamp!)
   }
@@ -63,23 +68,26 @@ export class GoalkeeperModel {
     const before = this.session.getSnapshot(previous)
     const state = this.session.update(now)
     const playingElapsed = before.phase === 'playing' ? now - previous : before.phase === 'countdown' && state.phase === 'playing' ? Math.max(0, now - previous - before.countdownRemainingMs) : 0
-    if (playingElapsed > 0) this.moveShots(playingElapsed)
+    if (playingElapsed > 0) this.moveShots(playingElapsed,now)
     this.lastTimestamp = now
     return this.snapshot(now)
   }
 
   moveBody(event: MotionInputEvent) {
     if (!this.clock.accepts(event.timestamp)) return this.snapshot(this.lastTimestamp ?? 0)
+    const sample=this.clock.time(event.timestamp)
+    if(![sample,event.x,event.y,event.confidence].every(Number.isFinite)||sample<=(this.observations.get(event.playerId)??-Infinity)||sample<(this.lastTimestamp??0)-200)return this.snapshot(this.lastTimestamp??0)
     this.update(event.timestamp)
     const now = this.lastTimestamp!
     if (event.kind !== 'BODY_MOVE' || event.confidence < .45 || !this.players.includes(event.playerId) || this.session.getSnapshot().phase !== 'playing') return this.snapshot(now)
+    this.observations.set(event.playerId,sample)
     this.keepers.set(event.playerId, { playerId: event.playerId, x: clamp(event.x), y: clampRange(event.y, .58, .88), confidence: event.confidence })
     return this.snapshot(now)
   }
 
   setShot(shot: GoalShot) { if (this.players.includes(shot.playerId)) this.shots.set(shot.playerId, { ...shot }) }
 
-  private moveShots(elapsedMs: number) {
+  private moveShots(elapsedMs: number, now:number) {
     for (const playerId of this.players) {
       const shot = this.shots.get(playerId)
       if (!shot) continue
@@ -87,7 +95,9 @@ export class GoalkeeperModel {
       shot.y += shot.velocityY * elapsedMs
       if (oldY < GOAL_LINE && shot.y >= GOAL_LINE) {
         const keeper = this.keepers.get(playerId)
-        const blocked = keeper && Math.abs(shot.x - keeper.x) <= KEEPER_REACH_X && Math.abs(GOAL_LINE - keeper.y) <= KEEPER_REACH_Y
+        const crossing=now-(shot.y-GOAL_LINE)/shot.velocityY
+        const seen=this.observations.get(playerId)??-Infinity
+        const blocked = crossing>=seen && crossing-seen<=450 && keeper && Math.abs(shot.x - keeper.x) <= KEEPER_REACH_X-.035*this.pressure && Math.abs(GOAL_LINE - keeper.y) <= KEEPER_REACH_Y
         if (blocked) { this.session.awardScore(playerId, 10); this.saveCounts.set(playerId, (this.saveCounts.get(playerId) ?? 0) + 1) }
         else this.session.awardScore(playerId, -5)
         this.shotNumbers.set(playerId, (this.shotNumbers.get(playerId) ?? 0) + 1)
@@ -99,7 +109,7 @@ export class GoalkeeperModel {
   private newShot(playerId: PlayerId): GoalShot {
     const number = this.shotNumbers.get(playerId) ?? 0
     const positions = [.22, .78, .48, .65, .34]
-    return { playerId, x: positions[(number + playerId - 1) % positions.length], y: .1, velocityY: SHOT_SPEED }
+    return { playerId, x: positions[(number + playerId - 1) % positions.length], y: .1, velocityY: SHOT_SPEED*(1+.42*this.pressure) }
   }
 
   private snapshot(timestamp: number): GoalkeeperSnapshot {

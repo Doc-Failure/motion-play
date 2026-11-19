@@ -4,7 +4,7 @@ import { TournamentSession,TOURNAMENT_GAME_COUNT } from '../src/game/TournamentS
 describe('TournamentSession', () => {
   it('uses only the current public games and never includes hidden implementations', () => {
     expect(TOURNAMENT_GAME_COUNT).toBe(5)
-    expect(new TournamentSession(2).schedule.map(round=>round.game)).toEqual(['ninja-training','window-wipe','beat-freak','punch-arena','keep-ups'])
+    expect(new TournamentSession(2).schedule.map(round=>round.game)).toEqual(['ninja-training','window-wipe','punch-arena','keep-ups','ghost-catcher'])
   })
 
   it('aggregates isolated player totals, ranks ties stably, and recognizes joint winners by raw total points', () => {
@@ -17,7 +17,7 @@ describe('TournamentSession', () => {
     expect(snapshot.totals).toEqual([{ playerId: 1, score: 35 }, { playerId: 2, score: 35 }])
     expect(snapshot.ranking.map((entry) => entry.playerId)).toEqual([1, 2])
     expect(snapshot.completed[4]).toMatchObject({ scoring: 'competitive', teamScore: 20 })
-    expect(snapshot.cooperativeTotal).toBe(0)
+    expect(snapshot.cooperativeTotal).toBe(20)
     expect(snapshot.winners.map(entry=>entry.playerId)).toEqual([1,2])
     expect(snapshot.isComplete).toBe(true)
   })

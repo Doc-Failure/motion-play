@@ -18,9 +18,13 @@ export class AirPongModel {
   private paddles = new Map<PlayerId, PongPaddle>()
   private balls = new Map<PlayerId, PongBall>()
   private returns = new Map<PlayerId, number>()
+  private readonly pressure: number
+  private readonly lastHand = new Map<PlayerId, number>()
+  private readonly serves = new Map<PlayerId, number>()
   private lastTimestamp: number | null = null
 
-  constructor(options: { playerCount?: PlayerCount; countdownMs?: number; roundDurationMs?: number } = {}) {
+  constructor(options: { pressure?: number; playerCount?: PlayerCount; countdownMs?: number; roundDurationMs?: number } = {}) {
+    this.pressure = Math.max(-.15,Math.min(1,options.pressure ?? 0))
     const count = options.playerCount ?? 1
     this.session = new GameSession({ playerCount: count, countdownMs: options.countdownMs, roundDurationMs: options.roundDurationMs })
     this.players = Array.from({ length: count }, (_, index) => (index + 1) as PlayerId)
@@ -29,9 +33,9 @@ export class AirPongModel {
   start(timestamp: number) {
     this.clock.reset(timestamp)
 
-    this.paddles.clear(); this.balls.clear(); this.returns.clear(); this.lastTimestamp = timestamp
+    this.paddles.clear(); this.balls.clear(); this.returns.clear(); this.lastHand.clear(); this.serves.clear(); this.lastTimestamp = timestamp
     for (const playerId of this.players) {
-      this.paddles.set(playerId, { playerId, y: .5, confidence: 1 })
+      this.paddles.set(playerId, { playerId, y: .5, confidence: 0 })
       this.balls.set(playerId, this.newBall(playerId))
       this.returns.set(playerId, 0)
     }
@@ -42,6 +46,7 @@ export class AirPongModel {
   pause(timestamp: number) {
     const state = this.update(timestamp)
     if (state.phase !== 'playing' && state.phase !== 'countdown') return state
+    this.lastHand.clear()
     this.session.pause(this.lastTimestamp!)
     this.clock.pause(timestamp)
     return this.snapshot(this.lastTimestamp!)
@@ -60,21 +65,28 @@ export class AirPongModel {
     if (this.clock.paused) return this.snapshot(now)
     const previous = this.lastTimestamp ?? now
     const before = this.session.getSnapshot(previous)
-    const state = this.session.update(now)
-    const playingElapsed = before.phase === 'playing'
-      ? now - previous
-      : before.phase === 'countdown' && state.phase === 'playing' ? Math.max(0, now - previous - before.countdownRemainingMs) : 0
-    if (playingElapsed > 0) this.moveBalls(playingElapsed)
+    const from = previous + before.countdownRemainingMs
+    const playingElapsed = Math.min(before.roundRemainingMs, Math.max(0, now - from))
+    if (playingElapsed > 0 && (before.phase === 'countdown' || before.phase === 'playing')) {
+      this.session.update(from)
+      this.moveBalls(from, playingElapsed)
+    }
+    this.session.update(now)
     this.lastTimestamp = now
     return this.snapshot(now)
   }
 
   moveHand(event: MotionInputEvent) {
-    if (!this.clock.accepts(event.timestamp)) return this.snapshot(this.lastTimestamp ?? 0)
-    this.update(event.timestamp)
+    const time = this.clock.time(event.timestamp)
+    if (event.kind !== 'HAND_POSITION' || !this.players.includes(event.playerId) || !this.clock.accepts(event.timestamp)
+      || ![time,event.x,event.y,event.confidence].every(Number.isFinite) || event.confidence < .45 || event.confidence > 1
+      || event.x < 0 || event.x > 1 || event.y < 0 || event.y > 1
+      || time < (this.lastTimestamp ?? time) - 150 || time <= (this.lastHand.get(event.playerId) ?? -Infinity)) return this.snapshot(this.lastTimestamp ?? 0)
+    const state = this.update(event.timestamp)
+    if (state.phase !== 'playing') return state
+    this.lastHand.set(event.playerId,time)
     const now = this.lastTimestamp!
-    if (event.kind !== 'HAND_POSITION' || event.confidence < .45 || !this.players.includes(event.playerId) || this.session.getSnapshot().phase !== 'playing') return this.snapshot(now)
-    this.paddles.set(event.playerId, { playerId: event.playerId, y: clamp(event.y), confidence: event.confidence })
+    this.paddles.set(event.playerId, { playerId:event.playerId, y:event.y, confidence:event.confidence })
     return this.snapshot(now)
   }
 
@@ -82,50 +94,59 @@ export class AirPongModel {
     if (this.players.includes(ball.playerId)) this.balls.set(ball.playerId, { ...ball })
   }
 
-  private moveBalls(elapsedMs: number) {
+  private moveBalls(from: number, elapsedMs: number) {
     for (const playerId of this.players) {
-      const ball = this.balls.get(playerId)
-      if (!ball) continue
-      ball.x += ball.velocityX * elapsedMs
-      ball.y += ball.velocityY * elapsedMs
-      if (ball.y <= .06 || ball.y >= .94) {
-        ball.y = clampRange(ball.y, .06, .94)
-        ball.velocityY *= -1
-      }
-      if (ball.x >= .94) {
-        ball.x = .94
-        ball.velocityX = -Math.abs(ball.velocityX)
-      }
-      if (ball.x <= PADDLE_X) {
-        const paddle = this.paddles.get(playerId)
-        if (paddle && Math.abs(ball.y - paddle.y) <= PADDLE_REACH) {
-          ball.x = PADDLE_X
-          ball.velocityX = Math.abs(ball.velocityX) * 1.04
-          ball.velocityY += (ball.y - paddle.y) * .00018
+      let ball = this.balls.get(playerId)!
+      let elapsed = 0
+      while (elapsed < elapsedMs) {
+        const towardPlayer = ball.velocityX < 0
+        const wall = towardPlayer ? PADDLE_X : .94
+        const crossing = ball.velocityX === 0 ? Infinity : Math.max(0,(wall - ball.x) / ball.velocityX)
+        const dt = Math.min(elapsedMs - elapsed, crossing)
+        const height = .88
+        const phase = ((ball.y - .06 + ball.velocityY * dt) % (2 * height) + 2 * height) % (2 * height)
+        ball.y = .06 + (phase <= height ? phase : 2 * height - phase)
+        if (phase > height) ball.velocityY *= -1
+        ball.x += ball.velocityX * dt
+        elapsed += dt
+        if (dt < crossing) break
+        ball.x = wall
+        if (!towardPlayer) { ball.velocityX *= -1; continue }
+        const paddle = this.paddles.get(playerId)!
+        const tracked = from + elapsed - (this.lastHand.get(playerId) ?? -Infinity) <= 350
+        const offset = ball.y - paddle.y
+        if (tracked && Math.abs(offset) <= PADDLE_REACH - .025 * this.pressure) {
+          ball.velocityX = Math.min(.00060, Math.abs(ball.velocityX) * 1.055)
+          // The point of contact chooses the rebound angle. Even a dead-centre hit moves.
+          ball.velocityY = Math.abs(offset) < .025 ? (.000065 * ((this.returns.get(playerId) ?? 0) % 2 ? -1 : 1)) : offset * .0015
           this.returns.set(playerId, (this.returns.get(playerId) ?? 0) + 1)
-          this.session.awardScore(playerId, 10)
+          this.session.awardScore(playerId,10)
         } else {
-          this.session.awardScore(playerId, -5)
-          this.returns.set(playerId, 0)
-          this.balls.set(playerId, this.newBall(playerId))
+          if (tracked) this.session.awardScore(playerId,-5)
+          this.returns.set(playerId,0)
+          ball = this.newBall(playerId)
+          this.balls.set(playerId,ball)
         }
       }
     }
   }
 
   private newBall(playerId: PlayerId): PongBall {
-    return { playerId, x: .52, y: .5, velocityX: BALL_SPEED, velocityY: 0 }
+    const serve = this.serves.get(playerId) ?? 0
+    this.serves.set(playerId,serve + 1)
+    const speed = BALL_SPEED * (1 + .42 * this.pressure)
+    return { playerId, x:.52, y:[.5,.63,.38,.54][serve % 4], velocityX:-speed, velocityY:speed * [.14,-.29,.26,-.16][serve % 4] }
   }
 
   private snapshot(timestamp: number): AirPongSnapshot {
     return {
       ...this.session.getSnapshot(timestamp),
-      paddles: this.players.map((playerId) => ({ ...(this.paddles.get(playerId) as PongPaddle) })),
+      paddles: this.players.map(playerId => {
+        const paddle = this.paddles.get(playerId)!
+        return { ...paddle, confidence:timestamp-(this.lastHand.get(playerId) ?? -Infinity)<=350 ? paddle.confidence : 0 }
+      }),
       balls: this.players.map((playerId) => ({ ...(this.balls.get(playerId) as PongBall) })),
       rallies: this.players.map((playerId) => ({ playerId, returns: this.returns.get(playerId) ?? 0 })),
     }
   }
 }
-
-const clamp = (value: number) => clampRange(value, 0, 1)
-const clampRange = (value: number, minimum: number, maximum: number) => Math.max(minimum, Math.min(maximum, value))

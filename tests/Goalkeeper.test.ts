@@ -23,6 +23,15 @@ describe('Goalkeeper model', () => {
     expect(model.update(102).scores[0].score).toBe(-5)
   })
 
+  it('requires a recent measured or manual position to make a save',()=>{
+    const model=new GoalkeeperModel({countdownMs:0})
+    model.start(0)
+    model.moveBody(body(1,.5,.78,5))
+    model.update(600)
+    model.setShot({playerId:1,x:.5,y:.76,velocityY:.00022})
+    expect(model.update(710).scores[0].score).toBe(-5)
+  })
+
   it('keeps poses, shots, saves, and scores isolated per player', () => {
     const model = new GoalkeeperModel({ playerCount: 2, countdownMs: 0 })
     model.start(0)

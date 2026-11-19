@@ -74,7 +74,7 @@ for (const [title, Game] of [['Bubble Battle', BubbleBattle], ['Whack-a-Mole', W
   describe(`${title} keyboard fallback`, () => {
     it.each([1, 2, 3, 4] as const)('scores only in the focused lane with %i players and freezes during recovery', playerCount => {
       const { container, rerender } = render(<Game playerCount={playerCount} onExit={vi.fn()} />)
-      const board = screen.getByRole('group', { name: `Player ${playerCount} ${title} play area` })
+      const board = screen.getByRole('group', { name: title==='Window Wipe'&&playerCount>1?'Team Window Wipe play area':`Player ${playerCount} ${title} play area` })
       const scores = () => [...container.querySelectorAll('dl dd')].slice(0, playerCount).map(element => element.textContent)
       const zero = '0'
       fireEvent.keyDown(board, { key: 'Enter' })
@@ -82,7 +82,26 @@ for (const [title, Game] of [['Bubble Battle', BubbleBattle], ['Whack-a-Mole', W
       advance(3000)
       advance(5000)
       board.focus()
-      if (title === 'Bubble Battle') for (let i = 0; i < 9; i++) fireEvent.keyDown(board, { key: 'ArrowDown' })
+      if(title==='Window Wipe'&&playerCount>1)for(let i=0;i<8;i++)fireEvent.keyDown(board,{key:'ArrowRight'})
+      if (title === 'Bubble Battle' || title === 'Whack-a-Mole') {
+        let targetX: number, targetY: number
+        if (title === 'Bubble Battle') {
+          const bubble = board.querySelector<HTMLElement>('.battle-target--bubble')!
+          targetX = parseFloat(bubble.style.left) / 100
+          targetY = parseFloat(bubble.style.top) / 100
+        } else {
+          const holes = Array.from(board.querySelectorAll('.mole-hole'))
+          const occupied = holes.findIndex(hole => hole.querySelector('.mole'))
+          expect(occupied).toBeGreaterThanOrEqual(0)
+          targetX = (occupied % 3 + .5) / 3
+          targetY = (Math.floor(occupied / 3) + .5) / 3
+        }
+        // Move the real keyboard cursor onto the current target in the selected lane.
+        for (const [coordinate, negative, positive] of [[targetX,'ArrowLeft','ArrowRight'],[targetY,'ArrowUp','ArrowDown']] as const) {
+          const steps = Math.round((coordinate - .5) * 20)
+          for (let i = 0; i < Math.abs(steps); i++) fireEvent.keyDown(board, {key: steps < 0 ? negative : positive})
+        }
+      }
       fireEvent.keyDown(board, { key: 'Enter' })
       expect(scores().slice(0, -1)).toEqual(Array(playerCount - 1).fill(zero))
       expect(scores().at(-1)).not.toBe(zero)

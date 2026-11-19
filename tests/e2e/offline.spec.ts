@@ -93,27 +93,28 @@ test('previously used local model runs blank-frame inference after a genuine off
     await navigator.serviceWorker.ready
     if (!navigator.serviceWorker.controller) await new Promise<void>(resolve => navigator.serviceWorker.addEventListener('controllerchange', () => resolve(), { once: true }))
   })
-  const runBlankInference = () => page.evaluate(async () => {
+  const runBlankInference = (withMasks=false) => page.evaluate(async masks => {
     const frame = document.createElement('iframe')
     frame.src = './pose/tracker.html'
-    let tracker: { detect: (image: HTMLCanvasElement, time: number) => unknown[]; close: () => void } | undefined
+    let tracker: { detect: (image: HTMLCanvasElement, time: number) => unknown[]; silhouettes?: () => unknown[]; close: () => void } | undefined
     try {
       await new Promise<void>((resolve, reject) => {
         frame.onload = () => resolve()
         frame.onerror = () => reject(new Error('Local model document failed to load'))
         document.body.append(frame)
       })
-      const runtime = frame.contentWindow as (Window & { createLocalPoseTracker: (players: number) => Promise<NonNullable<typeof tracker>> }) | null
+      const runtime = frame.contentWindow as (Window & { createLocalPoseTracker: (players: number,hands:boolean,masks:boolean) => Promise<NonNullable<typeof tracker>> }) | null
       if (!runtime?.createLocalPoseTracker) throw new Error('Local model runtime is unavailable')
-      tracker = await runtime.createLocalPoseTracker(1)
+      tracker = await runtime.createLocalPoseTracker(1,false,masks)
       const blank = document.createElement('canvas')
       blank.width = 64; blank.height = 64
       const drawing = blank.getContext('2d')!
       drawing.fillStyle = '#808080'; drawing.fillRect(0, 0, 64, 64)
-      return tracker.detect(blank, performance.now()).length
+      const landmarks=tracker.detect(blank, performance.now())
+      return {poses:landmarks.length,masks:tracker.silhouettes?.().length}
     } finally { tracker?.close(); frame.remove() }
-  })
-  expect(await runBlankInference()).toBe(0)
+  },withMasks)
+  expect(await runBlankInference()).toEqual({poses:0,masks:undefined})
   const cachedPaths = await page.evaluate(async () => {
     const keys = await caches.keys()
     const cache = await caches.open(keys.find(key => key.startsWith('motion-play-shell-'))!)
@@ -124,6 +125,6 @@ test('previously used local model runs blank-frame inference after a genuine off
   await context.setOffline(true)
   await page.reload()
   await expect(page.getByRole('heading', { name: 'Motion Play!' })).toBeVisible()
-  expect(await runBlankInference()).toBe(0)
+  expect(await runBlankInference(true)).toEqual({poses:0,masks:0})
   // This tests local loading/inference, not tracking people or webcam quality.
 })

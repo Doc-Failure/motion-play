@@ -45,10 +45,11 @@ describe('Fruit Slash generic swipe model', () => {
   ] as Partial<MotionInputEvent>[])('rejects wrong, uncertain or malformed input %j', extra => {
     const model=game(); expect(model.slash(input(1200,1,extra)).scores[0].score).toBe(0)
   })
-  it('rejects reordered input and packets older than the rendered frame', () => {
+  it('accepts delayed captures, rejects stale or reordered packets', () => {
     const model=game(); model.update(1250)
-    expect(model.slash(input(1200)).scores[0].score).toBe(0)
-    model.slash(input(1300,1,{y:0})); expect(model.slash(input(1290)).scores[0].score).toBe(0)
+    expect(model.slash(input(990)).scores[0].score).toBe(0)
+    expect(model.slash(input(1200)).scores[0].score).toBe(10)
+    model.slash(input(1300,1,{y:0})); expect(model.slash(input(1290)).scores[0].score).toBe(10)
   })
   it('ignores countdown and segments bridging into play', () => {
     const model=new FruitSlashModel({random:()=>.5});model.start(0)

@@ -25,11 +25,16 @@ export class MonsterDefenseModel {
   private inputNotBefore = 0
   private pausedAt: number | null = null
 
-  constructor(options: { playerCount?: PlayerCount; countdownMs?: number; roundDurationMs?: number; spawnIntervalMs?: number; approachMs?: number } = {}) {
+  private readonly teamGoal: number
+  private readonly pressure: number
+
+  constructor(options: { pressure?: number; teamGoal?: number; playerCount?: PlayerCount; countdownMs?: number; roundDurationMs?: number; spawnIntervalMs?: number; approachMs?: number } = {}) {
+    this.pressure = Math.max(-.15, Math.min(1, options.pressure ?? 0))
     this.playerCount = options.playerCount ?? 1
+    this.teamGoal = options.teamGoal ?? this.playerCount * 100
     this.session = new GameSession({ ...options, playerCount: this.playerCount })
-    this.spawnIntervalMs = options.spawnIntervalMs ?? 1_800
-    this.approachMs = options.approachMs ?? 5_400
+    this.spawnIntervalMs = options.spawnIntervalMs ?? (1800 - 480 * this.pressure)
+    this.approachMs = options.approachMs ?? (5400 - 1500 * this.pressure)
     if (!Number.isFinite(this.spawnIntervalMs) || this.spawnIntervalMs < 100 || !Number.isFinite(this.approachMs) || this.approachMs < 100) throw new Error('Monster timing must be finite and at least 100ms.')
   }
 
@@ -83,7 +88,7 @@ export class MonsterDefenseModel {
     // Input can arrive after a render tick. Use the capture-time position of
     // surviving targets without rewinding time or resurrecting breached ones.
     const target = this.monsters.find((monster) => monster.playerId === event.playerId && event.timestamp >= monster.spawnedAt
-      && ((event.x - this.monsterX(monster, event.timestamp)) / .1) ** 2 + ((event.y - monster.y) / .13) ** 2 <= 1)
+      && ((event.x - this.monsterX(monster, event.timestamp)) / .1) ** 2 + ((event.y - this.monsterY(monster, event.timestamp)) / .13) ** 2 <= 1)
     if (target) {
       this.monsters = this.monsters.filter((monster) => monster.id !== target.id)
       this.session.awardScore(event.playerId, 10)
@@ -125,8 +130,13 @@ export class MonsterDefenseModel {
   private snapshot(): MonsterDefenseSnapshot {
     const state = this.session.getSnapshot()
     const now = this.pausedAt ?? this.lastTimestamp
-    return { ...state, monsters: this.monsters.map((monster) => ({ ...monster, x: this.monsterX(monster, now) })),
-      breaches: { ...this.breaches }, teamScore: state.scores.reduce((total, entry) => total + entry.score, 0), teamGoal: this.playerCount * 100 }
+    return { ...state, monsters: this.monsters.map((monster) => ({ ...monster, x: this.monsterX(monster, now), y: this.monsterY(monster, now) })),
+      breaches: { ...this.breaches }, teamScore: state.scores.reduce((total, entry) => total + entry.score, 0), teamGoal: this.teamGoal }
+  }
+
+  private monsterY(monster: Monster, timestamp: number) {
+    const progress = Math.max(0, Math.min(1,(timestamp - monster.spawnedAt) / this.approachMs))
+    return monster.y + .09 * Math.max(0,this.pressure) * Math.sin(progress * 2 * Math.PI)
   }
 
   private monsterX(monster: Monster, timestamp: number) {

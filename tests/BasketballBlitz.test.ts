@@ -40,9 +40,9 @@ describe('Basketball Blitz generic swipe model', () => {
     expect(game().shoot(input(200,1,extra)).stats[0].attempts).toBe(0)
   })
   it('rejects stale events and duplicate strokes after flight',()=>{
-    const model=game();model.update(250)
+    const model=game();model.update(400)
     expect(model.shoot(input()).stats[0].attempts).toBe(0)
-    model.shoot(input(300));model.update(1000)
+    model.shoot(input(450));model.update(1100)
     expect(model.shoot(input(300)).stats[0].attempts).toBe(1)
   })
   it('ignores countdown and strokes crossing countdown',()=>{

@@ -1,3 +1,5 @@
+import {ChallengeResult} from '../../game/ArcadeRound'
+import {useChallenge} from '../../game/ChallengeContext'
 import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react'
 import { GameFeedback } from '../../game/GameFeedback'
 import { useRoundRecovery, type RoundRecoveryProps } from '../../game/useRoundRecovery'
@@ -9,7 +11,8 @@ import './tower-builder.css'
 export function TowerBuilder({ playerCount, inputEvents = [], onExit, externalPauseReason, onReconnect }: RoundRecoveryProps & {
   playerCount: PlayerCount; inputEvents?: MotionInputEvent[]; onExit(): void
 }) {
-  const [model] = useState(() => new TowerBuilderModel({ playerCount }))
+  const challenge = useChallenge()
+  const [model] = useState(() => new TowerBuilderModel({ playerCount, pressure:challenge?.pressure, roundDurationMs:challenge ? 40000 : undefined }))
   const [snapshot, setSnapshot] = useState(() => model.start(performance.now()))
   const controls = useRef(new Map<PlayerId, TowerBlock>())
   const [preview, setPreview] = useState<{ playerId: PlayerId; point: TowerBlock } | null>(null)
@@ -81,6 +84,6 @@ export function TowerBuilder({ playerCount, inputEvents = [], onExit, externalPa
     </section>)}</div>
     <p id="tower-help" className="tower-help">Simulation: hold the mouse or touch down on the outline. Keyboard: focus your lane, use arrows, then hold Space or Enter. Camera motion centroids are not tracked hands; stable webcam control is unverified.</p>
     {recovery.pauseDialog}
-    {snapshot.phase === 'results' && <div className="battle-results" role="dialog" aria-label="Tower Builder results"><h2 ref={results} tabIndex={-1}>Teamwork builds wonders!</h2><p>Team: {snapshot.teamScore} points</p>{snapshot.lanes.map(lane => <p key={lane.playerId}>Player {lane.playerId}: {lane.placed} blocks · {lane.completed} towers · {lane.topples} topples</p>)}<button className="crayon-button" onClick={() => { controls.current.clear(); holding.current.clear(); replay.current = true; setSnapshot(model.start(performance.now())) }}>Play again</button><button className="text-button" onClick={onExit}>Back to setup</button></div>}
+    {snapshot.phase === 'results' && <div className="battle-results" role="dialog" aria-label="Tower Builder results"><h2 ref={results} tabIndex={-1}>Teamwork builds wonders!</h2><ChallengeResult scores={snapshot.scores}/><p>Team: {snapshot.teamScore} points</p>{snapshot.lanes.map(lane => <p key={lane.playerId}>Player {lane.playerId}: {lane.placed} blocks · {lane.completed} towers · {lane.topples} topples</p>)}<button className="crayon-button" onClick={() => { controls.current.clear(); holding.current.clear(); replay.current = true; setSnapshot(model.start(performance.now())) }}>Play again</button><button className="text-button" onClick={onExit}>Back to setup</button></div>}
   </section>
 }

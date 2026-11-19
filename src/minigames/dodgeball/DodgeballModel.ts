@@ -31,7 +31,15 @@ export class DodgeballModel {
   private nextImpact = 0
   private wave = 0
 
-  constructor(options: Partial<GameSessionOptions> = {}) {
+  private readonly flightMs:number
+  private readonly cycleMs:number
+  private readonly reach:number
+
+  constructor(options: Partial<GameSessionOptions> & { pressure?:number } = {}) {
+    const pressure = Math.max(-.15,Math.min(1,options.pressure ?? 0))
+    this.flightMs = dodgeFlightMs - 450 * pressure
+    this.cycleMs = dodgeCycleMs - 650 * pressure
+    this.reach = dodgeReach + .025 * pressure
     this.session = new GameSession({ ...options, playerCount: options.playerCount ?? 1 })
   }
 
@@ -40,7 +48,7 @@ export class DodgeballModel {
     this.clock.reset(timestamp); this.now = timestamp
     this.begins = timestamp + state.countdownRemainingMs
     this.ends = this.begins + state.roundRemainingMs
-    this.nextImpact = this.begins + dodgeFlightMs; this.wave = 0
+    this.nextImpact = this.begins + this.flightMs; this.wave = 0
     this.samples.clear(); this.lastInput.clear()
     this.lanes = state.scores.map(({ playerId }) => ({ playerId, bodyX: null, ballX: .5, progress: 0,
       dodges: 0, hits: 0, feedback: 'Move your marker away from the dashed ball path!' }))
@@ -57,22 +65,27 @@ export class DodgeballModel {
         for (const lane of this.lanes) {
           const sample = this.samples.get(lane.playerId)
           if (sample && this.nextImpact - sample.time <= dodgeFreshMs) {
-            const hit = Math.abs(sample.x - lane.ballX) <= dodgeReach
+            const hit = Math.abs(sample.x - lane.ballX) <= this.reach
             this.session.awardScore(lane.playerId, hit ? -5 : 10)
             if (hit) lane.hits++; else lane.dodges++
             lane.feedback = hit ? '● Bonk! −5. Try the clear side next time!' : '✓ Nice dodge! +10 points.'
           } else lane.feedback = 'No fresh position. Keep moving your marker; no points changed.'
         }
         this.wave++
-        for (const lane of this.lanes) lane.ballX = [.5, .22, .78, .38, .62][this.wave % 5]
-        this.nextImpact += dodgeCycleMs
+        // A throw aims where each player stood at the previous impact. Escaping requires moving again.
+        for (const lane of this.lanes) {
+          const last = this.samples.get(lane.playerId)
+          const fallback = [.5, .25, .75, .38, .62][this.wave % 5]
+          lane.ballX = last && this.nextImpact-last.time<=dodgeFreshMs ? Math.max(.12,Math.min(.88,last.x)) : fallback
+        }
+        this.nextImpact += this.cycleMs
       }
     }
     this.session.update(time); this.now = time
     for (const lane of this.lanes) {
       const sample = this.samples.get(lane.playerId)
       lane.bodyX = sample && time - sample.time <= dodgeFreshMs ? sample.x : null
-      lane.progress = Math.max(0, Math.min(1, (time - (this.nextImpact - dodgeFlightMs)) / dodgeFlightMs))
+      lane.progress = Math.max(0, Math.min(1, (time - (this.nextImpact - this.flightMs)) / this.flightMs))
     }
     return this.snapshot()
   }
@@ -80,7 +93,7 @@ export class DodgeballModel {
   moveBody(event: MotionInputEvent) {
     const lane = this.lanes.find(lane => lane.playerId === event.playerId)
     if (!lane || event.kind !== 'BODY_MOVE' || !Number.isFinite(event.timestamp)
-      || !this.clock.accepts(event.timestamp) || this.clock.time(event.timestamp) < Math.max(this.begins, this.now)
+      || !this.clock.accepts(event.timestamp) || this.clock.time(event.timestamp) < Math.max(this.begins, this.now - 32)
       || event.timestamp <= (this.lastInput.get(event.playerId) ?? -Infinity)) return this.snapshot()
     // Resolve elapsed impacts with the previously known position, never a future sample.
     this.update(event.timestamp)
@@ -90,7 +103,7 @@ export class DodgeballModel {
       || event.y < 0 || event.y > 1 || event.confidence < .6 || event.confidence > 1) {
       this.samples.delete(event.playerId); lane.bodyX = null
     } else {
-      this.samples.set(event.playerId, { x: event.x, time: this.now }); lane.bodyX = event.x
+      this.samples.set(event.playerId, { x: event.x, time: this.clock.time(event.timestamp) }); lane.bodyX = event.x
     }
     return this.snapshot()
   }

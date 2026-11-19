@@ -31,7 +31,15 @@ export class TowerBuilderModel {
   private now = 0
   private inputNotBefore = 0
 
-  constructor(private readonly options: Partial<GameSessionOptions> = {}) {
+  private readonly steadyRadius:number
+  private readonly positionTolerance:number
+  private readonly offset:number
+
+  constructor(private readonly options: Partial<GameSessionOptions> & { pressure?:number } = {}) {
+    const pressure = Math.max(-.15,Math.min(1,options.pressure ?? 0))
+    this.steadyRadius = .047 - .010 * pressure
+    this.positionTolerance = .12 - .025 * pressure
+    this.offset = .068 * Math.max(0,pressure)
     this.session = new GameSession({ ...options, playerCount: options.playerCount ?? 1 })
   }
 
@@ -82,7 +90,7 @@ export class TowerBuilderModel {
       return this.snapshot()
     }
     let hold = this.holds.get(event.playerId)
-    if (!hold || time - hold.timestamp > towerSampleGapMs || Math.hypot(event.x - hold.x, event.y - hold.y) > .035) {
+    if (!hold || time - hold.timestamp > towerSampleGapMs || Math.hypot(event.x - hold.x, event.y - hold.y) > this.steadyRadius) {
       hold = { x: event.x, y: event.y, startedAt: time, timestamp: time }
       this.holds.set(event.playerId, hold)
     }
@@ -90,14 +98,14 @@ export class TowerBuilderModel {
     lane.progress = Math.min(1, (time - hold.startedAt) / towerHoldMs)
     if (lane.progress === 1) {
       const halfWidth = towerBlockWidth / 2
-      if (Math.abs(event.x - lane.target.x) <= .12 && event.x >= halfWidth && event.x <= 1 - halfWidth) {
+      if (Math.abs(event.x - lane.target.x) <= this.positionTolerance && event.x >= halfWidth && event.x <= 1 - halfWidth) {
         lane.blocks.push({ x: event.x, y: lane.target.y })
         lane.placed++
         const complete = lane.blocks.length === 6
         this.session.awardScore(event.playerId, complete ? 40 : 10)
         lane.feedback = complete ? '★ Six blocks! +30 team bonus. Build another!' : '✓ Steady stacking! +10 for the team.'
         if (complete) { lane.completed++; lane.blocks = [] }
-        lane.target = { x: complete ? .5 : event.x, y: .82 - lane.blocks.length * .09 }
+        lane.target = { x: complete ? .5 : Math.max(towerBlockWidth/2,Math.min(1-towerBlockWidth/2,event.x + this.offset * (lane.blocks.length%2 ? 1 : -1))), y: .82 - lane.blocks.length * .09 }
       } else {
         lane.topples++; lane.blocks = []; lane.target = { x: .5, y: .82 }
         lane.feedback = 'Oops, off balance! Try the outline. Your points are safe.'

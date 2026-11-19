@@ -1,0 +1,27 @@
+{
+  "kicker-crayon.webp": {
+    "use": "Goalkeeper opponent; procedurally tilted for kick wind-up",
+    "prompt": "Cheerful young football player facing the viewer, red jersey, blue shorts, dark football boots, arms slightly out and one leg poised to kick. Childlike hand-drawn wax crayon, rough scribble strokes, uneven dark outline, imperfect coloring, subtle paper grain, primary colors. Full isolated character with transparent background; no ball, ground, text, interface, gradients or realistic shadows.",
+    "dimensions": "192x192",
+    "transparency": "alpha channel",
+    "animationStates": [
+      "idle",
+      "wind-up",
+      "kick"
+    ],
+    "source": "ChatGPT image generation; original preserved in docs/visual-audit/goalkeeper-kicker-original.png"
+  },
+  "kicker-poses.webp": {
+    "use": "Goalkeeper kicker sprite sheet; selected from the shot clock",
+    "prompt": "Four full-body poses of the same cheerful young footballer in a red jersey, blue shorts and dark boots: ready, wind-up, kick and follow-through. Childlike wax-crayon scribbles, uneven black outlines, imperfect coloring and paper grain; transparent background; no ball, scenery or text.",
+    "dimensions": "256x256 (2x2 cells)",
+    "transparency": "alpha channel",
+    "animationStates": [
+      "ready",
+      "wind-up",
+      "kick",
+      "follow-through"
+    ],
+    "source": "ChatGPT image generation; original preserved in docs/visual-audit/goalkeeper-kicker-sheet-original.png"
+  }
+}

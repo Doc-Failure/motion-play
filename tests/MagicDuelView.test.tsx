@@ -17,7 +17,7 @@ describe('Magic Duel rendered simulation',()=>{
   it.each([1,2,3,4] as const)('renders %i lanes with explicit simulation controls',playerCount=>{
     render(<MagicDuel {...props} playerCount={playerCount}/> )
     expect(screen.getAllByRole('group',{name:/Magic Duel play area/})).toHaveLength(playerCount)
-    expect(screen.getByText(/hand tracking unavailable/)).toBeVisible()
+    expect(screen.getByText(/Trace the dots/)).toBeVisible()
   })
   it('normalizes segmented pointer strokes in an isolated lane',()=>{
     render(<MagicDuel {...props}/>);tick(3100)

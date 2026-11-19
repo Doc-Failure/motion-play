@@ -35,13 +35,24 @@ export class LaserEscapeModel {
   private ends = 0
   private wave = 0
 
-  constructor(options: Partial<GameSessionOptions> = {}) {
+  private readonly warningMs:number
+  private readonly sweepMs:number
+  private readonly cycleMs:number
+  private readonly nearEdge:number
+
+  constructor(options: Partial<GameSessionOptions> & { pressure?:number } = {}) {
+    const pressure = Math.max(-.15,Math.min(1,options.pressure ?? 0))
+    this.warningMs = laserWarningMs - 220 * pressure
+    this.sweepMs = laserSweepMs - 260 * pressure
+    this.cycleMs = laserCycleMs - 640 * pressure
+    this.nearEdge = .28 - .035 * pressure
     this.session = new GameSession({ ...options, playerCount: options.playerCount ?? 1 })
   }
-  private get sweepStart() { return this.begins + this.wave * laserCycleMs + laserWarningMs }
+  private get sweepStart() { return this.begins + this.wave * this.cycleMs + this.warningMs }
   private beamAt(time: number) {
-    const progress = Math.max(0, Math.min(1, (time - this.sweepStart) / laserSweepMs))
-    return this.wave % 2 ? .85 - .7 * progress : .15 + .7 * progress
+    const progress = Math.max(0, Math.min(1, (time - this.sweepStart) / this.sweepMs))
+    const forward = this.nearEdge + (.96 - this.nearEdge) * progress
+    return this.wave % 2 ? 1-forward : forward
   }
   start(timestamp: number) {
     const state = this.session.start(timestamp)
@@ -54,7 +65,7 @@ export class LaserEscapeModel {
     return this.snapshot()
   }
   private sweep(from: number, to: number) {
-    const start = Math.max(from, this.sweepStart), end = Math.min(to, this.sweepStart + laserSweepMs)
+    const start = Math.max(from, this.sweepStart), end = Math.min(to, this.sweepStart + this.sweepMs)
     if (end <= start) return
     for (const lane of this.lanes) {
       const sample = this.samples.get(lane.playerId)
@@ -77,15 +88,15 @@ export class LaserEscapeModel {
     const phase = this.session.getSnapshot().phase
     if (phase === 'countdown' || phase === 'playing') {
       let cursor = this.now
-      while (this.sweepStart + laserSweepMs <= time && this.sweepStart + laserSweepMs < this.ends) {
-        const end = this.sweepStart + laserSweepMs
+      while (this.sweepStart + this.sweepMs <= time && this.sweepStart + this.sweepMs < this.ends) {
+        const end = this.sweepStart + this.sweepMs
         this.sweep(cursor, end); this.session.update(end)
         for (const lane of this.lanes) {
           const exposure = this.exposure.get(lane.playerId)
           if (exposure?.hit) {
             this.session.awardScore(lane.playerId, -5); lane.hits++
             lane.feedback = '✕ Laser touch! −5. Try the clear edge next time!'
-          } else if (exposure && exposure.coveredMs >= laserSweepMs - .000001) {
+          } else if (exposure && exposure.coveredMs >= this.sweepMs - .000001) {
             this.session.awardScore(lane.playerId, 10); lane.escapes++
             lane.feedback = '✓ Clear all the way! +10 points.'
           } else lane.feedback = 'Position lost during sweep. No escape points this time.'
@@ -104,7 +115,7 @@ export class LaserEscapeModel {
   moveBody(event: MotionInputEvent) {
     const lane = this.lanes.find(lane => lane.playerId === event.playerId)
     if (!lane || event.kind !== 'BODY_MOVE' || !Number.isFinite(event.timestamp)
-      || !this.clock.accepts(event.timestamp) || this.clock.time(event.timestamp) < Math.max(this.begins, this.now)
+      || !this.clock.accepts(event.timestamp) || this.clock.time(event.timestamp) < Math.max(this.begins, this.now - 32)
       || event.timestamp <= (this.lastInput.get(event.playerId) ?? -Infinity)) return this.snapshot()
     this.update(event.timestamp)
     if (this.session.getSnapshot().phase !== 'playing') return this.snapshot()
@@ -113,7 +124,7 @@ export class LaserEscapeModel {
       || event.y < 0 || event.y > 1 || event.confidence < .6 || event.confidence > 1) {
       this.samples.delete(event.playerId); lane.bodyX = null
     } else {
-      this.samples.set(event.playerId, { x: event.x, time: this.now }); lane.bodyX = event.x
+      this.samples.set(event.playerId, { x: event.x, time: this.clock.time(event.timestamp) }); lane.bodyX = event.x
     }
     return this.snapshot()
   }
@@ -137,7 +148,7 @@ export class LaserEscapeModel {
   }
   private snapshot(): LaserEscapeSnapshot {
     return { ...this.session.getSnapshot(), lanes: this.lanes.map(lane => ({ ...lane })),
-      beamX: this.beamAt(this.now), active: this.session.getSnapshot().phase === 'playing' && this.now >= this.sweepStart && this.now < this.sweepStart + laserSweepMs,
+      beamX: this.beamAt(this.now), active: this.session.getSnapshot().phase === 'playing' && this.now >= this.sweepStart && this.now < this.sweepStart + this.sweepMs,
       direction: this.wave % 2 ? 'left' : 'right' }
   }
 }

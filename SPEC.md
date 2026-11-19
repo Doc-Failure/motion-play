@@ -1,7 +1,7 @@
 # Motion Play — Product Specification v1.0
 
 ## Vision
-A joyful, original, browser-based motion-controlled party game inspired by the *interaction genre* of EyeToy, not its assets or branding. One shared webcam, 1–4 local players, no backend, no accounts, no uploads. Players share one mirrored live-camera playfield, with side-by-side player lanes and synchronized rounds. Family-friendly, easy to understand, playable on a Mac desktop browser. No copyrighted third-party game artwork/audio.
+A joyful, original, browser-based motion-controlled party game inspired by the *interaction genre* of EyeToy, not its assets or branding. One shared webcam, 1–4 local players, no backend, no accounts, no uploads. Players share one mirrored live-camera playfield, with side-by-side tracking zones, game-specific playfields and synchronized rounds. Family-friendly, easy to understand, playable on a Mac desktop browser. No copyrighted third-party game artwork/audio.
 
 ## Non-negotiables
 - Client-only React + TypeScript + Vite; Phaser for gameplay. Static hosting and optional installable PWA. No Electron or runtime server/API. `localhost` for development; production HTTPS for camera permissions.
@@ -14,7 +14,7 @@ A joyful, original, browser-based motion-controlled party game inspired by the *
 
 ## Product navigation
 Home (choose 1–4 players once per tab) -> Catalog or 5-Game Tournament -> small looping stick-figure movement demo + three-second simultaneous hand-ready buttons -> automatic 3-2-1 -> Gameplay -> Results -> Replay / Catalog. No extra Play/setup/confirmation screen. Replays and every tournament round use the same introduction.
-Home: Game Catalog and 5-Game Tournament only. Quick Play is removed. Main catalog is a compact grid of playable games, with original game drawings on the same crayon sticker panels as the homepage. Each tile goes directly to that game’s movement introduction. The tournament keeps its existing five-game schedule and aggregates points; additional catalog games can be played separately. Cooperative mode shares a goal; competitive/free-for-all has independent scores. 2v2 only when four players and a game supports it. Avoid promising co-op/teams for incompatible games.
+Home: Game Catalog and 5-Game Tournament only. Quick Play is removed. Main catalog is a compact grid of playable games, with original game drawings on the same crayon sticker panels as the homepage. The catalog uses the same four-column grid, game order and Home control with or without a camera. Each tile goes directly to that game’s movement introduction. The tournament keeps its existing five-game schedule and aggregates points; additional catalog games can be played separately. Cooperative mode shares a goal; competitive/free-for-all has independent scores. 2v2 only when four players and a game supports it. Avoid promising co-op/teams for incompatible games.
 
 ## Camera, calibration and recovery
 - Request the default webcam automatically on entry, subject to the browser’s native permission decision. Keep it across routes. Offer actionable permission-denied and camera-missing states; allow simulation demo mode without hardware. Player count is chosen once on Home, stored for the tab session, and can be changed deliberately from Home.
@@ -580,3 +580,50 @@ contacts still separate physically but do not build the scoring streak.
 
 ### One kangaroo jumping game — 2026-11-18
 Jump Rush and Kangaroo Race are consolidated into the single public Kangaroo Race entry. It retains the smooth torso-controlled hop, original kangaroo, varied logs/rocks/gaps, three-bump limit, 45-second round and multiplayer distance ranking. The catalog has eleven games. Old camera/jump-rush and games/jump-rush links open Kangaroo Race with its tutorial and standard readiness flow. The old Jump Rush model and tests remain as historical source; its component is no longer routed or bundled.
+
+### Visual review — 2026-11-18
+The eleven public introductions and active screens have an initial synthetic-camera screenshot review in `VISUAL_AUDIT.md`. Ghost Catcher uses a locally stored generated crayon ghost with the existing procedural motion and a procedural fallback. Window Wipe displays its existing erasable foam at reduced opacity so the camera player is clearer. These screenshots and synthetic tests do not establish physical-camera tracking, play comfort or 60 FPS performance; in-motion and real-hardware review remains open.
+
+Ghost Catcher's life counts now sit beside each player's score instead of over
+the spawn area. Its camera tint is removed, and ghosts ease into view with a
+subtle idle wobble; reduced-motion mode suppresses the movement.
+
+UFO Juggler likewise places life counts beside player scores and removes its
+camera tint. Synthetic one- and four-player tests cover the HUD and interactions;
+the optimized local ghost sprite keeps the core release within its asset budget.
+Keep Ups also displays life counts alongside scores rather than over the camera.
+Goalkeeper shows its remaining allowed goals alongside each player's score.
+Player-selection labels and the camera-opening state use solid readable backing.
+
+Six Hoops uses a ball radius of 3.6% of frame height, shared by rendering,
+body contact, court boundaries, rim collision and diagnostics. Goalkeeper adds
+wind-up and save feedback; Cardboard Champ adds attack and hit accents; Paper
+Dojo uses clearer ready and impact cues with more transparent towers. Synthetic
+browser checks do not replace real-camera validation.
+
+### Catalog arcade levels
+
+The twelve public games use score-qualified arcade levels. Next level starts a three-second countdown on the retained camera. Playing the current level again repeats readiness. Qualifying individual or team scores unlock the next level according to the game format. Results show the level outcome, with personal bests stored locally. The five-game tournament runs Paper Dojo, Window Wipe, Cardboard Champ, Keep Ups and Ghost Catcher. Paper Jam is retired from public play.
+
+The current per-game clocks, challenge curves, scoring, diagnostic overlay and validation results are documented in [GAMEPLAY_IMPROVEMENTS.md](GAMEPLAY_IMPROVEMENTS.md).
+
+### Marble Bowling
+
+One to four players each get a lane, a matching sequence of pin racks, and three rolls within 30 seconds. Sweep a hand upward to release the marble. The sideways component of the sweep aims it. A standing pin gives one point, and clearing a fresh rack in one roll gives three extra points. Partial racks carry over. A cleared rack resets if rolls remain. Later levels widen the spacing and add back pins and split formations. A shot released before the buzzer still counts. Dragging upward or pressing Space after aiming with the arrow keys also rolls. Existing Marble Mountain links open Marble Bowling, which has its own high-score records.
+
+### Play formats by player count
+
+Camera zones identify players independently of the layout used for play. Net Rally has singles, cooperative three-person rallying, and doubles with net and backcourt positions. Goalkeeper places the team across one wide goal with staggered attackers. Window Wipe uses a shared pane. Shadow Snap assigns each person a part of one group picture. Their arcade qualification uses the team's combined contributions. The current decisions for every public game are in [GAMEPLAY_AUDIT.md](GAMEPLAY_AUDIT.md).
+
+### Shadow Snap
+
+In Shadow Snap a cardboard wall covers the playfield, with the mirrored camera visible through a full-body cutout for each player. Each 36-second round starts with raised arms in solo play or a group butterfly. Players line up their bodies and fill both sleeves. After everyone fits together for 340 ms the shutter clicks. Red ink marks body parts outside the cutout. Each player can lose points for spill and for unfilled cardboard openings, with small allowances for tracking noise and different body shapes. Later levels use more asymmetric poses and shorter pose windows. The album retains the last three illustrated poses. Camera-free players can move the arms of an on-screen figure using pointer or keyboard controls.
+
+### Kangaroo Race — automatic runner (2026-11-19)
+
+During an active round each unfinished kangaroo runs automatically; players
+jump to clear approaching obstacles rather than running on the spot. The
+runner stays in a fixed track position while obstacles approach. Three bumps
+finish a player's run. Camera/tracking recovery and pause behavior still apply;
+only observed jump input triggers a jump. A four-frame crayon running cycle is
+used when motion is enabled, with a still frame for reduced motion.

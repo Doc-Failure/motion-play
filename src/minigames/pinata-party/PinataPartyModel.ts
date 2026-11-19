@@ -32,8 +32,13 @@ export class PinataPartyModel {
   private pausedAt: number | null = null
   private readonly playerCount: PlayerCount
 
-  constructor(options: { playerCount?: PlayerCount; countdownMs?: number; roundDurationMs?: number } = {}) {
+  private readonly teamGoal: number
+  private readonly pressure: number
+
+  constructor(options: { pressure?: number; teamGoal?: number; playerCount?: PlayerCount; countdownMs?: number; roundDurationMs?: number } = {}) {
+    this.pressure = Math.max(-.15, Math.min(1, options.pressure ?? 0))
     this.playerCount = options.playerCount ?? 1
+    this.teamGoal = options.teamGoal ?? this.playerCount * 50
     this.session = new GameSession({ ...options, playerCount: this.playerCount })
   }
 
@@ -52,6 +57,9 @@ export class PinataPartyModel {
     if (state.phase === 'playing') {
       for (const pinata of this.pinatas) {
         if (pinata.readyAt !== null && now >= pinata.readyAt) {
+          const breaks = this.session.getSnapshot().scores[pinata.playerId - 1].score / CANDY_PER_BREAK
+          pinata.x = .5 + Math.sin(breaks * 2.2) * (.09 + .16 * this.pressure)
+          pinata.y = .45 + Math.sin(breaks * 1.6) * (.04 + .10 * this.pressure)
           pinata.hits = 0
           pinata.lastHitAt = pinata.readyAt - HIT_COOLDOWN_MS
           pinata.readyAt = null
@@ -76,7 +84,7 @@ export class PinataPartyModel {
     pinata.hits += 1
     pinata.lastHitAt = event.timestamp
     if (pinata.hits === HITS_TO_BREAK) {
-      pinata.readyAt = event.timestamp + RESPAWN_MS
+      pinata.readyAt = event.timestamp + RESPAWN_MS - 240 * this.pressure
       this.session.awardScore(event.playerId, CANDY_PER_BREAK)
     }
     return this.snapshot()
@@ -108,6 +116,6 @@ export class PinataPartyModel {
   private snapshot(): PinataPartySnapshot {
     const state = this.session.getSnapshot()
     return { ...state, pinatas: this.pinatas.map((pinata) => ({ ...pinata })), hitsToBreak: HITS_TO_BREAK,
-      teamCandy: state.scores.reduce((total, entry) => total + entry.score, 0), teamGoal: this.playerCount * 50 }
+      teamCandy: state.scores.reduce((total, entry) => total + entry.score, 0), teamGoal: this.teamGoal }
   }
 }

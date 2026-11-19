@@ -1,0 +1,632 @@
+[
+  {
+    "game": "air-pong",
+    "solo": {
+      "frames": 30,
+      "fps": 61,
+      "p95Ms": 19
+    },
+    "twoPlayers": {
+      "frames": 30,
+      "fps": 62,
+      "p95Ms": 19
+    },
+    "runtimeErrors": []
+  },
+  {
+    "game": "balloon-panic",
+    "solo": {
+      "frames": 30,
+      "fps": 61,
+      "p95Ms": 19
+    },
+    "twoPlayers": {
+      "frames": 30,
+      "fps": 62,
+      "p95Ms": 19
+    },
+    "runtimeErrors": []
+  },
+  {
+    "game": "basketball-blitz",
+    "solo": {
+      "frames": 30,
+      "fps": 61,
+      "p95Ms": 18
+    },
+    "twoPlayers": {
+      "frames": 30,
+      "fps": 60,
+      "p95Ms": 19
+    },
+    "runtimeErrors": []
+  },
+  {
+    "game": "bubble-battle",
+    "solo": {
+      "frames": 30,
+      "fps": 62,
+      "p95Ms": 18
+    },
+    "twoPlayers": {
+      "frames": 30,
+      "fps": 61,
+      "p95Ms": 18
+    },
+    "runtimeErrors": []
+  },
+  {
+    "game": "car-wash",
+    "solo": {
+      "frames": 30,
+      "fps": 60,
+      "p95Ms": 18
+    },
+    "twoPlayers": {
+      "frames": 30,
+      "fps": 61,
+      "p95Ms": 18
+    },
+    "runtimeErrors": []
+  },
+  {
+    "game": "dance-challenge",
+    "solo": {
+      "frames": 30,
+      "fps": 61,
+      "p95Ms": 18
+    },
+    "twoPlayers": {
+      "frames": 30,
+      "fps": 61,
+      "p95Ms": 18
+    },
+    "runtimeErrors": []
+  },
+  {
+    "game": "dodgeball",
+    "solo": {
+      "frames": 30,
+      "fps": 61,
+      "p95Ms": 18
+    },
+    "twoPlayers": {
+      "frames": 30,
+      "fps": 62,
+      "p95Ms": 18
+    },
+    "runtimeErrors": []
+  },
+  {
+    "game": "fish-frenzy",
+    "solo": {
+      "frames": 30,
+      "fps": 62,
+      "p95Ms": 18
+    },
+    "twoPlayers": {
+      "frames": 30,
+      "fps": 61,
+      "p95Ms": 19
+    },
+    "runtimeErrors": []
+  },
+  {
+    "game": "freeze",
+    "solo": {
+      "frames": 30,
+      "fps": 61,
+      "p95Ms": 18
+    },
+    "twoPlayers": {
+      "frames": 30,
+      "fps": 61,
+      "p95Ms": 19
+    },
+    "runtimeErrors": []
+  },
+  {
+    "game": "fruit-catcher",
+    "solo": {
+      "frames": 30,
+      "fps": 60,
+      "p95Ms": 18
+    },
+    "twoPlayers": {
+      "frames": 30,
+      "fps": 61,
+      "p95Ms": 19
+    },
+    "runtimeErrors": []
+  },
+  {
+    "game": "fruit-slash",
+    "solo": {
+      "frames": 30,
+      "fps": 62,
+      "p95Ms": 19
+    },
+    "twoPlayers": {
+      "frames": 30,
+      "fps": 61,
+      "p95Ms": 19
+    },
+    "runtimeErrors": []
+  },
+  {
+    "game": "ghost-catcher",
+    "solo": {
+      "frames": 30,
+      "fps": 60,
+      "p95Ms": 19
+    },
+    "twoPlayers": {
+      "frames": 30,
+      "fps": 62,
+      "p95Ms": 19
+    },
+    "runtimeErrors": []
+  },
+  {
+    "game": "goalkeeper",
+    "solo": {
+      "frames": 30,
+      "fps": 61,
+      "p95Ms": 19
+    },
+    "twoPlayers": {
+      "frames": 30,
+      "fps": 62,
+      "p95Ms": 19
+    },
+    "runtimeErrors": []
+  },
+  {
+    "game": "gold-rush",
+    "solo": {
+      "frames": 30,
+      "fps": 62,
+      "p95Ms": 19
+    },
+    "twoPlayers": {
+      "frames": 30,
+      "fps": 62,
+      "p95Ms": 19
+    },
+    "runtimeErrors": []
+  },
+  {
+    "game": "graffiti-race",
+    "solo": {
+      "frames": 30,
+      "fps": 60,
+      "p95Ms": 18
+    },
+    "twoPlayers": {
+      "frames": 30,
+      "fps": 61,
+      "p95Ms": 18
+    },
+    "runtimeErrors": []
+  },
+  {
+    "game": "jump-rush",
+    "solo": {
+      "frames": 30,
+      "fps": 61,
+      "p95Ms": 18
+    },
+    "twoPlayers": {
+      "frames": 30,
+      "fps": 61,
+      "p95Ms": 18
+    },
+    "runtimeErrors": []
+  },
+  {
+    "game": "kangaroo-race",
+    "solo": {
+      "frames": 30,
+      "fps": 61,
+      "p95Ms": 18
+    },
+    "twoPlayers": {
+      "frames": 30,
+      "fps": 62,
+      "p95Ms": 18
+    },
+    "runtimeErrors": []
+  },
+  {
+    "game": "keep-ups",
+    "solo": {
+      "frames": 30,
+      "fps": 60,
+      "p95Ms": 19
+    },
+    "twoPlayers": {
+      "frames": 30,
+      "fps": 62,
+      "p95Ms": 18
+    },
+    "runtimeErrors": []
+  },
+  {
+    "game": "laser-escape",
+    "solo": {
+      "frames": 30,
+      "fps": 61,
+      "p95Ms": 18
+    },
+    "twoPlayers": {
+      "frames": 30,
+      "fps": 61,
+      "p95Ms": 19
+    },
+    "runtimeErrors": []
+  },
+  {
+    "game": "magic-duel",
+    "solo": {
+      "frames": 30,
+      "fps": 62,
+      "p95Ms": 18
+    },
+    "twoPlayers": {
+      "frames": 30,
+      "fps": 62,
+      "p95Ms": 19
+    },
+    "runtimeErrors": []
+  },
+  {
+    "game": "marble-mountain",
+    "solo": {
+      "frames": 30,
+      "fps": 61,
+      "p95Ms": 18
+    },
+    "twoPlayers": {
+      "frames": 30,
+      "fps": 61,
+      "p95Ms": 19
+    },
+    "runtimeErrors": []
+  },
+  {
+    "game": "meteor-smash",
+    "solo": {
+      "frames": 30,
+      "fps": 60,
+      "p95Ms": 18
+    },
+    "twoPlayers": {
+      "frames": 30,
+      "fps": 60,
+      "p95Ms": 19
+    },
+    "runtimeErrors": []
+  },
+  {
+    "game": "monster-defense",
+    "solo": {
+      "frames": 30,
+      "fps": 61,
+      "p95Ms": 19
+    },
+    "twoPlayers": {
+      "frames": 30,
+      "fps": 62,
+      "p95Ms": 19
+    },
+    "runtimeErrors": []
+  },
+  {
+    "game": "net-rally",
+    "solo": {
+      "frames": 30,
+      "fps": 61,
+      "p95Ms": 18
+    },
+    "twoPlayers": {
+      "frames": 30,
+      "fps": 61,
+      "p95Ms": 19
+    },
+    "runtimeErrors": []
+  },
+  {
+    "game": "ninja-training",
+    "solo": {
+      "frames": 30,
+      "fps": 60,
+      "p95Ms": 18
+    },
+    "twoPlayers": {
+      "frames": 30,
+      "fps": 61,
+      "p95Ms": 19
+    },
+    "runtimeErrors": []
+  },
+  {
+    "game": "original-keeper",
+    "solo": {
+      "frames": 30,
+      "fps": 61,
+      "p95Ms": 18
+    },
+    "twoPlayers": {
+      "frames": 30,
+      "fps": 61,
+      "p95Ms": 18
+    },
+    "runtimeErrors": []
+  },
+  {
+    "game": "original-punch",
+    "solo": {
+      "frames": 30,
+      "fps": 60,
+      "p95Ms": 18
+    },
+    "twoPlayers": {
+      "frames": 30,
+      "fps": 61,
+      "p95Ms": 18
+    },
+    "runtimeErrors": []
+  },
+  {
+    "game": "paint-splash",
+    "solo": {
+      "frames": 30,
+      "fps": 62,
+      "p95Ms": 18
+    },
+    "twoPlayers": {
+      "frames": 30,
+      "fps": 61,
+      "p95Ms": 18
+    },
+    "runtimeErrors": []
+  },
+  {
+    "game": "pinata-party",
+    "solo": {
+      "frames": 30,
+      "fps": 62,
+      "p95Ms": 18
+    },
+    "twoPlayers": {
+      "frames": 30,
+      "fps": 62,
+      "p95Ms": 18
+    },
+    "runtimeErrors": []
+  },
+  {
+    "game": "pizza-maker",
+    "solo": {
+      "frames": 30,
+      "fps": 61,
+      "p95Ms": 18
+    },
+    "twoPlayers": {
+      "frames": 30,
+      "fps": 61,
+      "p95Ms": 19
+    },
+    "runtimeErrors": []
+  },
+  {
+    "game": "plate-spinner",
+    "solo": {
+      "frames": 30,
+      "fps": 61,
+      "p95Ms": 19
+    },
+    "twoPlayers": {
+      "frames": 30,
+      "fps": 61,
+      "p95Ms": 19
+    },
+    "runtimeErrors": []
+  },
+  {
+    "game": "punch-arena",
+    "solo": {
+      "frames": 30,
+      "fps": 61,
+      "p95Ms": 19
+    },
+    "twoPlayers": {
+      "frames": 30,
+      "fps": 62,
+      "p95Ms": 18
+    },
+    "runtimeErrors": []
+  },
+  {
+    "game": "retired-jam",
+    "solo": {
+      "frames": 30,
+      "fps": 60,
+      "p95Ms": 18
+    },
+    "twoPlayers": {
+      "frames": 30,
+      "fps": 62,
+      "p95Ms": 18
+    },
+    "runtimeErrors": []
+  },
+  {
+    "game": "rocket-rumble",
+    "solo": {
+      "frames": 30,
+      "fps": 62,
+      "p95Ms": 19
+    },
+    "twoPlayers": {
+      "frames": 30,
+      "fps": 61,
+      "p95Ms": 19
+    },
+    "runtimeErrors": []
+  },
+  {
+    "game": "shadow-snap",
+    "solo": {
+      "frames": 30,
+      "fps": 62,
+      "p95Ms": 18
+    },
+    "twoPlayers": {
+      "frames": 30,
+      "fps": 61,
+      "p95Ms": 19
+    },
+    "runtimeErrors": []
+  },
+  {
+    "game": "silk-squad",
+    "solo": {
+      "frames": 30,
+      "fps": 62,
+      "p95Ms": 18
+    },
+    "twoPlayers": {
+      "frames": 30,
+      "fps": 62,
+      "p95Ms": 19
+    },
+    "runtimeErrors": []
+  },
+  {
+    "game": "simon-says",
+    "solo": {
+      "frames": 30,
+      "fps": 61,
+      "p95Ms": 19
+    },
+    "twoPlayers": {
+      "frames": 30,
+      "fps": 61,
+      "p95Ms": 19
+    },
+    "runtimeErrors": []
+  },
+  {
+    "game": "six-hoops",
+    "solo": {
+      "frames": 30,
+      "fps": 61,
+      "p95Ms": 18
+    },
+    "twoPlayers": {
+      "frames": 30,
+      "fps": 62,
+      "p95Ms": 19
+    },
+    "runtimeErrors": []
+  },
+  {
+    "game": "star-collector",
+    "solo": {
+      "frames": 30,
+      "fps": 62,
+      "p95Ms": 19
+    },
+    "twoPlayers": {
+      "frames": 30,
+      "fps": 62,
+      "p95Ms": 19
+    },
+    "runtimeErrors": []
+  },
+  {
+    "game": "supermarket-rush",
+    "solo": {
+      "frames": 30,
+      "fps": 60,
+      "p95Ms": 19
+    },
+    "twoPlayers": {
+      "frames": 30,
+      "fps": 61,
+      "p95Ms": 19
+    },
+    "runtimeErrors": []
+  },
+  {
+    "game": "tower-builder",
+    "solo": {
+      "frames": 30,
+      "fps": 61,
+      "p95Ms": 19
+    },
+    "twoPlayers": {
+      "frames": 30,
+      "fps": 62,
+      "p95Ms": 19
+    },
+    "runtimeErrors": []
+  },
+  {
+    "game": "treasure-grab",
+    "solo": {
+      "frames": 30,
+      "fps": 62,
+      "p95Ms": 19
+    },
+    "twoPlayers": {
+      "frames": 30,
+      "fps": 62,
+      "p95Ms": 19
+    },
+    "runtimeErrors": []
+  },
+  {
+    "game": "ufo-juggler",
+    "solo": {
+      "frames": 30,
+      "fps": 62,
+      "p95Ms": 19
+    },
+    "twoPlayers": {
+      "frames": 30,
+      "fps": 61,
+      "p95Ms": 18
+    },
+    "runtimeErrors": []
+  },
+  {
+    "game": "whack-a-mole",
+    "solo": {
+      "frames": 30,
+      "fps": 62,
+      "p95Ms": 18
+    },
+    "twoPlayers": {
+      "frames": 30,
+      "fps": 61,
+      "p95Ms": 19
+    },
+    "runtimeErrors": []
+  },
+  {
+    "game": "window-wipe",
+    "solo": {
+      "frames": 30,
+      "fps": 61,
+      "p95Ms": 18
+    },
+    "twoPlayers": {
+      "frames": 30,
+      "fps": 62,
+      "p95Ms": 18
+    },
+    "runtimeErrors": []
+  }
+]

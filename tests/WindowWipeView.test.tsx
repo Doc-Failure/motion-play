@@ -9,9 +9,9 @@ it('renders layered soap, gives scrub feedback only for new cleaning and preserv
  const props={playerCount:2 as const,onExit:exit},view=render(<WindowWipe {...props}/>);tick(3100)
  const event={playerId:2 as const,kind:'MOTION_BRUSH' as const,x:.5,y:.5,confidence:1,timestamp:3100}
  view.rerender(<WindowWipe {...props} inputEvents={[event]}/> )
- expect(screen.getByLabelText('Player 2 window cleaning progress')).not.toHaveAttribute('aria-valuenow','0')
- expect(screen.getByLabelText('Player 1 window cleaning progress')).toHaveAttribute('aria-valuenow','0')
- expect(document.querySelectorAll('.wipe-foam')).toHaveLength(2)
+ expect(screen.getByLabelText('Team window cleaning progress')).not.toHaveAttribute('aria-valuenow','0')
+ expect(document.querySelector('header dd')).toHaveTextContent('0')
+ expect(document.querySelectorAll('.wipe-foam')).toHaveLength(1)
  expect(document.querySelectorAll('.wipe-squeegee')).toHaveLength(1)
  expect(play).toHaveBeenCalledWith('scrub','wash')
  const before=play.mock.calls.filter(call=>call[0]==='scrub').length

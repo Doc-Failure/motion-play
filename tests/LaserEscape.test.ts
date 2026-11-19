@@ -43,17 +43,17 @@ describe('Laser Escape continuous swept-line model', () => {
   })
   it('telegraphs, sweeps continuously and reverses on the next wave', () => {
     const model = make()
-    expect(model.update(500)).toMatchObject({beamX:.15,active:false,direction:'right'})
-    expect(model.update(1600)).toMatchObject({beamX:.5,active:true})
-    expect(model.update(3000)).toMatchObject({beamX:.85,active:false,direction:'left'})
-    expect(model.update(4600)).toMatchObject({beamX:.5,active:true})
+    expect(model.update(500)).toMatchObject({beamX:.28,active:false,direction:'right'})
+    expect(model.update(1600)).toMatchObject({beamX:.62,active:true})
+    expect(model.update(3000)).toMatchObject({beamX:.72,active:false,direction:'left'})
+    expect(model.update(4600).beamX).toBeCloseTo(.38)
   })
   it('detects crossing between updates even when neither endpoint overlaps', () => {
     const model = make(); model.moveBody(event(1200,.37)); model.update(1550)
     expect(model.update(2200).lanes[0].hits).toBe(1)
   })
   it('includes the collision boundary and charges only once per sweep', () => {
-    const model = make(); track(model,900,2100,.15-laserReach)
+    const model = make(); track(model,900,2100,.28-laserReach)
     expect(model.update(2200).scores[0].score).toBe(-5)
     expect(model.update(2900).lanes[0].hits).toBe(1)
   })
@@ -64,7 +64,7 @@ describe('Laser Escape continuous swept-line model', () => {
     expect(model.update(2200).scores.map(s=>s.score)).toEqual([0,0,0,0])
   })
   it('does not erase a known collision when tracking disappears', () => {
-    const model=make(); model.moveBody(event(900,.15)); model.moveBody(event(1100,0,{confidence:0}))
+    const model=make(); model.moveBody(event(900,.28)); model.moveBody(event(1100,0,{confidence:0}))
     expect(model.update(2200).scores[0].score).toBe(-5)
   })
   it('resolves elapsed movement against old positions before accepting future input', () => {

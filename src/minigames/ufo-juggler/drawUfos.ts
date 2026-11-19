@@ -4,7 +4,7 @@ export function drawUfos(c:CanvasRenderingContext2D,s:UfoSnapshot,player:number,
  const line=(points:number[][],color:string,width=2)=>{c.strokeStyle=color;c.lineWidth=width;c.beginPath();points.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.stroke()}
  const ellipse=(x:number,y:number,rx:number,ry:number,color:string,outline=true)=>{c.fillStyle=color;c.beginPath();c.ellipse(x,y,rx,ry,0,0,Math.PI*2);c.fill();if(outline){c.strokeStyle=ink;c.lineWidth=2;c.stroke()}}
  const label=(text:string,x:number,y:number,color='#fff0b8',size=18)=>{c.font=`bold ${size}px "Motion Hand"`;c.textAlign='center';c.strokeStyle=ink;c.lineWidth=4;c.strokeText(text,x,y);c.fillStyle=color;c.fillText(text,x,y)}
- c.lineCap='round';c.lineJoin='round';c.fillStyle='#20244b18';c.fillRect(0,0,w,h)
+ c.lineCap='round';c.lineJoin='round'
  for(let i=0;i<14;i++){const x=((i*139+61)%997)/997*w,y=(.16+(i%6)*.12)*h;c.globalAlpha=.35+(Math.sin(t+i)+1)*.12;line([[x-3,y],[x+3,y]],'#fff4c4',1);line([[x,y-3],[x,y+3]],'#fff4c4',1)}c.globalAlpha=1
  // Chalk orbit and launch pads frame the camera rather than replacing it.
  c.setLineDash([6,9]);line([[w*.06,h*.19],[w*.94,h*.19]],'#bce6e3');c.setLineDash([])
@@ -45,5 +45,4 @@ export function drawUfos(c:CanvasRenderingContext2D,s:UfoSnapshot,player:number,
   const needle=bx+bar*Math.min(1,ship.spin/1.5);line([[needle,by-4],[needle,by+4]],'#fff1bc',2)
   if(ship.cue==='save'&&s.elapsed-ship.cueAt<650)label('CLOSE SAVE +10',x,y-r,'#fff0b8',size)
  }
- const lives=s.lives[player-1];label(lives?'♥'.repeat(lives)+'♡'.repeat(3-lives):'OUT',w*.5,h*.88,'#fff0b8',Math.max(14,Math.min(22,w*.09)))
 }

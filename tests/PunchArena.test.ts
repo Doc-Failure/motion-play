@@ -43,8 +43,10 @@ describe('Punch Arena generic swipe model', () => {
   ] as Partial<MotionInputEvent>[])('rejects invalid or insufficient velocity input %j', extra => {
     expect(game().punch(input(200,1,extra)).scores[0].score).toBe(0)
   })
-  it('rejects stale and out-of-order events',()=>{
-    const model=game();model.update(250)
+  it('accepts ordinary delivery latency and rejects stale and out-of-order events',()=>{
+    const delayed=game();delayed.update(250)
+    expect(delayed.punch(input()).scores[0].score).toBe(10)
+    const model=game();model.update(390)
     expect(model.punch(input()).scores[0].score).toBe(0)
     model.punch(input(300,1,{x:0}));expect(model.punch(input(290)).scores[0].score).toBe(0)
   })

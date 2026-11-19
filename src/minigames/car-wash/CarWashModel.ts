@@ -1,3 +1,4 @@
+import {brushStroke} from '../paint-splash/brushStroke'
 import { GameSession, type GameSessionSnapshot } from '../../game/GameSession'
 import type { MotionInputEvent } from '../../input/MotionProcessor'
 import type { PlayerCount, PlayerId } from '../../input/PlayerZoneMapper'
@@ -10,6 +11,7 @@ export const CAR_BRUSH_RADIUS = .12
 
 export interface CarWashSnapshot extends GameSessionSnapshot {
   brushes: Record<PlayerId, { x: number; y: number } | null>
+  loosened: Record<PlayerId, number[]>
   cleaned: Record<PlayerId, number[]>
   progress: Record<PlayerId, number>
   teamProgress: number
@@ -22,9 +24,16 @@ export class CarWashModel {
   private cleaned: Record<PlayerId, Set<number>> = emptyCleaned()
   private lastTimestamp = 0
   private inputNotBefore = 0
-  private brushes: Partial<Record<PlayerId, { x: number; y: number; timestamp: number }>> = {}
+  private brushes: Partial<Record<PlayerId, { x: number; y: number; timestamp: number; pointerId?:string }>> = {}
 
-  constructor(options: { playerCount?: PlayerCount; countdownMs?: number; roundDurationMs?: number } = {}) {
+  readonly radius:number
+  readonly stuckMud: Set<number>
+  private loosened = new Map<PlayerId, Map<number, { x:number; y:number }>>()
+
+  constructor(options: { pressure?:number; playerCount?: PlayerCount; countdownMs?: number; roundDurationMs?: number } = {}) {
+    const pressure = Math.max(-.15,Math.min(1,options.pressure ?? 0))
+    this.radius = CAR_BRUSH_RADIUS - .025 * pressure
+    this.stuckMud = new Set([14,24,32,37,45].slice(0,Math.max(0,Math.round(5*pressure))))
     const playerCount = options.playerCount ?? 1
     this.playerIds = Array.from({ length: playerCount }, (_, index) => (index + 1) as PlayerId)
     this.session = new GameSession({ ...options, playerCount })
@@ -32,6 +41,7 @@ export class CarWashModel {
 
   start(timestamp: number) {
     const state = this.session.start(timestamp)
+    this.loosened.clear()
     this.cleaned = emptyCleaned()
     this.brushes = {}
     this.lastTimestamp = timestamp
@@ -49,16 +59,27 @@ export class CarWashModel {
   brush(event: MotionInputEvent) {
     // Reject malformed captures before they can advance the round clock.
     if (event.kind !== 'MOTION_BRUSH' || !this.playerIds.includes(event.playerId)
-      || !Number.isFinite(event.timestamp) || event.timestamp < this.inputNotBefore
+      || !Number.isFinite(event.timestamp) || event.timestamp < Math.max(this.inputNotBefore,this.lastTimestamp-160,this.brushes[event.playerId]?.timestamp ?? -Infinity)
       || !Number.isFinite(event.confidence) || event.confidence < .15 || event.confidence > 1
       || !Number.isFinite(event.x) || !Number.isFinite(event.y) || event.x < 0 || event.x > 1 || event.y < 0 || event.y > 1) return this.snapshot()
     const state = this.update(event.timestamp)
     if (state.phase !== 'playing') return state
-    this.brushes[event.playerId] = { x: event.x, y: event.y, timestamp: event.timestamp }
+    const touches = brushStroke(this.brushes[event.playerId],event,this.radius)
+    this.brushes[event.playerId] = { x:event.x, y:event.y, timestamp:event.timestamp, pointerId:event.pointerId }
     const cells = this.cleaned[event.playerId]
     const before = cells.size
+    let loosened = this.loosened.get(event.playerId)
+    if (!loosened) { loosened = new Map(); this.loosened.set(event.playerId,loosened) }
     for (const cell of CAR_MUD) {
-      if (Math.hypot(event.x - cell.x, event.y - cell.y) <= CAR_BRUSH_RADIUS) cells.add(cell.id)
+      if (cells.has(cell.id) || !touches(cell.x,cell.y)) continue
+      if (this.stuckMud.has(cell.id)) {
+        const firstPass = loosened.get(cell.id)
+        if (!firstPass) { loosened.set(cell.id,{ x:event.x,y:event.y }); continue }
+        // A second moving stroke lifts the loosened mud. Holding over it cannot finish the job.
+        if (Math.hypot(firstPass.x-event.x,firstPass.y-event.y)<.065) continue
+        loosened.delete(cell.id)
+      }
+      cells.add(cell.id)
     }
     this.session.awardScore(event.playerId, cells.size - before)
     if (this.playerIds.every((id) => this.cleaned[id].size === CAR_MUD.length)) this.session.finish(this.lastTimestamp)
@@ -96,7 +117,9 @@ export class CarWashModel {
         brushes[id] = { x: brush.x, y: brush.y }
       }
     }
-    return { ...session, brushes, cleaned, progress, teamProgress: Math.round(total / (CAR_MUD.length * this.playerIds.length) * 100) }
+    const loosened:CarWashSnapshot['loosened'] = {1:[],2:[],3:[],4:[]}
+    for (const [id,spots] of this.loosened) loosened[id]=[...spots.keys()]
+    return { ...session, brushes, cleaned, loosened, progress, teamProgress: Math.round(total / (CAR_MUD.length * this.playerIds.length) * 100) }
   }
 }
 

@@ -19,7 +19,12 @@ describe('UFO Juggler',()=>{
 })
 
 it('introduces simultaneous saucers after the opening wave, in distinct slots',()=>{
- const m=new UfoModel(1);m.start(0);const s=pilot(m,3000,15520)
- const active=s.ships.filter(v=>v.state==='flying')
- expect(active).toHaveLength(2);expect(new Set(active.map(v=>v.x)).size).toBe(2);expect(new Set(s.ships.map(v=>v.id)).size).toBe(s.ships.length)
+ const m=new UfoModel(1);m.start(0);let simultaneous=false
+ for(let t=3000;t<=33000;t+=40){
+  const active=pilot(m,t,t).ships.filter(v=>v.state==='flying')
+  expect(new Set(active.map(v=>v.x)).size).toBe(active.length)
+  expect(new Set(active.map(v=>v.born)).size).toBe(active.length)
+  simultaneous ||= active.length>=2
+ }
+ expect(simultaneous).toBe(true)
 })

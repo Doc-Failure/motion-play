@@ -1,3 +1,7 @@
+import {useLegacyReadyGate} from '../../game/useLegacyReadyGate'
+import {scoreGoal} from '../../game/arcade'
+import {ChallengeResult} from '../../game/ArcadeRound'
+import {useChallenge} from '../../game/ChallengeContext'
 import { GameFeedback } from '../../game/GameFeedback'
 import { useEffect, useRef, useState, type PointerEvent } from 'react'
 import type { MotionInputEvent } from '../../input/MotionProcessor'
@@ -11,8 +15,11 @@ export function PinataParty({ playerCount, inputEvents = [], onExit, externalPau
   externalPauseReason?: string | null
   onReconnect?(): void
 }) {
-  const [model] = useState(() => new PinataPartyModel({ playerCount }))
+  const challenge = useChallenge()
+  const pressure = challenge?.pressure ?? 0
+  const [model] = useState(() => new PinataPartyModel({ pressure, roundDurationMs: challenge ? 36_000 : undefined, teamGoal: challenge ? scoreGoal(challenge.game,challenge.level,playerCount) : undefined, playerCount }))
   const [snapshot, setSnapshot] = useState(() => model.start(performance.now()))
+  useLegacyReadyGate(snapshot.phase,externalPauseReason,()=>setSnapshot(model.resume(performance.now())))
   const [pauseReason, setPauseReason] = useState<string | null>(null)
   const pauseHeadingRef = useRef<HTMLHeadingElement>(null)
   const resultsRef = useRef<HTMLHeadingElement>(null)
@@ -73,6 +80,6 @@ export function PinataParty({ playerCount, inputEvents = [], onExit, externalPau
     </div>
     <p className="pinata-help">Wave at your piñata, click it, or focus its button and press Enter or Space.</p>
     {snapshot.phase === 'paused' && <div className="battle-results" role="dialog" aria-label="Piñata Party paused"><h2 ref={pauseHeadingRef} tabIndex={-1}>Party paused</h2><p>{externalPauseReason || pauseReason}</p><button className="crayon-button" type="button" disabled={Boolean(externalPauseReason)} onClick={() => { setSnapshot(model.resume(performance.now())); setPauseReason(null) }}>Resume</button>{externalPauseReason && onReconnect && <button className="crayon-button" type="button" onClick={onReconnect}>Reconnect camera</button>}<button className="text-button" type="button" onClick={onExit}>Back to setup</button></div>}
-    {snapshot.phase === 'results' && <div className="battle-results" role="dialog" aria-label="Piñata Party results"><h2 ref={resultsRef} tabIndex={-1}>{goalReached ? 'Sweet teamwork!' : 'What a candy party!'}</h2><p>Team candy: {snapshot.teamCandy} / {snapshot.teamGoal}</p><div className="battle-results__scores">{snapshot.scores.map(({ playerId, score }) => <p key={playerId}><strong>Player {playerId}</strong><span>{score} candy contributed</span></p>)}</div><button className="crayon-button crayon-button--primary" type="button" onClick={() => setSnapshot(model.start(performance.now()))}>Play again</button><button className="text-button" type="button" onClick={onExit}>Back to setup</button></div>}
+    {snapshot.phase === 'results' && <div className="battle-results" role="dialog" aria-label="Piñata Party results"><h2 ref={resultsRef} tabIndex={-1}>{goalReached ? 'Sweet teamwork!' : 'What a candy party!'}</h2><p>Team candy: {snapshot.teamCandy} / {snapshot.teamGoal}</p><ChallengeResult scores={snapshot.scores}/><div className="battle-results__scores">{snapshot.scores.map(({ playerId, score }) => <p key={playerId}><strong>Player {playerId}</strong><span>{score} candy contributed</span></p>)}</div><button className="crayon-button crayon-button--primary" type="button" onClick={() => setSnapshot(model.start(performance.now()))}>Play again</button><button className="text-button" type="button" onClick={onExit}>Back to setup</button></div>}
   </section>
 }

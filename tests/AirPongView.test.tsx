@@ -16,7 +16,10 @@ describe('Air Pong simulated hand play', () => {
     rerender(<AirPong {...props} inputEvents={[{ playerId: 1, kind: 'HAND_POSITION', x: .1, y: .5, confidence: 1, timestamp: start + 3_101 }]} />)
     const paddle = screen.getByLabelText('Player 1 hand-controlled paddle')
     expect(paddle).toHaveStyle({ top: '50%' })
-    for (const offset of [4_100, 5_100, 6_100, 7_100, 8_100, 8_600, 9_100]) act(() => nextFrame?.(start + offset))
+    for (let offset=3200; offset<=4800; offset+=100) {
+      rerender(<AirPong {...props} inputEvents={[{ playerId: 1, kind: 'HAND_POSITION', x: .1, y: .55, confidence: 1, timestamp: start + offset }]} />)
+      act(() => nextFrame?.(start + offset))
+    }
     expect(screen.getByText('10')).toBeInTheDocument()
     expect(screen.getByText('Rally 1')).toBeVisible()
   })

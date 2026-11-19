@@ -13,3 +13,9 @@ it('does not infer a body when a lane is empty or ambiguous',()=>{
  expect(keepUpsInput([],2,100,true)).toEqual([])
  expect(keepUpsInput([body,body],2,100,true)).toEqual([])
 })
+it('keeps a measured hand over a teammate’s area attributed to its original owner on the rally court',()=>{
+ const teammate={...body,neck:{x:.62,y:.3},hands:[{x:.85,y:.45}]}
+ const events=keepUpsInput([teammate],4,100,true,'court')
+ expect(events.find(e=>e.pointerId==='hand-0')).toMatchObject({playerId:3,x:.85,coordinateSpace:'court'})
+ expect(keepUpsInput([teammate,teammate],4,100,true,'court')).toEqual([])
+})

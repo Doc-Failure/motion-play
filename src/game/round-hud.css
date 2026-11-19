@@ -1,0 +1,53 @@
+.round-hud {
+  position: absolute;
+  z-index: 10;
+  inset: .45rem .5rem auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: start;
+  gap: .4rem;
+  color: #29313c;
+  pointer-events: none;
+}
+.round-hud dl, .round-hud dd { margin: 0; }
+.round-hud__scores { display: flex; flex-wrap: wrap; gap: .25rem; }
+.round-hud dl > div, .round-hud__exit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .32rem;
+  min-height: 32px;
+  padding: .12rem .45rem;
+  border: 2px solid #303440;
+  border-radius: .8rem .65rem .85rem .6rem;
+  background: #d9f0f7;
+  box-shadow: 1px 2px 0 #15192255;
+  white-space: nowrap;
+}
+.round-hud__scores > div:nth-child(2) { background: #fbe0d9; }
+.round-hud__scores > div:nth-child(3) { background: #e9dff9; }
+.round-hud__scores > div:nth-child(4) { background: #dfedcd; }
+.round-hud dt { font-size: .77rem; }
+.round-hud dd { font-size: 1.15rem; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.round-hud .round-hud__clock > div { background: #ffe69b; }
+.round-hud__clock[data-ending="true"] > div { color: #802e18; }
+.round-hud__clock dt { display: flex; }
+.round-hud svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.round-hud__exit {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 48% 52% 46% 54%;
+  background: #fff8e9;
+  color: inherit;
+  cursor: pointer;
+  pointer-events: auto;
+}
+.round-hud__exit svg { width: 22px; height: 22px; stroke-width: 2.8; }
+.round-hud__exit:focus-visible { outline: 3px solid #165bab; outline-offset: 2px; }
+@media (max-width: 700px) {
+  .round-hud { inset: .25rem .3rem auto; gap: .25rem; }
+  .round-hud dl > div { gap: .18rem; padding: .1rem .25rem; min-height: 28px; }
+  .round-hud dt { font-size: .68rem; }
+  .round-hud dd { font-size: .95rem; }
+}

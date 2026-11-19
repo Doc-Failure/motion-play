@@ -1,13 +1,30 @@
 import {test,expect,openApp,completeReadyGate,hideAndRestoreTab} from './fixtures'
-for(const [slug,title,mode] of [['goalkeeper','Goalkeeper','keeper'],['net-rally','Net Rally','net']] as const)for(const players of [1,2,4] as const)test(`${title} ${players} players body input, recovery and replay`,async({page,installMockCamera})=>{
- test.setTimeout(45000);await installMockCamera({person:true})
+for(const [slug,title,mode] of [['goalkeeper','Goalkeeper','keeper'],['net-rally','Net Rally','net']] as const)for(const players of [1,2,3,4] as const)test(`${title} ${players} players body input, recovery and replay`,async({page,installMockCamera})=>{
+ test.setTimeout(45000)
+ if(mode==='keeper'&&players===1)await page.addInitScript(()=>{
+  const frames:string[]=[];Object.assign(window,{__kickerFrames:frames})
+  const draw=CanvasRenderingContext2D.prototype.drawImage
+  CanvasRenderingContext2D.prototype.drawImage=(function(this:CanvasRenderingContext2D,...args:Parameters<typeof draw>){
+   const image=args[0]
+   if(image instanceof HTMLImageElement&&image.src.includes('kicker-poses.webp'))frames.push(`${args[1]},${args[2]}`)
+   return Reflect.apply(draw,this,args)
+  }) as typeof draw
+ })
+ await installMockCamera({person:true})
  await openApp(page,`#/camera/${slug}`,async()=>{await page.route('**/pose/tracker.js',r=>r.fulfill({contentType:'text/javascript',body:`window.createLocalPoseTracker=async()=>({detect:()=>{
  const el=parent.document.querySelector('.sport-game canvas');if(!el)return [];const s=JSON.parse(el.dataset.state);
  let targets=s.mode==='keeper'?s.shots.map((b,i)=>({x:(i+b.x)/${players},y:b.y})):s.ball.x<.48||${players}>1?[{x:s.ball.x,y:s.ball.y+.025}]:[];
  return targets.filter(t=>t.y<.85).map(t=>{const x=1-t.x,y=t.y,p=Array.from({length:33},()=>({x,y,visibility:0,presence:1}));for(const [id,dx,dy]of [[0,0,0],[7,-.01,0],[8,.01,0],[11,-.02,.1],[12,.02,.1]])p[id]={x:x+dx,y:y+dy,visibility:1,presence:1};return p;});},close:()=>{}})`}))})
- await page.getByRole('button',{name:players===1?'1 player':`${players} players`,exact:true}).click();await expect(page.getByLabel(`${title} movement demonstration`)).toBeVisible();if(mode==='net'&&players===2)await expect(page.getByText('1 vs 1: P1 stands LEFT, P2 stands RIGHT. Hit up and across the net. First to five!',{exact:true})).toBeVisible();await completeReadyGate(page)
+ await page.getByRole('button',{name:players===1?'1 player':`${players} players`,exact:true}).click();await expect(page.getByLabel(`${title} movement demonstration`)).toBeVisible();if(mode==='net'&&players===2)await expect(page.getByLabel('Players ready check',{exact:true}).getByText('1 vs 1: P1 stands LEFT, P2 stands RIGHT. Hit up and across the net. First to five!',{exact:true})).toBeVisible();await completeReadyGate(page)
  const canvas=page.locator('.sport-game canvas');await expect(page.locator('.sport-game')).toHaveAttribute('data-phase','playing',{timeout:6000})
+ if(mode==='net'&&players===3)await expect(page.getByLabel('Match score')).toContainText('Team returns')
+ if(mode==='keeper'){
+  await expect(page.locator('.sport-game header').getByLabel(players===1?/Player 1: .* goals remaining/:/Team: .* goals remaining/)).toBeVisible()
+  await expect.poll(async()=>{const shot=JSON.parse((await canvas.getAttribute('data-state'))!).shots[0];return shot.state==='incoming'&&shot.progress===0},{timeout:6000,intervals:[50]}).toBe(true)
+  await page.screenshot({path:test.info().outputPath(`goalkeeper-windup-${players}.png`)})
+ }
  await expect.poll(async()=>{const s=JSON.parse((await canvas.getAttribute('data-state'))!);return mode==='keeper'?s.shots[0].saves:s.ball.touches},{timeout:9000}).toBeGreaterThan(0)
+ if(mode==='keeper'&&players===1)await expect.poll(()=>page.evaluate(()=>(window as typeof window&{__kickerFrames:string[]}).__kickerFrames)).toEqual(expect.arrayContaining(['128,0','0,128','128,128']))
  if(mode==='net'&&players===2){await expect(page.getByLabel('Match score')).toContainText('P1');await expect(page.getByLabel('Match score')).toContainText('P2');expect(JSON.parse((await canvas.getAttribute('data-state'))!).aiX).toBe(.75)}
  await page.screenshot({path:test.info().outputPath(`${slug}-${players}.png`)})
  await hideAndRestoreTab(page);const frozen=await canvas.getAttribute('data-state');await page.waitForTimeout(150);expect(await canvas.getAttribute('data-state')).toBe(frozen);await page.getByRole('button',{name:'Resume round'}).click()

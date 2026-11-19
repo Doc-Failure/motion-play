@@ -1,4 +1,6 @@
 import {useContext,useEffect,useRef,useState,type CSSProperties} from 'react'
+import {ChallengeResult} from '../../game/ArcadeRound'
+import {useChallenge} from '../../game/ChallengeContext'
 import {GameFeedback} from '../../game/GameFeedback'
 import {InputFeedbackContext} from '../../game/InputFeedbackContext'
 import {useRoundRecovery,type RoundRecoveryProps} from '../../game/useRoundRecovery'
@@ -21,7 +23,8 @@ function Robot({bug,time}:{bug:Bug;time:number}){
 }
 export function SilkSquad({playerCount,inputEvents=[],externalPauseReason,onReconnect,onExit,armTrackingAvailable}:RoundRecoveryProps&{playerCount:PlayerCount;inputEvents?:MotionInputEvent[];armTrackingAvailable?:boolean;onExit():void}){
  const {aspectRatio=1}=useContext(InputFeedbackContext)
- const [model]=useState(()=>new SilkModel({playerCount,aspectRatio})),[snapshot,setSnapshot]=useState(()=>model.start(performance.now()))
+ const challenge=useChallenge()
+ const [model]=useState(()=>new SilkModel({playerCount,aspectRatio,pressure:challenge?.pressure,roundDurationMs:challenge?36000:undefined})),[snapshot,setSnapshot]=useState(()=>model.start(performance.now()))
  const recovery=useRoundRecovery({model,snapshot,setSnapshot,title:'Silk Squad',externalPauseReason,onReconnect,onExit})
  const heard=useRef(new Set<number>())
  useEffect(()=>{model.setAspectRatio(aspectRatio)},[model,aspectRatio])
@@ -35,7 +38,7 @@ export function SilkSquad({playerCount,inputEvents=[],externalPauseReason,onReco
    const aim=snapshot.aim[playerId],fresh=aim&&snapshot.elapsed-aim.at<450
    return <section key={playerId}><h2>Player {playerId} · {snapshot.catches[playerId]} caught</h2><KeyboardPlayArea className="silk-board" enabled={snapshot.phase==='playing'} aria-label={`Player ${playerId} Silk Squad play area`} onAction={(x,y)=>shoot(playerId,x,y)} onPointerDown={e=>{const r=e.currentTarget.getBoundingClientRect();shoot(playerId,(e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height)}}>
     <svg className="silk-corners" viewBox="0 0 400 600" preserveAspectRatio="none" aria-hidden="true"><path d="M0 80q45 0 45-80M0 130q80 0 80-130M400 80q-45 0-45-80M400 130q-80 0-80-130" fill="none" stroke="#e3fcf37a" strokeWidth="2"/></svg>
-    {snapshot.bugs.filter(b=>b.playerId===playerId).map(b=><button className={`silk-bug silk-bug--${b.kind}`} key={b.id} style={{left:`${b.x*100}%`,top:`${b.y*100}%`,transform:`rotate(${Math.sin(snapshot.elapsed/300+b.id)*7}deg)`}} aria-label={`Catch Player ${playerId} ${b.kind} bot ${b.id}`} disabled={snapshot.phase!=='playing'} onPointerDown={e=>e.stopPropagation()} onClick={()=>shoot(playerId,b.x,b.y)}><Robot bug={b} time={snapshot.elapsed}/>{b.kind==='armored'&&<small>{b.health} webs</small>}</button>)}
+    {snapshot.bugs.filter(b=>b.playerId===playerId).map(b=><button className={`silk-bug silk-bug--${b.kind}`} key={b.id} style={{left:`${b.x*100}%`,top:`${b.y*100}%`,transform:`rotate(${Math.sin(snapshot.elapsed/300+b.id)*7}deg)`}} aria-label={`Catch Player ${playerId} ${b.kind} bot ${b.id}`} disabled={snapshot.phase!=='playing'} onPointerDown={e=>e.stopPropagation()} onClick={()=>shoot(playerId,b.x,b.y)}><Robot bug={b} time={snapshot.elapsed}/>{b.expires-snapshot.elapsed<1000?<small>Escaping!</small>:b.kind==='armored'&&<small>{b.health} webs</small>}</button>)}
     {snapshot.webs.filter(w=>w.playerId===playerId).map(w=>{const age=snapshot.elapsed-w.at,travel=Math.min(1,age/160),gone=Math.min(1,Math.max(0,(age-700)/800)),x=w.toX+(0.5-w.toX)*gone,y=w.toY+(.86-w.toY)*gone;return <div className={`silk-web silk-web--${w.kind}`} key={w.id} style={{opacity:age<950?1:Math.max(0,1-(age-950)/550)}} aria-hidden="true">
      <svg viewBox="0 0 1000 1000" preserveAspectRatio="none"><path d={`M${w.x*1000} ${w.y*1000} Q${(w.x+w.toX)*500+Math.sin(age/70)*20} ${(w.y+w.toY)*500} ${(w.x+(w.toX-w.x)*travel)*1000} ${(w.y+(w.toY-w.y)*travel)*1000}`} fill="none" stroke="#e6fffb" strokeWidth="4" strokeDasharray={age>500?'5 7':undefined} vectorEffect="non-scaling-stroke"/></svg>
      {w.bug&&age>=160&&<div className="silk-cocoon" style={{'--catch-x':`${w.toX*100}%`,'--catch-y':`${w.toY*100}%`,left:`${x*100}%`,top:`${y*100}%`,scale:1-gone*.7,rotate:`${gone*100}deg`} as CSSProperties}><Robot bug={w.bug} time={snapshot.elapsed}/><svg viewBox="0 0 120 120" className="silk-net">{[0,1,2,3,4].map(i=><ellipse key={i} cx="60" cy={35+i*11} rx={29-Math.abs(2-i)*4} ry="10" fill="none" stroke="#f2fff9" strokeWidth="3"/>)}</svg></div>}
@@ -49,6 +52,6 @@ export function SilkSquad({playerCount,inputEvents=[],externalPauseReason,onReco
   })}</div>
   <p className="silk-instructions">{armTrackingAvailable===false?'Body tracker unavailable · use mouse, touch or keyboard':'Wave your arms over the bots to cast webs'}<small>Golden bots need two webs · keep moving to cast again</small></p>
   {recovery.pauseDialog}
-  {snapshot.phase==='results'&&<div className="battle-results" role="dialog" aria-label="Silk Squad results"><p className="eyebrow">Workshop rescued</p><h2 ref={recovery.resultsHeading} tabIndex={-1}>Nice catch, Silk Squad!</h2>{snapshot.scores.map(s=><p key={s.playerId}><strong>Player {s.playerId}: {s.score} points</strong><small>{snapshot.catches[s.playerId]} bots · best streak {snapshot.best[s.playerId]}</small></p>)}<button className="crayon-button crayon-button--primary" onClick={()=>{heard.current.clear();setSnapshot(model.start(performance.now()))}}>Play again</button><button className="text-button" onClick={onExit}>Back to games</button></div>}
+  {snapshot.phase==='results'&&<div className="battle-results" role="dialog" aria-label="Silk Squad results"><p className="eyebrow">Workshop rescued</p><h2 ref={recovery.resultsHeading} tabIndex={-1}>Nice catch, Silk Squad!</h2>{snapshot.scores.map(s=><p key={s.playerId}><strong>Player {s.playerId}: {s.score} points</strong><small>{snapshot.catches[s.playerId]} bots · best streak {snapshot.best[s.playerId]}</small></p>)}<ChallengeResult scores={snapshot.scores}/><button className="crayon-button crayon-button--primary" onClick={()=>{heard.current.clear();setSnapshot(model.start(performance.now()))}}>Play again</button><button className="text-button" onClick={onExit}>Back to games</button></div>}
  </section>
 }

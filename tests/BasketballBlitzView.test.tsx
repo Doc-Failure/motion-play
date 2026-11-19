@@ -17,7 +17,7 @@ describe('Basketball Blitz rendered simulation',()=>{
   it.each([1,2,3,4] as const)('renders %i lanes with explicit simulation controls',playerCount=>{
     render(<BasketballBlitz {...props} playerCount={playerCount}/> )
     expect(screen.getAllByRole('group',{name:/Basketball Blitz play area/})).toHaveLength(playerCount)
-    expect(screen.getByText(/hand tracking unavailable/)).toBeVisible()
+    expect(screen.getByText(/Watch where the hoop moves/)).toBeVisible()
   })
   it('normalizes pointer strokes, requires speed, and breaks strokes on leave',()=>{
     render(<BasketballBlitz {...props}/>);tick(3100)

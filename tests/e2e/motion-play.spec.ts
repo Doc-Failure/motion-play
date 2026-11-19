@@ -61,7 +61,7 @@ test('permission denial still allows camera-free multiplayer and changing games'
   await page.getByRole('button',{name:'Exit game',exact:true}).click()
   await page.getByRole('link',{name:'Play Window Wipe',exact:true}).click()
   await completeReadyGate(page)
-  await expect(page.getByLabel('Player 4 Window Wipe play area')).toBeVisible()
+  await expect(page.getByLabel('Team Window Wipe play area')).toBeVisible()
   expect(await page.evaluate(() => (window as typeof window & {__mockMediaState:{requests:number}}).__mockMediaState.requests)).toBe(1)
 })
 

@@ -6,7 +6,7 @@ const {game}=vi.hoisted(()=>({game:(name:string,scores:number[])=>(props:{player
 vi.mock('../src/minigames/bubble-battle/BubbleBattle',()=>({BubbleBattle:game('Bubble Battle',[20,0])}))
 vi.mock('../src/minigames/window-wipe/WindowWipe',()=>({WindowWipe:game('Window Wipe',[1,2])}))
 vi.mock('../src/minigames/ninja-training/NinjaTraining',()=>({NinjaTraining:game('Paper Dojo',[0,0])}))
-vi.mock('../src/minigames/beat-freak/BeatFreak',()=>({BeatFreak:game('Paper Jam',[0,0])}))
+vi.mock('../src/minigames/ghost-catcher/GhostCatcher',()=>({GhostCatcher:game('Ghost Catcher',[0,0])}))
 vi.mock('../src/minigames/rocket-rumble/RocketRumble',()=>({RocketRumble:game('Rocket Rumble',[0,50])}))
 vi.mock('../src/minigames/boxing-champ/BoxingChamp',()=>({BoxingChamp:game('Cardboard Champ',[0,0])}))
 vi.mock('../src/minigames/keep-ups/KeepUps',()=>({KeepUps:game('Keep Ups',[0,0])}))
@@ -16,7 +16,7 @@ describe('five-game tournament integration',()=>{
   render(<CameraSetup tournament source={source} readyGateEnabled={false}/>)
   await waitFor(()=>expect(screen.getByRole('button',{name:'Play Tournament'})).toBeEnabled())
   fireEvent.click(screen.getByRole('button',{name:'2 players'}));fireEvent.click(screen.getByRole('button',{name:'Play Tournament'}))
-  for(const title of ['Paper Dojo','Window Wipe','Paper Jam','Cardboard Champ','Keep Ups']){
+  for(const title of ['Paper Dojo','Window Wipe','Cardboard Champ','Keep Ups','Ghost Catcher']){
    expect(screen.getByRole('heading',{name:title})).toBeVisible()
    fireEvent.click(screen.getByRole('button',{name:'Finish '+title}))
   }

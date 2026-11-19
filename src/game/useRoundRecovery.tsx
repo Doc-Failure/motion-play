@@ -1,3 +1,4 @@
+import {useChallenge} from './ChallengeContext'
 import {InputFeedbackContext} from './InputFeedbackContext'
 import { useContext, useCallback, useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react'
 import type { GameSessionSnapshot } from './GameSession'
@@ -18,6 +19,11 @@ export function useRoundRecovery<S extends GameSessionSnapshot>({
   onExit(): void
 }) {
   const {readyGateActive=false,requestReadyGate}=useContext(InputFeedbackContext)
+  const challenge=useChallenge()
+  const continuing=challenge?.continuing??false
+  const replaySolo=challenge?.replaySolo
+  const lastSoloScore=useRef(0)
+  const finalSoloScore=snapshot.phase==='results' && replaySolo ? snapshot.scores[0]?.score : undefined
   const priorRoundPhase=useRef('idle')
   const wasReadyGate=useRef(readyGateActive)
   const [reason, setReason] = useState('Resume when you are ready.')
@@ -29,6 +35,7 @@ export function useRoundRecovery<S extends GameSessionSnapshot>({
   const button = useRef<HTMLButtonElement>(null)
   const wasPaused = useRef(false)
   const ownedResults = useRef(false)
+  const focusAfterCountdown = useRef(false)
   const cameraBlocked = useRef(false)
   const previousBlockReason=useRef<string|null>(null)
   const pause = useCallback((message: string) => {
@@ -40,10 +47,16 @@ export function useRoundRecovery<S extends GameSessionSnapshot>({
   }, [model, setSnapshot])
 
   useEffect(()=>{
-    const newRound=snapshot.phase==='countdown'&&(priorRoundPhase.current==='idle'||priorRoundPhase.current==='results')
+    if(finalSoloScore!==undefined) lastSoloScore.current=finalSoloScore
+    if(snapshot.phase==='countdown' && priorRoundPhase.current==='results' && replaySolo) {
+      priorRoundPhase.current=snapshot.phase
+      replaySolo(lastSoloScore.current)
+      return
+    }
+    const newRound=snapshot.phase==='countdown'&&((priorRoundPhase.current==='idle'&&!continuing)||priorRoundPhase.current==='results')
     priorRoundPhase.current=snapshot.phase
     if(newRound&&requestReadyGate){requestReadyGate();pause('Everyone hold a hand on your ready button.')}
-  },[snapshot.phase,requestReadyGate,pause])
+  },[snapshot.phase,finalSoloScore,requestReadyGate,pause,continuing,replaySolo])
   useEffect(()=>{
     const released=wasReadyGate.current&&!readyGateActive;wasReadyGate.current=readyGateActive
     if(released&&phase.current==='paused'&&!externalPauseReason&&!document.hidden){const next=model.resume(performance.now());phase.current=next.phase;setSnapshot(next)}
@@ -68,9 +81,17 @@ export function useRoundRecovery<S extends GameSessionSnapshot>({
     return () => document.removeEventListener('visibilitychange', visibility)
   }, [pause])
   useEffect(() => {
+    const restoring=wasPaused.current || ownedResults.current
     if (snapshot.phase === 'paused') heading.current?.focus()
     else if (snapshot.phase === 'results') resultsHeading.current?.focus()
-    else if (wasPaused.current || ownedResults.current) button.current?.focus()
+    else if (restoring) {
+      button.current?.focus()
+      // In guided play the countdown hides the controls until the first playable frame.
+      focusAfterCountdown.current = snapshot.phase==='countdown' && document.activeElement!==button.current
+    } else if (snapshot.phase==='playing' && focusAfterCountdown.current) {
+      focusAfterCountdown.current=false
+      if(document.activeElement===document.body||document.activeElement?.id==='main-content')button.current?.focus()
+    }
     wasPaused.current = snapshot.phase === 'paused'
     // Games with their own results/replay focus retain ownership of that focus.
     ownedResults.current = snapshot.phase === 'results' && Boolean(resultsHeading.current)

@@ -32,13 +32,16 @@ export class MeteorSmashModel {
   private nextId = 1
   private lastTimestamp: number | null = null
 
-  constructor(options: { playerCount?: PlayerCount; countdownMs?: number; roundDurationMs?: number; spawnIntervalMs?: number; fallsForMs?: number; random?: () => number } = {}) {
+  private readonly pressure: number
+
+  constructor(options: { pressure?: number; playerCount?: PlayerCount; countdownMs?: number; roundDurationMs?: number; spawnIntervalMs?: number; fallsForMs?: number; random?: () => number } = {}) {
+    this.pressure = Math.max(-.15, Math.min(1, options.pressure ?? 0))
     const count = options.playerCount ?? 1
     this.session = new GameSession({ playerCount: count, countdownMs: options.countdownMs, roundDurationMs: options.roundDurationMs })
     this.players = Array.from({ length: count }, (_, index) => (index + 1) as PlayerId)
     this.random = options.random ?? Math.random
-    this.spawnIntervalMs = options.spawnIntervalMs ?? 1_000
-    this.fallsForMs = options.fallsForMs ?? 4_000
+    this.spawnIntervalMs = options.spawnIntervalMs ?? (1000 - 320 * this.pressure)
+    this.fallsForMs = options.fallsForMs ?? (4000 - 1120 * this.pressure)
   }
 
   start(timestamp: number) {
@@ -84,7 +87,7 @@ export class MeteorSmashModel {
       const steps = Math.max(0, Math.floor((now - this.nextSpawnAt) / this.spawnIntervalMs) + 1)
       for (let step = 0; step < Math.min(steps, 2); step += 1) {
         for (const playerId of this.players) {
-          if (this.meteors.filter((meteor) => meteor.playerId === playerId).length < 4) this.meteors.push(this.createMeteor(playerId, now + step * this.spawnIntervalMs))
+          if (this.meteors.filter((meteor) => meteor.playerId === playerId).length < 4) this.meteors.push(this.createMeteor(playerId, this.nextSpawnAt + (steps - Math.min(steps, 2) + step) * this.spawnIntervalMs))
         }
       }
       this.nextSpawnAt += steps * this.spawnIntervalMs
@@ -98,7 +101,9 @@ export class MeteorSmashModel {
     this.update(event.timestamp)
     const now = this.lastTimestamp!
     if (event.kind !== 'MOTION_HIT' || event.confidence < .2 || !this.players.includes(event.playerId) || this.session.getSnapshot().phase !== 'playing') return this.snapshot(now)
-    const meteor = this.visibleMeteors(now).find((candidate) => candidate.playerId === event.playerId && Math.hypot(candidate.x - event.x, candidate.y - event.y) <= .14)
+    const observedAt = this.clock.time(event.timestamp)
+    if (now - observedAt > 250) return this.snapshot(now)
+    const meteor = this.visibleMeteors(observedAt).find((candidate) => candidate.spawnedAt <= observedAt && candidate.playerId === event.playerId && Math.hypot(candidate.x - event.x, candidate.y - event.y) <= .14)
     if (!meteor) return this.snapshot(now)
     this.meteors = this.meteors.filter((candidate) => candidate.id !== meteor.id)
     this.session.awardScore(event.playerId, 10)

@@ -26,11 +26,14 @@ export class StarCollectorModel {
   private inputNotBefore = 0
   private pausedAt: number | null = null
 
-  constructor(options: { playerCount?: PlayerCount; countdownMs?: number; roundDurationMs?: number; spawnIntervalMs?: number; lifetimeMs?: number } = {}) {
+  private readonly pressure: number
+
+  constructor(options: { pressure?: number; playerCount?: PlayerCount; countdownMs?: number; roundDurationMs?: number; spawnIntervalMs?: number; lifetimeMs?: number } = {}) {
+    this.pressure = Math.max(-.15, Math.min(1, options.pressure ?? 0))
     this.playerCount = options.playerCount ?? 1
     this.session = new GameSession({ ...options, playerCount: this.playerCount })
-    this.spawnIntervalMs = options.spawnIntervalMs ?? 1_200
-    this.lifetimeMs = options.lifetimeMs ?? 2_400
+    this.spawnIntervalMs = options.spawnIntervalMs ?? (1200 - 430 * this.pressure)
+    this.lifetimeMs = options.lifetimeMs ?? (2400 - 680 * this.pressure)
     if (!Number.isFinite(this.spawnIntervalMs) || this.spawnIntervalMs < 100 || !Number.isFinite(this.lifetimeMs) || this.lifetimeMs < 100) throw new Error('Star timing must be finite and at least 100ms.')
   }
 
@@ -57,7 +60,8 @@ export class StarCollectorModel {
         for (let index = 0; index < this.playerCount; index += 1) {
           const playerId = (index + 1) as PlayerId
           if (this.items.filter((item) => item.playerId === playerId).length < 4) {
-            const [x, y] = positions[this.wave % positions.length]
+            const [column, y] = positions[this.wave % positions.length]
+            const x = Math.floor(this.wave / positions.length) % 2 ? 1 - column : column
             this.items.push({ id: this.nextId++, playerId, x, y, spawnedAt: this.nextSpawnAt, remaining: 1 })
           }
         }

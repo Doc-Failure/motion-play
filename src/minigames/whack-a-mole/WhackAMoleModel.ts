@@ -13,21 +13,26 @@ export class WhackAMoleModel {
   private readonly visibleMs: number
   private moles: Mole[] = []
   private nextSpawnAt: number | null = null
+  private previousHole = new Map<PlayerId, number>()
+  private inputNotBefore = 0
   private nextId = 1
   private lastTimestamp: number | null = null
   private pausedAt: number | null = null
   private lastHit = emptyHits()
 
-  constructor(options: { playerCount?: PlayerCount; countdownMs?: number; roundDurationMs?: number; spawnIntervalMs?: number; visibleMs?: number; random?: () => number } = {}) {
+  private readonly pressure: number
+
+  constructor(options: { pressure?: number; playerCount?: PlayerCount; countdownMs?: number; roundDurationMs?: number; spawnIntervalMs?: number; visibleMs?: number; random?: () => number } = {}) {
+    this.pressure = Math.max(-.15, Math.min(1, options.pressure ?? 0))
     const count = options.playerCount ?? 1
     this.session = new GameSession({ playerCount: count, countdownMs: options.countdownMs, roundDurationMs: options.roundDurationMs })
     this.players = Array.from({ length: count }, (_, index) => (index + 1) as PlayerId)
     this.random = options.random ?? Math.random
-    this.spawnIntervalMs = options.spawnIntervalMs ?? 850
-    this.visibleMs = options.visibleMs ?? 1_250
+    this.spawnIntervalMs = options.spawnIntervalMs ?? (850 - 240 * this.pressure)
+    this.visibleMs = options.visibleMs ?? (1250 - 420 * this.pressure)
   }
 
-  start(timestamp: number) { this.pausedAt = null; this.moles = []; this.nextSpawnAt = null; this.nextId = 1; this.lastHit = emptyHits(); this.lastTimestamp = timestamp; this.session.start(timestamp); return this.update(timestamp) }
+  start(timestamp: number) { this.pausedAt = null; this.moles = []; this.nextSpawnAt = null; this.nextId = 1; this.lastHit = emptyHits(); this.lastTimestamp = timestamp; this.previousHole.clear(); this.inputNotBefore = timestamp + this.session.start(timestamp).countdownRemainingMs; return this.update(timestamp) }
 
   update(timestamp: number) {
     const now = Math.max(timestamp, this.lastTimestamp ?? timestamp)
@@ -48,9 +53,9 @@ export class WhackAMoleModel {
   hit(event: MotionInputEvent) {
     const now = Math.max(event.timestamp, this.lastTimestamp ?? event.timestamp)
     this.update(now)
-    if (event.kind !== 'MOTION_HIT' || event.confidence < .2 || !this.players.includes(event.playerId) || this.session.getSnapshot().phase !== 'playing') return this.snapshot(now)
+    if (event.timestamp < this.inputNotBefore || now - event.timestamp > 250 || !Number.isFinite(event.x) || !Number.isFinite(event.y) || event.x < 0 || event.x > 1 || event.y < 0 || event.y > 1 || event.kind !== 'MOTION_HIT' || event.confidence < .2 || !this.players.includes(event.playerId) || this.session.getSnapshot().phase !== 'playing') return this.snapshot(now)
     const column = Math.min(2, Math.floor(event.x * 3)), row = Math.min(2, Math.floor(event.y * 3)), hole = row * 3 + column
-    const mole = this.moles.find((candidate) => candidate.playerId === event.playerId && candidate.hole === hole)
+    const mole = this.moles.find((candidate) => candidate.playerId === event.playerId && candidate.hole === hole && candidate.appearedAt <= event.timestamp)
     if (!mole) return this.snapshot(now)
     this.moles = this.moles.filter((candidate) => candidate.id !== mole.id)
     this.lastHit[event.playerId] = hole
@@ -71,7 +76,7 @@ export class WhackAMoleModel {
   resume(timestamp: number) {
     const now = Math.max(timestamp, this.lastTimestamp ?? timestamp)
     this.lastTimestamp = now
-    this.session.resume(now)
+    this.inputNotBefore = now + this.session.resume(now).countdownRemainingMs
     const delay = now - (this.pausedAt ?? now)
     this.moles = this.moles.map(mole => ({...mole, appearedAt: mole.appearedAt + delay, expiresAt: mole.expiresAt + delay}))
     if (this.nextSpawnAt !== null) this.nextSpawnAt += delay
@@ -79,7 +84,12 @@ export class WhackAMoleModel {
     return this.snapshot(now)
   }
 
-  private createMole(playerId: PlayerId, now: number): Mole { return { id: this.nextId++, playerId, hole: Math.min(8, Math.floor(this.random() * 9)), appearedAt: now, expiresAt: now + this.visibleMs } }
+  private createMole(playerId: PlayerId, now: number): Mole {
+    const pick = Math.min(8, Math.floor(this.random() * 9))
+    const hole = pick === this.previousHole.get(playerId) ? (pick + 1 + Math.floor(this.random() * 8)) % 9 : pick
+    this.previousHole.set(playerId, hole)
+    return { id: this.nextId++, playerId, hole, appearedAt: now, expiresAt: now + this.visibleMs }
+  }
   private snapshot(timestamp: number): WhackAMoleSnapshot { return { ...this.session.getSnapshot(timestamp), moles: this.moles.map((mole) => ({ ...mole })), lastHit: { ...this.lastHit } } }
 }
 

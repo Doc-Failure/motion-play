@@ -24,7 +24,10 @@ export class FruitSlashModel {
   private nextSpawnAt = 0
   private nextId = 1
 
-  constructor(options: { playerCount?: PlayerCount; countdownMs?: number; roundDurationMs?: number; random?: () => number } = {}) {
+  private readonly pressure: number
+
+  constructor(options: { pressure?: number; playerCount?: PlayerCount; countdownMs?: number; roundDurationMs?: number; random?: () => number } = {}) {
+    this.pressure = Math.max(-.15, Math.min(1, options.pressure ?? 0))
     const count = options.playerCount ?? 1
     this.session = new GameSession({ ...options, playerCount: count })
     this.players = Array.from({ length: count }, (_, i) => (i + 1) as PlayerId)
@@ -51,9 +54,9 @@ export class FruitSlashModel {
           const roll = this.random()
           this.fruit.push({ id: this.nextId++, playerId, kind: roll < .2 ? 'bomb' : roll < .6 ? 'apple' : 'orange', x: .25 + this.random() * .5, y: 0, spawnedAt: this.nextSpawnAt })
         }
-        this.nextSpawnAt += spawnMs
+        this.nextSpawnAt += spawnMs - 240 * this.pressure
       }
-      this.fruit = this.fruit.filter(item => this.now - item.spawnedAt < flightMs)
+      this.fruit = this.fruit.filter(item => this.now - item.spawnedAt < this.flightTime)
       this.trails = this.trails.filter(trail => this.now - trail.timestamp <= 180)
     } else if (state.phase === 'results') { this.fruit = []; this.trails = [] }
     return this.snapshot()
@@ -62,7 +65,7 @@ export class FruitSlashModel {
   slash(event: MotionInputEvent) {
     if (!Number.isFinite(event.timestamp) || !this.clock.accepts(event.timestamp) || !this.players.includes(event.playerId) || event.kind !== 'HAND_SWIPE') return this.snapshot()
     const time = this.clock.time(event.timestamp)
-    if (time < this.now || time <= (this.lastInput.get(event.playerId) ?? -Infinity)) return this.snapshot()
+    if (time < this.now - 200 || time <= (this.lastInput.get(event.playerId) ?? -Infinity)) return this.snapshot()
     this.update(event.timestamp)
     if (this.session.getSnapshot().phase !== 'playing') return this.snapshot()
     this.lastInput.set(event.playerId, time)
@@ -73,7 +76,7 @@ export class FruitSlashModel {
     this.trails.push({ playerId: event.playerId, x: event.x, y: event.y, fromX, fromY, timestamp: time })
     this.fruit = this.fruit.filter(item => {
       if (item.playerId !== event.playerId || time - event.swipe!.durationMs < item.spawnedAt) return true
-      const point = this.position(item)
+      const point = this.position(item, time)
       if (point.y < 0 || point.y > 1 || segmentDistance(point, { x: fromX, y: fromY }, event) > slashRadius) return true
       this.session.awardScore(event.playerId, item.kind === 'bomb' ? -15 : 10)
       return false
@@ -92,8 +95,10 @@ export class FruitSlashModel {
     this.clock.resume(timestamp); this.session.resume(this.now)
     return this.snapshot()
   }
-  private position(item: SlashFruit) {
-    const t = (this.now - item.spawnedAt) / flightMs
+  private get flightTime() { return flightMs - 580 * this.pressure }
+
+  private position(item: SlashFruit, time = this.now) {
+    const t = (time - item.spawnedAt) / this.flightTime
     return { ...item, y: 1.1 - 3.2 * t * (1 - t) }
   }
   private snapshot(): FruitSlashSnapshot {

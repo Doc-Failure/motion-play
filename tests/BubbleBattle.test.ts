@@ -48,11 +48,11 @@ describe('BubbleBattleModel', () => {
   })
 
   it('uses deterministic synthetic randomness for bubble and bomb creation', () => {
-    const values = [0.1, 0.5, 0.5, 0.8, 0.5, 0.5]
+    const values = [0.5, 0.5, 0.01, 0.8]
     const model = new BubbleBattleModel({ countdownMs: 0, spawnIntervalMs: 100, random: () => values.shift() ?? 0.5 })
     model.start(0)
     const targets = model.update(100).targets
-    expect(targets.map((target) => target.kind)).toEqual(['bomb', 'bubble'])
+    expect(targets.map((target) => target.kind)).toEqual(['bubble', 'bomb'])
     expect(targets.every((target) => target.x >= target.radius && target.x <= 1 - target.radius)).toBe(true)
   })
 
@@ -97,19 +97,20 @@ describe('BubbleBattleModel', () => {
     expect(playerFour.targets.map(({ playerId }) => playerId)).toEqual([1, 2, 3])
   })
 
-  it('bounds catch-up spawning after a long render gap', () => {
+  it('gives each lane one fresh wave after a long render gap', () => {
     const model = new BubbleBattleModel({ playerCount: 4, countdownMs: 0, roundDurationMs: 60_000, spawnIntervalMs: 100, random: () => 0.5 })
     model.start(0)
     const resumed = model.update(30_000)
-    expect(resumed.targets).toHaveLength(28)
-    expect(resumed.targets.filter(({ playerId }) => playerId === 1)).toHaveLength(7)
+    expect(resumed.targets).toHaveLength(4)
+    expect(new Set(resumed.targets.map(t => t.playerId)).size).toBe(4)
   })
 
   it('preserves round time, scores, and targets across pause and resume', () => {
     const model = new BubbleBattleModel({ countdownMs: 0, roundDurationMs: 10_000 })
     model.start(0)
     model.setTargets([{ id: 1, playerId: 1, kind: 'bubble', x: 0.5, y: 0.5, radius: 0.1 }])
-    expect(model.handleInput(hit(0.5, 0.5, 1_000)).scores[0].score).toBe(10)
+    const bubble = model.update(1_000).targets[0]
+    expect(model.handleInput(hit(bubble.x, bubble.y, 1_000)).scores[0].score).toBe(10)
     const paused = model.pause(2_000)
     expect(paused).toMatchObject({ phase: 'paused', roundRemainingMs: 8_000 })
     expect(model.update(7_000).roundRemainingMs).toBe(8_000)

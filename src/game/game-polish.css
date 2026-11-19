@@ -6,9 +6,6 @@
 .game-live-label { color: #74549b; font-size: .8rem; font-weight: 900; letter-spacing: .06em; }
 .sound-toggle { min-height: 44px; padding: .45rem .9rem; border: 2px solid #29313c; border-radius: 45% 40% 35% 30% / 15% 20% 15% 20%; background: #fff9e9; color: #29313c; font-weight: 900; cursor: pointer; }
 .sound-toggle:focus-visible { outline: 4px solid #186cb5; outline-offset: 4px; }
-.round-track { height: 9px; margin-bottom: 1rem; border-radius: 20px; background: #e6dfd2; overflow: hidden; }
-.round-track span { display: block; height: 100%; background: #7c54ab; transition: width .15s linear; border-radius: inherit; }
-.round-track--ending span { background: #c64634; }
 .bubble-game__header { flex-wrap: wrap; padding: 1rem 1.25rem !important; border: 3px solid #29313c; border-radius: 1.3rem .7rem 1rem .8rem !important; background: #fffdf5 !important; box-shadow: 4px 5px 0 #e5d7bc; }
 .bubble-game__header h1 { font-size: clamp(1.8rem, 3.6vw, 3rem); color: #74449a; letter-spacing: -.05em; }
 .bubble-game__header .eyebrow { margin-bottom: .25rem; font-size: .65rem; }
@@ -50,7 +47,7 @@
 .score-burst--miss { background: #ffe1cc; border-color: #90513b; color: #703d2d; }
 @keyframes score-rise { 0% { opacity: 0; transform: translateY(20px) scale(.75) rotate(-4deg); } 20% { opacity: 1; transform: translateY(0) scale(1.1) rotate(-4deg); } 75% { opacity: 1; } 100% { opacity: 0; transform: translateY(-35px) scale(1) rotate(4deg); } }
 @media (max-width: 650px) { .bubble-game__header { gap: .8rem; padding: .75rem !important; } .bubble-game__header dl { width: 100%; } .bubble-game__header dl > div { flex: 1; min-width: 3rem; } .bubble-game__header dd { font-size: 1.3rem; } .game-live-label { font-size: .7rem; } }
-@media (prefers-reduced-motion: reduce) { .score-burst { animation: none; } .round-track span { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .score-burst { animation: none; } }
 .reduce-motion .score-burst { animation: none; }
 .falling-fruit--apple { color: transparent; border-radius: 42% 44% 45% 45%; background: radial-gradient(ellipse at 28% 25%,#ffb5a1 0 8%,transparent 12%), #ec715b; border: 3px solid #864133; box-shadow: inset -5px -3px #a84d3b55; }
 .falling-fruit--apple::before { content: ''; position: absolute; width: 30%; height: 20%; left: 48%; top: -15%; background: #6e9c5b; border: 2px solid #446338; border-radius: 0 80% 0 80%; transform: rotate(-20deg); }
@@ -75,3 +72,6 @@
 .battle-target--bomb { font-size: clamp(1rem, 3cqh, 2rem); }
 .bubble-game__header h1 { text-shadow: none; }
 .bubble-viewport .bubble-feedback { margin: .6rem 0; font-size: .85rem; }
+
+.arcade-result {display:grid;justify-items:center;gap:.25rem;margin:.35rem auto}
+.arcade-goal {background:#fff6df;color:#29313c;border-radius:.5rem;padding:.15rem .45rem;font-weight:bold}

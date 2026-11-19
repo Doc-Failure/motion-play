@@ -27,6 +27,7 @@ for(const players of [1,4])test(`${players} players keep the ball up using measu
  await expect(page.getByLabel('Players ready check',{exact:true})).toHaveCount(0,{timeout:15000})
  await expect(page.locator('.keep-ups-game')).toHaveAttribute('data-phase','playing',{timeout:6000})
  await expect(page.locator('.keep-ups-game canvas')).toHaveCount(players)
+ for(let i=1;i<=players;i++)await expect(page.locator('.keep-ups-game header').getByLabel(`Player ${i}: 3 lives`)).toBeVisible()
  for(let i=0;i<players;i++)await expect.poll(async()=>Number(await page.locator('.keep-ups-game canvas').nth(i).getAttribute('data-touches')),{timeout:7000}).toBeGreaterThanOrEqual(2)
  const canvas=page.locator('.keep-ups-game canvas').first()
  await expect(canvas).toHaveAttribute('data-lives','3')

@@ -8,7 +8,7 @@ import { createPoseTracker, stickBodies, type PoseTracker, type StickBody } from
 import './body-tracking.css'
 
 const colors=['#7dffb3','#72e8ff','#ff9cf5','#ffe67b']
-export function BodyTrackingTest({videoRef,players,compact=false,onAlignmentChange,onPoseSample,showSkeleton=true,readyMode=false,withHands=false,handInputEnabled=true,withArms=false,armInputEnabled=true,onArmEvents,onTrackingStatus,onHandEvents,onHandStatus,createTracker=createPoseTracker}:{videoRef:RefObject<HTMLVideoElement>;players:number;compact?:boolean;showSkeleton?:boolean;readyMode?:boolean;withArms?:boolean;armInputEnabled?:boolean;onArmEvents?:(events:MotionInputEvent[])=>void;onTrackingStatus?:(available:boolean|undefined)=>void;withHands?:boolean;handInputEnabled?:boolean;onHandEvents?:(events:MotionInputEvent[])=>void;onHandStatus?:(available:boolean|undefined)=>void;onPoseSample?:(bodies:StickBody[],time:number)=>void;onAlignmentChange?:(active:boolean)=>void;createTracker?:(players:number,signal?:AbortSignal,withHands?:boolean)=>Promise<PoseTracker>}) {
+export function BodyTrackingTest({videoRef,players,compact=false,onAlignmentChange,onPoseSample,showSkeleton=true,readyMode=false,withMasks=false,withHands=false,handInputEnabled=true,withArms=false,armInputEnabled=true,onArmEvents,onTrackingStatus,onHandEvents,onHandStatus,createTracker=createPoseTracker}:{videoRef:RefObject<HTMLVideoElement>;players:number;compact?:boolean;showSkeleton?:boolean;readyMode?:boolean;withMasks?:boolean;withArms?:boolean;armInputEnabled?:boolean;onArmEvents?:(events:MotionInputEvent[])=>void;onTrackingStatus?:(available:boolean|undefined)=>void;withHands?:boolean;handInputEnabled?:boolean;onHandEvents?:(events:MotionInputEvent[])=>void;onHandStatus?:(available:boolean|undefined)=>void;onPoseSample?:(bodies:StickBody[],time:number)=>void;onAlignmentChange?:(active:boolean)=>void;createTracker?:(players:number,signal?:AbortSignal,withHands?:boolean,withMasks?:boolean)=>Promise<PoseTracker>}) {
   const armsCallback=useRef(onArmEvents);armsCallback.current=onArmEvents
   const armsEnabled=useRef(armInputEnabled);armsEnabled.current=armInputEnabled
   const trackingCallback=useRef(onTrackingStatus);trackingCallback.current=onTrackingStatus
@@ -60,7 +60,7 @@ export function BodyTrackingTest({videoRef,players,compact=false,onAlignmentChan
           const context=image.getContext('2d')
           if(!context)throw new Error('Camera frame capture unavailable')
           context.drawImage(video,0,0,image.width,image.height)
-          const detected=stickBodies(tracker.detect(image,now))
+          const detected=stickBodies(tracker.detect(image,now,width/height),tracker.silhouettes?.())
           if(withArms){if(armsEnabled.current)armsCallback.current?.(armMotion.process(detected,players,width/height,now));else{armMotion.reset();armsCallback.current?.([])}}
           if(withHands&&!handsEnabled.current){gestures.reset();handsCallback.current?.([])}
           if(withHands&&handsEnabled.current&&!handStarted){
@@ -77,13 +77,13 @@ export function BodyTrackingTest({videoRef,players,compact=false,onAlignmentChan
       }
       timer=window.setTimeout(tick,Math.max(16,50-(performance.now()-now)))
     }
-    void createTracker(players,controller.signal,withHands).then(value=>{
+    void createTracker(players,controller.signal,withHands,withMasks).then(value=>{
       if(disposed){value.close();return}
       tracker=value;trackingCallback.current?.(true);handReady=!value.enableHands&&Boolean(value.detectHands);if(withHands)handStatus.current?.(value.enableHands?undefined:handReady);lastFresh=performance.now();tick()
     }).catch(()=>{if(!disposed){trackingCallback.current?.(false);armsCallback.current?.([]);if(withHands)handStatus.current?.(false);alignment.current=null;setCheck(null);setStatus('Body tracking unavailable · you can still play')}})
     return()=>{disposed=true;controller.abort();window.clearTimeout(timer);tracker?.close()}
-  },[videoRef,players,createTracker,revision,withHands,withArms])
-  return <>{frameParent&&createPortal(<canvas ref={matchedFrame} className="pose-matched-frame" aria-label="Camera frame matched to body tracking" hidden={!bodies.length||!(showSkeleton||withArms||withHands||readyMode)}/>,frameParent)}<div data-aligning={checking} data-tracked={showSkeleton&&bodies.length>0} hidden={!showSkeleton&&!checking} className={`body-test${compact?' body-test--game':''}`}>
+  },[videoRef,players,createTracker,revision,withHands,withArms,withMasks])
+  return <>{frameParent&&createPortal(<canvas ref={matchedFrame} className="pose-matched-frame" aria-label="Camera frame matched to body tracking" hidden={!bodies.length||!(showSkeleton||withArms||withHands||withMasks||readyMode)}/>,frameParent)}<div data-aligning={checking} data-tracked={showSkeleton&&bodies.length>0} hidden={!showSkeleton&&!checking} className={`body-test${compact?' body-test--game':''}`}>
     {!readyMode&&<div className="body-test__align-controls"><button type="button" onClick={()=>{alignment.current=new BodyAlignment(players);setCheck({ready:false,progress:0,message:'Face the camera and raise both hands'});setRevision(value=>value+1)}}>{players===1?'Align player':'Align players'}</button>{check&&!check.ready&&<button type="button" onClick={()=>{alignment.current=null;setCheck(null)}}>Cancel alignment</button>}</div>}
     {check&&<div className={`body-alignment${check.ready?' body-alignment--ready':''}`} role="status"><strong>{check.message}</strong>{!check.ready&&<><small>Face the camera · lift both hands · hold still for 2 seconds</small><progress value={check.progress} max="1" aria-label="Player alignment progress"/></>}<small>{check.ready?'Framing checked · joints still follow the camera directly':'This checks framing and re-detects your body; no artificial offsets.'}</small></div>}
     <svg style={{visibility:showSkeleton?undefined:'hidden'}} className="body-test__sticks" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-label="Detected human stick figure" role="img">

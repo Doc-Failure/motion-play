@@ -17,18 +17,21 @@ export class FruitCatcherModel {
   private readonly spawnIntervalMs: number
   private readonly fallsForMs: number
   private fruit: StoredFruit[] = []
-  private hands = new Map<PlayerId, HandPosition>()
+  private hands = new Map<PlayerId, HandPosition & { timestamp: number }>()
   private nextSpawnAt: number | null = null
   private nextId = 1
   private lastTimestamp: number | null = null
 
-  constructor(options: { playerCount?: PlayerCount; countdownMs?: number; roundDurationMs?: number; spawnIntervalMs?: number; fallsForMs?: number; random?: () => number } = {}) {
+  private readonly pressure: number
+
+  constructor(options: { pressure?: number; playerCount?: PlayerCount; countdownMs?: number; roundDurationMs?: number; spawnIntervalMs?: number; fallsForMs?: number; random?: () => number } = {}) {
+    this.pressure = Math.max(-.15, Math.min(1, options.pressure ?? 0))
     const count = options.playerCount ?? 1
     this.session = new GameSession({ playerCount: count, countdownMs: options.countdownMs, roundDurationMs: options.roundDurationMs })
     this.players = Array.from({ length: count }, (_, index) => (index + 1) as PlayerId)
     this.random = options.random ?? Math.random
-    this.spawnIntervalMs = options.spawnIntervalMs ?? 900
-    this.fallsForMs = options.fallsForMs ?? 3_400
+    this.spawnIntervalMs = options.spawnIntervalMs ?? (900 - 240 * this.pressure)
+    this.fallsForMs = options.fallsForMs ?? (3400 - 900 * this.pressure)
   }
 
   start(timestamp: number) {
@@ -42,6 +45,7 @@ export class FruitCatcherModel {
   pause(timestamp: number) {
     const state = this.update(timestamp)
     if (state.phase !== 'playing' && state.phase !== 'countdown') return state
+    this.hands.clear()
     this.session.pause(this.lastTimestamp!)
     this.clock.pause(timestamp)
     return this.snapshot(this.lastTimestamp!)
@@ -64,10 +68,10 @@ export class FruitCatcherModel {
       if (this.nextSpawnAt === null) this.nextSpawnAt = now
       const steps = Math.max(0, Math.floor((now - this.nextSpawnAt) / this.spawnIntervalMs) + 1)
       for (let step = 0; step < Math.min(steps, 2); step += 1) for (const playerId of this.players) {
-        if (this.fruit.filter((item) => item.playerId === playerId).length < 5) this.fruit.push(this.createFruit(playerId, now + step * this.spawnIntervalMs))
+        if (this.fruit.filter((item) => item.playerId === playerId).length < 5) this.fruit.push(this.createFruit(playerId, this.nextSpawnAt + (steps - Math.min(steps, 2) + step) * this.spawnIntervalMs))
       }
       this.nextSpawnAt += steps * this.spawnIntervalMs
-      this.catchFruit(now)
+      for (const [id, hand] of this.hands) if (now - hand.timestamp > 300) this.hands.delete(id)
     } else if (state.phase === 'results') this.fruit = []
     this.lastTimestamp = now
     return this.snapshot(now)
@@ -78,20 +82,22 @@ export class FruitCatcherModel {
     this.update(event.timestamp)
     const now = this.lastTimestamp!
     if (event.kind !== 'HAND_POSITION' || event.confidence < .45 || !this.players.includes(event.playerId) || this.session.getSnapshot().phase !== 'playing') return this.snapshot(now)
-    this.hands.set(event.playerId, { playerId: event.playerId, x: clamp(event.x), y: clamp(event.y), confidence: event.confidence })
-    this.catchFruit(now)
+    const observedAt = this.clock.time(event.timestamp)
+    if (now - observedAt > 300 || observedAt <= (this.hands.get(event.playerId)?.timestamp ?? -Infinity)) return this.snapshot(now)
+    const hand = { playerId: event.playerId, x: clamp(event.x), y: clamp(event.y), confidence: event.confidence, timestamp: observedAt }
+    this.hands.set(event.playerId, hand)
+    this.catchFruit(hand, observedAt)
     return this.snapshot(now)
   }
 
   setState(fruit: FallingFruit[]) { this.fruit = fruit.map(({ y, ...item }) => ({ ...item, startY: y })) }
 
-  private catchFruit(now: number) {
-    for (const hand of this.hands.values()) {
-      const caught = this.visibleFruit(now).find((item) => item.playerId === hand.playerId && Math.abs(item.x - hand.x) <= .13 && Math.abs(item.y - hand.y) <= .13)
-      if (!caught) continue
-      this.fruit = this.fruit.filter((item) => item.id !== caught.id)
-      this.session.awardScore(hand.playerId, caught.kind === 'rotten' ? -10 : 10)
-    }
+  private catchFruit(hand: HandPosition, observedAt: number) {
+    const caught = this.visibleFruit(observedAt).find(item => item.playerId === hand.playerId && item.spawnedAt <= observedAt
+      && Math.abs(item.x - hand.x) <= .13 && Math.abs(item.y - hand.y) <= .13)
+    if (!caught) return
+    this.fruit = this.fruit.filter(item => item.id !== caught.id)
+    this.session.awardScore(hand.playerId, caught.kind === 'rotten' ? -10 : 10)
   }
 
   private createFruit(playerId: PlayerId, spawnedAt: number): StoredFruit {

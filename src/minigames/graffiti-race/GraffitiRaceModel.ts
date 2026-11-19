@@ -1,3 +1,4 @@
+import {brushStroke} from '../paint-splash/brushStroke'
 import { GameSession, type GameSessionSnapshot } from '../../game/GameSession'
 import type { MotionInputEvent } from '../../input/MotionProcessor'
 import type { PlayerCount, PlayerId } from '../../input/PlayerZoneMapper'
@@ -23,9 +24,13 @@ export class GraffitiRaceModel {
   private revealed: Record<PlayerId, Set<number>> = emptyRevealed()
   private lastTimestamp = 0
   private inputNotBefore = 0
-  private brushes: Partial<Record<PlayerId, { x: number; y: number; timestamp: number }>> = {}
+  private brushes: Partial<Record<PlayerId, { x: number; y: number; timestamp: number; pointerId?:string }>> = {}
 
-  constructor(options: { playerCount?: PlayerCount; countdownMs?: number; roundDurationMs?: number } = {}) {
+  readonly radius:number
+
+  constructor(options: { pressure?:number; playerCount?: PlayerCount; countdownMs?: number; roundDurationMs?: number } = {}) {
+    const pressure = Math.max(-.15,Math.min(1,options.pressure ?? 0))
+    this.radius = GRAFFITI_BRUSH_RADIUS - .025 * pressure
     const playerCount = options.playerCount ?? 1
     this.playerIds = Array.from({ length: playerCount }, (_, index) => (index + 1) as PlayerId)
     this.session = new GameSession({ ...options, playerCount })
@@ -50,16 +55,17 @@ export class GraffitiRaceModel {
   brush(event: MotionInputEvent) {
     // Reject malformed captures before they can advance the round clock.
     if (event.kind !== 'MOTION_BRUSH' || !this.playerIds.includes(event.playerId)
-      || !Number.isFinite(event.timestamp) || event.timestamp < this.inputNotBefore
+      || !Number.isFinite(event.timestamp) || event.timestamp < Math.max(this.inputNotBefore,this.lastTimestamp-160,this.brushes[event.playerId]?.timestamp ?? -Infinity)
       || !Number.isFinite(event.confidence) || event.confidence < .15 || event.confidence > 1
       || !Number.isFinite(event.x) || !Number.isFinite(event.y) || event.x < 0 || event.x > 1 || event.y < 0 || event.y > 1) return this.snapshot()
     const state = this.update(event.timestamp)
     if (state.phase !== 'playing') return state
-    this.brushes[event.playerId] = { x: event.x, y: event.y, timestamp: event.timestamp }
+    const touches = brushStroke(this.brushes[event.playerId],event,this.radius)
+    this.brushes[event.playerId] = { x:event.x, y:event.y, timestamp:event.timestamp, pointerId:event.pointerId }
     const cells = this.revealed[event.playerId]
     const before = cells.size
     for (const cell of MURAL_PATCHES) {
-      if (Math.hypot(event.x - cell.x, event.y - cell.y) <= GRAFFITI_BRUSH_RADIUS) cells.add(cell.id)
+      if (touches(cell.x,cell.y)) cells.add(cell.id)
     }
     this.session.awardScore(event.playerId, cells.size - before)
     if (cells.size === MURAL_PATCHES.length) this.session.finish(this.lastTimestamp)

@@ -1,0 +1,15 @@
+{
+  "boxer-poses.webp": {
+    "use": "Cardboard Champ robot body; gloves and arms animated separately",
+    "prompt": "2 by 2 sheet of the same front-facing friendly cardboard robot boxer body: ready smiling, determined wind-up, surprised hit, dizzy knockout. Tan corrugated box head and torso, teal neck and legs, purple boots, antenna and yellow star. No arms or gloves. Childlike wax-crayon scribbles, uneven outlines, transparent background.",
+    "dimensions": "512x512 (2x2 cells)",
+    "transparency": "alpha channel",
+    "animationStates": [
+      "ready",
+      "wind-up and punch",
+      "hit",
+      "knockout"
+    ],
+    "source": "ChatGPT image generation; original in docs/visual-audit/cardboard-boxer-sheet-original.png"
+  }
+}

@@ -3,8 +3,9 @@ import { visibleCatalogGames } from '../../src/app/catalog'
 
 for (const players of [1, 4]) {
   test(`illustrated game screens support ${players} players`, async ({page, installMockCamera}) => {
-    test.setTimeout(120_000)
+    test.setTimeout(180_000)
     await installMockCamera()
+    if (players === 4) await page.setViewportSize({width: 390, height: 844})
     await openApp(page,'#/catalog')
     await page.getByRole('button',{name:`${players} ${players === 1 ? 'player' : 'players'}`,exact:true}).click()
     for(const game of visibleCatalogGames.filter(game => game.available)) {
@@ -13,7 +14,16 @@ for (const players of [1, 4]) {
       await page.waitForTimeout(3300)
       await expect(page.getByRole('heading',{name:game.title,exact:true})).toBeVisible()
       await expect(page.getByRole('button',{name:'Mute game sound'})).toBeVisible()
-      await expect(page.locator('.round-track')).toBeVisible()
+      const hud = page.locator('.round-hud')
+      await expect(hud).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
+      await expect(hud).toHaveCSS('pointer-events', 'none')
+      await expect(hud.locator('.round-hud__clock dd')).toHaveText(/^\d+s$/)
+      await expect(hud.locator('.round-hud__scores dd').first()).toBeVisible()
+      const exit = hud.getByRole('button', {name: 'Exit game', exact: true})
+      await expect(exit).toHaveCSS('pointer-events', 'auto')
+      await expect(exit).toBeInViewport({ratio: 1})
+      expect((await exit.boundingBox())!.width).toBeGreaterThanOrEqual(44)
+      await expect(page.locator('.round-track')).toHaveCount(0)
       await expect(page.locator('.game-curtain')).toHaveCount(0)
       if (game.slug === 'bubble-battle') {
         const bubble = page.locator('.battle-target--bubble').first()

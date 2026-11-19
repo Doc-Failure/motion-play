@@ -1,3 +1,5 @@
+import {useChallenge} from '../../game/ChallengeContext'
+import {ChallengeResult} from '../../game/ArcadeRound'
 import { useEffect, useRef, useState, type PointerEvent } from 'react'
 import { GameFeedback } from '../../game/GameFeedback'
 import { useRoundRecovery, type RoundRecoveryProps } from '../../game/useRoundRecovery'
@@ -10,7 +12,8 @@ import './punch-arena.css'
 export function PunchArena({ playerCount, inputEvents = [], onExit, externalPauseReason, onReconnect, random }: RoundRecoveryProps & {
   playerCount: PlayerCount; inputEvents?: MotionInputEvent[]; onExit(): void; random?: () => number
 }) {
-  const [initial] = useState(() => { const model = new PunchArenaModel({ playerCount, random }); return { model, snapshot: model.start(performance.now()) } })
+  const pressure=useChallenge()?.pressure??0
+  const [initial] = useState(() => { const model = new PunchArenaModel({ playerCount, random,pressure }); return { model, snapshot: model.start(performance.now()) } })
   const { model } = initial
   const [snapshot, setSnapshot] = useState(initial.snapshot)
   const tracker = useRef(new HandSwipeTracker())
@@ -66,6 +69,6 @@ export function PunchArena({ playerCount, inputEvents = [], onExit, externalPaus
     </section>)}</div>
     <p id="punch-help" className="punch-help">Finish a quick pointer or touch swipe on a pad, following its arrow. Focus a lane and press the matching arrow key to simulate a punch. Each pad scores once; missed pads expire.</p>
     {recovery.pauseDialog}
-    {snapshot.phase === 'results' && <div className="battle-results" role="dialog" aria-label="Punch Arena results"><h2 ref={results} tabIndex={-1}>Great punching!</h2>{snapshot.scores.map(({ playerId, score }) => <p key={playerId}>Player {playerId}: {score} points</p>)}<button className="crayon-button" onClick={() => { tracker.current.reset(); pointers.current.clear(); setSnapshot(model.start(performance.now())); document.getElementById('punch-player-1')?.focus() }}>Play again</button><button className="text-button" onClick={onExit}>Back to setup</button></div>}
+    {snapshot.phase === 'results' && <div className="battle-results" role="dialog" aria-label="Punch Arena results"><h2 ref={results} tabIndex={-1}>Great punching!</h2>{snapshot.scores.map(({ playerId, score }) => <p key={playerId}>Player {playerId}: {score} points</p>)}<ChallengeResult scores={snapshot.scores}/><button className="crayon-button" onClick={() => { tracker.current.reset(); pointers.current.clear(); setSnapshot(model.start(performance.now())); document.getElementById('punch-player-1')?.focus() }}>Play again</button><button className="text-button" onClick={onExit}>Back to setup</button></div>}
   </section>
 }

@@ -3,14 +3,14 @@ import {PauseClock} from '../../game/PauseClock'
 import type {MotionInputEvent} from '../../input/MotionProcessor'
 import type {PlayerCount,PlayerId} from '../../input/PlayerZoneMapper'
 export const RACE_DURATION=45000,HOP_MS=700
-export interface Racer {playerId:PlayerId;distance:number;next:number;obstacle:number;cleared:number;hits:number;stunUntil:number;jumpAt:number;height:number;tracked:boolean;cue:'jump'|'clear'|'bump'|null;serial:number;cueAt:number}
+export interface Racer {playerId:PlayerId;distance:number;next:number;obstacle:number;cleared:number;streak:number;best:number;hits:number;stunUntil:number;jumpAt:number;height:number;tracked:boolean;cue:'jump'|'clear'|'bump'|null;serial:number;cueAt:number}
 export interface RaceSnapshot extends GameSessionSnapshot {elapsed:number;racers:Racer[]}
 export const obstacleTypes=['log','rock','gap'] as const
 interface Body {anchor:number;armed:boolean;time:number}
 export class RaceModel {
  private session:GameSession;private clock=new PauseClock();private begins=0;private now=0;private elapsed=0;private bodies=new Map<PlayerId,Body>();private lastInput=new Map<PlayerId,number>();private racers:Racer[]=[]
- constructor(players:PlayerCount){this.session=new GameSession({playerCount:players,roundDurationMs:RACE_DURATION})}
- start(t:number){const s=this.session.start(t);this.clock.reset(t);this.now=t;this.begins=t+3000;this.elapsed=0;this.bodies.clear();this.lastInput.clear();this.racers=s.scores.map(p=>({playerId:p.playerId,distance:0,next:18,obstacle:0,cleared:0,hits:0,stunUntil:0,jumpAt:-1000,height:0,tracked:false,cue:null,serial:0,cueAt:0}));return this.snapshot()}
+ constructor(players:PlayerCount,private pressure=0){this.session=new GameSession({playerCount:players,roundDurationMs:RACE_DURATION})}
+ start(t:number){const s=this.session.start(t);this.clock.reset(t);this.now=t;this.begins=t+3000;this.elapsed=0;this.bodies.clear();this.lastInput.clear();this.racers=s.scores.map(p=>({playerId:p.playerId,distance:0,next:15,obstacle:0,cleared:0,streak:0,best:0,hits:0,stunUntil:0,jumpAt:-1000,height:0,tracked:false,cue:null,serial:0,cueAt:0}));return this.snapshot()}
  moveBody(e:MotionInputEvent){
   const r=this.racers.find(r=>r.playerId===e.playerId)
   if(!r||e.kind!=='BODY_MOVE'||!Number.isFinite(e.timestamp)||!this.clock.accepts(e.timestamp)||e.timestamp<=(this.lastInput.get(e.playerId)??-Infinity)||this.clock.time(e.timestamp)<this.now-150)return this.snapshot()
@@ -28,14 +28,14 @@ export class RaceModel {
   while(this.elapsed+10<=target){this.elapsed+=10;this.session.update(this.begins+this.elapsed)
    for(const r of this.racers){const body=this.bodies.get(r.playerId);r.tracked=!!body&&this.begins+this.elapsed-body.time<=350
     const p=Math.max(0,Math.min(1,(this.elapsed-r.jumpAt)/HOP_MS));r.height=4*p*(1-p)
-    if(!r.tracked||r.hits>=3)continue
-    const speed=(8+this.elapsed/RACE_DURATION*4)*(this.elapsed<r.stunUntil?.2:1),before=Math.floor(r.distance);r.distance+=speed*.01
+    if(r.hits>=3)continue
+    const speed=(8+this.elapsed/RACE_DURATION*4+this.pressure*1.6)*(this.elapsed<r.stunUntil?.2:1),before=Math.floor(r.distance);r.distance+=speed*.01
     this.session.awardScore(r.playerId,Math.floor(r.distance)-before)
-    if(r.distance>=r.next){const required=[.25,.45,.6][r.obstacle%3];if(r.height>=required){r.cleared++;this.cue(r,'clear')}else{r.hits++;r.stunUntil=this.elapsed+1000;this.cue(r,'bump')}
+    if(r.distance>=r.next){const required=[.25,.45,.6][r.obstacle%3]+this.pressure*.10;if(r.height>=required){r.cleared++;r.streak++;r.best=Math.max(r.best,r.streak);this.cue(r,'clear')}else{r.hits++;r.streak=0;r.stunUntil=this.elapsed+1000;this.cue(r,'bump')}
      r.obstacle++;r.next+=18+[0,4,2,6][r.obstacle%4]
     }
    }
-   if(this.racers.every(r=>r.hits>=3)){this.session.finish(this.begins+this.elapsed);break}
+   if(this.session.getSnapshot().phase==='playing'&&this.racers.every(r=>r.hits>=3)){this.session.finish(this.begins+this.elapsed);break}
   }
   this.session.update(this.now);return this.snapshot()
  }

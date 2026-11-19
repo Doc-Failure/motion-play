@@ -5,7 +5,19 @@
 .race-player-label { position:absolute; left:1%; bottom:4%; font-size:clamp(.65rem,1.5vw,1rem); text-shadow:1px 1px #29313c,-1px -1px #29313c; }
 .race-roo { position:absolute; bottom:13%; width:clamp(3rem,9vw,7rem); height:min(90%,8rem); will-change:transform; }
 .race-roo svg { width:100%; height:100%; }
+.race-roo__sprite { display:block; position:relative; width:100%; height:100%; container-type:size; }
+.race-roo__art { position:absolute; width:100cqmin; height:100cqmin; bottom:0; left:50%; translate:-50% 0; }
+.race-roo__sprite[data-pose="run"][data-running="true"] .race-roo__art { animation:race-run .38s ease-in-out infinite alternate; }
+.race-roo__badge { position:absolute; right:4%; top:5%; display:grid; place-items:center; min-width:1.2em; height:1.2em; border:2px solid #29313c; border-radius:50%; color:#29313c; font-size:clamp(.65rem,1.3vw,.9rem); font-weight:bold; }
+.race-game[data-phase="paused"] .race-roo__art { animation-play-state:paused; }
+@keyframes race-run { from { transform:translateY(0) rotate(-3deg); } to { transform:translateY(-5%) rotate(3deg); } }
+@media (prefers-reduced-motion:reduce) { .race-roo__art { animation:none !important; } }
+.reduce-motion .race-roo__art { animation:none !important; }
 .race-obstacle { position:absolute; bottom:12%; width:clamp(2rem,6vw,4rem); height:min(40%,3.5rem); }
 .race-obstacle svg { width:100%; height:100%; stroke:#29313c; stroke-width:3; overflow:visible; }
-.race-cue { position:absolute; right:2%; top:5%; background:#fff6dfdd; border-radius:.4rem; padding:.1rem .4rem; font-size:clamp(.65rem,1.6vw,1rem); }
+.race-cue { position:absolute; right:2%; top:5%; background:#fff9e9; color:#29313c; border:2px solid #29313c; border-radius:.5rem .35rem; padding:.2rem .5rem; font-size:clamp(.8rem,1.6vw,1.1rem); font-weight:bold; }
+.race-cue--jump { background:#ffe17a; animation:race-warning .45s ease-in-out infinite alternate; }
 .race-cue:empty { display:none; }
+@keyframes race-warning { from { transform:scale(1) rotate(-2deg); } to { transform:scale(1.08) rotate(2deg); } }
+@media (prefers-reduced-motion:reduce) { .race-cue--jump { animation:none; } }
+.reduce-motion .race-cue--jump { animation:none; }

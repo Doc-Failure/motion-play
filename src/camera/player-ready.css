@@ -3,7 +3,7 @@
 .player-ready-gate__instruction span { display:block; margin-top:.25rem; font-size:.8rem; }
 .player-ready-gate__lanes { position:absolute; inset:0; display:grid; }
 .player-ready-gate__lane { position:relative; container-type:size; }
-.player-ready-button { position:absolute; left:50%; top:40%; translate:-50% -50%; width:32cqmin; height:32cqmin; padding:0; border:0; border-radius:50%; color:#fff8e9; background:#172630d9; cursor:pointer; touch-action:none; pointer-events:auto; }
+.player-ready-button { position:absolute; left:50%; top:var(--ready-y,40%); translate:-50% -50%; width:32cqmin; height:32cqmin; padding:0; border:0; border-radius:50%; color:#fff8e9; background:#172630d9; cursor:pointer; touch-action:none; pointer-events:auto; }
 .player-ready-button svg { width:100%; height:100%; display:block; }
 .player-ready-button strong { position:absolute; bottom:-1.7em; left:0; right:0; font-size:clamp(.7rem,3cqmin,1.3rem); text-shadow:1px 1px #172630; }
 .player-ready-button span { position:absolute; top:calc(100% + 2rem); left:50%; translate:-50% 0; width:max-content; max-width:90%; font-size:clamp(.5rem,2.2cqmin,1rem); padding:.25rem; border-radius:.3rem; background:#172630ed; }
@@ -15,9 +15,14 @@
 .camera-arena:has(.player-ready-gate) :is(.battle-results,.game-curtain,.camera-distance-cue) { visibility:hidden; }
 .camera-arena:has(.player-ready-gate) .body-test__align-controls { display:none; }
 @media(max-width:600px) { .player-ready-gate__instruction { top:4.5rem; font-size:.65rem; }.player-ready-gate__instruction span { font-size:.55rem; }.player-ready-gate__tools { bottom:.5rem; }.player-ready-gate__tools small { font-size:.45rem; }.player-ready-button span { white-space:normal; top:calc(100% + 1.7rem); } }
-.player-ready-button { top:var(--ready-y,40%); }
-.game-intro-demo { position:absolute; top:3%; left:50%; translate:-50% 0; width:min(70%,22rem); padding:.4rem .65rem; background:#fff6dfee; color:#29313c; border:2px solid #29313c; border-radius:1rem; text-align:center; }
-.game-intro-demo h1 { margin:0 0 .3rem; font-size:clamp(.85rem,2.5vw,1.4rem); }.game-intro-demo video { display:block; width:min(100%,14rem); height:24cqh; max-height:8rem; object-fit:contain; margin:auto; border-radius:.5rem; }.game-intro-demo p { margin:.3rem 0 0; font-size:clamp(.6rem,1.5vw,.9rem); }
+.game-intro-demo {
+  position:absolute; top:2%; left:50%; translate:-50% 0;
+  display:flex; align-items:center; gap:2%; width:min(96%,calc(72cqh + 19rem)); padding:1cqmin;
+  background:#fff6dfee; color:#29313c; border:2px solid #29313c; border-radius:1rem;
+}
+.game-intro-demo :is(video,.gesture-demo) { width:min(64%,72cqh); aspect-ratio:16/9; border-radius:.5rem; flex:none; }
+.game-intro-demo h1 { margin:0; font-size:clamp(.85rem,3.5cqh,1.8rem); }
+.game-intro-demo p { margin:.3em 0 0; font-size:clamp(.72rem,2.6cqh,1.35rem); line-height:1.2; }
 .player-ready-gate--intro .player-ready-gate__instruction { top:48%; padding:.25rem .5rem; border:0; font-size:.7rem; }.player-ready-gate--intro .player-ready-gate__instruction strong,.player-ready-gate--intro .player-ready-button span { display:none; }.player-ready-gate--intro .player-ready-gate__instruction span { margin:0; }
 .player-ready-gate--intro .player-ready-gate__tools { bottom:.4rem; left:.4rem; translate:none; width:auto; }.player-ready-gate--intro .player-ready-gate__tools button { min-height:30px; font-size:.65rem; }
 .camera-arena:has(.player-ready-gate--intro)>section,.camera-arena:has(.player-ready-gate--intro)>.game-wireframe-toggle,.camera-arena:has(.player-ready-gate--intro)>.body-test,.camera-arena:has(.player-ready-gate--intro)>.tournament-ribbon { visibility:hidden; }

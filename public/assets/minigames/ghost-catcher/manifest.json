@@ -1,0 +1,39 @@
+{
+  "ghost-happy.webp": {
+    "use": "Ghost Catcher rising ghost; idle and charge animation are procedural",
+    "prompt": "One individual friendly ghost character sprite for a family webcam game called Ghost Catcher: childlike hand-drawn wax-crayon illustration, visible rough scribble strokes, uneven bold black outline, cheerful pale blue and white crayon, imperfect coloring crossing the edges, subtle paper grain in the colored drawing, expressive happy face and playful wavy bottom. Center the complete character with generous transparent padding; transparent background, no text, no scenery, no interface, no gradients, no realistic shadows, no polished vector appearance.",
+    "dimensions": "224x224",
+    "transparency": "alpha channel",
+    "animationStates": [
+      "rising",
+      "charging"
+    ],
+    "source": "ChatGPT image generation; original preserved in docs/visual-audit/ghost-original.png"
+  },
+  "bat-poses.webp": {
+    "use": "Ghost Catcher bat animation",
+    "prompt": "Four poses of the same friendly purple bat: wings raised, spread, lowered, and surprised touch reaction; childlike wax-crayon scribbles, uneven black outlines, transparent background.",
+    "dimensions": "256x256 (2x2 cells)",
+    "transparency": "alpha channel",
+    "animationStates": [
+      "wings up",
+      "wings spread",
+      "wings down",
+      "touched"
+    ],
+    "source": "ChatGPT image generation; original in docs/visual-audit/ghost-bat-sheet-original.png"
+  },
+  "ghost-poses.webp": {
+    "use": "Ghost Catcher animated ghost",
+    "prompt": "Four consistent poses of a happy white ghost shaded pale blue: idle, waving, surprised while rubbed, delighted when caught. Hand-drawn wax-crayon scribbles, uneven black outlines, transparent background.",
+    "dimensions": "384x384 (2x2 cells)",
+    "transparency": "alpha channel",
+    "animationStates": [
+      "idle",
+      "wave",
+      "touched",
+      "caught"
+    ],
+    "source": "ChatGPT image generation; original in docs/visual-audit/ghost-poses-original.png"
+  }
+}

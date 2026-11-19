@@ -3,7 +3,6 @@ import {gameAudio} from '../audio/GameAudio'
 import {useEffect,useLayoutEffect,useRef,useState,type RefObject} from 'react'
 import {createPortal} from 'react-dom'
 import {WebcamMenuDwell,projectMenuSample,MENU_HOLD_MS,type WebcamMenuInput,type CameraMenuFrame} from '../input/WebcamMenuInput'
-import {containCameraFrame} from '../game/cameraGeometry'
 import {BodyTrackingTest} from './BodyTrackingTest'
 import type {StickBody} from './poseTracking'
 import type {MotionInputEvent} from '../input/MotionProcessor'
@@ -23,9 +22,8 @@ function choices(ids:WeakMap<HTMLElement,string>,next:()=>string):Choice[]{
 export function WebcamNavigation({feed,videoRef,cameraView,activeFrame,activeVideoRef,ready,readyCheck=false,requesting,players,routeKey,onStart,onPose}:{feed:WebcamMenuInput;videoRef:RefObject<HTMLVideoElement>;cameraView:boolean;activeFrame?:CameraMenuFrame;activeVideoRef?:RefObject<HTMLVideoElement>;ready:boolean;readyCheck?:boolean;requesting:boolean;players:number;routeKey:string;onStart():void;onPose:(bodies:StickBody[],time:number)=>void}){
  const smoother=useRef(new HandPointerStabilizer()),model=useRef(new WebcamMenuDwell()),ids=useRef(new WeakMap<HTMLElement,string>()),counter=useRef(0),last=useRef(-Infinity),dialogs=useRef('')
  const [pointers,setPointers]=useState<MotionInputEvent[]>([]),[active,setActive]=useState<{rect:DOMRect;progress:number}|null>(null)
- const [tracking,setTracking]=useState<boolean|undefined>(undefined),[aspect,setAspect]=useState(16/9)
- const [viewport,setViewport]=useState(()=>({width:innerWidth,height:innerHeight}))
- const frame=cameraView?(activeFrame??{left:0,top:0,...viewport}):containCameraFrame(viewport.width,viewport.height,aspect)
+ const [tracking,setTracking]=useState<boolean|undefined>(undefined)
+ const frame=activeFrame??{left:0,top:0,width:innerWidth,height:innerHeight}
  const projection=useRef(frame);projection.current=frame
  const renderedVideo=useRef<RefObject<HTMLVideoElement>|undefined>(undefined);renderedVideo.current=cameraView?activeVideoRef:videoRef
  const {left:menuLeft,top:menuTop,width:menuWidth,height:menuHeight}=frame
@@ -39,7 +37,6 @@ export function WebcamNavigation({feed,videoRef,cameraView,activeFrame,activeVid
  useEffect(()=>{model.current.resetForScene();smoother.current.reset();setActive(null);setPointers([])},[routeKey,cameraView,players,frame.left,frame.top,frame.width,frame.height])
  useEffect(()=>{
   const cancel=()=>{model.current.resetForScene();smoother.current.reset();setActive(null);setPointers([])}
-  const resize=()=>{setViewport({width:innerWidth,height:innerHeight});cancel()}
   const unsubscribe=feed.subscribe(sample=>{
    const now=performance.now();last.current=now
    if(document.hidden||now<sample.time||now-sample.time>1000){cancel();return}
@@ -58,12 +55,12 @@ export function WebcamNavigation({feed,videoRef,cameraView,activeFrame,activeVid
    if(state.activatedId){const element=targets.find(c=>c.target.id===state.activatedId)?.element;if(element?.isConnected){element.focus({preventScroll:true});element.click()}}
   })
   const stale=setInterval(()=>{if(performance.now()-last.current>1000)cancel()},200)
-  window.addEventListener('blur',cancel);window.addEventListener('resize',resize);window.addEventListener('scroll',cancel);document.addEventListener('visibilitychange',cancel)
-  return()=>{unsubscribe();clearInterval(stale);window.removeEventListener('blur',cancel);window.removeEventListener('resize',resize);window.removeEventListener('scroll',cancel);document.removeEventListener('visibilitychange',cancel)}
+  window.addEventListener('blur',cancel);window.addEventListener('resize',cancel);window.addEventListener('scroll',cancel);document.addEventListener('visibilitychange',cancel)
+  return()=>{unsubscribe();clearInterval(stale);window.removeEventListener('blur',cancel);window.removeEventListener('resize',cancel);window.removeEventListener('scroll',cancel);document.removeEventListener('visibilitychange',cancel)}
  },[feed])
  return createPortal(<>
   {!cameraView&&<div className="webcam-menu-background" hidden={!ready}><div className="webcam-menu-frame" style={frame}>
-   <video ref={videoRef} muted playsInline onLoadedMetadata={event=>{const video=event.currentTarget;if(video.videoWidth&&video.videoHeight)setAspect(video.videoWidth/video.videoHeight)}} aria-label="Mirrored navigation camera"/>
+   <video ref={videoRef} muted playsInline aria-label="Mirrored navigation camera"/>
    {ready&&<BodyTrackingTest videoRef={videoRef} players={players} readyMode showSkeleton={false} onPoseSample={onPose} onTrackingStatus={setTracking}/>}
   </div></div>}
   <div className="webcam-navigation" onPointerDown={gameAudio.unlock} onKeyDown={gameAudio.unlock} aria-label="Webcam navigation">

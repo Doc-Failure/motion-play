@@ -1,3 +1,6 @@
+import {useLegacyReadyGate} from '../../game/useLegacyReadyGate'
+import {ChallengeResult} from '../../game/ArcadeRound'
+import {useChallenge} from '../../game/ChallengeContext'
 import { GameFeedback } from '../../game/GameFeedback'
 import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react'
 import type { MotionInputEvent } from '../../input/MotionProcessor'
@@ -12,8 +15,11 @@ export function FishFrenzy({ playerCount, inputEvents = [], onExit, externalPaus
   onReconnect?(): void
   random?: () => number
 }) {
-  const [model] = useState(() => new FishFrenzyModel({ playerCount, random }))
+  const challenge = useChallenge()
+  const pressure = challenge?.pressure ?? 0
+  const [model] = useState(() => new FishFrenzyModel({ pressure, roundDurationMs: challenge ? 36_000 : undefined, playerCount, random }))
   const [snapshot, setSnapshot] = useState(() => model.start(performance.now()))
+  useLegacyReadyGate(snapshot.phase,externalPauseReason,()=>setSnapshot(model.resume(performance.now())))
   const [pauseReason, setPauseReason] = useState<string | null>(null)
   const pauseHeadingRef = useRef<HTMLHeadingElement>(null)
   const resultsRef = useRef<HTMLHeadingElement>(null)
@@ -95,7 +101,7 @@ export function FishFrenzy({ playerCount, inputEvents = [], onExit, externalPaus
     </div>
     <p className="fish-help" id="fish-help">Move with a mouse or finger, or focus your water and use arrow keys; Space or Enter casts at that spot. Camera control follows moving regions, not tracked hands. Keep moving to catch!</p>
     {snapshot.phase === 'paused' && <div className="battle-results" role="dialog" aria-label="Fish Frenzy paused"><h2 ref={pauseHeadingRef} tabIndex={-1}>Fishing paused</h2><p>{externalPauseReason || pauseReason}</p><button className="crayon-button" type="button" disabled={Boolean(externalPauseReason)} onClick={() => { setSnapshot(model.resume(performance.now())); setPauseReason(null) }}>Resume</button>{externalPauseReason && onReconnect && <button className="crayon-button" type="button" onClick={onReconnect}>Reconnect camera</button>}<button className="text-button" type="button" onClick={onExit}>Back to setup</button></div>}
-    {snapshot.phase === 'results' && <div className="battle-results" role="dialog" aria-label="Fish Frenzy results"><h2 ref={resultsRef} tabIndex={-1}>{playerCount === 1 ? 'What a catch!' : leaders.length > 1 ? 'It’s a tie!' : `Player ${leaders[0].playerId} wins!`}</h2><div className="battle-results__scores">{snapshot.scores.map(({ playerId, score }) => <p key={playerId}><strong>Player {playerId}</strong><span>{score} points · {snapshot.caught[playerId - 1]} caught</span></p>)}</div><button className="crayon-button crayon-button--primary" type="button" onClick={() => { keyboardNets.current.clear(); setSnapshot(model.start(performance.now())) }}>Play again</button><button className="text-button" type="button" onClick={onExit}>Back to setup</button></div>}
+    {snapshot.phase === 'results' && <div className="battle-results" role="dialog" aria-label="Fish Frenzy results"><h2 ref={resultsRef} tabIndex={-1}>{playerCount === 1 ? 'What a catch!' : leaders.length > 1 ? 'It’s a tie!' : `Player ${leaders[0].playerId} wins!`}</h2><ChallengeResult scores={snapshot.scores}/><div className="battle-results__scores">{snapshot.scores.map(({ playerId, score }) => <p key={playerId}><strong>Player {playerId}</strong><span>{score} points · {snapshot.caught[playerId - 1]} caught</span></p>)}</div><button className="crayon-button crayon-button--primary" type="button" onClick={() => { keyboardNets.current.clear(); setSnapshot(model.start(performance.now())) }}>Play again</button><button className="text-button" type="button" onClick={onExit}>Back to setup</button></div>}
   </section>
 }
 

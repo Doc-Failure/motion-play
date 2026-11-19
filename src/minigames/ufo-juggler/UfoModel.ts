@@ -8,7 +8,7 @@ export interface UfoSnapshot extends GameSessionSnapshot {elapsed:number;ships:S
 export const UFO_DURATION=40000
 export class UfoModel {
  private session:GameSession;private clock=new PauseClock();private now=0;private startAt=0;private elapsed=0;private next=0;private serial=0;private ships:Saucer[]=[];private lives:number[];private rescues:number[];private streak:number[];private samples=new Map<number,number>()
- constructor(private players:PlayerCount,private aspect=4/3){this.session=new GameSession({playerCount:players,roundDurationMs:UFO_DURATION});this.lives=Array(players).fill(3);this.rescues=Array(players).fill(0);this.streak=Array(players).fill(0)}
+ constructor(private players:PlayerCount,private aspect=4/3,private pressure=0){this.session=new GameSession({playerCount:players,roundDurationMs:UFO_DURATION});this.lives=Array(players).fill(3);this.rescues=Array(players).fill(0);this.streak=Array(players).fill(0)}
  setAspectRatio(a:number){if(Number.isFinite(a)&&a>0)this.aspect=a}
  start(t:number){this.session.start(t);this.clock.reset(t);this.now=t;this.startAt=t+3000;this.elapsed=0;this.next=0;this.serial=0;this.ships=[];this.lives.fill(3);this.rescues.fill(0);this.streak.fill(0);this.samples.clear();return this.snapshot()}
  update(t:number){
@@ -24,23 +24,26 @@ export class UfoModel {
  }
  private step(dt:number){
   const time=this.elapsed
-  if(time>=this.next){this.next=time+(time<12000?6200:time<25000?4800:3600);const n=this.serial++
+  if(time>=this.next){this.next=time+((time<12000?4200:time<25000?1950:1700)-this.pressure*500);const n=this.serial++
    for(let p=1;p<=this.players;p++)if(this.lives[p-1]>0){
     const active=this.ships.filter(s=>s.playerId===p&&s.state==='flying'),limit=time<12000?2:3
-    for(let j=0;j<(time<12000?1:2)&&active.length<limit;j++){
-    const slot=(time<12000?[.5,.25,.75]:[.25,.75,.5]).find(x=>active.every(s=>s.x!==x))!
-    const ship:Saucer={id:(n*this.players+p)*2+j,playerId:p as PlayerId,x:slot,y:.62,spin:.22,heat:0,angle:0,born:time,state:'flying',ended:0,points:0,cue:null,cueAt:0,serial:0,coolUntil:0,rescued:false};this.ships.push(ship);active.push(ship)
+    if(active.length<limit){
+    const slots=[.5,.25,.75]
+    const slot=slots.map((_,i)=>slots[(n+i)%slots.length]).find(x=>active.every(s=>s.x!==x))!
+    const ship:Saucer={id:n*this.players+p,playerId:p as PlayerId,x:slot,y:.62,spin:.22,heat:0,angle:0,born:time,state:'flying',ended:0,points:0,cue:null,cueAt:0,serial:0,coolUntil:0,rescued:false};this.ships.push(ship)
     }
    }
   }
   for(const s of this.ships)if(s.state==='flying'){
    if(this.lives[s.playerId-1]===0){s.state='crashed';s.ended=time-900;continue}
-   s.spin=Math.max(0,s.spin-dt*.28);s.angle+=dt*(1+s.spin*12)
+   s.spin=Math.max(0,s.spin-dt*(.28+.045*this.pressure));s.angle+=dt*(1+s.spin*12)
    s.heat=Math.max(0,Math.min(1,s.heat+dt*(s.spin>1.05?1.6:-.7)))
    if(s.heat>=1){s.spin=.05;s.coolUntil=time+1000;s.heat=.5;this.cue(s,'overheat')}
    const rising=s.spin>=.38&&time>=s.coolUntil
    s.y+=dt*(rising?-(.055+s.spin*.14):.075+(time/UFO_DURATION)*.025)
-   if(s.y<.22){s.state='launched';s.ended=time;this.streak[s.playerId-1]++;this.rescues[s.playerId-1]++;s.points=50+Math.min(40,(this.streak[s.playerId-1]-1)*10);this.session.awardScore(s.playerId,s.points);this.cue(s,'launch')}
+   if(s.y<.22){s.state='launched';s.ended=time;
+    if(this.players===1&&!this.ships.some(ship=>ship.state==='flying'))this.next=Math.min(this.next,time+700);
+    this.streak[s.playerId-1]++;this.rescues[s.playerId-1]++;s.points=50+Math.min(40,(this.streak[s.playerId-1]-1)*10);this.session.awardScore(s.playerId,s.points);this.cue(s,'launch')}
    else if(s.y>.94){s.state='crashed';s.ended=time;this.lives[s.playerId-1]--;this.streak[s.playerId-1]=0;this.cue(s,'crash')}
   }
   this.ships=this.ships.filter(s=>s.state==='flying'||time-s.ended<900)

@@ -1,3 +1,5 @@
+import {ChallengeResult} from '../../game/ArcadeRound'
+import {useChallenge} from '../../game/ChallengeContext'
 import {Kangaroo} from './Kangaroo'
 import { useEffect, useRef, useState, type PointerEvent } from 'react'
 import { GameFeedback } from '../../game/GameFeedback'
@@ -11,7 +13,8 @@ import './jump-rush.css'
 export function JumpRush({ playerCount, inputEvents = [], onExit, externalPauseReason, onReconnect }: RoundRecoveryProps & {
   playerCount: PlayerCount; inputEvents?: MotionInputEvent[]; onExit(): void
 }) {
-  const [model] = useState(() => new JumpRushModel({ playerCount }))
+  const challenge = useChallenge()
+  const [model] = useState(() => new JumpRushModel({ playerCount, pressure:challenge?.pressure, roundDurationMs:40000 }))
   const [snapshot, setSnapshot] = useState(() => model.start(performance.now()))
   const heard = useRef({wave:0,jumps:0,hits:0,cleared:0})
   const recovery = useRoundRecovery({ model, snapshot, setSnapshot, title: 'Jump Rush', externalPauseReason, onReconnect, onExit })
@@ -58,6 +61,6 @@ export function JumpRush({ playerCount, inputEvents = [], onExit, externalPauseR
     <p id="jump-help">You are the kangaroo — jump to make it hop · +10 clear / −5 bump · Keyboard: Down then Up</p>
     {snapshot.phase === 'countdown' && <div className="game-curtain"><strong>{Math.max(1, Math.ceil(snapshot.countdownRemainingMs / 1000))}</strong></div>}
     {recovery.pauseDialog}
-    {snapshot.phase === 'results' && <div className="battle-results" role="dialog" aria-label="Jump Rush results"><h2 ref={recovery.resultsHeading} tabIndex={-1}>{playerCount === 1 ? 'Finish line!' : leaders.length > 1 ? 'It’s a tie!' : `Player ${leaders[0].playerId} wins!`}</h2>{snapshot.scores.map(({playerId, score},i) => <p key={playerId}>Player {playerId}: {score} points · {snapshot.lanes[i].cleared} cleared</p>)}<div className="result-actions"><button className="crayon-button" onClick={() => { heard.current={wave:0,jumps:0,hits:0,cleared:0};setSnapshot(model.start(performance.now())) }}>Play again</button><button className="crayon-button" onClick={onExit}>Back to games</button></div></div>}
+    {snapshot.phase === 'results' && <div className="battle-results" role="dialog" aria-label="Jump Rush results"><h2 ref={recovery.resultsHeading} tabIndex={-1}>{playerCount === 1 ? 'Finish line!' : leaders.length > 1 ? 'It’s a tie!' : `Player ${leaders[0].playerId} wins!`}</h2><ChallengeResult scores={snapshot.scores}/>{snapshot.scores.map(({playerId, score},i) => <p key={playerId}>Player {playerId}: {score} points · {snapshot.lanes[i].cleared} cleared</p>)}<div className="result-actions"><button className="crayon-button" onClick={() => { heard.current={wave:0,jumps:0,hits:0,cleared:0};setSnapshot(model.start(performance.now())) }}>Play again</button><button className="crayon-button" onClick={onExit}>Back to games</button></div></div>}
   </section>
 }

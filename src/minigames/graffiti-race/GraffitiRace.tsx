@@ -1,8 +1,11 @@
+import {useLegacyReadyGate} from '../../game/useLegacyReadyGate'
+import {ChallengeResult} from '../../game/ArcadeRound'
+import {useChallenge} from '../../game/ChallengeContext'
 import { GameFeedback } from '../../game/GameFeedback'
 import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react'
 import type { MotionInputEvent } from '../../input/MotionProcessor'
 import type { PlayerCount, PlayerId } from '../../input/PlayerZoneMapper'
-import { GRAFFITI_BRUSH_RADIUS, MURAL_COLUMNS, MURAL_ROWS, MURAL_PATCHES, GraffitiRaceModel } from './GraffitiRaceModel'
+import { MURAL_COLUMNS, MURAL_ROWS, MURAL_PATCHES, GraffitiRaceModel } from './GraffitiRaceModel'
 
 export function GraffitiRace({ playerCount, inputEvents = [], onExit, externalPauseReason, onReconnect }: {
   playerCount: PlayerCount
@@ -11,7 +14,8 @@ export function GraffitiRace({ playerCount, inputEvents = [], onExit, externalPa
   externalPauseReason?: string | null
   onReconnect?(): void
 }) {
-  const [model] = useState(() => new GraffitiRaceModel({ playerCount }))
+  const challenge = useChallenge()
+  const [model] = useState(() => new GraffitiRaceModel({ playerCount, pressure:challenge?.pressure, roundDurationMs:challenge ? 40000 : undefined }))
   const [snapshot, setSnapshot] = useState(() => model.start(performance.now()))
   const [cursors, setCursors] = useState<Record<PlayerId, { x: number; y: number }>>({ 1: { x: .5, y: .5 }, 2: { x: .5, y: .5 }, 3: { x: .5, y: .5 }, 4: { x: .5, y: .5 } })
   const [pauseReason, setPauseReason] = useState<string | null>(null)
@@ -19,6 +23,10 @@ export function GraffitiRace({ playerCount, inputEvents = [], onExit, externalPa
   const resultsRef = useRef<HTMLHeadingElement>(null)
   const pauseButtonRef = useRef<HTMLButtonElement>(null)
   const previousPhaseRef = useRef(snapshot.phase)
+  useLegacyReadyGate(snapshot.phase,externalPauseReason,()=>{
+    setSnapshot(model.resume(performance.now()))
+    setPauseReason(null)
+  })
   useEffect(() => {
     let frame = 0
     const tick = (time: number) => { setSnapshot(model.update(time)); frame = requestAnimationFrame(tick) }
@@ -104,8 +112,8 @@ export function GraffitiRace({ playerCount, inputEvents = [], onExit, externalPa
               <rect x={cell.x * 1000 - 1000 / (2 * MURAL_COLUMNS)} y={cell.y * 600 - 600 / (2 * MURAL_ROWS)} width={1000 / MURAL_COLUMNS} height={600 / MURAL_ROWS} fill="#e2d8cc" stroke="#b3a699" strokeWidth="2" />
               <path d={`m${cell.x * 1000 - 27} ${cell.y * 600 - 18} 52 12m-48 8 43 13m-39 6 34 8`} fill="none" stroke="#c6baad" strokeWidth="7" />
             </g>)}
-            <ellipse className="graffiti-cursor" cx={cursors[playerId].x * 1000} cy={cursors[playerId].y * 600} rx={GRAFFITI_BRUSH_RADIUS * 1000} ry={GRAFFITI_BRUSH_RADIUS * 600} fill="#ffffff55" stroke="#253e48" strokeWidth="5" strokeDasharray="12 8" />
-            {snapshot.brushes[playerId] && <ellipse className="graffiti-brush-trace" cx={snapshot.brushes[playerId].x * 1000} cy={snapshot.brushes[playerId].y * 600} rx={GRAFFITI_BRUSH_RADIUS * 1000} ry={GRAFFITI_BRUSH_RADIUS * 600} fill="#ffffff55" stroke="#253e48" strokeWidth="5" strokeDasharray="12 8" />}
+            <ellipse className="graffiti-cursor" cx={cursors[playerId].x * 1000} cy={cursors[playerId].y * 600} rx={model.radius * 1000} ry={model.radius * 600} fill="#ffffff55" stroke="#253e48" strokeWidth="5" strokeDasharray="12 8" />
+            {snapshot.brushes[playerId] && <ellipse className="graffiti-brush-trace" cx={snapshot.brushes[playerId].x * 1000} cy={snapshot.brushes[playerId].y * 600} rx={model.radius * 1000} ry={model.radius * 600} fill="#ffffff55" stroke="#253e48" strokeWidth="5" strokeDasharray="12 8" />}
           </svg>
           {snapshot.progress[playerId] === 100 && <span className="graffiti-sparkle" aria-hidden="true">✦ Mural revealed! ✦</span>}
           {snapshot.phase === 'countdown' && <div className="game-curtain"><strong>{Math.max(1, Math.ceil(snapshot.countdownRemainingMs / 1000))}</strong><span>Ready, steady, paint!</span></div>}
@@ -115,6 +123,6 @@ export function GraffitiRace({ playerCount, inputEvents = [], onExit, externalPa
     </div>
     <p className="graffiti-help" id="graffiti-help">Wave across your wall, or drag with a mouse or finger. Keyboard: focus your wall, move the brush with arrow keys, then press Space or Enter to paint.</p>
     {snapshot.phase === 'paused' && <div className="battle-results" role="dialog" aria-label="Graffiti Race paused"><h2 ref={pauseHeadingRef} tabIndex={-1}>Mural race paused</h2><p>{externalPauseReason || pauseReason}</p><button className="crayon-button" type="button" disabled={Boolean(externalPauseReason)} onClick={() => { setSnapshot(model.resume(performance.now())); setPauseReason(null) }}>Resume</button>{externalPauseReason && onReconnect && <button className="crayon-button" type="button" onClick={onReconnect}>Reconnect camera</button>}<button className="text-button" type="button" onClick={onExit}>Back to setup</button></div>}
-    {snapshot.phase === 'results' && <div className="battle-results" role="dialog" aria-label="Graffiti Race results"><h2 ref={resultsRef} tabIndex={-1}>{resultTitle}</h2><p>{leaders.length > 1 ? 'A shared finish!' : 'Fresh patches make your score.'}</p><div className="battle-results__scores">{snapshot.scores.map(({ playerId, score }) => <p key={playerId}><strong>Player {playerId}</strong><span>{snapshot.progress[playerId]}% revealed · {score} patches</span></p>)}</div><button className="crayon-button crayon-button--primary" type="button" onClick={() => setSnapshot(model.start(performance.now()))}>Paint again</button><button className="text-button" type="button" onClick={onExit}>Back to setup</button></div>}
+    {snapshot.phase === 'results' && <div className="battle-results" role="dialog" aria-label="Graffiti Race results"><h2 ref={resultsRef} tabIndex={-1}>{resultTitle}</h2><ChallengeResult scores={snapshot.scores}/><p>{leaders.length > 1 ? 'A shared finish!' : 'Fresh patches make your score.'}</p><div className="battle-results__scores">{snapshot.scores.map(({ playerId, score }) => <p key={playerId}><strong>Player {playerId}</strong><span>{snapshot.progress[playerId]}% revealed · {score} patches</span></p>)}</div><button className="crayon-button crayon-button--primary" type="button" onClick={() => setSnapshot(model.start(performance.now()))}>Paint again</button><button className="text-button" type="button" onClick={onExit}>Back to setup</button></div>}
   </section>
 }

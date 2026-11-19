@@ -14,9 +14,10 @@ export default defineConfig({
     trace: 'retain-on-failure',
   },
   projects: [
-    { name: 'chromium', testIgnore: '**/offline.spec.ts', use: { ...devices['Desktop Chrome'] } },
-    { name: 'firefox', testIgnore: '**/offline.spec.ts', use: { ...devices['Desktop Firefox'] } },
-    { name: 'webkit', testIgnore: '**/offline.spec.ts', use: { ...devices['Desktop Safari'] } },
+    { name: 'chromium', testIgnore: ['**/offline.spec.ts','**/collection-review.spec.ts','**/legacy-skills-camera.spec.ts','**/public-*-levels.spec.ts'], use: { ...devices['Desktop Chrome'] } },
+    { name: 'firefox', testIgnore: ['**/offline.spec.ts','**/collection-review.spec.ts','**/legacy-skills-camera.spec.ts','**/public-*-levels.spec.ts'], use: { ...devices['Desktop Firefox'] } },
+    { name: 'webkit', testIgnore: ['**/offline.spec.ts','**/collection-review.spec.ts','**/legacy-skills-camera.spec.ts','**/public-*-levels.spec.ts'], use: { ...devices['Desktop Safari'] } },
+    { name: 'collection', testMatch: ['**/collection-review.spec.ts','**/legacy-skills-camera.spec.ts','**/public-*-levels.spec.ts'], use: { ...devices['Desktop Chrome'] } },
     { name: 'offline', testMatch: '**/offline.spec.ts', use: { ...devices['Desktop Chrome'] } },
   ],
 })

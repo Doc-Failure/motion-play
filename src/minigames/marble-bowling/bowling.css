@@ -1,0 +1,8 @@
+.bowling-boards [role=group] {touch-action:none}
+.bowling-boards [role=group]:focus-visible {outline:3px dashed #ffdd70;outline-offset:-4px}
+.bowling-boards svg {width:100%;height:100%;display:block;pointer-events:none}
+.bowling-label {position:absolute;top:87%;left:50%;transform:translateX(-50%);max-width:96%;width:max-content;text-align:center;pointer-events:none;background:#fff5ddf2;border:2px solid #483a45;border-radius:.55em .8em .6em .4em;padding:.16em .5em;line-height:1.1}
+.bowling-label small,.bowling-label strong {display:block}
+.bowling-pin.down {opacity:.38;transform:rotate(73deg)}
+@media(prefers-reduced-motion:no-preference){:root:not(.reduce-motion) .bowling-pin {transition:transform .18s ease-out,opacity .2s}}
+.bowling-game:not(:has(.bowling-boards [role=group]:focus-visible)) .bowling-key-hint {display:none}

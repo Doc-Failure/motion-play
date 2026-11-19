@@ -31,13 +31,16 @@ export class GoldRushModel {
   private nextId = 1
   private lastTimestamp: number | null = null
 
-  constructor(options: { playerCount?: PlayerCount; countdownMs?: number; roundDurationMs?: number; spawnIntervalMs?: number; fallsForMs?: number; random?: () => number } = {}) {
+  private readonly pressure: number
+
+  constructor(options: { pressure?: number; playerCount?: PlayerCount; countdownMs?: number; roundDurationMs?: number; spawnIntervalMs?: number; fallsForMs?: number; random?: () => number } = {}) {
+    this.pressure = Math.max(-.15, Math.min(1, options.pressure ?? 0))
     const count = options.playerCount ?? 1
     this.session = new GameSession({ playerCount: count, countdownMs: options.countdownMs, roundDurationMs: options.roundDurationMs })
     this.players = Array.from({ length: count }, (_, index) => (index + 1) as PlayerId)
     this.random = options.random ?? Math.random
-    this.spawnIntervalMs = options.spawnIntervalMs ?? 850
-    this.fallsForMs = options.fallsForMs ?? 3_200
+    this.spawnIntervalMs = options.spawnIntervalMs ?? (850 - 250 * this.pressure)
+    this.fallsForMs = options.fallsForMs ?? (3200 - 850 * this.pressure)
   }
 
   start(timestamp: number) {
@@ -77,7 +80,7 @@ export class GoldRushModel {
       const steps = Math.max(0, Math.floor((now - this.nextSpawnAt) / this.spawnIntervalMs) + 1)
       for (let step = 0; step < Math.min(steps, 2); step += 1) {
         for (const playerId of this.players) {
-          if (this.items.filter((item) => item.playerId === playerId).length < 5) this.items.push(this.createItem(playerId, now + step * this.spawnIntervalMs))
+          if (this.items.filter((item) => item.playerId === playerId).length < 5) this.items.push(this.createItem(playerId, this.nextSpawnAt + (steps - Math.min(steps, 2) + step) * this.spawnIntervalMs))
         }
       }
       this.nextSpawnAt += steps * this.spawnIntervalMs
@@ -91,7 +94,9 @@ export class GoldRushModel {
     this.update(event.timestamp)
     const now = this.lastTimestamp!
     if (event.kind !== 'MOTION_HIT' || event.confidence < .2 || !this.players.includes(event.playerId) || this.session.getSnapshot().phase !== 'playing') return this.snapshot(now)
-    const item = this.visibleItems(now).find((candidate) => candidate.playerId === event.playerId && Math.hypot(candidate.x - event.x, candidate.y - event.y) <= .14)
+    const observedAt = this.clock.time(event.timestamp)
+    if (now - observedAt > 250) return this.snapshot(now)
+    const item = this.visibleItems(observedAt).find((candidate) => candidate.spawnedAt <= observedAt && candidate.playerId === event.playerId && Math.hypot(candidate.x - event.x, candidate.y - event.y) <= .14)
     if (!item) return this.snapshot(now)
     this.items = this.items.filter((candidate) => candidate.id !== item.id)
     this.session.awardScore(event.playerId, item.kind === 'coin' ? 10 : -10)

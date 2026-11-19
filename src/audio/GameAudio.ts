@@ -1,9 +1,9 @@
 import { loadSettings, saveSettings } from '../app/localPreferences'
 
 export type AudioTheme = 'default'|'dojo'|'fireworks'|'web'|'wash'|'beat'
-export type Cue = 'tag' | 'launch' | 'boom' | 'tick' | 'go' | 'score' | 'miss' | 'finish' | 'swoosh' | 'crack' | 'combo' | 'scrub' | 'bubble' | 'shine'
+export type Cue = 'shutter' | 'tag' | 'launch' | 'boom' | 'tick' | 'go' | 'score' | 'miss' | 'finish' | 'swoosh' | 'crack' | 'combo' | 'scrub' | 'bubble' | 'shine'
 export const cueNotes: Record<Cue, number[]> = {
-  scrub:[640], bubble:[740,1100], shine:[523.25,659.25,783.99,1046.5,1567.98],
+  shutter:[960,320], scrub:[640], bubble:[740,1100], shine:[523.25,659.25,783.99,1046.5,1567.98],
   tag:[880,1174.66], launch:[220,440], boom:[65,130],
   swoosh:[190,120], crack:[330,160], combo:[587.33,783.99,1174.66],
   tick: [440], go: [523.25, 659.25, 783.99], score: [783.99, 1046.5],
@@ -46,6 +46,12 @@ class GameAudio {
     const action=cue==='score'||cue==='miss'||cue==='crack'||cue==='scrub'
     if (action && now - this.lastCue < .1) return
     if(action)this.lastCue = now
+    if(cue==='shutter'){
+      this.note(1050,now,.032,.38,'triangle',140)
+      this.note(650,now+.065,.045,.25,'triangle',105)
+      this.note(1046.5,now+.13,.14,.18,'sine')
+      return
+    }
     if(theme==='beat') {
       cueNotes[cue].forEach((f,i)=>this.note(f,now+i*.055,.16,.2,'triangle'))
       return

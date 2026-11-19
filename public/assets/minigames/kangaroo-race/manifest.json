@@ -1,0 +1,28 @@
+{
+  "kangaroo-poses.webp": {
+    "use": "Kangaroo Race runner",
+    "prompt": "2 by 2 animation sheet of the same cute warm tan kangaroo with long ears, large tail and plain turquoise running shirt, facing right: running, jumping, landing in a crouch and surprised stumble; matching proportions, childlike wax-crayon scribbles, uneven outlines, transparent background, no text or scenery.",
+    "dimensions": "256x256 (2x2 cells)",
+    "transparency": "alpha channel",
+    "animationStates": [
+      "run",
+      "jump",
+      "land",
+      "stumble"
+    ],
+    "source": "ChatGPT image generation; original in docs/visual-audit/kangaroo-poses-original.png"
+  },
+  "kangaroo-run.webp": {
+    "use": "Four-frame running cycle for Kangaroo Race",
+    "prompt": "Four consecutive running poses of the same tan kangaroo with turquoise shirt, facing right, matching proportions and aligned head; childlike wax-crayon scribbles, uneven dark outlines, transparent background.",
+    "dimensions": "384x384 (2x2 cells)",
+    "transparency": "alpha channel",
+    "animationStates": [
+      "stride one",
+      "passing one",
+      "stride two",
+      "passing two"
+    ],
+    "source": "ChatGPT image generation; original in docs/visual-audit/kangaroo-run-sheet-original.png"
+  }
+}

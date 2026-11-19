@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState, type PointerEvent } from 'react'
+import { ChallengeResult } from '../../game/ArcadeRound'
+import { useChallenge } from '../../game/ChallengeContext'
 import { GameFeedback } from '../../game/GameFeedback'
 import { useRoundRecovery, type RoundRecoveryProps } from '../../game/useRoundRecovery'
 import { HandSwipeTracker } from '../../input/HandSwipe'
@@ -10,7 +12,8 @@ import './magic-duel.css'
 export function MagicDuel({ playerCount, inputEvents = [], onExit, externalPauseReason, onReconnect }: RoundRecoveryProps & {
   playerCount: PlayerCount; inputEvents?: MotionInputEvent[]; onExit(): void
 }) {
-  const [initial] = useState(() => { const model = new MagicDuelModel({ playerCount }); return { model, snapshot: model.start(performance.now()) } })
+  const challenge=useChallenge()
+  const [initial] = useState(() => { const model = new MagicDuelModel({ playerCount, pressure:challenge?.pressure, roundDurationMs:challenge ? 36000 : undefined }); return { model, snapshot: model.start(performance.now()) } })
   const { model } = initial
   const [snapshot, setSnapshot] = useState(initial.snapshot)
   const tracker = useRef(new HandSwipeTracker())
@@ -40,7 +43,7 @@ export function MagicDuel({ playerCount, inputEvents = [], onExit, externalPause
   return <section className="magic-game" aria-labelledby="magic-title">
     <GameFeedback snapshot={snapshot}/>
     <header className="bubble-game__header"><h1 id="magic-title">Magic Duel</h1><dl><div><dt>Time</dt><dd>{Math.ceil(snapshot.roundRemainingMs / 1000)}s</dd></div></dl>{recovery.pauseButton}<button className="text-button" onClick={onExit}>Exit game</button></header>
-    <p className="magic-rules">Trace numbered dots (+20) · Enter per edge to simulate. hand tracking unavailable.</p>
+    <p className="magic-rules">Trace the dots in order. Finish a spell for +20.</p>
     <div className="magic-boards">{snapshot.scores.map(({ playerId, score }) => <section className="magic-player" key={playerId}>
       <h2>Player {playerId}<span>{score} points</span></h2>
       <div id={`magic-player-${playerId}`} className="magic-board" role="group" tabIndex={0} aria-label={`Player ${playerId} Magic Duel play area`} aria-describedby="magic-help"
@@ -61,12 +64,12 @@ export function MagicDuel({ playerCount, inputEvents = [], onExit, externalPause
           {magicPatterns[snapshot.pattern].points.map((p, i, points) => i === points.length - 1 && p.x === points[0].x && p.y === points[0].y ? null : <g key={i}><circle cx={p.x*100} cy={p.y*100} r="4" fill={i <= snapshot.progress[playerId-1].step ? '#72b779' : '#fff9e9'} stroke="#29313c" strokeWidth=".8"/><text x={p.x*100} y={p.y*100+1.5} textAnchor="middle" fill="#29313c" fontSize="5">{i === 0 && snapshot.pattern === 2 ? '1/4' : i+1}</text></g>)}
           <circle cx={snapshot.progress[playerId-1].cursor.x*100} cy={snapshot.progress[playerId-1].cursor.y*100} r="5" fill="none" stroke="#e45b9d" strokeWidth="1.5"/>
         </svg>
-        <p className="magic-status" role="status">{snapshot.progress[playerId-1].cast ? 'Spell cast! ✦' : `${magicPatterns[snapshot.pattern].name} · ${snapshot.progress[playerId-1].step}/${magicPatterns[snapshot.pattern].points.length-1} strokes · ${Math.ceil(snapshot.spellRemainingMs/1000)}s`}</p>
+        <p className="magic-status" role="status">{snapshot.progress[playerId-1].cast ? 'Spell cast! ✦' : snapshot.progress[playerId-1].hint || `${magicPatterns[snapshot.pattern].name} · ${snapshot.progress[playerId-1].step}/${magicPatterns[snapshot.pattern].points.length-1} strokes · ${Math.ceil(snapshot.spellRemainingMs/1000)}s`}</p>
         {snapshot.phase === 'countdown' && <div className="game-curtain"><strong>{Math.max(1, Math.ceil(snapshot.countdownRemainingMs / 1000))}</strong><span>Ready to cast!</span></div>}
       </div>
     </section>)}</div>
-    <p id="magic-help" className="magic-help">Trace from 1 through each numbered dot with quick pointer or touch strokes. Finish within 3 seconds; mistakes reset your trace. A new pattern appears every 5 seconds. Focus a lane and press Enter once per edge to simulate a stroke.</p>
+    <p id="magic-help" className="magic-help">Trace from 1 through each numbered dot with quick pointer or touch strokes. Follow the glowing line before the timer runs out. Focus a lane and press Enter once per edge to simulate a stroke.</p>
     {recovery.pauseDialog}
-    {snapshot.phase === 'results' && <div className="battle-results" role="dialog" aria-label="Magic Duel results"><h2 ref={results} tabIndex={-1}>Wonderful spells!</h2>{snapshot.scores.map(({ playerId, score }) => <p key={playerId}>Player {playerId}: {score} points</p>)}<button className="crayon-button" onClick={() => { tracker.current.reset(); pointers.current.clear(); setSnapshot(model.start(performance.now())); document.getElementById('magic-player-1')?.focus() }}>Play again</button><button className="text-button" onClick={onExit}>Back to setup</button></div>}
+    {snapshot.phase === 'results' && <div className="battle-results" role="dialog" aria-label="Magic Duel results"><h2 ref={results} tabIndex={-1}>Wonderful spells!</h2>{snapshot.scores.map(({ playerId, score }) => <p key={playerId}>Player {playerId}: {score} points</p>)}<ChallengeResult scores={snapshot.scores}/><button className="crayon-button" onClick={() => { tracker.current.reset(); pointers.current.clear(); setSnapshot(model.start(performance.now())); document.getElementById('magic-player-1')?.focus() }}>Play again</button><button className="text-button" onClick={onExit}>Back to setup</button></div>}
   </section>
 }

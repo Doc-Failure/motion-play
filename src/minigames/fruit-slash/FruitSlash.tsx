@@ -1,3 +1,5 @@
+import {ChallengeResult} from '../../game/ArcadeRound'
+import {useChallenge} from '../../game/ChallengeContext'
 import { useEffect, useRef, useState, type PointerEvent } from 'react'
 import { GameFeedback } from '../../game/GameFeedback'
 import { useRoundRecovery, type RoundRecoveryProps } from '../../game/useRoundRecovery'
@@ -10,7 +12,9 @@ import './fruit-slash.css'
 export function FruitSlash({ playerCount, inputEvents = [], onExit, externalPauseReason, onReconnect, random }: RoundRecoveryProps & {
   playerCount: PlayerCount; inputEvents?: MotionInputEvent[]; onExit(): void; random?: () => number
 }) {
-  const [initial] = useState(() => { const model = new FruitSlashModel({ playerCount, random }); return { model, snapshot: model.start(performance.now()) } })
+  const challenge = useChallenge()
+  const pressure = challenge?.pressure ?? 0
+  const [initial] = useState(() => { const model = new FruitSlashModel({ pressure, roundDurationMs: challenge ? 36_000 : undefined, playerCount, random }); return { model, snapshot: model.start(performance.now()) } })
   const { model } = initial
   const [snapshot, setSnapshot] = useState(initial.snapshot)
   const tracker = useRef(new HandSwipeTracker())
@@ -40,7 +44,7 @@ export function FruitSlash({ playerCount, inputEvents = [], onExit, externalPaus
   return <section className="slash-game" aria-labelledby="slash-title">
     <GameFeedback snapshot={snapshot}/>
     <header className="bubble-game__header"><h1 id="slash-title">Fruit Slash</h1><dl><div><dt>Time</dt><dd>{Math.ceil(snapshot.roundRemainingMs / 1000)}s</dd></div></dl>{recovery.pauseButton}<button className="text-button" onClick={onExit}>Exit game</button></header>
-    <p className="slash-rules">Swipe fruit +10 · Avoid × bombs −15. Pointer / keyboard simulation; hand tracking unavailable.</p>
+    <p className="slash-rules">Swipe fruit +10 · Avoid × bombs −15. Sweep your hand across the fruit. A pointer or arrow key works too.</p>
     <div className="slash-boards">{snapshot.scores.map(({ playerId, score }) => <section className="slash-player" key={playerId}>
       <h2>Player {playerId}<span>{score} points</span></h2>
       <div id={`slash-player-${playerId}`} className="slash-board" role="group" tabIndex={0} aria-label={`Player ${playerId} Fruit Slash play area`} aria-describedby="slash-help"
@@ -63,6 +67,6 @@ export function FruitSlash({ playerCount, inputEvents = [], onExit, externalPaus
     </section>)}</div>
     <p id="slash-help" className="slash-help">Sweep quickly across fruit with a pointer or touch. Focus a lane and press an arrow key to slash across its center. Bombs have a white ×. Each object scores once.</p>
     {recovery.pauseDialog}
-    {snapshot.phase === 'results' && <div className="battle-results" role="dialog" aria-label="Fruit Slash results"><h2 ref={results} tabIndex={-1}>Nice slicing!</h2>{snapshot.scores.map(({ playerId, score }) => <p key={playerId}>Player {playerId}: {score} points</p>)}<button className="crayon-button" onClick={() => { tracker.current.reset(); pointers.current.clear(); setSnapshot(model.start(performance.now())); document.getElementById('slash-player-1')?.focus() }}>Play again</button><button className="text-button" onClick={onExit}>Back to setup</button></div>}
+    {snapshot.phase === 'results' && <div className="battle-results" role="dialog" aria-label="Fruit Slash results"><h2 ref={results} tabIndex={-1}>Nice slicing!</h2><ChallengeResult scores={snapshot.scores}/>{snapshot.scores.map(({ playerId, score }) => <p key={playerId}>Player {playerId}: {score} points</p>)}<button className="crayon-button" onClick={() => { tracker.current.reset(); pointers.current.clear(); setSnapshot(model.start(performance.now())); document.getElementById('slash-player-1')?.focus() }}>Play again</button><button className="text-button" onClick={onExit}>Back to setup</button></div>}
   </section>
 }

@@ -1,6 +1,5 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
-import {BeatModel} from '../src/minigames/beat-freak/BeatModel'
 import { NinjaTrainingModel } from '../src/minigames/ninja-training/NinjaTrainingModel'
 import { MotionProcessor } from '../src/input/MotionProcessor'
 import { CameraSetup, type CameraController } from '../src/camera/CameraSetup'
@@ -22,7 +21,7 @@ describe('simple camera flow', () => {
     ['paint-splash', 'Paint Splash'], ['meteor-smash', 'Meteor Smash'],
     ['balloon-panic', 'Balloon Panic'], ['gold-rush', 'Gold Rush'],
     ['simon-says', 'Simon Says'], ['fruit-catcher', 'Fruit Catcher'],
-    ['ninja-training', 'Paper Dojo'], ['magic-duel', 'Magic Duel'], ['basketball-blitz', 'Basketball Blitz'], ['punch-arena', 'Cardboard Champ'], ['keep-ups', 'Keep Ups'], ['fruit-slash', 'Fruit Slash'], ['jump-rush', 'Jump Rush'], ['freeze', 'Freeze!'], ['dance-challenge', 'Dance Challenge'], ['laser-escape', 'Laser Escape'], ['dodgeball', 'Dodgeball'], ['air-pong', 'Air Pong'], ['goalkeeper', 'Goalkeeper'], ['tower-builder', 'Tower Builder'],
+    ['ninja-training', 'Paper Dojo'], ['magic-duel', 'Magic Duel'], ['basketball-blitz', 'Basketball Blitz'], ['punch-arena', 'Cardboard Champ'], ['keep-ups', 'Keep Ups'], ['marble-bowling', 'Marble Bowling'], ['fruit-slash', 'Fruit Slash'], ['jump-rush', 'Kangaroo Race'], ['freeze', 'Freeze!'], ['dance-challenge', 'Dance Challenge'], ['laser-escape', 'Laser Escape'], ['dodgeball', 'Dodgeball'], ['air-pong', 'Air Pong'], ['goalkeeper', 'Goalkeeper'], ['tower-builder', 'Tower Builder'],
   ] as const)('keeps %s paused through denial and requires resume after recovery', async (game, title) => {
     const source = controller()
     vi.mocked(source.start)
@@ -56,7 +55,7 @@ describe('simple camera flow', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Play without camera' }))
     expect(screen.getByRole('heading', { name: 'Fruit Slash' })).toBeVisible()
     expect(screen.getAllByRole('group', { name: /Fruit Slash play area/ })).toHaveLength(4)
-    expect(screen.getByText(/hand tracking unavailable/)).toBeVisible()
+    expect(screen.getAllByText(/Swipe fruit \+10/)[0]).toBeVisible()
     expect(screen.queryByRole('button', { name: 'Start round now' })).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Exit game' }))
     expect(screen.getByRole('button', { name: 'Play Fruit Slash' })).toBeEnabled()
@@ -86,7 +85,7 @@ describe('simple camera flow', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Play without camera' }))
     expect(screen.getByRole('heading', { name: 'Basketball Blitz' })).toBeVisible()
     expect(screen.getAllByRole('group', { name: /Basketball Blitz play area/ })).toHaveLength(4)
-    expect(screen.getByText(/hand tracking unavailable/)).toBeVisible()
+    expect(screen.getAllByText(/Swipe up from the ball/)[0]).toBeVisible()
     expect(screen.queryByRole('button', { name: 'Start round now' })).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Exit game' }))
     expect(screen.getByRole('button', { name: 'Play Basketball Blitz' })).toBeEnabled()
@@ -100,7 +99,7 @@ describe('simple camera flow', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Play without camera' }))
     expect(screen.getByRole('heading', { name: 'Magic Duel' })).toBeVisible()
     expect(screen.getAllByRole('group', { name: /Magic Duel play area/ })).toHaveLength(4)
-    expect(screen.getByText(/hand tracking unavailable/)).toBeVisible()
+    expect(screen.getByText(/Trace the dots in order/i)).toBeVisible()
     expect(screen.queryByRole('button', { name: 'Start round now' })).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Exit game' }))
     expect(screen.getByRole('button', { name: 'Play Magic Duel' })).toBeEnabled()
@@ -269,16 +268,16 @@ describe('simple camera flow', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Exit game' }))
     expect(screen.getByRole('button', { name: 'Play Dance Challenge' })).toBeEnabled()
   })
-  it('routes Jump Rush directly into four-player gameplay and setup', async () => {
+  it('routes the historical Jump Rush alias into four-player Kangaroo Race', async () => {
     const source = controller()
     render(<CameraSetup readyGateEnabled={false} source={source} initialGame="jump-rush" />)
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Play Jump Rush' })).toBeEnabled())
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Play Kangaroo Race' })).toBeEnabled())
     fireEvent.click(screen.getByRole('button', { name: '4 players' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Play Jump Rush' }))
-    expect(screen.getByRole('heading', { name: 'Jump Rush' })).toBeVisible()
-    for (const id of [1, 2, 3, 4]) expect(screen.getByLabelText(`Player ${id} Jump Rush play area`)).toBeVisible()
+    fireEvent.click(screen.getByRole('button', { name: 'Play Kangaroo Race' }))
+    expect(screen.getByRole('heading', { name: 'Kangaroo Race' })).toBeVisible()
+    for (const id of [1, 2, 3, 4]) expect(screen.getByLabelText(`Player ${id} Kangaroo Race play area`)).toBeVisible()
     fireEvent.click(screen.getByRole('button', { name: 'Exit game' }))
-    expect(screen.getByRole('button', { name: 'Play Jump Rush' })).toBeEnabled()
+    expect(screen.getByRole('button', { name: 'Play Kangaroo Race' })).toBeEnabled()
   })
   it('rejects cached video images and pauses Freeze when the decoder stops advancing', async () => {
     const source = controller()
@@ -418,24 +417,4 @@ it('adapts Ninja Training camera samples into both concrete MIXED input kinds',a
     expect(hit).toHaveBeenCalledWith(expect.objectContaining({playerId:1,kind:'MOTION_HIT',x:.3,y:.62}))
     expect(hit).toHaveBeenCalledWith(expect.objectContaining({playerId:1,kind:'BODY_MOVE',x:.3,y:.62}))
   } finally {hit.mockRestore();process.mockRestore();context.mockRestore();vi.useRealTimers()}
-})
-
-it('passes continuous occupied motion to Paper Jam even when the global hit debounce is closed',async()=>{
- const source=controller()
- render(<CameraSetup readyGateEnabled={false} source={source} initialGame="beat-freak"/>)
- await waitFor(()=>expect(screen.getByRole('button',{name:'Play Paper Jam'})).toBeEnabled())
- vi.useFakeTimers({toFake:['setTimeout','clearTimeout','setInterval','clearInterval','performance','requestAnimationFrame','cancelAnimationFrame']})
- const process=vi.spyOn(MotionProcessor.prototype,'process').mockImplementation((_frame,_zones,timestamp)=>({
-  mask:new Uint8ClampedArray(160*90),width:160,height:90,threshold:20,zones:[],events:[],
-  positions:[{playerId:1,kind:'MOTION_HIT',x:.18,y:.32,confidence:1,timestamp}],
- }))
- const hit=vi.spyOn(BeatModel.prototype,'hit')
- const context=vi.spyOn(HTMLCanvasElement.prototype,'getContext').mockReturnValue({drawImage:vi.fn(),getImageData:()=>({data:new Uint8ClampedArray(160*90*4)})} as unknown as CanvasRenderingContext2D)
- try{
-  fireEvent.click(screen.getByRole('button',{name:'Play Paper Jam'}))
-  const video=screen.getByLabelText('Mirrored live camera during gameplay')
-  Object.defineProperties(video,{videoWidth:{value:640},readyState:{value:4},paused:{value:false},ended:{value:false},currentTime:{value:1}})
-  act(()=>vi.advanceTimersByTime(100))
-  expect(hit).toHaveBeenCalledWith(expect.objectContaining({kind:'MOTION_HIT',x:.18,y:.32,playerId:1}))
- }finally{hit.mockRestore();process.mockRestore();context.mockRestore();vi.useRealTimers()}
 })

@@ -3,7 +3,8 @@ import type { MotionInputEvent } from '../../input/MotionProcessor'
 import type { PlayerCount, PlayerId } from '../../input/PlayerZoneMapper'
 
 export const plateTargets = [0, 1, 2].map((id) => ({ id, x: .2 + id * .3, y: .4 }))
-export const plateLifetime = (id: number) => 6000 + id * 1000
+export const wobbleThreshold = .70
+export const plateLifetime = (id: number, pressure=0) => 6000 + id * 1000 - pressure * (1400 + id * 300)
 export interface Plate {
   id: number
   playerId: PlayerId
@@ -23,6 +24,7 @@ export interface PlateSpinnerSnapshot extends GameSessionSnapshot {
 export class PlateSpinnerModel {
   private readonly session: GameSession
   private readonly playerCount: PlayerCount
+  private readonly pressure: number
   private plates: Plate[] = []
   private drops: number[] = []
   private feedback: string[] = []
@@ -31,7 +33,8 @@ export class PlateSpinnerModel {
   private roundEnd = 0
   private pausedAt: number | null = null
 
-  constructor(options: { playerCount?: PlayerCount; countdownMs?: number; roundDurationMs?: number } = {}) {
+  constructor(options: { playerCount?: PlayerCount; countdownMs?: number; roundDurationMs?: number; pressure?: number } = {}) {
+    this.pressure = Math.max(0, Math.min(1,options.pressure ?? 0))
     this.playerCount = options.playerCount ?? 1
     this.session = new GameSession({ ...options, playerCount: this.playerCount })
   }
@@ -46,7 +49,7 @@ export class PlateSpinnerModel {
     this.feedback = Array(this.playerCount).fill('Watch the spin bars. Rescue a wobbling plate!')
     this.plates = Array.from({ length: this.playerCount }, (_, index) => plateTargets.map(({ id }) => ({
       id, playerId: (index + 1) as PlayerId, readyAt: this.inputNotBefore,
-      expiresAt: this.inputNotBefore + plateLifetime(id), lastHitAt: -Infinity, spin: 1, dropped: false,
+      expiresAt: this.inputNotBefore + plateLifetime(id,this.pressure), lastHitAt: -Infinity, spin: 1, dropped: false,
     }))).flat()
     return this.snapshot()
   }
@@ -67,7 +70,7 @@ export class PlateSpinnerModel {
           this.drops[plate.playerId - 1] += 1
           this.feedback[plate.playerId - 1] = `Plate ${plate.id + 1} dropped. −5 points. A new one is coming!`
           plate.readyAt = plate.expiresAt + 1500
-          plate.expiresAt = plate.readyAt + plateLifetime(plate.id)
+          plate.expiresAt = plate.readyAt + plateLifetime(plate.id,this.pressure)
         }
       }
       this.session.update(now)
@@ -78,20 +81,22 @@ export class PlateSpinnerModel {
 
   hit(event: MotionInputEvent) {
     if (event.kind !== 'MOTION_HIT' || !Number.isInteger(event.playerId) || event.playerId < 1 || event.playerId > this.playerCount
-      || !Number.isFinite(event.timestamp) || event.timestamp < this.inputNotBefore
+      || !Number.isFinite(event.timestamp) || event.timestamp < this.inputNotBefore || event.timestamp < this.lastTimestamp - 180
       || !Number.isFinite(event.confidence) || event.confidence < .2 || event.confidence > 1
       || !Number.isFinite(event.x) || !Number.isFinite(event.y) || event.x < 0 || event.x > 1 || event.y < 0 || event.y > 1) return this.snapshot()
     const state = this.update(event.timestamp)
     if (state.phase !== 'playing') return state
     const target = plateTargets.find((target) => ((event.x - target.x) / .12) ** 2 + ((event.y - target.y) / .16) ** 2 <= 1)
     const plate = this.plates.find((plate) => plate.playerId === event.playerId && plate.id === target?.id)
-    if (!plate || event.timestamp < plate.readyAt || event.timestamp < plate.expiresAt - plateLifetime(plate.id) || event.timestamp - plate.lastHitAt < 500) return state
-    const spin = (plate.expiresAt - event.timestamp) / plateLifetime(plate.id)
-    if (spin > .65) return state
+    if (!plate || event.timestamp < plate.readyAt || event.timestamp < plate.expiresAt - plateLifetime(plate.id,this.pressure) || event.timestamp - plate.lastHitAt < 500) return state
+    const spin = (plate.expiresAt - event.timestamp) / plateLifetime(plate.id,this.pressure)
+    if (spin > wobbleThreshold) return state
     plate.lastHitAt = event.timestamp
-    plate.expiresAt = this.lastTimestamp + plateLifetime(plate.id)
-    this.session.awardScore(event.playerId, 10)
-    this.feedback[event.playerId - 1] = `✓ Plate ${plate.id + 1} rescued! +10 points.`
+    plate.expiresAt = this.lastTimestamp + plateLifetime(plate.id,this.pressure)
+    const nearDrop = spin <= .2
+    const points = nearDrop ? 15 : 10
+    this.session.awardScore(event.playerId, points)
+    this.feedback[event.playerId - 1] = `✓ Plate ${plate.id + 1} rescued! ${nearDrop ? 'Last-second save! ' : ''}+${points} points.`
     return this.snapshot()
   }
 
@@ -119,7 +124,7 @@ export class PlateSpinnerModel {
   private snapshot(): PlateSpinnerSnapshot {
     const time = this.pausedAt ?? Math.min(this.lastTimestamp, this.roundEnd)
     return { ...this.session.getSnapshot(), drops: [...this.drops], feedback: [...this.feedback], plates: this.plates.map((plate) => ({
-      ...plate, dropped: this.session.getSnapshot().phase !== 'countdown' && time < plate.readyAt, spin: Math.max(0, Math.min(1, (plate.expiresAt - time) / plateLifetime(plate.id))),
+      ...plate, dropped: this.session.getSnapshot().phase !== 'countdown' && time < plate.readyAt, spin: Math.max(0, Math.min(1, (plate.expiresAt - time) / plateLifetime(plate.id,this.pressure))),
     })) }
   }
 }

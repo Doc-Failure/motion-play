@@ -1,16 +1,19 @@
+import {ChallengeResult} from '../../game/ArcadeRound'
+import {useChallenge} from '../../game/ChallengeContext'
 import { useEffect, useRef, useState } from 'react'
 import { GameFeedback } from '../../game/GameFeedback'
 import { useRoundRecovery, type RoundRecoveryProps } from '../../game/useRoundRecovery'
 import type { MotionInputEvent } from '../../input/MotionProcessor'
 import type { PlayerCount, PlayerId } from '../../input/PlayerZoneMapper'
-import { FreezeModel, freezeTargetMs } from './FreezeModel'
+import { FreezeModel } from './FreezeModel'
 // Retain the hidden prototype in development without shipping its styles.
 if (import.meta.env.DEV) void import('./freeze.css')
 
 export function Freeze({ playerCount, inputEvents = [], onExit, externalPauseReason, onReconnect }: RoundRecoveryProps & {
   playerCount: PlayerCount; inputEvents?: MotionInputEvent[]; onExit(): void
 }) {
-  const [model] = useState(() => new FreezeModel({ playerCount }))
+  const challenge = useChallenge()
+  const [model] = useState(() => new FreezeModel({ playerCount, pressure:challenge?.pressure, roundDurationMs:challenge ? 40000 : undefined }))
   const [snapshot, setSnapshot] = useState(() => model.start(performance.now()))
   const simulated = useRef(new Map<PlayerId, { held: boolean; movingUntil: number }>())
   const results = useRef<HTMLHeadingElement>(null)
@@ -45,7 +48,7 @@ export function Freeze({ playerCount, inputEvents = [], onExit, externalPauseRea
         onKeyUp={event => { if (event.code === 'Space') { event.preventDefault(); simulated.current.set(lane.playerId, { held: false, movingUntil: 0 }) } }}>
         <div role="status" aria-label={`Player ${lane.playerId} freeze cue`} className={`freeze-cue${snapshot.cue === 'Freeze!' ? ' is-frozen' : ''}`}>
           <strong aria-hidden="true">{snapshot.cue === 'Move!' ? '〰' : snapshot.cue === 'Ready…' ? '…' : '❄'}</strong><span>{snapshot.cue}</span>
-          <progress aria-label={`Player ${lane.playerId} stillness progress`} max={freezeTargetMs} value={Math.min(freezeTargetMs, lane.heldMs)}/>
+          <progress aria-label={`Player ${lane.playerId} stillness progress`} max={model.targetMs} value={Math.min(model.targetMs, lane.heldMs)}/>
         </div>
         {snapshot.phase === 'countdown' && <div className="game-curtain"><strong>{Math.max(1, Math.ceil(snapshot.countdownRemainingMs / 1000))}</strong><span>Wiggle, then be a statue!</span></div>}
       </div>
@@ -53,6 +56,6 @@ export function Freeze({ playerCount, inputEvents = [], onExit, externalPauseRea
     </section>)}</div>
     <p id="freeze-help" className="freeze-help">Simulation: move the pointer, then stop inside a lane. Or focus a lane, hold Space to move and release to freeze. Leaving or losing focus stops simulation. Camera input measures changing pixels, not poses or player presence. Move each cue to join; missing frames earn nothing.</p>
     {recovery.pauseDialog}
-    {snapshot.phase === 'results' && <div className="battle-results" role="dialog" aria-label="Freeze! results"><h2 ref={results} tabIndex={-1}>{playerCount === 1 ? 'Super statues!' : leaders.length > 1 ? 'It’s a tie!' : `Player ${leaders[0].playerId} wins!`}</h2>{snapshot.scores.map(({playerId, score}) => <p key={playerId}>Player {playerId}: {score} points</p>)}<button className="crayon-button" onClick={() => { simulated.current.clear(); setSnapshot(model.start(performance.now())); document.getElementById('freeze-player-1')?.focus() }}>Play again</button><button className="text-button" onClick={onExit}>Back to setup</button></div>}
+    {snapshot.phase === 'results' && <div className="battle-results" role="dialog" aria-label="Freeze! results"><h2 ref={results} tabIndex={-1}>{playerCount === 1 ? 'Super statues!' : leaders.length > 1 ? 'It’s a tie!' : `Player ${leaders[0].playerId} wins!`}</h2><ChallengeResult scores={snapshot.scores}/>{snapshot.scores.map(({playerId, score}) => <p key={playerId}>Player {playerId}: {score} points</p>)}<button className="crayon-button" onClick={() => { simulated.current.clear(); setSnapshot(model.start(performance.now())); document.getElementById('freeze-player-1')?.focus() }}>Play again</button><button className="text-button" onClick={onExit}>Back to setup</button></div>}
   </section>
 }

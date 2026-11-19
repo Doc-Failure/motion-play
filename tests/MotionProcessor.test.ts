@@ -77,3 +77,12 @@ it('samples occupied movement across the body instead of hitting only its center
   expect(result.events.some(event => event.x > .75)).toBe(true)
   expect(result.events.every(event => event.y >= .4 && event.y <= .7)).toBe(true)
 })
+
+it('releases a strong motion patch on the next stationary sample',()=>{
+ const processor=new MotionProcessor(),zones=defaultCameraZones(1)
+ const patch=Array.from({length:16},(_,i)=>[4+i%4,2+Math.floor(i/4)] as [number,number])
+ processor.process(frame(20,10),zones,0)
+ const moved=frame(20,10,patch)
+ expect(processor.process(moved,zones,50).positions?.length).toBeGreaterThan(0)
+ expect(processor.process(moved,zones,100).positions).toEqual([])
+})

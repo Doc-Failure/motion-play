@@ -1,8 +1,11 @@
+import {useLegacyReadyGate} from '../../game/useLegacyReadyGate'
+import {ChallengeResult} from '../../game/ArcadeRound'
+import {useChallenge} from '../../game/ChallengeContext'
 import { GameFeedback } from '../../game/GameFeedback'
 import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react'
 import type { MotionInputEvent } from '../../input/MotionProcessor'
 import type { PlayerCount, PlayerId } from '../../input/PlayerZoneMapper'
-import { CAR_BRUSH_RADIUS, CAR_MUD, CarWashModel } from './CarWashModel'
+import { CAR_MUD, CarWashModel } from './CarWashModel'
 
 export function CarWash({ playerCount, inputEvents = [], onExit, externalPauseReason, onReconnect }: {
   playerCount: PlayerCount
@@ -11,7 +14,8 @@ export function CarWash({ playerCount, inputEvents = [], onExit, externalPauseRe
   externalPauseReason?: string | null
   onReconnect?(): void
 }) {
-  const [model] = useState(() => new CarWashModel({ playerCount }))
+  const challenge = useChallenge()
+  const [model] = useState(() => new CarWashModel({ playerCount, pressure:challenge?.pressure, roundDurationMs:challenge ? 40000 : undefined }))
   const [snapshot, setSnapshot] = useState(() => model.start(performance.now()))
   const [cursors, setCursors] = useState<Record<PlayerId, { x: number; y: number }>>({ 1: { x: .5, y: .5 }, 2: { x: .5, y: .5 }, 3: { x: .5, y: .5 }, 4: { x: .5, y: .5 } })
   const [pauseReason, setPauseReason] = useState<string | null>(null)
@@ -19,6 +23,10 @@ export function CarWash({ playerCount, inputEvents = [], onExit, externalPauseRe
   const resultsRef = useRef<HTMLHeadingElement>(null)
   const pauseButtonRef = useRef<HTMLButtonElement>(null)
   const previousPhaseRef = useRef(snapshot.phase)
+  useLegacyReadyGate(snapshot.phase,externalPauseReason,()=>{
+    setSnapshot(model.resume(performance.now()))
+    setPauseReason(null)
+  })
   useEffect(() => {
     let frame = 0
     const tick = (time: number) => { setSnapshot(model.update(time)); frame = requestAnimationFrame(tick) }
@@ -74,7 +82,7 @@ export function CarWash({ playerCount, inputEvents = [], onExit, externalPauseRe
       <button ref={pauseButtonRef} className="text-button" type="button" disabled={snapshot.phase !== 'playing' && snapshot.phase !== 'countdown'} onClick={() => { setSnapshot(model.pause(performance.now())); setPauseReason('Take a breather!') }}>Pause</button>
       <button className="text-button" type="button" onClick={onExit}>Exit game</button>
     </header>
-    <p className="car-rules">Scrub your muddy car. Every fresh patch helps the team. Clean all the cars together!</p>
+    <p className="car-rules">Scrub your muddy car. Every fresh patch helps the team. Clean all the cars together! {model.stuckMud.size>0 && 'Double stripes need two scrubs.'}</p>
     <div className={`car-boards car-boards--${playerCount}`}>
       {snapshot.scores.map(({ playerId, score }) => <section className={`car-player car-player--${playerId}`} key={playerId} aria-label={`Player ${playerId}`}>
         <h2>Player {playerId}<span>{snapshot.progress[playerId]}% clean · {score} patches</span></h2>
@@ -93,11 +101,12 @@ export function CarWash({ playerCount, inputEvents = [], onExit, externalPauseRe
               <ellipse cx="278" cy="500" rx="31" ry="29" fill="#fff8dc" /><ellipse cx="724" cy="502" rx="30" ry="30" fill="#fff8dc" />
             </g>
             {CAR_MUD.filter((cell) => !snapshot.cleaned[playerId].includes(cell.id)).map((cell) => <g className="car-mud" key={cell.id}>
-              <rect x={cell.x * 1000 - 49} y={cell.y * 600 - 49} width="98" height="98" rx={18 + cell.id % 9} fill="#855738" stroke="#65452f" strokeWidth="3" transform={`rotate(${cell.id % 2 ? 3 : -3} ${cell.x * 1000} ${cell.y * 600})`} />
+              <rect x={cell.x * 1000 - 49} y={cell.y * 600 - 49} width="98" height="98" rx={18 + cell.id % 9} fill={snapshot.loosened[playerId].includes(cell.id)?'#b89d74':'#855738'} stroke="#65452f" strokeWidth="3" transform={`rotate(${cell.id % 2 ? 3 : -3} ${cell.x * 1000} ${cell.y * 600})`} />
+              {model.stuckMud.has(cell.id)&&<path d={`M${cell.x*1000-25} ${cell.y*600-22}l46 -7`} stroke="#ffdf9e" strokeWidth="6"/>}
               <path d={`m${cell.x * 1000 - 28} ${cell.y * 600 - 15} 52 18m-44 16 30-2`} fill="none" stroke="#b28a61" strokeWidth="7" />
             </g>)}
-            <ellipse className="car-cursor" cx={cursors[playerId].x * 1000} cy={cursors[playerId].y * 600} rx={CAR_BRUSH_RADIUS * 1000} ry={CAR_BRUSH_RADIUS * 600} fill="#ffffff55" stroke="#253e48" strokeWidth="5" strokeDasharray="12 8" />
-            {snapshot.brushes[playerId] && <ellipse className="car-brush-trace" cx={snapshot.brushes[playerId].x * 1000} cy={snapshot.brushes[playerId].y * 600} rx={CAR_BRUSH_RADIUS * 1000} ry={CAR_BRUSH_RADIUS * 600} fill="#ffffff55" stroke="#253e48" strokeWidth="5" strokeDasharray="12 8" />}
+            <ellipse className="car-cursor" cx={cursors[playerId].x * 1000} cy={cursors[playerId].y * 600} rx={model.radius * 1000} ry={model.radius * 600} fill="#ffffff55" stroke="#253e48" strokeWidth="5" strokeDasharray="12 8" />
+            {snapshot.brushes[playerId] && <ellipse className="car-brush-trace" cx={snapshot.brushes[playerId].x * 1000} cy={snapshot.brushes[playerId].y * 600} rx={model.radius * 1000} ry={model.radius * 600} fill="#ffffff55" stroke="#253e48" strokeWidth="5" strokeDasharray="12 8" />}
           </svg>
           {snapshot.progress[playerId] === 100 && <span className="car-sparkle" aria-hidden="true">✦ Sparkling! ✦</span>}
           {snapshot.phase === 'countdown' && <div className="game-curtain"><strong>{Math.max(1, Math.ceil(snapshot.countdownRemainingMs / 1000))}</strong><span>Ready, steady, scrub!</span></div>}
@@ -107,6 +116,6 @@ export function CarWash({ playerCount, inputEvents = [], onExit, externalPauseRe
     </div>
     <p className="car-help" id="car-help">Wave across the mud, or drag with a mouse or finger. Keyboard: focus your car, move the brush with arrow keys, then press Space or Enter to scrub.</p>
     {snapshot.phase === 'paused' && <div className="battle-results" role="dialog" aria-label="Car Wash paused"><h2 ref={pauseHeadingRef} tabIndex={-1}>Car wash paused</h2><p>{externalPauseReason || pauseReason}</p><button className="crayon-button" type="button" disabled={Boolean(externalPauseReason)} onClick={() => { setSnapshot(model.resume(performance.now())); setPauseReason(null) }}>Resume</button>{externalPauseReason && onReconnect && <button className="crayon-button" type="button" onClick={onReconnect}>Reconnect camera</button>}<button className="text-button" type="button" onClick={onExit}>Back to setup</button></div>}
-    {snapshot.phase === 'results' && <div className="battle-results" role="dialog" aria-label="Car Wash results"><h2 ref={resultsRef} tabIndex={-1}>{snapshot.teamProgress === 100 ? 'A sparkling team effort!' : 'Great scrubbing, team!'}</h2><p>Team clean: {snapshot.teamProgress}%</p><div className="battle-results__scores">{snapshot.scores.map(({ playerId, score }) => <p key={playerId}><strong>Player {playerId}</strong><span>{snapshot.progress[playerId]}% clean · {score} patches</span></p>)}</div><button className="crayon-button crayon-button--primary" type="button" onClick={() => setSnapshot(model.start(performance.now()))}>Wash again</button><button className="text-button" type="button" onClick={onExit}>Back to setup</button></div>}
+    {snapshot.phase === 'results' && <div className="battle-results" role="dialog" aria-label="Car Wash results"><h2 ref={resultsRef} tabIndex={-1}>{snapshot.teamProgress === 100 ? 'A sparkling team effort!' : 'Great scrubbing, team!'}</h2><ChallengeResult scores={snapshot.scores}/><p>Team clean: {snapshot.teamProgress}%</p><div className="battle-results__scores">{snapshot.scores.map(({ playerId, score }) => <p key={playerId}><strong>Player {playerId}</strong><span>{snapshot.progress[playerId]}% clean · {score} patches</span></p>)}</div><button className="crayon-button crayon-button--primary" type="button" onClick={() => setSnapshot(model.start(performance.now()))}>Wash again</button><button className="text-button" type="button" onClick={onExit}>Back to setup</button></div>}
   </section>
 }

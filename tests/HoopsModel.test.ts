@@ -29,3 +29,30 @@ it('bounces off the rim edge without scoring and keeps constant gravity',()=>{
  const m=setup();ball(m,{x:.155,y:.275,vy:.4,owner:1});const s=m.update(3010);expect(s.scores[0].score).toBe(0);expect(s.balls[0].vy).toBeLessThan(0)
  const free=setup();ball(free,{x:.5,y:.4,vy:0});expect(free.update(3100).balls[0].vy).toBeCloseTo(.105,5)
 })
+
+it.each([1,2,3,4] as const)('serves reachable balls equally across %i lanes through the expert round',players=>{
+ const model=new HoopsModel(players,4/3,1),seen=new Set<number>(),counts=Array<number>(players).fill(0)
+ model.start(0)
+ for(let t=3000;t<48000;t+=20){
+  const s=model.update(t)
+  expect(s.balls.filter(b=>b.state==='falling').length).toBeLessThanOrEqual(4)
+  for(const b of s.balls)if(!seen.has(b.id)){
+   if(b.id<players)expect(s.elapsed).toBeLessThan(1200)
+   seen.add(b.id);const lane=Math.floor(b.x*players),local=b.x*players-lane
+   expect(local).toBeGreaterThan(.28);expect(local).toBeLessThan(.72);counts[lane]++
+  }
+ }
+ expect(Math.min(...counts)).toBeGreaterThan(3)
+ expect(Math.max(...counts)-Math.min(...counts)).toBeLessThanOrEqual(1)
+})
+
+it('adds a basket streak bonus and breaks it only on an owned miss',()=>{
+ const m=setup(2)
+ const rim=hoops[2]
+ function basket(t:number){ball(m,{owner:2,x:rim.x,y:rim.y-.001,vy:.5});return m.update(t)}
+ expect(basket(3020).scores[1].score).toBe(10)
+ expect(basket(3040).scores[1].score).toBe(25)
+ ball(m,{owner:2,y:1.06});m.update(3060)
+ const s=basket(3080)
+ expect(s.bestStreak).toEqual([0,2]);expect(s.attempts).toEqual([0,4]);expect(s.scores[1].score).toBe(35)
+})
