@@ -23,6 +23,8 @@ export function MarbleBowling({playerCount,inputEvents,manual,onExit,externalPau
   const depth=laneHeight/130
   const [model]=useState(()=>new BowlingModel(playerCount,pressure))
   const [snap,setSnap]=useState(()=>model.start(performance.now()))
+  const [pinArtFailed,setPinArtFailed]=useState(false)
+  const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches||document.documentElement.classList.contains('reduce-motion')
   const recovery=useRoundRecovery({model,snapshot:snap,setSnapshot:setSnap,title:'Marble Bowling',externalPauseReason,onReconnect,onExit})
   const drags=useRef(new Map<number,{id:PlayerId;x:number;y:number}>())
   useEffect(()=>{
@@ -79,13 +81,15 @@ export function MarbleBowling({playerCount,inputEvents,manual,onExit,externalPau
           <path d="M9 97 Q49 100 91 97" stroke="#997b59" strokeDasharray="2 2" fill="none"/>
           {!lane.shot&&!done&&<path d={`M50 103 L${bowlX(lane.aim,.74)} ${bowlY(.74)}`} stroke="#39565e" fill="none" strokeDasharray="1 3" strokeLinecap="round"/>}
           </g>
-          {[...lane.pins].reverse().map((pin,i)=><g key={i} transform={`translate(${pin.x} ${pin.y*depth})`}>
-            <g className={pin.down?'bowling-pin down':'bowling-pin'}>
+          {[...lane.pins].reverse().map((pin,i)=>{const frame=pin.down?(reducedMotion||pin.impactAge===null||pin.impactAge>=180?3:pin.impactAge>=70?2:1):0;return <g key={i} transform={`translate(${pin.x} ${pin.y*depth})`}>
+            {!pinArtFailed?<svg x="-9" y="-22" width="18" height="24" viewBox={`${frame*543} 0 543 724`} preserveAspectRatio="xMidYMid meet" data-pin-frame={frame}>
+              <image href={`${import.meta.env.BASE_URL}assets/minigames/marble-bowling/pin-poses.webp`} x="0" y="0" width="2172" height="724" onError={()=>setPinArtFailed(true)}/>
+            </svg>:<g className={pin.down?'bowling-pin down':'bowling-pin'}>
               <path d="M-2 1 Q-5 -2 -3 -6 Q-1 -10 -2 -12 Q-3 -16 0 -16 Q3 -16 2 -12 Q1 -9 3 -6 Q5 -1 2 1 Z" fill="#fff8dc" stroke="#44384a" strokeWidth=".95"/>
               <path d="M-1.7 -10.5 L1.7 -10.5" stroke="#e36851" strokeWidth="2"/>
-            </g>
+            </g>}
             {debug&&!pin.down&&<ellipse rx={model.hitRadius} ry={model.hitRadius*depth} fill="none" stroke="#ffeb00" strokeWidth=".7"/>}
-          </g>)}
+          </g>})}
           {!done&&lane.progress<1&&<g transform={`translate(${bowlX(lane.aim,lane.progress)} ${bowlY(lane.progress)*depth})`}>
             <circle r="5" fill={colors[lane.id-1]} stroke="#343644" strokeWidth="1.2"/>
             <path d="M-3 2 Q2 0 2 -4 M-2 -2 l.8 -.7" stroke="#fff8dc" strokeWidth="1.1" fill="none"/>

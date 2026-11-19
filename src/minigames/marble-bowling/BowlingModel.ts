@@ -168,6 +168,6 @@ export class BowlingModel {
   }
   private snapshot(){
     return {...this.session.getSnapshot(this.now),lanes:this.lanes.map(lane=>({...lane,
-      pins:lane.pins.map(pin=>({...pin})),progress:lane.shot?Math.min(1,(this.now-lane.shot.start)/FLIGHT_MS):0}))}
+      pins:lane.pins.map((pin,i)=>({...pin,impactAge:lane.shot&&Number.isFinite(lane.shot.hits[i])?this.now-lane.shot.start-lane.shot.hits[i]:null})),progress:lane.shot?Math.min(1,(this.now-lane.shot.start)/FLIGHT_MS):0}))}
   }
 }

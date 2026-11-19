@@ -105,3 +105,10 @@ source is `ghost-poses-original.png`.
 Generated in the existing ChatGPT conversation. The source is
 `kangaroo-run-sheet-original.png`; the original jump and stumble sheet remains
 in use for those states and as a running fallback.
+
+| Asset | Use | Dimensions | Transparency | Animation |
+| --- | --- | --- | --- | --- |
+| `public/assets/minigames/marble-bowling/pin-poses.webp` | Marble Bowling pins | 1086 × 362 | Alpha | Standing, wobbling, tipping, knocked down |
+
+Generated through ChatGPT and Kimi WebBridge. The original download and the
+exact prompt are recorded in the Marble Bowling asset manifest.
