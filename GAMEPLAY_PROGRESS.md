@@ -51,3 +51,9 @@ The final collection run passed all 65 Chromium scenarios in 3.1 minutes, includ
 ### Remaining validation
 
 Physical camera latency, fit tolerance across body types, four-person occlusion, and comfort over a family play session still need an observed hardware session. The automated passes do not establish those outcomes. Reopen the affected tracker cells after collecting that evidence.
+
+UI follow-up: cream-colored neutral status backgrounds were changed to white
+across game styles. Chromium checks covered tutorial cards and videos for
+Marble Bowling, Shadow Snap and UFO Juggler, plus narrow Paper Dojo and Window
+Wipe cues; this does not constitute a fresh gameplay or real-camera audit of
+every game.

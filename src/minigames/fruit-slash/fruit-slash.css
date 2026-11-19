@@ -2,7 +2,7 @@
 .slash-boards { display: grid; grid-template-columns: repeat(auto-fit,minmax(160px,1fr)); gap: .75rem; }
 .slash-player h2 { font-size: 1.1rem; }
 .slash-player h2 span { display: block; font-size: .9rem; }
-.slash-board { position: relative; height: 400px; overflow: hidden; touch-action: none; border: 3px solid #29313c; border-radius: 1.2rem .6rem 1rem .7rem; background: #fff9e922; }
+.slash-board { position: relative; height: 400px; overflow: hidden; touch-action: none; border: 3px solid #29313c; border-radius: 1.2rem .6rem 1rem .7rem; background: #ffffff22; }
 .slash-board:focus-visible { outline: 4px dashed #ffe17a; outline-offset: -5px; box-shadow: inset 0 0 0 7px #29313c; }
 .slash-fruit { position: absolute; width: 18%; height: 18%; translate: -50% -50%; pointer-events: none; }
 .slash-fruit svg { display: block; width: 100%; height: 100%; }

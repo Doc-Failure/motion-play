@@ -1,5 +1,5 @@
 .snap-studio {position:absolute;inset:0;container-type:size;pointer-events:none;display:flex;align-items:flex-end;justify-content:center;padding-bottom:max(42px,5cqh)}
-.snap-print {width:max-content;max-width:96%;margin:0;padding:.12rem .45rem;color:#343246;background:#fff7df;border:2px solid;border-radius:2% 1% 1.5% 1%;box-shadow:2px 3px #34324655}
+.snap-print {width:max-content;max-width:96%;margin:0;padding:.12rem .45rem;color:#343246;background:#ffffff;border:2px solid;border-radius:2% 1% 1.5% 1%;box-shadow:2px 3px #34324655}
 .snap-print[data-outcome=snap] {border-color:#187751;box-shadow:0 3px #187751}
 .snap-caption,.snap-parts,.snap-controls>div>div {display:flex;align-items:center;gap:.3rem}
 .snap-caption {justify-content:center;font-size:clamp(.78rem,3cqh,1.15rem)}
@@ -10,7 +10,7 @@
 .snap-parts span,.snap-parts progress {display:block}
 .snap-parts progress {accent-color:#187751;width:100%;height:5px;margin:2px auto}
 .snap-parts [data-matched=true] {color:#145638}
-.snap-controls {position:absolute;z-index:8;bottom:.45rem;left:.4rem;max-width:95%;border:1px solid #343246;border-radius:.5rem;background:#fff7df;color:#343246;font-size:.8rem;padding:.25rem .4rem}
+.snap-controls {position:absolute;z-index:8;bottom:.45rem;left:.4rem;max-width:95%;border:1px solid #343246;border-radius:.5rem;background:#ffffff;color:#343246;font-size:.8rem;padding:.25rem .4rem}
 .snap-controls summary {cursor:pointer}
 .snap-controls>div {display:flex;flex-wrap:wrap;gap:.3rem}
 .snap-controls button {background:#f6dfae;color:#343246;border:1px solid;border-radius:.35rem;padding:.2rem;cursor:pointer}
@@ -24,7 +24,7 @@
 
 
 .snap-album {display:flex;justify-content:center;gap:.4rem}
-.snap-album figure {width:min(29%,7rem);margin:0;padding:.18rem;border:1px solid #827687;background:#fff9e9}
+.snap-album figure {width:min(29%,7rem);margin:0;padding:.18rem;border:1px solid #827687;background:#ffffff}
 .snap-album svg {display:block;width:100%;height:2.75rem;background:#e7dfd7}
 .snap-album figcaption {font-size:.7rem;line-height:1.2}
 @media(max-width:650px){

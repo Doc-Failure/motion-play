@@ -210,3 +210,19 @@ Kangaroo Race now uses a four-frame running sheet and advances automatically
 while the round is active; jumping remains driven by normalized camera input.
 The runner stays in place as obstacles approach, and the existing recovery pause
 still applies to camera loss. Browser testing used simulated input only.
+
+Neutral tutorial, results and shared status surfaces now use white instead of
+the previous cream. The tutorial videos were regenerated with white backgrounds
+while preserving the original clips under `docs/visual-audit/intro-before-white/`.
+See `white-tutorial-after.png` and `white-results-after.png`. Intentional crayon
+colors on artwork and action buttons remain.
+
+The white neutral treatment was extended to remaining cream UI backgrounds,
+including game-specific status panels. The Marble Bowling and Shadow Snap
+introductory cards and video backgrounds were checked in Chromium; see
+`marble-bowling-white-tutorial.png`. These changes are local until deployed.
+
+The home title backing and shared paper artwork also use white, including when
+the camera is unavailable. Paper Dojo's intro card and embedded video were
+checked in Chromium; see `white-home-after.png` and
+`ninja-white-tutorial-after.png`. The deployment must be updated separately.

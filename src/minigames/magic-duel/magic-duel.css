@@ -1,11 +1,11 @@
 .magic-game { position: relative; }
 .magic-boards { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0,1fr); }
 .magic-player { min-width: 0; }
-.magic-player h2 { font-size: 1rem; padding: .2rem; background: #fff9e9ed; color: #29313c; }
+.magic-player h2 { font-size: 1rem; padding: .2rem; background: #ffffffed; color: #29313c; }
 .magic-player h2 span { display: block; font-size: .9rem; }
 .magic-board { position: relative; height: min(65vh,36rem); overflow: hidden; touch-action: none; border: 2px dashed #7557a8; border-radius: 1% 2%; }
 .magic-board:focus-visible { outline: 4px solid #ffe17a; outline-offset: -5px; }
 .magic-art { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-.magic-status { position: absolute; bottom: 0; left: 0; right: 0; text-align: center; color: #29313c; background: #fff9e9ed; padding: .2rem; font-size: .9rem; pointer-events: none; }
+.magic-status { position: absolute; bottom: 0; left: 0; right: 0; text-align: center; color: #29313c; background: #ffffffed; padding: .2rem; font-size: .9rem; pointer-events: none; }
 .magic-rules,.magic-help { line-height: 1.4; }
 .camera-play .magic-status { bottom: 3rem; margin: 0 .4rem; border-radius: .3rem; }

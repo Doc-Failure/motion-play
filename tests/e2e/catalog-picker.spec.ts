@@ -6,6 +6,7 @@ test('home player selector and refreshed catalog controls remain clear',async({p
  await page.getByRole('button',{name:'1 player',exact:true}).click()
  const title=page.getByRole('heading',{name:'Motion Play!'}),change=page.getByRole('button',{name:'1 player · change'})
  await expect(change).toBeVisible()
+ await expect(page.locator('.hero-copy')).toHaveCSS('background-color','rgb(255, 255, 255)')
  for(const viewport of [{width:1280,height:720},{width:390,height:844}]){
   await page.setViewportSize(viewport)
   const a=(await title.boundingBox())!,b=(await change.boundingBox())!

@@ -2,7 +2,7 @@
 .beat-tracks { position:absolute; inset:0; width:100%; height:100%; opacity:.6; pointer-events:none; }
 .beat-speaker { position:absolute; z-index:4; min-width:0; min-height:0; padding:0; border:0; background:transparent; translate:-50% -50%; cursor:pointer; filter:drop-shadow(2px 4px 0 #34334644); }
 .beat-speaker>svg { display:block; width:100%; height:100%; }.beat-speaker:disabled { opacity:1; cursor:default; }.beat-speaker__cone { transform-origin:61px 66px; scale:calc(1 + var(--cone-pulse)*.035); }.beat-speaker--ready { filter:drop-shadow(0 0 7px var(--pad-color)); }.beat-speaker--hit { animation:beat-thump .23s ease-out; }.beat-speaker--hit .beat-speaker__cone { scale:1.15; }
-.beat-speaker>span { position:absolute; top:92%; left:50%; translate:-50% 0; padding:.1rem .35rem; border-radius:.4rem; background:#fff5dbe8; color:#343346; font-size:clamp(.45rem,2.5cqmin,.85rem); white-space:nowrap; }
+.beat-speaker>span { position:absolute; top:92%; left:50%; translate:-50% 0; padding:.1rem .35rem; border-radius:.4rem; background:#ffffffe8; color:#343346; font-size:clamp(.45rem,2.5cqmin,.85rem); white-space:nowrap; }
 .beat-speaker .beat-timing { position:absolute; inset:-8%; width:116%; height:116%; rotate:-90deg; }.beat-timing circle { fill:none; stroke:var(--pad-color); stroke-width:3; stroke-linecap:round; }
 .beat-note { position:absolute; z-index:3; width:13cqmin; height:13cqmin; translate:-50% -50%; pointer-events:none; filter:drop-shadow(0 1px 3px #34334644); }.beat-note svg { width:100%; height:100%; }
 .beat-deck { position:absolute; left:50%; top:52%; width:28cqmin; height:20cqmin; translate:-50% -50%; opacity:.85; pointer-events:none; scale:calc(1 + var(--beat-pulse)*.025); }.beat-deck svg { width:100%; height:100%; }

@@ -20,7 +20,7 @@ export function GestureDemo({kind,title}:{kind:InputKind;title:string}) {
     kind==='HAND_POSITION'?[[143,99],[175,72],[188,67],[188,67]]:[[143,99],[143,99],[197,67],[147,95]]
   const path=(x:number,y:number)=>`M115 74 Q137 87 ${x} ${y}`
   return <svg className="gesture-demo" ref={ref} viewBox="0 0 280 150" role="img" aria-label={title+' movement demonstration'}>
-    <rect width="280" height="150" fill="#fff6df"/>
+    <rect width="280" height="150" fill="#fff"/>
     <g stroke="#323442" strokeLinecap="round" strokeLinejoin="round" strokeWidth="7" fill="none">
       {body&&<animateTransform attributeName="transform" type="translate" dur="2.4s" repeatCount="indefinite"
         values={kind==='FREEZE'?'0 0;45 -5;45 -5;45 -5;0 0':'0 0;36 3;64 0;24 -2;0 0'}/>}

@@ -1,6 +1,42 @@
 import {completeReadyGate, expect, openApp, test} from './fixtures'
 import {visibleCatalogGames} from '../../src/app/catalog'
 
+for(const game of ['marble-bowling','shadow-snap','ninja-training'])test(`${game} tutorial uses a white card and video`,async({page,installMockCamera})=>{
+ await page.emulateMedia({reducedMotion:'reduce'});await installMockCamera({person:true})
+ await openApp(page,`#/camera/${game}`,async()=>{await page.route('**/pose/tracker.js',r=>r.fulfill({contentType:'text/javascript',body:'window.createLocalPoseTracker=async()=>({detect:()=>[],close:()=>{}})'}))})
+ await page.getByRole('button',{name:'1 player',exact:true}).click()
+ await expect(page.locator('.player-ready-gate svg path').first()).toHaveAttribute('fill','#ffffff')
+ const demo=page.locator('.game-intro-demo'),video=demo.locator('video')
+ await expect(demo).toHaveCSS('background-color','rgb(255, 255, 255)')
+ await expect.poll(()=>video.evaluate(el=>{
+  const v=el as HTMLVideoElement;if(v.readyState<2)return false
+  const c=document.createElement('canvas');c.width=320;c.height=180;const ctx=c.getContext('2d')!;ctx.drawImage(v,0,0,320,180)
+  return Array.from(ctx.getImageData(2,2,1,1).data).slice(0,3).every(value=>value>=245)
+ }),{timeout:10000}).toBe(true)
+ await page.screenshot({path:test.info().outputPath(`${game}-white-tutorial.png`)})
+})
+
+test('tutorial and results use white neutral panels',async({page,installMockCamera})=>{
+ await page.emulateMedia({reducedMotion:'reduce'})
+ await installMockCamera({person:true})
+ await openApp(page,'#/camera/ufo-juggler',async()=>{await page.route('**/pose/tracker.js',r=>r.fulfill({contentType:'text/javascript',body:'window.createLocalPoseTracker=async()=>({detect:()=>[],close:()=>{}})'}))})
+ await page.getByRole('button',{name:'1 player',exact:true}).click()
+ const demo=page.locator('.game-intro-demo'),video=demo.locator('video')
+ await expect(demo).toHaveCSS('background-color','rgb(255, 255, 255)')
+ await expect.poll(()=>video.evaluate(el=>{
+  const v=el as HTMLVideoElement;if(v.readyState<2)return null
+  const c=document.createElement('canvas');c.width=320;c.height=180;const ctx=c.getContext('2d')!;ctx.drawImage(v,0,0,320,180)
+  return Array.from(ctx.getImageData(2,2,1,1).data).slice(0,3).every(value=>value>=245)
+ }),{timeout:10000}).toBe(true)
+ await page.screenshot({path:test.info().outputPath('white-tutorial.png')})
+ await completeReadyGate(page)
+ const baseline=await page.evaluate(()=>performance.now());await page.clock.install();await page.clock.fastForward(baseline+90000)
+ const results=page.getByRole('dialog',{name:'UFO Juggler results'})
+ await expect(results).toBeVisible();await page.clock.runFor(400)
+ await expect(results).toHaveCSS('background-color','rgb(255, 255, 255)')
+ await page.screenshot({path:test.info().outputPath('white-results.png')})
+})
+
 test('boxing instructions and controls stay separate and clear on results',async({page,installMockCamera})=>{
  await installMockCamera({person:true})
  await openApp(page,'#/camera/punch-arena',async()=>{await page.route('**/pose/tracker.js',r=>r.fulfill({contentType:'text/javascript',body:'window.createLocalPoseTracker=async()=>({detect:()=>[],close:()=>{}})'}))})
@@ -31,7 +67,7 @@ test('player selection and camera-opening status stay readable', async ({page}) 
   await expect(choice).toBeVisible()
   const label=choice.locator('span')
   expect(await label.evaluate(el=>parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(12)
-  await expect(label).toHaveCSS('background-color','rgb(255, 248, 233)')
+  await expect(label).toHaveCSS('background-color','rgb(255, 255, 255)')
   const opening=page.getByRole('button',{name:'Opening camera…'})
   await expect(opening).toBeDisabled()
   await expect(opening).toHaveCSS('opacity','1')

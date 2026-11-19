@@ -5,13 +5,13 @@
 .jump-scenery { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
 .jump-launch,.jump-runner,.jump-hurdle { position:absolute; top:80%; translate:-50% -50%; line-height:1; text-shadow:2px 2px #29313c,-2px -2px #29313c; pointer-events:none; }
 .jump-launch,.jump-runner { left:25%; font-size:clamp(2rem,5vw,4rem); }
-.jump-launch { color:#29313c; top:90%; font-size:clamp(.65rem,1.5vw,1rem); background:#fff6df; padding:.2rem .4rem; border-radius:.4rem; text-shadow:none; white-space:nowrap; }
+.jump-launch { color:#29313c; top:90%; font-size:clamp(.65rem,1.5vw,1rem); background:#ffffff; padding:.2rem .4rem; border-radius:.4rem; text-shadow:none; white-space:nowrap; }
 .jump-runner { width:clamp(4rem,12vw,9rem); height:25%; will-change:top; }
 .jump-runner svg { width:100%; height:100%; overflow:visible; }
 .jump-hurdle { width:clamp(3rem,8vw,7rem); height:22%; }
 .jump-hurdle svg { width:100%; height:100%; overflow:visible; }
 .jump-hurdle.is-broken { rotate:65deg; opacity:.5; }
-.jump-prompt { position:absolute; top:24%; left:50%; translate:-50% 0; padding:.25rem .55rem; border-radius:1rem; background:#fff9e9e8; color:#29313c; font-size:clamp(.8rem,2.3vw,1.6rem); white-space:nowrap; }
+.jump-prompt { position:absolute; top:24%; left:50%; translate:-50% 0; padding:.25rem .55rem; border-radius:1rem; background:#ffffffe8; color:#29313c; font-size:clamp(.8rem,2.3vw,1.6rem); white-space:nowrap; }
 .jump-prompt[data-urgent=true] { background:#f5c847; }
 .jump-burst { position:absolute; top:44%; left:50%; translate:-50% 0; color:#fff9e9; text-shadow:2px 2px #29313c,-2px -2px #29313c; font-size:clamp(1.2rem,4vw,3rem); animation:jump-pop .7s both; pointer-events:none; }
 @keyframes jump-pop { from { opacity:1; transform:scale(.6); } 30% { opacity:1; transform:scale(1.2); } to { opacity:0; transform:translateY(-35px); } }

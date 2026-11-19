@@ -35,7 +35,7 @@ export function PlayerReadyGate({players,sample,aspect,enabled,onComplete,onBack
     onPointerUp={()=>{manual.current[p]=false}} onPointerCancel={()=>{manual.current[p]=false}} onLostPointerCapture={()=>{manual.current[p]=false}}
     onKeyDown={e=>{if(e.repeat&&(e.key==='Enter'||e.key===' '))e.preventDefault()}}
     onClick={e=>{if(e.detail===0)manual.current[p]=!manual.current[p]}}>
-    <svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="45" fill="none" stroke="#ffffff55" strokeWidth="5"/><circle cx="50" cy="50" r="45" fill="none" stroke={contact?'#7dffb3':'#ffe17a'} strokeWidth="6" pathLength="100" strokeDasharray={`${state.progress*100} 100`} transform="rotate(-90 50 50)"/><path d="M34 60V33q0-8 6-8t6 8v16-28q0-8 6-8t6 8v28-24q0-8 6-8t6 8v25-14q0-7 6-7t6 7v30q0 19-22 19H49q-11-2-19-15l-9-15q-4-7 2-10t11 8" fill={contact?'#7dffb3':'#fff1d0'} stroke="#29313c" strokeWidth="2.5" strokeLinejoin="round"/></svg>
+    <svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="45" fill="none" stroke="#ffffff55" strokeWidth="5"/><circle cx="50" cy="50" r="45" fill="none" stroke={contact?'#7dffb3':'#ffe17a'} strokeWidth="6" pathLength="100" strokeDasharray={`${state.progress*100} 100`} transform="rotate(-90 50 50)"/><path d="M34 60V33q0-8 6-8t6 8v16-28q0-8 6-8t6 8v28-24q0-8 6-8t6 8v25-14q0-7 6-7t6 7v30q0 19-22 19H49q-11-2-19-15l-9-15q-4-7 2-10t11 8" fill={contact?'#7dffb3':'#ffffff'} stroke="#29313c" strokeWidth="2.5" strokeLinejoin="round"/></svg>
     <strong>P{p+1}{introGame==='net-rally'&&` · ${rallyPositions(players)[p]}`}{introGame==='goalkeeper'&&players>1&&` · ${keeperPositions(players)[p]}`}</strong><span>{contact?'Keep your hand here':'Hand here'}</span>
    </button>
   </div>)}</div>

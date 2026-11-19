@@ -10,7 +10,7 @@
 .player-ready-button--held { box-shadow:0 0 15px #7dffb366; }
 .player-ready-button:focus-visible { outline:4px solid #ffe17a; outline-offset:5px; }
 .player-ready-gate__tools { position:absolute; bottom:7.5rem; left:50%; translate:-50% 0; width:max-content; max-width:90%; text-align:center; pointer-events:auto; }
-.player-ready-gate__tools button { min-height:36px; padding:.3rem .6rem; border:2px solid #29313c; border-radius:.5rem; background:#fff1d0; color:#29313c; cursor:pointer; }
+.player-ready-gate__tools button { min-height:36px; padding:.3rem .6rem; border:2px solid #29313c; border-radius:.5rem; background:#fff; color:#29313c; cursor:pointer; }
 .player-ready-gate__tools small { display:block; margin-top:.3rem; padding:.2rem; border-radius:.3rem; background:#172630ed; font-size:.6rem; }
 .camera-arena:has(.player-ready-gate) :is(.battle-results,.game-curtain,.camera-distance-cue) { visibility:hidden; }
 .camera-arena:has(.player-ready-gate) .body-test__align-controls { display:none; }
@@ -18,7 +18,7 @@
 .game-intro-demo {
   position:absolute; top:2%; left:50%; translate:-50% 0;
   display:flex; align-items:center; gap:2%; width:min(96%,calc(72cqh + 19rem)); padding:1cqmin;
-  background:#fff6dfee; color:#29313c; border:2px solid #29313c; border-radius:1rem;
+  background:#fff; color:#29313c; border:2px solid #29313c; border-radius:1rem;
 }
 .game-intro-demo :is(video,.gesture-demo) { width:min(64%,72cqh); aspect-ratio:16/9; border-radius:.5rem; flex:none; }
 .game-intro-demo h1 { margin:0; font-size:clamp(.85rem,3.5cqh,1.8rem); }

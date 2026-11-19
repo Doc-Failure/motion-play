@@ -14,7 +14,7 @@ for(const game of (process.env.INTRO_GAME?[process.env.INTRO_GAME]:['bubble-batt
   const circle=(x,y,r,color,outline='#29313c')=>{c.fillStyle=color;c.strokeStyle=outline;c.lineWidth=2;c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fill();c.stroke()}
   for(let frame=0;frame<72;frame++){
    const t=frame/72,phase=frame%18/18,beat=Math.floor(frame/18),s=Math.sin(t*Math.PI*4)
-   c.fillStyle='#fff6df';c.fillRect(0,0,320,180)
+   c.fillStyle='#fff';c.fillRect(0,0,320,180)
    let center=160,left=[115,95],right=[205,95]
    if(game==='shadow-snap'){
     const lift=Math.min(1,t*1.7)
@@ -25,7 +25,7 @@ for(const game of (process.env.INTRO_GAME?[process.env.INTRO_GAME]:['bubble-batt
       line([[160+sign*5,105],[160+sign*13,139],[160+sign*18,156]],color,13)
      }
     }
-    c.fillStyle='#d7af7c';c.fillRect(0,0,320,180)
+    c.fillStyle='#fff';c.fillRect(0,0,320,180)
     figure(1,'#534552')
     figure(lift,lift===1?'#73bcaa':'#bb6654')
     if(lift===1)line([[219,73],[229,84],[247,61]],'#187751',6)
