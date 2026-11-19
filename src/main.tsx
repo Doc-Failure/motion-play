@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 
 import { App } from './app/App'
+import './analytics'
 import './styles.css'
 import './game/game-polish.css'
 import './game/keyboard-play.css'

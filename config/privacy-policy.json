@@ -1,4 +1,5 @@
 {
-  "content": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; media-src 'self' blob:; connect-src 'none'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'",
+  "content": "default-src 'self'; script-src 'self' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://www.google-analytics.com https://www.googletagmanager.com; font-src 'self'; media-src 'self' blob:; connect-src https://www.google-analytics.com https://region1.google-analytics.com https://www.googletagmanager.com; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'",
+  "localContent": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; media-src 'self' blob:; connect-src 'none'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'",
   "poseContent": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self'; img-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'"
 }

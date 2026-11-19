@@ -47,9 +47,8 @@ function checkAsset(reference, path, paths) {
 
 async function checkPrivacyPolicy(html, path) {
   const policies = JSON.parse(await readFile(join(root, 'config/privacy-policy.json'), 'utf8'))
-  // Only the opt-in diagnostic may fetch local model/WASM files or compile WASM.
-  // All other packaged documents retain the main app's blocked connections.
-  const policy = path === 'pose/tracker.html' ? policies.poseContent : policies.content
+  // Keep the standalone font preview offline and the pose sandbox isolated.
+  const policy = path === 'pose/tracker.html' ? policies.poseContent : path === 'font-preview.html' ? policies.localContent : policies.content
   // Verify the canonical tag emitted by Vite, including placement before loads.
   // Substrings elsewhere (or in comments) do not establish an enforced policy.
   const markup = html.replace(/<!--[\s\S]*?-->/g, '')
