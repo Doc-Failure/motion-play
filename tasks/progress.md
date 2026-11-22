@@ -3640,3 +3640,8 @@ Added the shared HOME zone to the desktop catalog for one to four players. Each 
 The production build passed the existing release budgets. All 1,466 unit tests and lint passed. Chromium checks covered the catalog, mobile routing, four synthetic people in one zone, flood scoring, pause, replay, and solo simulation. Physical group-camera validation is pending.
 
 The lava flood now fills the desktop viewport, including the space around letterboxed camera video. The original crayon texture flows in waves and bubbles rise and burst. HOME is cut out at its measured camera coordinates. Browser checks sample the surface and the cutout in wide and tall windows, including reduced motion and pause. The production build remains within its release budgets.
+
+
+Each Floor Is Lava wave now previews the flag island at playable size. At zero the artwork disappears and the lava leaves only the irregular grass footprint clear. Both ankles must be within that shoreline. The movement demo and instructions show the same sequence.
+
+Seven model tests and four Chromium tests passed, including the transition, lava pixels around the shore in two window shapes, solo clicks and synthetic four-player scoring. Lint and the release build passed. Updated the countdown and flood captures in the visual audit. Physical webcam play remains unverified.

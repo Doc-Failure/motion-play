@@ -51,7 +51,7 @@ export const catalogGames: readonly CatalogGame[] = [
   game(41, 'kangaroo-race', 'Kangaroo Race', 'Run automatically and jump over logs, rocks and gaps!', 'Move & Survive', 'BODY_MOVE', 'Normal', 'Competitive', ['#d7a16a','#a5d88b'], true),
   game(42, 'marble-bowling', 'Marble Bowling', 'Sweep one hand upward toward the pins. Knock down as many as you can in three rolls!', 'Skill & Precision', 'HAND_SWIPE', 'Easy', 'Competitive', ['#e8bd87','#79c9ce'], true),
   game(43, 'shadow-snap', 'Shadow Snap', 'Fit your whole body through the cardboard cutout. Fill the shape and tuck in the red edges!', 'Clean & Create', 'BODY_MOVE', 'Easy', 'Cooperative', ['#a69ed2','#edb56b'], true),
-  game(44, 'floor-is-lava', 'Floor Is Lava', 'Everyone get both feet inside HOME before the countdown ends. Lava covers the rest of the floor!', 'Move & Survive', 'BODY_MOVE', 'Easy', 'Cooperative', ['#ef7946', '#8fd76e'], true),
+  game(44, 'floor-is-lava', 'Floor Is Lava', 'Get everyone onto the island before it disappears. Only the grass stays safe when the lava comes!', 'Move & Survive', 'BODY_MOVE', 'Easy', 'Cooperative', ['#ef7946', '#8fd76e'], true),
 ]
 
 export const getGameBySlug = (slug: string) => catalogGames.find((entry) => entry.slug === slug)

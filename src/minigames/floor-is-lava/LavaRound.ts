@@ -1,20 +1,11 @@
 import { GameSession } from '../../game/GameSession'
-import type { Feet, FloorSample } from '../../input/LavaFeet'
+import type { FloorSample } from '../../input/LavaFeet'
 import type { PlayerCount } from '../../input/PlayerZoneMapper'
+import { homeZone, inside, type HomeZone } from './LavaIsland'
 
 export const WAVES = 5
 const FLOOD_MS = 2000
 const FRESH_MS = 500
-
-export function homeZone(players: PlayerCount, side: number) {
-  const width = .29 + players * .096
-  const left = .025 + side / 2 * (.95 - width)
-  return { left, right: left + width, top: .52, bottom: 1 }
-}
-export type HomeZone = ReturnType<typeof homeZone>
-export function inside(feet: Feet, zone: HomeZone) {
-  return feet.every(({ x, y }) => x >= zone.left && x <= zone.right && y >= zone.top && y <= zone.bottom)
-}
 
 export class LavaRound {
   private readonly clock: GameSession

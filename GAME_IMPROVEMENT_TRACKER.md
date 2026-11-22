@@ -58,4 +58,4 @@ Bug Stack is available directly on phones and tablets. Model and synthetic-input
 
 ## Floor Is Lava
 
-A shared HOME zone is judged at zero for one to four players. Model tests check simultaneous occupancy, both ankles, stale and late samples, pause and replay. Browser checks cover full-viewport lava, the transparent HOME cutout, animated flow and reduced motion. Physical group tracking and comfort remain unverified.
+Each wave previews a shared island for 3.5–5 seconds. At zero the island disappears. Its grassy shoreline defines both the clear patch in the lava and the scoring boundary for one to four players. Model tests check simultaneous occupancy, both ankles, stale and late samples, pause and replay. Browser checks cover full-viewport lava, the transparent HOME cutout, animated flow and reduced motion. Physical group tracking and comfort remain unverified.

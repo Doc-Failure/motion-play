@@ -45,8 +45,8 @@ export function FloorIsLava({ frame, playerCount, sample, simulation, onExit, ex
     return () => window.removeEventListener('keydown', steer)
   }, [simulation, snap.phase, moving])
   const { zone, flooded, wave, seconds, home } = snap
-  const x = zone.left * 1000, w = (zone.right - zone.left) * 1000, y = zone.top * 600
-  const instruction = home === playerCount ? 'Hold here' : 'Get home'
+  const { art } = zone
+  const instruction = home === playerCount ? 'Hold here' : 'Step onto the island'
   const cue = flooded ? (home === playerCount ? 'Everyone’s home!' : 'Lava!') : `${instruction} · ${seconds}`
   return <section className="lava-game" aria-label="Floor Is Lava" data-phase={snap.phase} data-flooded={flooded}>
     <RoundHud title="Floor Is Lava" snapshot={snap} onExit={onExit} exitRef={recovery.exitButtonRef}>
@@ -59,10 +59,8 @@ export function FloorIsLava({ frame, playerCount, sample, simulation, onExit, ex
         const box = e.currentTarget.getBoundingClientRect()
         markers.current[moving] = { x: (e.clientX - box.left) / box.width, y: (e.clientY - box.top) / box.height }
       }}>
-      <rect data-home-zone="" x={x} y={y} width={w} height={600-y} fill="#68e49b" fillOpacity=".20" stroke="#143d32" strokeWidth="9"/>
-      <rect x={x} y={y} width={w} height={600-y} fill="none" stroke="#acffae" strokeWidth="5" strokeDasharray="16 6"/>
-      <image href={LAVA_ART + 'home.webp'} x={x+9} y={y-56} width="78" height="78"/>
-      <g transform={`translate(${x+w/2},${y+27})`}><rect x="-47" y="-17" width="94" height="32" rx="12" fill="#eaffc3" stroke="#284436" strokeWidth="3"/><text textAnchor="middle" y="6" fontSize="18" fontWeight="bold" fill="#17392c">HOME</text></g>
+      {snap.phase === 'playing' && !flooded && <image aria-label="Safe island" href={LAVA_ART + 'home.webp'}
+        x={art.x * 1000} y={art.y * 600} width={art.width * 1000} height={art.height * 600} preserveAspectRatio="none"/>}
       {snap.feet.map((pair,i) => <g key={i} fill={color[i]} stroke="#242c36" strokeWidth="2.5">
         {pair.map((p,j) => <ellipse key={j} cx={p.x*1000} cy={p.y*600} rx="7" ry="5"/>)}
       </g>)}

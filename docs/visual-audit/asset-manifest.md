@@ -115,7 +115,7 @@ exact prompt are recorded in the Marble Bowling asset manifest.
 
 ## Floor Is Lava
 
-The original 1774 × 887 opaque crayon sheet was generated in the EyeToy Game Assets conversation through Kimi WebBridge. The left panel supplies the lava texture. The right panel supplies the flag island used on the catalog card, beside HOME and in the movement demo. Its outside white background was removed to preserve the irregular outline. At zero the painted texture flows edge to edge across the viewport with bubbling vents. HOME stays clear in the mirrored camera coordinates. The round clock drives the movement, and reduced motion shows a still surface.
+The original 1774 × 887 opaque crayon sheet was generated in the EyeToy Game Assets conversation through Kimi WebBridge. The left panel supplies the lava texture. The right panel supplies the flag island used on the catalog card, as the playable island and in the movement demo. Its outside white background was removed to preserve the irregular outline. At zero the painted texture flows edge to edge across the viewport with bubbling vents. The flag and rock disappear. The outline of the grassy top stays clear in mirrored camera coordinates. The round clock drives the movement, and reduced motion shows a still surface.
 
 [Original sheet](floor-is-lava-original.png) · [Exact generation prompt, dimensions and transparency](../../public/assets/minigames/floor-is-lava/manifest.json)
 

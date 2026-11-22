@@ -6,12 +6,13 @@ test('four people can share one HOME anywhere in the mirrored camera', async ({p
   await openApp(page,'#/camera/floor-is-lava',async()=>{
     await page.route('**/pose/tracker.js',route=>route.fulfill({contentType:'text/javascript',body:`
       window.createLocalPoseTracker=async()=>({close(){},detect(){
-        const zone=parent.document.querySelector('[data-home-zone]')
-        if(!zone)return []
+        const zone=parent.document.querySelector('[aria-label="Safe island"]')
+        const left=Number(zone?.getAttribute('x') ?? 100)
+        const width=Number(zone?.getAttribute('width') ?? 800)
         return Array.from({length:4},(_,i)=>{
-          const x=1-(Number(zone.getAttribute('x'))+Number(zone.getAttribute('width'))*(.2+i*.17))/1000
+          const x=1-(left+width*(.2+i*.17))/1000
           const p=Array.from({length:33},()=>({x,y:.42,visibility:1,presence:1}))
-          for(const [n,dx,y] of [[11,-.02,.38],[12,.02,.38],[23,-.015,.6],[24,.015,.6],[25,-.02,.72],[26,.02,.72],[27,-.022,.85],[28,.022,.85]])p[n]={x:x+dx,y,visibility:1,presence:1}
+          for(const [n,dx,y] of [[11,-.02,.38],[12,.02,.38],[23,-.015,.6],[24,.015,.6],[25,-.02,.72],[26,.02,.72],[27,-.022,.78],[28,.022,.78]])p[n]={x:x+dx,y,visibility:1,presence:1}
           return p
         })
       }})`}))
@@ -24,7 +25,7 @@ test('four people can share one HOME anywhere in the mirrored camera', async ({p
   await expect(game.getByRole('timer')).toContainText('4 of 4 home')
   await page.screenshot({path:test.info().outputPath('lava-warning.png')})
   await expect(game.getByRole('timer')).toContainText('Everyone’s home!',{timeout:7000})
-  await expect(game.locator('[data-home-zone]')).toHaveCount(1)
+  await expect(game.locator('[aria-label="Safe island"]')).toHaveCount(0)
   await page.screenshot({path:test.info().outputPath('lava-flood.png')})
   await hideAndRestoreTab(page)
   const pausedSurface = () => game.locator('.lava-flood').evaluate((el:HTMLCanvasElement) =>
@@ -49,7 +50,9 @@ test('solo simulation can enter HOME by clicking the marked floor',async({page,i
   await completeReadyGate(page)
   await expect(page.locator('.lava-game')).toHaveAttribute('data-phase','playing')
   await page.setViewportSize({width:680,height:480})
-  await page.locator('[data-home-zone]').click()
+  const island = page.getByLabel('Safe island', {exact:true})
+  const box = (await island.boundingBox())!
+  await island.click({position:{x:box.width * .5, y:box.height * .62}})
   await expect(page.getByRole('timer')).toContainText('1 of 1 home')
   await page.screenshot({path:test.info().outputPath('lava-solo.png')})
   await page.getByRole('button',{name:'Exit game'}).click()
@@ -65,23 +68,30 @@ for (const reduced of [false,true]) test(`flood fills the viewport with a clear 
   await page.getByRole('button',{name:'Play without camera'}).click()
   await completeReadyGate(page)
   const flood=page.locator('canvas.lava-flood')
-  await expect(flood).toBeVisible({timeout:11000})
-  const probe = () => flood.evaluate((canvas:HTMLCanvasElement) => {
+  const island = page.getByLabel('Safe island', {exact:true})
+  await expect(island).toBeVisible({timeout:6000})
+  const home = (await island.boundingBox())!
+  await expect(flood).toHaveCount(0)
+  await expect(flood).toBeVisible({timeout:6500})
+  await expect(island).toHaveCount(0)
+  const probe = () => flood.evaluate((canvas:HTMLCanvasElement, home) => {
     const ctx=canvas.getContext('2d')!
     const box=canvas.getBoundingClientRect()
-    const home=document.querySelector('[data-home-zone]')!.getBoundingClientRect()
-    const middleX=(home.left+home.width/2-box.left)*canvas.width/box.width
-    const middleY=(home.top+home.height/2-box.top)*canvas.height/box.height
-    const alpha=ctx.getImageData(middleX,middleY,1,1).data[3]
+    const alphaAt = (u:number,v:number) => ctx.getImageData(
+      (home.x + home.width*u - box.left)*canvas.width/box.width,
+      (home.y + home.height*v - box.top)*canvas.height/box.height,1,1).data[3]
+    const grass = [alphaAt(.15,.57), alphaAt(.5,.64), alphaAt(.85,.57)]
+    const lava = [alphaAt(.05,.45), alphaAt(.95,.73), alphaAt(.5,.93), alphaAt(.6,.2)]
     // elementsFromPoint includes the actual painted layer only if it escapes the camera's overflow clipping.
     canvas.style.pointerEvents='auto'
     const corners=[[2,2],[innerWidth-3,2],[2,innerHeight-3],[innerWidth-3,innerHeight-3]]
     const edges=corners.every(([x,y]) => document.elementsFromPoint(x,y).includes(canvas))
     canvas.style.pointerEvents='none'
-    return {alpha,edges, pixels:Array.from(ctx.getImageData(2,2,16,4).data)}
-  })
+    return {grass,lava,edges, pixels:Array.from(ctx.getImageData(2,2,16,4).data)}
+  }, home)
   const before=await probe()
-  expect(before.alpha).toBe(0)
+  expect(before.grass).toEqual([0,0,0])
+  expect(before.lava).toEqual([255,255,255,255])
   expect(before.edges).toBe(true)
   expect(before.pixels[3]).toBe(255)
   await page.waitForTimeout(250)

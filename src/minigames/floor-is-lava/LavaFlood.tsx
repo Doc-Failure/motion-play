@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { containCameraFrame } from '../../game/cameraGeometry'
-import type { HomeZone } from './LavaRound'
+import type { HomeZone } from './LavaIsland'
 
 type CameraFrame = ReturnType<typeof containCameraFrame>
 const art = '/assets/minigames/floor-is-lava/lava.webp'
@@ -104,8 +104,16 @@ export function LavaFlood({ frame, zone, flooded, elapsedMs }: {
     }
     drawBubbles(ctx, width, height, time)
     const sx = width / screenWidth, sy = height / screenHeight
-    ctx.clearRect((frame.left + zone.left * frame.width) * sx, (frame.top + zone.top * frame.height) * sy,
-      (zone.right - zone.left) * frame.width * sx, (zone.bottom - zone.top) * frame.height * sy)
+    ctx.save()
+    ctx.globalCompositeOperation = 'destination-out'
+    ctx.fillStyle = '#000'
+    ctx.beginPath()
+    for (const point of zone.shoreline) {
+      ctx.lineTo((frame.left + point.x * frame.width) * sx, (frame.top + point.y * frame.height) * sy)
+    }
+    ctx.closePath()
+    ctx.fill()
+    ctx.restore()
   }, [elapsedMs, flooded, frame, height, pattern, screenHeight, screenWidth, width, zone])
 
   return flooded ? <canvas ref={canvas} width={width} height={height} aria-hidden="true" className="lava-flood"

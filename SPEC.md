@@ -630,4 +630,4 @@ used when motion is enabled, with a still frame for reduced motion.
 
 ## Desktop Floor Is Lava
 
-One to four people share a single HOME zone on the mirrored camera. Each of five waves marks a new zone and gives the group time to move. At zero, lava fills the area outside HOME. The wave counts for the team when both tracked ankles of every selected player are in the marked area at the deadline. The zone gets wider for larger groups. Everyone plays the next wave.
+One to four people share an illustrated island on the mirrored camera. Each of five waves shows the island for 3.5–5 seconds. At zero the illustration disappears and lava fills the viewport, leaving the camera visible through the outline of the grassy top. The wave counts for the team when both tracked ankles of every selected player are on that grass at the deadline. The island gets wider for larger groups. Everyone plays the next wave.

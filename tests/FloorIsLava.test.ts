@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { homeZone, inside, LavaRound } from '../src/minigames/floor-is-lava/LavaRound'
+import { homeZone, inside } from '../src/minigames/floor-is-lava/LavaIsland'
+import { LavaRound } from '../src/minigames/floor-is-lava/LavaRound'
 import { lavaFeet, type Feet } from '../src/input/LavaFeet'
 import { stickBodies } from '../src/camera/poseTracking'
 
@@ -7,6 +8,17 @@ const at = (x: number, y = .8): Feet => [{ x: x-.012, y }, { x: x+.012, y }]
 const group = [at(.13), at(.24), at(.35), at(.46)]
 
 describe('one shared HOME at zero', () => {
+  it.each([[0,5000], [1,3500]])('holds each island in place until the flood at pressure %s', (pressure, previewMs) => {
+    const game = new LavaRound(1, pressure, () => 0)
+    game.start(0)
+    for (let wave = 0; wave < 5; wave++) {
+      const start = 3000 + wave * (previewMs + 2000)
+      const preview = game.update(start)
+      expect(preview).toMatchObject({wave, flooded:false})
+      expect(game.update(start + previewMs - 1)).toMatchObject({zone:preview.zone, flooded:false})
+      expect(game.update(start + previewMs)).toMatchObject({zone:preview.zone, flooded:true})
+    }
+  })
   it('lets four players cluster on the same side and scores only once', () => {
     const game = new LavaRound(4, 0, () => 0)
     game.start(0)
@@ -19,8 +31,10 @@ describe('one shared HOME at zero', () => {
   })
   it('requires both feet of every player and a recent frame, including at the exact boundary', () => {
     const zone = homeZone(2,0)
-    expect(inside([{x:zone.left,y:.52},{x:zone.right,y:1}],zone)).toBe(true)
-    expect(inside([{x:.2,y:.8},{x:zone.right+.001,y:.8}],zone)).toBe(false)
+    const edge = zone.shoreline[0]
+    expect(inside([edge, {x:.2,y:.8}],zone)).toBe(true)
+    expect(inside([{x:.2,y:.8}, {x:edge.x,y:.70}],zone)).toBe(false)
+    expect(inside(at(.23,.94),zone)).toBe(false) // rock below the grass
     for (const [time,feet,count] of [[7999,[at(.2)],1], [7499,[at(.2),at(.3)],0], [8000,[at(.2),at(.9)],1]] as const) {
       const game = new LavaRound(2,0,()=>0)
       game.start(0)
