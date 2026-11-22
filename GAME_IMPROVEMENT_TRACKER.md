@@ -1,6 +1,6 @@
 # Game improvement tracker
 
-The inventory has 43 catalog records and two additional playable component implementations. Twelve titles are public. Thirty are exercised through the development workshop, and three historical components are exercised in a test-only harness, including the retired Paper Jam. The public Jump Rush URL still starts Kangaroo Race.
+The inventory has 44 catalog records and two additional playable component implementations. Thirteen desktop titles are public. Thirty are exercised through the development workshop, and three historical components are exercised in a test-only harness, including the retired Paper Jam. The public Jump Rush URL still starts Kangaroo Race.
 
 PASS records local, repeatable evidence. Levels and balance use deterministic pressure tests, input tests and real-component results. Visual review includes the active screen, collision or reward feedback, and progression or replay. Performance uses the sampled local machine and synthetic input. Webcam response is BLOCKED throughout for physical-camera validation. The synthetic processing, ownership and collision tests are recorded separately. Run details and visual evidence are in [the progress report](GAMEPLAY_PROGRESS.md).
 
@@ -51,3 +51,11 @@ PASS records local, repeatable evidence. Levels and balance use deterministic pr
 | Shadow Snap (shadow-snap) | catalog | PASS | PASS | PASS | BLOCKED | PASS | PASS | PASS | PASS | PASS | PASS |
 | punch-arena original component | legacy component | PASS | PASS | PASS | BLOCKED | PASS | PASS | PASS | PASS | PASS | PASS |
 | goalkeeper original component | legacy component | PASS | PASS | PASS | BLOCKED | PASS | PASS | PASS | PASS | PASS | PASS |
+
+## Mobile game
+
+Bug Stack is available directly on phones and tablets. Model and synthetic-input checks cover falling pieces, collisions, row clears, scoring, game over, mirrored steering, pinch rotation and swipe drops. Chromium exercised mobile routing, camera recovery, the bundled hand model and touch play. Physical phone camera responsiveness remains unverified.
+
+## Floor Is Lava
+
+A shared HOME zone is judged at zero for one to four players. Model tests check simultaneous occupancy, both ankles, stale and late samples, pause and replay. Browser checks cover full-viewport lava, the transparent HOME cutout, animated flow and reduced motion. Physical group tracking and comfort remain unverified.

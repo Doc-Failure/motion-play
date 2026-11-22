@@ -1,3 +1,4 @@
+import lava from '../assets/intros/floor-is-lava.mp4'
 import {GestureDemo} from './GestureDemo'
 import {keeperInstructions,rallyInstructions} from '../minigames/camera-sports/rallyFormation'
 import snap from '../assets/intros/shadow-snap.mp4'
@@ -16,6 +17,7 @@ import wipe from '../assets/intros/window-wipe.mp4'
 import football from '../assets/intros/keep-ups.mp4'
 import boxing from '../assets/intros/punch-arena.mp4'
 const demos:Record<string,{video:string;instruction:string}>={
+ 'floor-is-lava':{video:lava,instruction:'Everyone get both feet inside the same HOME zone before zero. Step back so the camera sees your feet.'},
  'shadow-snap':{video:snap,instruction:'Step back until your whole body fits. Fill the cutout and tuck in any red edges before the shutter clicks.'},
  'marble-bowling':{video:marble,instruction:'Sweep one hand up toward the pins to roll. Each pin scores 1. Clear a fresh rack in one roll for a +3 strike!'},
  'kangaroo-race':{video:race,instruction:'Your kangaroo runs automatically. Keep your hips in view and jump over obstacles!'},

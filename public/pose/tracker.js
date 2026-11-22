@@ -1,6 +1,24 @@
 /* Isolated optional diagnostic. No network calls except local model/WASM reads. */
 import { FilesetResolver, PoseLandmarker, HandLandmarker } from './vision_bundle.mjs'
 
+function handModel(files, numHands, runningMode = 'IMAGE') {
+  return HandLandmarker.createFromOptions(files, {
+    baseOptions: { modelAssetPath: new URL('./hand_landmarker.task', location.href).href, delegate: 'CPU' },
+    runningMode, numHands,
+    minHandDetectionConfidence: .6, minHandPresenceConfidence: .6, minTrackingConfidence: .6,
+  })
+}
+
+function mapHands(r) {
+  return r.landmarks.map((points, i) => ({ points, confidence: r.handedness[i]?.[0]?.score ?? 0, side: r.handedness[i]?.[0]?.categoryName ?? String(i) }))
+}
+
+window.createLocalHandTracker = async () => {
+  const files = await FilesetResolver.forVisionTasks(new URL('./wasm', location.href).href)
+  const hands = await handModel(files, 1, 'VIDEO')
+  return { detect: (frame, time) => mapHands(hands.detectForVideo(frame, time)), close: () => hands.close() }
+}
+
 window.createLocalPoseTracker = async (players, withHands = false, withMasks = false) => {
   const files = await FilesetResolver.forVisionTasks(new URL('./wasm', location.href).href)
   const tracker = await PoseLandmarker.createFromOptions(files, {
@@ -15,11 +33,7 @@ window.createLocalPoseTracker = async (players, withHands = false, withMasks = f
     if (!withHands || closed) return Promise.resolve(false)
     loading ??= (async () => {
       try {
-        const value = await HandLandmarker.createFromOptions(files, {
-          baseOptions: { modelAssetPath: new URL('./hand_landmarker.task', location.href).href, delegate: 'CPU' },
-          runningMode: 'IMAGE', numHands: players * 2,
-          minHandDetectionConfidence: .6, minHandPresenceConfidence: .6, minTrackingConfidence: .6,
-        })
+        const value = await handModel(files, players * 2)
         if (closed) { value.close(); return false }
         hands = value
         return true
@@ -56,8 +70,7 @@ window.createLocalPoseTracker = async (players, withHands = false, withMasks = f
     enableHands: withHands ? enableHands : undefined,
     detectHands: withHands ? frame => {
       if (!hands) return []
-      const r = hands.detect(frame)
-      return r.landmarks.map((points, i) => ({ points, confidence: r.handedness[i]?.[0]?.score ?? 0, side: r.handedness[i]?.[0]?.categoryName ?? String(i) }))
+      return mapHands(hands.detect(frame))
     } : undefined,
     close: () => { if (closed) return; closed = true; tracker.close(); hands?.close() },
   }

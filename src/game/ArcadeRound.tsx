@@ -15,7 +15,7 @@ export function ArcadeRound({ game, players, children, enabled }: RoundProps) {
   const { level, assist } = round
   const [assistEnabled] = useState(() => new URLSearchParams(window.location.search).get('soloAssist') === '1')
   const solo = players === 1
-  const team = !solo && (['shadow-snap','window-wipe','goalkeeper','pinata-party','monster-defense','car-wash','pizza-maker','tower-builder'].includes(game) || (game === 'net-rally' && players === 3))
+  const team = !solo && (['floor-is-lava','shadow-snap','window-wipe','goalkeeper','pinata-party','monster-defense','car-wash','pizza-maker','tower-builder'].includes(game) || (game === 'net-rally' && players === 3))
 
   if (!enabled) return <>{children}</>
   const pressure = challengePressure(level, solo ? assist : 0)

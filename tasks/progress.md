@@ -3628,3 +3628,15 @@ Visual-only change; no new hardware gameplay claim or deployment.
 ### Consolidate the jumping games — 2026-11-18
 - Kept Kangaroo Race as the single public jumping game: smooth original kangaroo hops, logs/rocks/gaps, three bumps, 45-second distance competition for 1–4 players. Removed Jump Rush from the public catalog (now eleven games) and from the routed production components. Both old Jump Rush URL forms and direct legacy camera initialization resolve to Kangaroo Race. Historical model/view source and tests remain available.
 - Updated catalog expectations, tutorial navigation coverage and legacy-link browser checks. Typecheck/build, lint, 48 focused App/race/input tests and release integrity pass. Artifact a807fbce59221a9dad40 remains within unchanged budgets. All five Chromium checks pass: both legacy links, 1/4-player synthetic-pose gameplay and replay, and desktop/narrow catalog geometry with webcam navigation. No physical webcam validation, commits or deployment.
+
+### Mobile Bug Stack — 2026-11-22
+
+Device selection runs before the party app starts. Phones and tablets load Bug Stack on every hash route. Desktop browsers retain the catalog and tournament. The mobile camera uses the bundled hand model, and touch play is available with or without camera permission. Verification includes the release build, unit tests and Chromium with an emulated phone, synthetic video and injected hand landmarks. Physical-device gesture validation is pending.
+
+### Desktop Floor Is Lava — 2026-11-22
+
+Added the shared HOME zone to the desktop catalog for one to four players. Each of five waves checks both measured ankles of every player at the deadline. Camera coordinates span the full mirrored court so people can gather on the same side. The simulation supports clicking the floor and keyboard movement. The lava and flag island were generated through Kimi WebBridge and are included in the catalog, tutorial and game.
+
+The production build passed the existing release budgets. All 1,466 unit tests and lint passed. Chromium checks covered the catalog, mobile routing, four synthetic people in one zone, flood scoring, pause, replay, and solo simulation. Physical group-camera validation is pending.
+
+The lava flood now fills the desktop viewport, including the space around letterboxed camera video. The original crayon texture flows in waves and bubbles rise and burst. HOME is cut out at its measured camera coordinates. Browser checks sample the surface and the cutout in wide and tall windows, including reduced motion and pause. The production build remains within its release budgets.

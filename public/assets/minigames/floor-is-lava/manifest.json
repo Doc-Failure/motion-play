@@ -1,0 +1,28 @@
+{
+  "game": "floor-is-lava",
+  "source": "ChatGPT web image generation in EyeToy Game Assets via Kimi WebBridge",
+  "prompt": "Generate a landscape 2:1 asset sheet for playpop.party, Floor Is Lava. Two equal square panels meeting exactly halfway, no border or divider. LEFT half is a full-bleed seamless-style top-down field of flowing vermilion and orange molten lava, broken dark red rafts, winding yellow crayon fissures. RIGHT half is one bold die-cut sticker of a tiny tropical green grassy stone island with a sunny yellow home flag on a wooden pole; front three-quarter view, flat mossy top and chunky purple stone sides, centered with 10 percent padding, on an entirely plain pure white background for easy cutout. Match the existing childlike wax-crayon art: uneven charcoal outlines, wax grain, bold imperfect fills. No words, letters, numbers, people, UI, checkerboard or frame. Generate the actual image.",
+  "original": {
+    "file": "docs/visual-audit/floor-is-lava-original.png",
+    "width": 1774,
+    "height": 887,
+    "alpha": false
+  },
+  "assets": [
+    {
+      "file": "lava.webp",
+      "width": 224,
+      "height": 224,
+      "alpha": false,
+      "use": "Left panel. The game blends the tile edges, bends the streaks into a current and adds rising bubbles across the viewport. HOME is cut out in camera coordinates."
+    },
+    {
+      "file": "home.webp",
+      "width": 220,
+      "height": 207,
+      "alpha": true,
+      "use": "Right panel. Outer white background removed. Catalog sticker and HOME flag."
+    }
+  ],
+  "animation": "At zero, the round clock drives the lava flow and bubble bursts. Pausing freezes the surface. Reduced motion shows a still frame. The movement demonstration composites both sprites with two figures walking to the zone."
+}

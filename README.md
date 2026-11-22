@@ -4,6 +4,8 @@ A client-only motion-controlled party game, built with React, TypeScript, Vite,
 and Phaser. Gameplay and camera features are being delivered incrementally from
 the editable planning backlog in `tasks/backlog.json`.
 
+Desktop browsers open the party catalog and tournament. Phones and tablets open Bug Stack, a single-player falling-block game. Prop up the device and choose **Play with camera**. Move one hand sideways to steer, pinch thumb and index finger to rotate, and swipe down to drop. Play by touch is also available.
+
 ## Local development
 
 Requires Node.js 20 or newer.

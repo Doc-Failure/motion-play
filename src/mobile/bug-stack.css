@@ -1,0 +1,45 @@
+body:has(.bug-stack) { margin: 0; color: #242b39; background-color: #faf3de; background-image: repeating-linear-gradient(0deg, transparent 0 25px, #a78c5424 25px 26px); }
+.bug-stack, .bug-stack * { box-sizing: border-box; }
+.bug-stack { --ink: #242b39; --cream: #fff9e6; width: fit-content; max-width: 100%; margin: auto; padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom)); }
+.bug-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.bug-heading small { font-size: .9rem; color: #565448; }
+.bug-heading h1 { font-size: clamp(2rem, 7vw, 3rem); margin: 0; line-height: 1; }
+.bug-heading h1 span { display: inline-block; color: #c64c2b; font-size: .7em; transform: rotate(15deg); margin-left: 5px; }
+.bug-layout { display: grid; grid-template-columns: minmax(0, min(calc(100vw - 108px), calc((100svh - 155px) / 2), 370px)) 76px; gap: 10px; align-items: start; }
+.bug-field { position: relative; }
+.bug-board { width: 100%; aspect-ratio: 1 / 2; border: 4px solid var(--ink); border-radius: 9px 6px 8px 5px; box-shadow: 3px 4px var(--ink); background: #283442; display: grid; grid-template: repeat(20, 1fr) / repeat(10, 1fr); overflow: hidden; }
+.bug-board > i { border: 1px solid #ffffff0e; }
+.bug-stack .tile { position: relative; background: var(--bug); border: 1px solid #223140; border-radius: 28% 32% 22% 24%; box-shadow: inset 1px 2px #ffffff50; }
+.tile::after { content:''; position:absolute; inset:0; background: radial-gradient(circle at 34% 38%, #28303d 0 7%, transparent 9%), radial-gradient(circle at 67% 38%, #28303d 0 7%, transparent 9%); }
+.tile.I { --bug: #68cee2; } .tile.J { --bug: #83a9ef; } .tile.L { --bug: #ffac64; } .tile.O { --bug: #f9cf54; } .tile.S { --bug: #93cc64; } .tile.T { --bug: #c99ae9; } .tile.Z { --bug: #fb897d; }
+.bug-board .shadow-cell { border: 1px dashed #c2d2d7; border-radius: 24%; }
+.bug-rail { display: grid; gap: 10px; text-align: center; }
+.bug-rail section, .bug-rail dl, .bug-preview { background: var(--cream); border: 2px solid var(--ink); border-radius: 6px 10px 6px 9px; padding: 6px 3px; margin: 0; box-shadow: 2px 2px var(--ink); }
+.bug-rail h2, .bug-rail dt { margin: 0; font-size: .86rem; }
+.bug-next { display: grid; justify-content: center; width: 90%; max-width: 62px; margin: 6px auto 3px; }
+.bug-next i { aspect-ratio: 1; }
+.bug-rail dd { margin: 0; overflow-wrap: anywhere; font-size: 1.25rem; font-weight: bold; }
+.bug-rail dd + dt { margin-top: 8px; border-top: 1px dashed #b6ac8d; padding-top: 6px; }
+.bug-preview video { display: block; width: 100%; aspect-ratio: 1; object-fit: contain; transform: scaleX(-1); background: #283442; border-radius: 4px; }
+.bug-preview span { display: block; font-size: .8rem; margin-top: 3px; }
+.bug-dialog { position: absolute; z-index: 1; inset: 46% 7px auto; transform: translateY(-50%); margin: auto; max-width: 290px; padding: clamp(8px, 3vw, 18px); text-align: center; background: var(--cream); border: 3px solid var(--ink); border-radius: 10px 5px 13px 7px; box-shadow: 3px 4px var(--ink); }
+.bug-dialog h2 { font-size: clamp(1.3rem, 5vw, 1.8rem); margin: 0; line-height: 1.05; }
+.bug-dialog p, .bug-footer p { font-size: .92rem; margin: 8px 0; line-height: 1.25; }
+.bug-stack button { color: var(--ink); cursor: pointer; min-height: 44px; padding: 4px 9px; touch-action: manipulation; background: #fffdfa; border: 2px solid var(--ink); border-radius: 6px 9px 6px 5px; box-shadow: 1px 2px var(--ink); font: bold 1rem var(--font-hand); }
+.bug-stack button:active { transform: translateY(1px); box-shadow: none; }
+.bug-stack button:focus-visible { outline: 3px solid #137eae; outline-offset: 2px; }
+.bug-dialog button { display: block; width: 100%; margin-top: 8px; }
+.bug-stack button.primary { background: #f8cf4c; }
+.bug-footer { grid-column: 1 / -1; text-align: center; }
+.bug-footer p { margin: 2px 0; }
+.bug-controls { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.bug-controls button { font: bold 1.5rem system-ui; }
+@media (orientation: landscape) and (max-height: 580px) {
+  .bug-stack { display: flex; align-items: flex-start; gap: 16px; padding: 6px 10px; }
+  .bug-heading { flex-direction: column; align-items: flex-start; }
+  .bug-heading h1 { font-size: 1.8rem; }
+  .bug-layout { grid-template-columns: minmax(160px, calc((100svh - 22px) / 2)) 90px minmax(100px, 144px); }
+  .bug-footer { grid-column: 3; }
+  .bug-controls { grid-template-columns: 1fr 1fr; }
+  .bug-dialog { inset-inline: 2px; padding: 7px; }
+}

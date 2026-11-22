@@ -1,0 +1,6 @@
+import '../styles.css'
+import '../game/game-polish.css'
+import '../game/keyboard-play.css'
+import '../game/camera-play.css'
+import '../design/typography.css'
+export { App as default } from './App'

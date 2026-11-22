@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 
 const star = <path d="m50 12 10 25 27 3-20 18 6 27-23-14-24 13 7-27-19-18 27-2Z" fill="#ffe17a" />
 const drawings: Record<string,ReactNode> = {
+ 'floor-is-lava': <image href="/assets/minigames/floor-is-lava/home.webp" width="100" height="100"/>,
  'shadow-snap': <><path d="m9 32 17-2 7-11 22 1 7 10 26 1-2 46-76 3Z" fill="#efb780"/><circle cx="50" cy="54" r="18" fill="#b8accf"/><circle cx="50" cy="54" r="9" fill="#635c79"/><path d="m68 39 11-1m-1-20 6-9m-1 18 10-3" fill="none"/></>,
  'kangaroo-race': <Kangaroo player={1} height={.5}/>,
  'net-rally': <><path d="M48 22h8v70h-8Z" fill="#ffe17a"/><path d="M40 25h24v66H40ZM40 40h24M40 55h24M40 70h24" fill="none"/><circle cx="21" cy="29" r="16" fill="#74d6df"/><path d="M5 29h32m-16-16v32M70 70l16-17m-10 2 10-2-2 10"/></>,

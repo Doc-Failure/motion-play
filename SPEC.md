@@ -36,7 +36,7 @@ Mouse/keyboard simulation backend for development and automated tests; determini
 Large hand hover buttons; dwell 3 seconds with animated ring, cancel on leave, cooldown to prevent double-activation. Any detected player can choose with the same measured hand; ownership cannot change midway through a hold. Mouse/touch/keyboard fallback always available. Provide visible pause and restart routes.
 
 ## Game mechanics and UX
-Default 60-second round (configurable by game), 3-second countdown, sound cues, score/pop particles, color-coded player identity, clear hazards, results podium. Accessible reduced motion / reduced sound toggles; no rapid flashes, readable text, color + symbol identification, volume/mute. Child-friendly positive feedback. Difficulty presets Easy / Normal / Hard adjust object speed/size and hazard rate but not input threshold silently. Mobile can show unsupported notice if camera/player experience isn't suitable; desktop-first.
+Default 60-second round (configurable by game), 3-second countdown, sound cues, score/pop particles, color-coded player identity, clear hazards, results podium. Accessible reduced motion / reduced sound toggles; no rapid flashes, readable text, color + symbol identification, volume/mute. Child-friendly positive feedback. Difficulty presets Easy / Normal / Hard adjust object speed/size and hazard rate but not input threshold silently. Desktop devices open the party experience. Phones and tablets open Bug Stack for every entry URL, with one-hand camera gestures and optional touch controls.
 
 ## 32-game catalog
 Each entry is a planned game, not a promise that the feature already works. Implementation mechanisms below are hints; precise pose games require advanced tracking.
@@ -627,3 +627,7 @@ runner stays in a fixed track position while obstacles approach. Three bumps
 finish a player's run. Camera/tracking recovery and pause behavior still apply;
 only observed jump input triggers a jump. A four-frame crayon running cycle is
 used when motion is enabled, with a still frame for reduced motion.
+
+## Desktop Floor Is Lava
+
+One to four people share a single HOME zone on the mirrored camera. Each of five waves marks a new zone and gives the group time to move. At zero, lava fills the area outside HOME. The wave counts for the team when both tracked ankles of every selected player are in the marked area at the deadline. The zone gets wider for larger groups. Everyone plays the next wave.

@@ -48,12 +48,27 @@ export interface PoseTracker {
   close():void
 }
 export function createPoseTracker(players:number,signal?:AbortSignal,withHands=false,withMasks=false):Promise<PoseTracker> {
+  return loadLocalTracker(signal, runtime => runtime.createLocalPoseTracker(players, withHands, withMasks))
+}
+
+interface HandTracker {
+  detect(video: HTMLVideoElement, time: number): DetectedHand[]
+  close(): void
+}
+interface LocalRuntime {
+  createLocalHandTracker(): Promise<HandTracker>
+  createLocalPoseTracker(players: number, hands: boolean, masks: boolean): Promise<PoseTracker>
+}
+export function createHandTracker(signal: AbortSignal): Promise<HandTracker> {
+  return loadLocalTracker(signal, runtime => runtime.createLocalHandTracker())
+}
+function loadLocalTracker<T extends { close(): void }>(signal: AbortSignal | undefined, load: (runtime: LocalRuntime) => Promise<T>): Promise<T> {
   // A separate local runtime preserves the main app's connect-src 'none' policy.
   return new Promise((resolve,reject)=>{
     const frame=document.createElement('iframe')
     frame.hidden=true;frame.title='Local body tracking runtime'
     frame.src=`${import.meta.env.BASE_URL}pose/tracker.html`
-    let closed=false,tracker:PoseTracker|undefined
+    let closed=false,tracker:T|undefined
     const close=()=>{
       if(closed)return
       closed=true;window.clearTimeout(timeout);signal?.removeEventListener('abort',abort)
@@ -65,12 +80,12 @@ export function createPoseTracker(players:number,signal?:AbortSignal,withHands=f
     frame.onload=async()=>{
       if(closed)return
       try {
-        const runtime=frame.contentWindow as (Window & {createLocalPoseTracker?:(players:number,withHands?:boolean,withMasks?:boolean)=>Promise<PoseTracker>})|null
-        if(!runtime?.createLocalPoseTracker)throw new Error('Tracking runtime unavailable')
-        const loaded=await runtime.createLocalPoseTracker(players,withHands,withMasks)
+        const runtime = frame.contentWindow as (Window & LocalRuntime) | null
+        if (!runtime) throw new Error('Tracking runtime unavailable')
+        const loaded = await load(runtime)
         if(closed){loaded.close();return}
         tracker=loaded;window.clearTimeout(timeout)
-        resolve({silhouettes:loaded.silhouettes,detect:(video,time,aspect)=>loaded.detect(video,time,aspect),enableHands:loaded.enableHands?()=>loaded.enableHands!():undefined,detectHands:loaded.detectHands?(frame)=>loaded.detectHands!(frame):undefined,close})
+        resolve({ ...loaded, close })
       }catch(error){if(!closed){close();reject(error)}}
     }
     if(signal?.aborted){abort();return}
