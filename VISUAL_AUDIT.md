@@ -226,3 +226,11 @@ The home title backing and shared paper artwork also use white, including when
 the camera is unavailable. Paper Dojo's intro card and embedded video were
 checked in Chromium; see `white-home-after.png` and
 `ninja-white-tutorial-after.png`. The deployment must be updated separately.
+
+## Paper Dojo ranked costumes and buildings
+
+The four-level capture shows the playable Leaf Scout, Lantern Runner, Frost Guard and Golden Crane Master with their matching dojos. The health display combines a bar and numeric HP. Dots beneath armored ninjas show remaining hits. The catalog sticker and tutorial use the Leaf Scout cutout. The solo captures use camera-free controls.
+
+[Previous Paper Dojo](docs/visual-audit/paper-dojo-attack-after.png) · [Four arcade levels](docs/visual-audit/paper-dojo-four-levels.webp) · [Original generated atlas](docs/visual-audit/paper-dojo-ranks-original.png)
+
+The four-player capture shows P3 at 2/5 after a bump while the other lanes retain 3/5. The narrow Chromium layout kept all four numeric bars visible. These captures use synthetic camera input. [Four-player health bars](docs/visual-audit/paper-dojo-health.webp)

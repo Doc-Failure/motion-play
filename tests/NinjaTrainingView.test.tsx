@@ -37,7 +37,11 @@ describe('original Paper Dojo view',()=>{
     const tick=clock();render(<NinjaTraining playerCount={1} onExit={vi.fn()}/>)
     tick(4100)
     fireEvent.click(screen.getByRole('button',{name:'Swat Player 1 ninja 1'}))
-    tick(21500)
+    for(let t=4500;t<21000;t+=500){
+      tick(t)
+      document.querySelectorAll<HTMLButtonElement>('.dojo-ninja--leap').forEach(n=>fireEvent.click(n))
+    }
+    tick(21700)
     expect(screen.queryByRole('button',{name:/bamboo/i})).not.toBeInTheDocument()
     const late=document.querySelector<HTMLButtonElement>('.dojo-ninja--leap')!
     expect(late).toBeEnabled()
@@ -79,7 +83,7 @@ describe('Paper Dojo obstacle simulation',()=>{
     const tick=clock();render(<NinjaTraining playerCount={1} onExit={vi.fn()}/>);tick(8000)
     fireEvent.click(screen.getByRole('button',{name:'Player 1 obstacle: avoid'}))
     expect(screen.getByText('BUMP!')).toBeVisible()
-    expect(screen.getByText(/Swat ninjas · keep clear of marked obstacles/)).toBeVisible()
+    expect(screen.getByText(/Leaf Scout · 1 hit/)).toBeVisible()
     tick(9000)
     expect(screen.queryByRole('button',{name:/obstacle/})).not.toBeInTheDocument()
   })

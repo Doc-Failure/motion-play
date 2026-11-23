@@ -631,3 +631,11 @@ used when motion is enabled, with a still frame for reduced motion.
 ## Desktop Floor Is Lava
 
 One to four people share an illustrated island on the mirrored camera. Each of five waves shows the island for 3.5–5 seconds. At zero the illustration disappears and lava fills the viewport, leaving the camera visible through the outline of the grassy top. The wave counts for the team when both tracked ankles of every selected player are on that grass at the deadline. The island gets wider for larger groups. Everyone plays the next wave.
+
+## Desktop Jenga
+
+One to four players take turns with one six-layer wooden tower. Hold a hand on a block below the highest complete layer, slide sideways to pull it, then hold over an empty slot on top. Pointer and keyboard players can select both blocks and slots directly. Each completed, balanced turn earns one point toward the group’s goal. The round ends when the tower tips or the clock expires. Later levels increase the goal and shorten the clock.
+
+## Paper Dojo campaign
+
+Paper Dojo has four 40-second arcade levels. A player who reaches the score goal unlocks the next dojo for the group. The Leaf Scout, Lantern Runner, Frost Guard and Golden Crane Master take one, two, three and four spaced swats respectively. Travel speeds rise with rank and wave. A full defeat earns points and advances the streak. Each player begins each level with five health. A breach or contact with an active obstacle costs one health. Players at zero sit out while the other lanes continue. The round ends at the time limit or when everyone is out. Clearing the fourth goal completes the campaign.

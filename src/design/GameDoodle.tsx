@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 
 const star = <path d="m50 12 10 25 27 3-20 18 6 27-23-14-24 13 7-27-19-18 27-2Z" fill="#ffe17a" />
 const drawings: Record<string,ReactNode> = {
+ jenga: <>{[0,1,2,3,4].map(row=><g key={row} transform={`translate(${row===2?-8:0} ${76-row*14})`}><path d="m20 0 52 1 8-5-52-1Z" fill="#ffdfa2"/><path d="m20 0 52 1 1 13-54-2Z" fill={row%2?'#e9af71':'#f5ca8a'}/><path d="m72 1 8-5 1 13-8 6Z" fill="#c78b58"/>{row%2===0?<path d="m37 2-1 10m18-10 1 11"/>:<path d="m26 7 27 1" stroke="#a37551" strokeWidth="2"/>}</g>)}</>,
  'floor-is-lava': <image href="/assets/minigames/floor-is-lava/home.webp" width="100" height="100"/>,
  'shadow-snap': <><path d="m9 32 17-2 7-11 22 1 7 10 26 1-2 46-76 3Z" fill="#efb780"/><circle cx="50" cy="54" r="18" fill="#b8accf"/><circle cx="50" cy="54" r="9" fill="#635c79"/><path d="m68 39 11-1m-1-20 6-9m-1 18 10-3" fill="none"/></>,
  'kangaroo-race': <Kangaroo player={1} height={.5}/>,
@@ -15,7 +16,7 @@ const drawings: Record<string,ReactNode> = {
   'punch-arena': <><path d="m25 12 49 3 3 35-53-2Z" fill="#e9bb82"/><path d="m31 24 37 1-1 10-36-1Z" fill="#29313c"/><path d="m28 52 45-1 5 36-55 1Z" fill="#dca875"/><circle cx="15" cy="53" r="13" fill="#ed8b7d"/><circle cx="85" cy="43" r="13" fill="#bfa6e4"/><path d="m38 41 24 1M43 16l1-9m-7 72 24-1"/></>,
   'silk-squad': <><path d="M30 38 12 22 6 40m24 9L9 52 5 70m65-32 18-16 6 18M70 49l21 3 4 18" fill="none"/><ellipse cx="50" cy="62" rx="27" ry="25" fill="#7bd3c4"/><path d="M25 32q25-16 50 0v21q-25 15-50 0Z" fill="#526a86"/><circle cx="40" cy="42" r="5" fill="#d5fff7"/><circle cx="60" cy="42" r="5" fill="#d5fff7"/><path d="M24 65h52M27 75h46" stroke="#fff8e9"/></>,
   'rocket-rumble': <><path d="m38 30 12-20 13 20v43H38Z" fill="#f8a4cf"/><path d="m38 58-14 20 14-6m25-14 14 20-14-6" fill="#72e4ef"/><path d="m43 79 7 15 7-15M16 17v20m-10-10h20m57 10v20m-10-10h20" stroke="#f5c847"/><circle cx="50" cy="45" r="8" fill="#fff2d6"/></>,
-  'ninja-training': <><path d="m26 23 13-14 12 11 22-6 13 18-5 28-28 11-28-15Z" fill="#477f8e"/><path d="m30 34 47-5 2 16-46 5Z" fill="#fff2c9"/><path d="m38 40 7 1m16-3 8-2"/><path d="m23 64 58 2-2 23-56-2Z" fill="#477f8e"/><path d="m22 73 59 2-2 8-56-2Z" fill="#f3c966"/><path d="m79 56 17-9-5 23-15-3" fill="#f3c966"/></>,
+  'ninja-training': <image href="/assets/minigames/paper-dojo/leaf-ready.webp" x="4" y="4" width="92" height="92"/>,
   'bubble-battle': <><circle cx="43" cy="52" r="27" fill="#a1e1ef"/><circle cx="75" cy="26" r="14" fill="#d8c4ef"/><path d="M28 43q1-10 12-11M68 21l3-3" stroke="#fffdf5" strokeWidth="7"/></>,
   'whack-a-mole': <><ellipse cx="50" cy="78" rx="36" ry="11" fill="#725640"/><path d="M26 75V46c0-35 49-35 49 0v29" fill="#b98a62"/><path d="M37 47h1m24 0h1" strokeWidth="7"/><ellipse cx="50" cy="61" rx="14" ry="10" fill="#ebc5a0"/><path d="m45 61 5 4 5-4"/></>,
   'meteor-smash': <><path d="m17 70 40-55-7 28 31-27-15 42 24-9-36 37Z" fill="#ffd36c"/><circle cx="36" cy="67" r="23" fill="#cd8064"/><path d="m27 57 8-4m5 19 6-3"/></>,

@@ -6,6 +6,13 @@ import { getGameBySlug } from '../src/app/catalog'
 const input=(x:number,y:number,timestamp:number,playerId:1|2|3|4=1):MotionInputEvent=>({playerId,kind:'MOTION_HIT',x,y,timestamp,confidence:1})
 const game=(count:1|2|3|4=1)=>new NinjaTrainingModel({countdownMs:0,playerCount:count})
 
+// Keep a player alive while advancing to the late-wave case being exercised.
+function defendUntil(model:NinjaTrainingModel, end:number, start=0) {
+  for(let t=start+250;t<end-1500;t+=250) {
+    for(const ninja of model.update(t).ninjas.filter(n=>n.pose==='leap'))model.hit(input(ninja.x,ninja.y,t,ninja.playerId))
+  }
+}
+
 describe('Paper Dojo simulation',()=>{
   it('choreographs runs, wind-ups and arcs from alternating tower sides',()=>{
     const m=game();expect(m.start(0).ninjas[0].pose).toBe('run')
@@ -57,11 +64,12 @@ describe('Paper Dojo simulation',()=>{
   })
   it.each([18500,22500,42500,46500])('keeps ninjas attackable through the former bonus windows at %i ms',at=>{
     const m=game();m.start(0)
+    defendUntil(m,at)
     const state=m.update(at),n=state.ninjas.find(n=>n.pose==='leap')!
     expect(n).toBeDefined()
     const hit=m.hit(input(n.x,n.y,at))
-    expect(hit.hits[1]).toBe(1)
-    expect(hit.scores[0].score).toBe(state.scores[0].score+10)
+    expect(hit.hits[1]).toBe(state.hits[1]+1)
+    expect(hit.scores[0].score).toBeGreaterThan(state.scores[0].score)
     expect(hit.effects.at(-1)?.kind).toBe('hit')
   })
   it('freezes trajectories and effects through a long pause and rejects paused captures',()=>{
@@ -76,7 +84,7 @@ describe('Paper Dojo simulation',()=>{
     const m=new NinjaTrainingModel({countdownMs:0,roundDurationMs:10000});m.start(0)
     expect(m.update(10000).phase).toBe('results')
     const reset=m.start(11000);expect(reset.scores[0].score).toBe(0);expect(reset.bestCombos[1]).toBe(0);expect(reset.effects).toEqual([])
-    const normal=game();normal.start(0);expect(normal.update(14000).ninjas.some(n=>n.flightMs<2500)).toBe(true)
+    const normal=game();normal.start(0);expect(normal.update(8000).ninjas.some(n=>n.flightMs<2500)).toBe(true)
   })
 })
 
@@ -107,8 +115,10 @@ describe('MIXED hit-and-avoid input',()=>{
   it('keeps BODY_MOVE separate from strikes throughout the round',()=>{
     const m=game();m.start(0);const n=m.update(1100).ninjas[0]
     expect(m.hit({...input(n.x,n.y,1100),kind:'BODY_MOVE'}).hits[1]).toBe(0)
+    defendUntil(m,18500,1100)
+    const before=m.update(18500).hits[1]
     const late=m.update(18500).ninjas.find(n=>n.pose==='leap')!
-    expect(m.hit({...input(late.x,late.y,18500),kind:'BODY_MOVE'}).hits[1]).toBe(0)
+    expect(m.hit({...input(late.x,late.y,18500),kind:'BODY_MOVE'}).hits[1]).toBe(before)
   })
   it('matches obstacle collision bounds to cqmin in tall lanes',()=>{
     const m=new NinjaTrainingModel({countdownMs:0,aspectRatio:.25});m.start(0)
@@ -143,6 +153,7 @@ describe('MIXED hit-and-avoid input',()=>{
   })
   it('keeps late-round obstacle warnings, clears results and resets contact state on replay',()=>{
     const m=game();m.start(0);m.hit(input(.3,.62,5000))
+    defendUntil(m,22500,5000)
     expect(m.update(22500).obstacles).toHaveLength(1)
     const final=m.update(60000)
     expect(final.obstacles).toEqual([])
@@ -178,5 +189,65 @@ describe('Ninja Training integration',()=>{
     const centroid=motion.zones.find(z=>z.playerId===count)!.centroid!
     const contact=m.hit({...motion.positions![0],...centroid,kind:'BODY_MOVE'})
     expect([1,2,3,4].map(id=>contact.contacts[id as 1|2|3|4])).toEqual([1,2,3,4].map(id=>id===count?1:0))
+  })
+})
+
+
+describe('Dojo ranks and health',()=>{
+  it.each([1,2,3,4])('takes %i distinct swats, awarding the defeat once',level=>{
+    const model=new NinjaTrainingModel({level,countdownMs:0})
+    model.start(0)
+    for(let i=0;i<level;i++){
+      const time=950+i*280
+      const n=model.update(time).ninjas.find(n=>n.id===1)!
+      expect(n.hp).toBe(level-i)
+      const event=input(n.x,n.y,time)
+      const hit=model.hit(event)
+      if(i<level-1){
+        expect(hit.effects.at(-1)?.kind).toBe('armor')
+        expect(hit.scores[0].score).toBe(0)
+        expect(model.hit({...event,x:n.x+.001}).ninjas.find(n=>n.id===1)?.hp).toBe(n.hp-1)
+      } else {
+        expect(hit.scores[0].score).toBe(10)
+        expect(hit.hits[1]).toBe(1)
+      }
+    }
+  })
+  it('shortens flight on every rank and permits four camera hits even in the last wave',()=>{
+    const flights=[1,2,3,4].map(level=>new NinjaTrainingModel({level,countdownMs:0}).start(0).ninjas[0].flightMs)
+    expect(flights).toEqual([...flights].sort((a,b)=>b-a))
+    expect(new Set(flights).size).toBe(4)
+    const m=new NinjaTrainingModel({level:4,countdownMs:0,pressure:1})
+    m.start(0)
+    for(let t=250;t<=38000;t+=280) {
+      for(const n of m.update(t).ninjas.filter(n=>n.pose==='leap'))m.hit(input(n.x,n.y,t))
+    }
+    const active=m.update(38100)
+    expect(active.phase).toBe('playing')
+    expect(active.ninjas[0].flightMs).toBeGreaterThan(4*280)
+    expect(active.scores[0].score).toBeGreaterThanOrEqual(95)
+  })
+  it('retires only the depleted lane, ends when everyone is out, and restores health on replay',()=>{
+    const m=game(2);m.start(0)
+    for(let t=250;t<=13000;t+=250){
+      for(const n of m.update(t).ninjas.filter(n=>n.playerId===2&&n.pose==='leap'))m.hit(input(n.x,n.y,t,2))
+    }
+    const state=m.update(13100)
+    expect(state.health[1]).toBe(0)
+    expect(state.health[2]).toBeGreaterThan(0)
+    expect(state.phase).toBe('playing')
+    expect(state.ninjas.every(n=>n.playerId===2)).toBe(true)
+    expect(state.obstacles.every(o=>o.playerId===2)).toBe(true)
+    expect(m.update(30000).phase).toBe('results')
+    expect(m.start(31000).health).toMatchObject({1:5,2:5})
+  })
+  it('charges one health for an obstacle, preserves it through pause and restores it on a new round',()=>{
+    const m=game(2);m.start(0);const before=m.update(4900)
+    const event=input(.3,.62,5000,2)
+    const after=m.hit(event)
+    expect(after.health[2]).toBe(before.health[2]-1)
+    expect(after.health[1]).toBe(before.health[1])
+    expect(m.hit({...event,timestamp:5100}).health).toEqual(after.health)
+    expect(m.pause(5150).health).toEqual(m.resume(15000).health)
   })
 })

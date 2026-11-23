@@ -120,3 +120,9 @@ The original 1774 × 887 opaque crayon sheet was generated in the EyeToy Game As
 [Original sheet](floor-is-lava-original.png) · [Exact generation prompt, dimensions and transparency](../../public/assets/minigames/floor-is-lava/manifest.json)
 
 The [four-player countdown](floor-is-lava-countdown.png) and [flood at zero](floor-is-lava-flood.png) show the same HOME cutout before and after the wave. Both captures use synthetic camera input.
+
+## Paper Dojo ranks · 2026-11-23
+
+ChatGPT Images generated the four-column atlas in the EyeToy Game Assets conversation through Kimi WebBridge. The downloaded PNG measures 1448 × 1086 and has real alpha. The ready and airborne rows supply eight right-facing poses. The bottom row supplies the bamboo pavilion, lantern gatehouse, frost lookout and crane pagoda. Each building frames the shared camera on both sides. The twelve trimmed WebPs retain transparency. The game uses the airborne pose for the simulated defeat tumble. The health meter and remaining-hit labels are accessible UI.
+
+[Downloaded atlas](paper-dojo-ranks-original.png) · [Filenames, dimensions, generation prompt and source](../../public/assets/minigames/paper-dojo/manifest.json)

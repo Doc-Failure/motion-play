@@ -3645,3 +3645,19 @@ The lava flood now fills the desktop viewport, including the space around letter
 Each Floor Is Lava wave now previews the flag island at playable size. At zero the artwork disappears and the lava leaves only the irregular grass footprint clear. Both ankles must be within that shoreline. The movement demo and instructions show the same sequence.
 
 Seven model tests and four Chromium tests passed, including the transition, lava pixels around the shore in two window shapes, solo clicks and synthetic four-player scoring. Lint and the release build passed. Updated the countdown and flood captures in the visual audit. Physical webcam play remains unverified.
+
+### Desktop Jenga — 2026-11-23
+
+Added Jenga to the desktop catalog with a movement demo, alternating wooden layers, hand-controlled pulls and placements, and pointer and keyboard play. Each safe restack earns one point toward the shared arcade goal. The tower appears in the active player’s lane and checks the weight above every layer after both moves. Removed the unused Quick Play homepage background reference to keep the release within its asset budget.
+
+Model and geometry tests exercise turn ownership, tower stability, input continuity, pause, timeout and replay. Chromium exercised the solo catalog-to-results flow, level advancement, replay and a four-player turn with synthetic hand observations. Physical webcam play is pending.
+
+The final run passed 1,478 unit tests, five focused Chromium checks, lint, the production build and release integrity. The browser checks included the Jenga visual audit, render cadence and catalog fit on a narrow screen.
+
+### Paper Dojo campaign — 2026-11-23
+
+Replaced the single arcade opponent with four ranks, each with a new outfit and dojo, shorter flights and one more required hit. The shared goal display uses the existing per-player qualification scores of 35, 55, 75 and 95. Level four ends the campaign. Each player begins with five HP. Missed ninjas and active obstacles cause damage, and the other players can finish after one player is knocked out.
+
+Kimi WebBridge generated a transparent twelve-cutout atlas in the EyeToy Game Assets conversation. The four sets supply gameplay, the catalog sticker and the movement demonstration. The original sheet and exact prompt are recorded in the asset manifest. Excluding an unused homepage Settings background kept the new art within the release budget.
+
+All 1,485 unit tests, six focused Chromium checks, lint, the production build and release integrity passed. Chromium played through all four levels, checked the loaded artwork, pause and replay, synthetic motion hits, four-player health isolation and narrow layout. Screenshots are linked from the visual audit. Physical webcam play remains pending.

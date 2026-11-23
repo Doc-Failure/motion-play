@@ -26,7 +26,7 @@ export const catalogGames: readonly CatalogGame[] = [
   game(16, 'laser-escape', 'Laser Escape', 'Steer a motion-center marker clear of sweeping laser lines.', 'Move & Survive', 'BODY_MOVE', 'Hard', 'Competitive', ['#e45b9d', '#18334a'], true),
   game(17, 'dance-challenge', 'Dance Challenge', 'Match each simple movement cue to keep the beat.', 'Move & Survive', 'BODY_MOVE', 'Normal', 'Competitive', ['#e45b9d', '#7557a8'], true),
   game(18, 'freeze', 'Freeze!', 'Move with the music, then hold still when it stops.', 'Move & Survive', 'FREEZE', 'Easy', 'Competitive', ['#66c7df', '#7557a8'], true),
-  game(19, 'ninja-training', 'Paper Dojo', 'Swat paper ninjas and keep clear of marked obstacles.', 'Move & Survive', 'MIXED', 'Normal', 'Competitive', ['#477f8e', '#f3c966'], true),
+  game(19, 'ninja-training', 'Paper Dojo', 'Swat your way through four dojos. Break tougher ninja armor and protect your five health points!', 'Move & Survive', 'MIXED', 'Normal', 'Competitive', ['#477f8e', '#f3c966'], true),
   game(20, 'jump-rush', 'Jump Rush', 'You control the kangaroo. Jump to clear the incoming hurdles!', 'Move & Survive', 'BODY_MOVE', 'Normal', 'Competitive', ['#72b779', '#f28c46'], true),
   game(21, 'window-wipe', 'Window Wipe', 'Sweep away soap, scrub the ink and clean one big window together.', 'Clean & Create', 'MOTION_BRUSH', 'Easy', 'Cooperative', ['#66c7df', '#fffaf0'], true),
   game(22, 'paint-splash', 'Paint Splash', 'Cover as much of your canvas with paint as you can.', 'Clean & Create', 'MOTION_BRUSH', 'Easy', 'Competitive', ['#e45b9d', '#f5c847'], true),
@@ -52,12 +52,13 @@ export const catalogGames: readonly CatalogGame[] = [
   game(42, 'marble-bowling', 'Marble Bowling', 'Sweep one hand upward toward the pins. Knock down as many as you can in three rolls!', 'Skill & Precision', 'HAND_SWIPE', 'Easy', 'Competitive', ['#e8bd87','#79c9ce'], true),
   game(43, 'shadow-snap', 'Shadow Snap', 'Fit your whole body through the cardboard cutout. Fill the shape and tuck in the red edges!', 'Clean & Create', 'BODY_MOVE', 'Easy', 'Cooperative', ['#a69ed2','#edb56b'], true),
   game(44, 'floor-is-lava', 'Floor Is Lava', 'Get everyone onto the island before it disappears. Only the grass stays safe when the lava comes!', 'Move & Survive', 'BODY_MOVE', 'Easy', 'Cooperative', ['#ef7946', '#8fd76e'], true),
+  game(45, 'jenga', 'Jenga', 'Take turns pulling a wooden block and stacking it on top. How high can you build together?', 'Skill & Precision', 'HAND_POSITION', 'Easy', 'Cooperative', ['#efbd79', '#77b9ac'], true),
 ]
 
 export const getGameBySlug = (slug: string) => catalogGames.find((entry) => entry.slug === slug)
 
 // The focused public set. Other implementations stay available for later refinement.
-export const visibleGameSlugs = ['ninja-training','window-wipe','punch-arena','keep-ups','ghost-catcher','ufo-juggler','six-hoops','goalkeeper','net-rally','kangaroo-race','marble-bowling','shadow-snap','floor-is-lava'] as const
+export const visibleGameSlugs = ['ninja-training','window-wipe','punch-arena','keep-ups','ghost-catcher','ufo-juggler','six-hoops','goalkeeper','net-rally','kangaroo-race','marble-bowling','shadow-snap','floor-is-lava','jenga'] as const
 export const visibleCatalogGames: readonly CatalogGame[] = visibleGameSlugs.flatMap(slug => {
   const entry = getGameBySlug(slug)
   return entry?.available ? [entry] : []

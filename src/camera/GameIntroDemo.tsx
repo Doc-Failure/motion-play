@@ -1,3 +1,4 @@
+import jenga from '../assets/intros/jenga.mp4'
 import lava from '../assets/intros/floor-is-lava.mp4'
 import {GestureDemo} from './GestureDemo'
 import {keeperInstructions,rallyInstructions} from '../minigames/camera-sports/rallyFormation'
@@ -17,6 +18,7 @@ import wipe from '../assets/intros/window-wipe.mp4'
 import football from '../assets/intros/keep-ups.mp4'
 import boxing from '../assets/intros/punch-arena.mp4'
 const demos:Record<string,{video:string;instruction:string}>={
+ jenga:{video:jenga,instruction:'Hold on a lower block, then slide your hand sideways to pull. Hold over a top slot to stack it. Keep the tower balanced!'},
  'floor-is-lava':{video:lava,instruction:'Keep both feet in view. Step onto the grass before the island disappears and the lava arrives!'},
  'shadow-snap':{video:snap,instruction:'Step back until your whole body fits. Fill the cutout and tuck in any red edges before the shutter clicks.'},
  'marble-bowling':{video:marble,instruction:'Sweep one hand up toward the pins to roll. Each pin scores 1. Clear a fresh rack in one roll for a +3 strike!'},
@@ -28,7 +30,7 @@ const demos:Record<string,{video:string;instruction:string}>={
  'ufo-juggler':{video:ufos,instruction:'Wave to spin saucers up. Coast when hot. Rescue them into orbit!'},
  'ghost-catcher':{video:ghosts,instruction:'Rub ghosts until they pop. Swat bats. Five escapes and you’re out!'},
  'bubble-battle':{video:bubbles,instruction:'Pop the bubbles. Keep clear of bombs.'},
- 'ninja-training':{video:dojo,instruction:'Swat the ninjas. Dodge marked obstacles.'},
+ 'ninja-training':{video:dojo,instruction:'Swat leaping ninjas until they tumble. A ninja that gets through or a marked obstacle you touch costs 1 HP.'},
  'window-wipe':{video:wipe,instruction:'Sweep away soap. Rub the ink spots.'},
  ...(import.meta.env.DEV?{'rocket-rumble':{video:'/src/assets/intros/rocket-rumble.mp4',instruction:'Tag matching rockets. Hit the switch.'}}:{}),
  'keep-ups':{video:football,instruction:'Keep the ball up. Three lives — watch for wind!'},

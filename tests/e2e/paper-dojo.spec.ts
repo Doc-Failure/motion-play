@@ -19,7 +19,7 @@ test('original towers and articulated ninjas support continuous play, pause and 
   await expect(ninja).toBeEnabled()
   const attack=ninja.locator('[data-sprite="attack"]')
   await expect(attack).toBeVisible()
-  await expect(attack).toHaveCSS('background-image',/ninja-attack\.webp/)
+  await expect(attack).toHaveAttribute('src',/leaf-leap\.webp/)
   const before=await ninja.getAttribute('style')
   await page.clock.runFor(200)
   expect(await ninja.getAttribute('style')).not.toBe(before)
@@ -35,7 +35,10 @@ test('original towers and articulated ninjas support continuous play, pause and 
   await expect(page.locator('.dojo-game header dd').last()).toHaveText(remaining!)
   await page.getByRole('button',{name:'Resume round'}).click()
   // Ninjas continue through the former bonus window after excluding paused time.
-  await page.clock.runFor(18000)
+  for(let step=0;step<18;step++){
+    await page.clock.fastForward(1000)
+    if(step<16)await page.locator('.dojo-ninja--leap:enabled').evaluateAll(nodes=>nodes.forEach(node=>(node as HTMLButtonElement).click()))
+  }
   await expect(page.getByRole('button',{name:/bamboo/i})).toHaveCount(0)
   await expect(page.locator('.dojo-ninja--leap').first()).toBeEnabled()
   await page.locator('.dojo-ninja--leap').first().focus();await page.keyboard.press('Enter')
@@ -75,7 +78,7 @@ test('camera movement swats the visible ninja and the real audio engine emits th
 test('four-player lanes retain a clear camera center and one consistent local font',async ({page,installMockCamera})=>{
   await installMockCamera({person:true});await startDojo(page,4)
   await page.waitForTimeout(4300);await page.evaluate(()=>document.fonts.ready)
-  await expect(page.locator('.dojo-tower')).toHaveCount(8)
+  await expect(page.locator('.dojo-tower')).toHaveCount(2)
   await expect(page.getByRole('img',{name:'Detected human stick figure'})).toHaveCount(0)
   await expect(page.locator('.game-wireframe-toggle')).toHaveCount(0)
   await expect(page.locator('.camera-arena .body-test')).toBeHidden()
@@ -102,9 +105,12 @@ test('marked obstacles warn first and charge only the contacted player once',asy
   const scores=page.locator('.dojo-game header dd')
   const before=Number(await scores.nth(2).textContent())
   const other=await scores.first().textContent()
+  const health=page.getByRole('meter',{name:'Player 3 health'})
+  const hp=Number(await health.getAttribute('aria-valuenow'))
   await hazard.focus();await page.keyboard.press('Enter')
   await expect(scores.nth(2)).toHaveText(String(before-10))
   await expect(scores.first()).toHaveText(other!)
+  await expect(health).toHaveAttribute('aria-valuenow',String(hp-1))
   await expect(page.getByRole('button',{name:'Player 3 obstacle: bumped'})).toBeDisabled()
   await page.screenshot({path:test.info().outputPath('dojo-obstacle.png')})
 })

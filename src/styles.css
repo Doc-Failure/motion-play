@@ -227,7 +227,7 @@ a { color: inherit; }
 .reference-home .action-grid { position: relative; z-index: 2; gap: .2rem; padding-inline: clamp(4rem, 9vw, 8.5rem); }
 .reference-home .action-card { min-height: 0; aspect-ratio: 1.38; padding: 1.8rem 1.5rem 1.25rem; overflow: visible; border: 0; border-radius: 0; box-shadow: none; background-color: transparent; background-position: center; background-repeat: no-repeat; background-size: 100% 100%; }
 .reference-home .action-card::before { display: none; }
-.reference-home .action-card--yellow { background-image: url('./assets/home/quick-play-panel.webp'); }.reference-home .action-card--purple { background-image: url('./assets/home/tournament-panel.webp'); }.reference-home .action-card--blue { background-image: url('./assets/home/catalog-panel.webp'); }.reference-home .action-card--green { background-image: url('./assets/home/settings-panel.webp'); }
+.reference-home .action-card--purple { background-image: url('./assets/home/tournament-panel.webp'); }.reference-home .action-card--blue { background-image: url('./assets/home/catalog-panel.webp'); }
 .reference-home .action-card[href]:hover { box-shadow: none; transform: translateY(-.35rem) rotate(-1deg) scale(1.02); }
 .reference-home .action-card:nth-child(even) { transform: rotate(1deg); }
 .reference-home .action-card h3 { text-shadow: 0 1px rgb(255 255 255 / .45); }

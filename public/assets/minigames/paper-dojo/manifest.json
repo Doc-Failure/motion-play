@@ -1,0 +1,81 @@
+{
+  "source": "EyeToy Game Assets · ChatGPT Images via Kimi WebBridge",
+  "conversation": "https://chatgpt.com/c/6afdb368-b440-83eb-8bea-67b7fedbb8eb",
+  "original": "docs/visual-audit/paper-dojo-ranks-original.png",
+  "originalSize": "1448x1086 RGBA",
+  "prompt": "Generate the actual game sprite atlas for Paper Dojo at playpop.party. Landscape 4:3 sheet, exactly FOUR equal columns and THREE equal rows, twelve separate cutout stickers each fully inside its own cell with generous white gutters. Transparent background if possible, otherwise perfectly flat solid pure white. No visible grid lines, panels, captions, lettering, numbers, scenery or shadows. Hand-drawn wax crayon on paper, uneven chunky charcoal outlines, bright imperfect coloring, simple bold silhouettes legible at tiny scale. The four columns are four visually distinct ranks, with a matching building in each column:\nColumn 1: Leaf Scout, mint-green hood, leaf-shaped scarf, pointy ears on hood; bamboo training pavilion with green roof.\nColumn 2: Lantern Runner, vermilion-orange hood and round lantern-shaped shoulder pads, long ribbon; tall red timber gatehouse with swooping roof and two yellow lanterns.\nColumn 3: Frost Guard, blue-white hood, square padded icy armor and broad shoulders; blue stone lookout with snowy stacked roofs and stout masonry.\nColumn 4: Golden Crane Master, deep purple hood, golden folded-crane crest and winged cape; ornate plum-and-gold three-story pagoda with upturned eaves and a crane finial.\nTOP row = four different friendly masked ninjas in full-body ready crouches facing RIGHT. MIDDLE row = the same four outfits in the exact same order, full-body airborne leaping to the RIGHT with knees tucked or legs outstretched. No weapons. BOTTOM row = ONLY the four matching dojo buildings in the exact same order, tall freestanding buildings, front facing, ground-to-roof isolated silhouette, three visible horizontal platforms where characters could launch. Each cell contains one object only. No people in the building row. Keep the same scale and alignment for the eight ninja sprites; leave space between every object for slicing. No UI, no logos. Render the sprite sheet as an image.",
+  "assets": [
+    {
+      "file": "leaf-ready.webp",
+      "size": "196x167",
+      "alpha": true,
+      "use": "Run-in and wind-up"
+    },
+    {
+      "file": "leaf-leap.webp",
+      "size": "196x169",
+      "alpha": true,
+      "use": "Airborne attack and defeat tumble"
+    },
+    {
+      "file": "leaf-dojo.webp",
+      "size": "276x344",
+      "alpha": true,
+      "use": "Shared left and right scenery"
+    },
+    {
+      "file": "lantern-ready.webp",
+      "size": "196x171",
+      "alpha": true,
+      "use": "Run-in and wind-up"
+    },
+    {
+      "file": "lantern-leap.webp",
+      "size": "196x169",
+      "alpha": true,
+      "use": "Airborne attack and defeat tumble"
+    },
+    {
+      "file": "lantern-dojo.webp",
+      "size": "276x344",
+      "alpha": true,
+      "use": "Shared left and right scenery"
+    },
+    {
+      "file": "frost-ready.webp",
+      "size": "196x171",
+      "alpha": true,
+      "use": "Run-in and wind-up"
+    },
+    {
+      "file": "frost-leap.webp",
+      "size": "196x169",
+      "alpha": true,
+      "use": "Airborne attack and defeat tumble"
+    },
+    {
+      "file": "frost-dojo.webp",
+      "size": "276x344",
+      "alpha": true,
+      "use": "Shared left and right scenery"
+    },
+    {
+      "file": "crane-ready.webp",
+      "size": "196x176",
+      "alpha": true,
+      "use": "Run-in and wind-up"
+    },
+    {
+      "file": "crane-leap.webp",
+      "size": "196x178",
+      "alpha": true,
+      "use": "Airborne attack and defeat tumble"
+    },
+    {
+      "file": "crane-dojo.webp",
+      "size": "264x344",
+      "alpha": true,
+      "use": "Shared left and right scenery"
+    }
+  ]
+}

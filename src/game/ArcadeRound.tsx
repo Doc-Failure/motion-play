@@ -15,7 +15,7 @@ export function ArcadeRound({ game, players, children, enabled }: RoundProps) {
   const { level, assist } = round
   const [assistEnabled] = useState(() => new URLSearchParams(window.location.search).get('soloAssist') === '1')
   const solo = players === 1
-  const team = !solo && (['floor-is-lava','shadow-snap','window-wipe','goalkeeper','pinata-party','monster-defense','car-wash','pizza-maker','tower-builder'].includes(game) || (game === 'net-rally' && players === 3))
+  const team = !solo && (['jenga','floor-is-lava','shadow-snap','window-wipe','goalkeeper','pinata-party','monster-defense','car-wash','pizza-maker','tower-builder'].includes(game) || (game === 'net-rally' && players === 3))
 
   if (!enabled) return <>{children}</>
   const pressure = challengePressure(level, solo ? assist : 0)
@@ -44,7 +44,7 @@ export function ChallengeLabel() {
   return <span className="arcade-goal">Level {level} · {challenge.team?'Team goal':'Aim for'} {scoreGoal(game, level, challenge.players)}{game === 'kangaroo-race' ? 'm' : ' pts'}</span>
 }
 
-export function ChallengeResult({ scores }: { scores: PlayerScore[] }) {
+export function ChallengeResult({ scores, finalLevel }: { scores: PlayerScore[]; finalLevel?: number }) {
   const challenge = useChallenge()
   const key = challenge && `motion-play:best:${challenge.game}:${scores.length}:${challenge.level}${challenge.team?':team':''}`
   // Results may keep rendering for animations. Write only when the final scores or level change.
@@ -73,6 +73,7 @@ export function ChallengeResult({ scores }: { scores: PlayerScore[] }) {
   return <div className="arcade-result">
     <strong>Level {level} {cleared ? 'complete' : `· goal ${goal}`}</strong>
     {challenge.team && <span>Team score {total}</span>}
-    {cleared && <button type="button" className="crayon-button" onClick={nextLevel}>Next level · aim for {scoreGoal(game, level + 1, challenge.players)}</button>}
+    {cleared && finalLevel === level && <span>All {finalLevel} levels complete!</span>}
+    {cleared && finalLevel !== level && <button type="button" className="crayon-button" onClick={nextLevel}>Next level · aim for {scoreGoal(game, level + 1, challenge.players)}</button>}
   </div>
 }
