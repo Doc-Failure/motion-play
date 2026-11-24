@@ -194,7 +194,7 @@ describe('Ninja Training integration',()=>{
 
 
 describe('Dojo ranks and health',()=>{
-  it.each([1,2,3,4])('takes %i distinct swats, awarding the defeat once',level=>{
+  it.each([1,2,3,4,5])('takes %i distinct swats, awarding the defeat once',level=>{
     const model=new NinjaTrainingModel({level,countdownMs:0})
     model.start(0)
     for(let i=0;i<level;i++){
@@ -213,11 +213,11 @@ describe('Dojo ranks and health',()=>{
       }
     }
   })
-  it('shortens flight on every rank and permits four camera hits even in the last wave',()=>{
-    const flights=[1,2,3,4].map(level=>new NinjaTrainingModel({level,countdownMs:0}).start(0).ninjas[0].flightMs)
+  it('shortens flight on every rank and permits five camera hits even in the last wave',()=>{
+    const flights=[1,2,3,4,5].map(level=>new NinjaTrainingModel({level,countdownMs:0}).start(0).ninjas[0].flightMs)
     expect(flights).toEqual([...flights].sort((a,b)=>b-a))
-    expect(new Set(flights).size).toBe(4)
-    const m=new NinjaTrainingModel({level:4,countdownMs:0,pressure:1})
+    expect(new Set(flights).size).toBe(5)
+    const m=new NinjaTrainingModel({level:5,countdownMs:0,pressure:1})
     m.start(0)
     for(let t=250;t<=38000;t+=280) {
       for(const n of m.update(t).ninjas.filter(n=>n.pose==='leap'))m.hit(input(n.x,n.y,t))
@@ -225,7 +225,7 @@ describe('Dojo ranks and health',()=>{
     const active=m.update(38100)
     expect(active.phase).toBe('playing')
     expect(active.ninjas[0].flightMs).toBeGreaterThan(4*280)
-    expect(active.scores[0].score).toBeGreaterThanOrEqual(95)
+    expect(active.scores[0].score).toBeGreaterThanOrEqual(115)
   })
   it('retires only the depleted lane, ends when everyone is out, and restores health on replay',()=>{
     const m=game(2);m.start(0)

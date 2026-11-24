@@ -1,5 +1,8 @@
 import { towerBlocks } from '../../src/minigames/jenga/TowerGeometry'
 import { completeReadyGate, expect, hideAndRestoreTab, openApp, test } from './fixtures'
+import { isGameVisible } from '../../src/app/catalog'
+
+test.beforeEach(() => test.skip(!isGameVisible('jenga'), 'Hidden from public play'))
 
 test('Jenga plays from the catalog with keyboard and pointer, advances levels and replays', async ({page, installMockCamera}) => {
   test.setTimeout(50000)

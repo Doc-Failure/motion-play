@@ -1,6 +1,6 @@
 # Game improvement tracker
 
-The inventory has 45 catalog records and two additional playable component implementations. Fourteen desktop titles are public. Thirty are exercised through the development workshop, and three historical components are exercised in a test-only harness, including the retired Paper Jam. The public Jump Rush URL still starts Kangaroo Race.
+The inventory has 45 catalog records and two additional playable component implementations. Twelve desktop titles are public. Thirty-two are available through the development workshop, and three historical components are exercised in a test-only harness, including the retired Paper Jam. The public Jump Rush URL still starts Kangaroo Race.
 
 PASS records local, repeatable evidence. Levels and balance use deterministic pressure tests, input tests and real-component results. Visual review includes the active screen, collision or reward feedback, and progression or replay. Performance uses the sampled local machine and synthetic input. Webcam response is BLOCKED throughout for physical-camera validation. The synthetic processing, ownership and collision tests are recorded separately. Run details and visual evidence are in [the progress report](GAMEPLAY_PROGRESS.md).
 
@@ -58,12 +58,16 @@ Bug Stack is available directly on phones and tablets. Model and synthetic-input
 
 ## Floor Is Lava
 
+Hidden from public play.
+
 Each wave previews a shared island for 3.5–5 seconds. At zero the island disappears. Its grassy shoreline defines both the clear patch in the lava and the scoring boundary for one to four players. Model tests check simultaneous occupancy, both ankles, stale and late samples, pause and replay. Browser checks cover full-viewport lava, the transparent HOME cutout, animated flow and reduced motion. Physical group tracking and comfort remain unverified.
 
 ## Jenga
+
+Hidden from public play.
 
 One to four players share a turn-based tower. Model tests cover crossing layers, support under load, legal pulls and placements, turn ownership, pause, timeout and replay. The isometric renderer and hand hit tests use the same block outlines. Chromium exercised the solo catalog flow and a four-player handoff with synthetic poses. Physical webcam reach and gesture comfort remain open.
 
 ## Paper Dojo campaign
 
-Four score-qualified ranks have distinct ninja costumes, buildings, flight speeds and hit counts. Each lane tracks five HP. A breach or active obstacle removes one HP, and only players with health remaining receive new opponents. Model checks cover multi-hit timing, final-wave camera cadence, scoring, isolated knockouts, pause and replay. Physical webcam timing and reach remain unverified.
+Five score-qualified ranks have distinct ninja costumes, buildings, flight speeds and hit counts. Each lane tracks five HP. A breach or active obstacle removes one HP, and only players with health remaining receive new opponents. Model checks cover multi-hit timing, final-wave camera cadence, scoring, isolated knockouts, pause and replay. Physical webcam timing and reach remain unverified.

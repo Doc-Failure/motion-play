@@ -33,6 +33,20 @@ describe('original Paper Dojo view',()=>{
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole('button',{name:'Exit game'}));expect(exit).toHaveBeenCalled()
   })
+  it('shows a steady defeat pose when reduced motion is enabled',()=>{
+    document.documentElement.classList.add('reduce-motion')
+    try {
+      const tick=clock()
+      render(<NinjaTraining playerCount={1} onExit={vi.fn()}/>)
+      tick(4100)
+      fireEvent.click(screen.getByRole('button',{name:'Swat Player 1 ninja 1'}))
+      expect(document.querySelector('.dojo-effect--hit [data-sprite="defeated"]')).toBeVisible()
+      tick(4350)
+      expect(document.querySelector('.dojo-effect--hit [data-sprite="defeated"]')).toBeVisible()
+    } finally {
+      document.documentElement.classList.remove('reduce-motion')
+    }
+  })
   it('supports uninterrupted keyboard/pointer strikes and a clean replay',()=>{
     const tick=clock();render(<NinjaTraining playerCount={1} onExit={vi.fn()}/>)
     tick(4100)

@@ -234,3 +234,9 @@ The four-level capture shows the playable Leaf Scout, Lantern Runner, Frost Guar
 [Previous Paper Dojo](docs/visual-audit/paper-dojo-attack-after.png) · [Four arcade levels](docs/visual-audit/paper-dojo-four-levels.webp) · [Original generated atlas](docs/visual-audit/paper-dojo-ranks-original.png)
 
 The four-player capture shows P3 at 2/5 after a bump while the other lanes retain 3/5. The narrow Chromium layout kept all four numeric bars visible. These captures use synthetic camera input. [Four-player health bars](docs/visual-audit/paper-dojo-health.webp)
+
+## Paper Dojo hits and player life
+
+A successful swat now changes the ninja drawing immediately. Later ranks display a filled dot for each hit remaining. The last swat plays the recoil, stagger and defeated drawings. Each score badge shows five heart slots and a health bar. The camera-free campaign capture shows Violet Shadow after one swat. The four-player capture uses synthetic camera input.
+
+[Before](docs/visual-audit/paper-dojo-four-levels.webp) · [Violet Shadow at Moon Gate](docs/visual-audit/paper-dojo-violet-hit.webp) · [Four-player health](docs/visual-audit/paper-dojo-player-hearts.webp)

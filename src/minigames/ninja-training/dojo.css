@@ -16,17 +16,13 @@
 .dojo-combo { position:absolute; z-index:7; right:16%; top:19%; display:grid; place-items:center; width:2.8em; height:2.8em; border:3px solid #29313c; border-radius:45% 55% 42% 56%; background:#fff2b0ee; color:#874ca3; font-size:clamp(1.3rem,4cqmin,2.5rem); line-height:.9; transform:rotate(7deg); pointer-events:none; }
 .dojo-combo small { margin-top:.1rem; font-size:.3em; letter-spacing:.04em; }.dojo-combo>span { position:absolute; bottom:-.7em; right:-.2em; color:#fff6d9; background:#754e93; padding:.1rem .3rem; border-radius:.25rem; font-size:.55em; }
 .dojo-effect { position:absolute; z-index:9; width:24cqmin; height:24cqmin; translate:-50% -50%; pointer-events:none; }
-.dojo-effect>b { position:absolute; inset:0; display:grid; place-content:center; text-align:center; color:#3a2c46; background:#ffe69c; clip-path:polygon(50% 0,60% 21%,88% 5%,79% 34%,100% 50%,78% 61%,92% 94%,62% 80%,49% 100%,35% 80%,8% 95%,21% 64%,0 51%,24% 37%,8% 10%,39% 22%); font-size:clamp(.9rem,4cqmin,2.5rem); line-height:1; animation:dojo-impact .6s ease-out both; }
-.dojo-effect b small { display:block; font-size:.6em; }.dojo-effect--miss>b { color:#574247; background:#e5c4b5cc; font-size:clamp(.8rem,3cqmin,1.5rem); }
-.dojo-tumble { position:absolute; inset:0; animation:dojo-tumble .8s ease-out both; }.dojo-tumble svg { width:100%; height:100%; }
-.dojo-effect>i { position:absolute; left:45%; top:45%; width:10%; height:7%; background:#f2c95d; border:1px solid #403b40; rotate:calc(var(--piece)*60deg); animation:dojo-confetti .8s ease-out both; --dx:calc((var(--piece) - 2.5)*25px); --dy:calc(-35px + var(--piece)*14px); }
-.dojo-effect>i:nth-of-type(even) { background:#e79aa9; }
+.dojo-effect>b { position:absolute; right:0; bottom:0; padding:.1em .32em; border:2px solid #40313a; border-radius:.5em .3em; background:#ffe69c; color:#38263a; font-size:clamp(.65rem,2.6cqmin,1.2rem); }
+.dojo-effect b small { margin-left:.25em; }
+.dojo-effect--miss>b { background:#f9dfd2; }
+.dojo-life { display:block; color:#a5254b; font: bold clamp(.72rem,1.4vw,1rem)/1 system-ui; }
+.dojo-life::after { content:''; display:block; height:4px; border:1px solid #754258; border-radius:4px; background:linear-gradient(to right,#a5254b var(--life),#fff var(--life)); }
+.dojo-life[data-hurt="true"] { background:#ffe2a4; border-radius:.25em; }
 .dojo-game[data-phase="paused"] * { animation-play-state:paused !important; }
-@keyframes dojo-impact { 0% { transform:scale(.8) rotate(-15deg); opacity:1; } 20% { transform:scale(1.15) rotate(7deg); opacity:1; } 70% { opacity:1; } 100% { transform:scale(.85) rotate(-4deg); opacity:0; } }
-@keyframes dojo-tumble { to { transform:translate(calc(var(--away)*130px),-130px) rotate(calc(var(--away)*540deg)) scale(.3); opacity:0; } }
-@keyframes dojo-confetti { to { translate:var(--dx) var(--dy); transform:rotate(220deg); opacity:0; } }
-@media (prefers-reduced-motion:reduce) { .dojo-effect *, .dojo-tumble { animation:none !important; } }
-.reduce-motion .dojo-effect *,.reduce-motion .dojo-tumble { animation:none !important; }
 @media (max-width:600px) { .dojo-wave { font-size:.8rem; padding:.2rem .5rem; }.dojo-wave small { font-size:.55rem; } }
 /* Phase information must stay clear of the shared camera HUD/player labels. */
 .camera-play .camera-arena>section.dojo-game>div.dojo-wave[role="status"] { top:auto; bottom:.5rem; left:.5rem; width:max-content; max-width:48%; max-height:none; margin:0; padding:.3rem .6rem; translate:none; z-index:8; overflow:visible; background:#ffffffed; color:#32484e; text-align:left; font-size:.9rem; line-height:1.2; }

@@ -126,3 +126,9 @@ The [four-player countdown](floor-is-lava-countdown.png) and [flood at zero](flo
 ChatGPT Images generated the four-column atlas in the EyeToy Game Assets conversation through Kimi WebBridge. The downloaded PNG measures 1448 × 1086 and has real alpha. The ready and airborne rows supply eight right-facing poses. The bottom row supplies the bamboo pavilion, lantern gatehouse, frost lookout and crane pagoda. Each building frames the shared camera on both sides. The twelve trimmed WebPs retain transparency. The game uses the airborne pose for the simulated defeat tumble. The health meter and remaining-hit labels are accessible UI.
 
 [Downloaded atlas](paper-dojo-ranks-original.png) · [Filenames, dimensions, generation prompt and source](../../public/assets/minigames/paper-dojo/manifest.json)
+
+## Paper Dojo actions and Moon Gate
+
+Kimi WebBridge generated two transparent PNGs in the EyeToy Game Assets conversation. The first contains five costumes in six poses. Each runtime strip has six 124 × 124 cells for running, crouching, jumping, recoiling, staggering and defeat. The second image supplies the crescent-topped Moon Gate. Its platforms face inward from both edges of the camera.
+
+[Original action sheet](paper-dojo-actions-original.png) · [Original Moon Gate](paper-dojo-moon-gate-original.png) · [Runtime files, dimensions and exact prompts](../../public/assets/minigames/paper-dojo/manifest.json)

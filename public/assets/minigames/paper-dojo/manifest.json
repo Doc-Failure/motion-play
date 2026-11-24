@@ -9,13 +9,13 @@
       "file": "leaf-ready.webp",
       "size": "196x167",
       "alpha": true,
-      "use": "Run-in and wind-up"
+      "use": "Catalog or movement tutorial"
     },
     {
       "file": "leaf-leap.webp",
       "size": "196x169",
       "alpha": true,
-      "use": "Airborne attack and defeat tumble"
+      "use": "Catalog or movement tutorial"
     },
     {
       "file": "leaf-dojo.webp",
@@ -24,34 +24,10 @@
       "use": "Shared left and right scenery"
     },
     {
-      "file": "lantern-ready.webp",
-      "size": "196x171",
-      "alpha": true,
-      "use": "Run-in and wind-up"
-    },
-    {
-      "file": "lantern-leap.webp",
-      "size": "196x169",
-      "alpha": true,
-      "use": "Airborne attack and defeat tumble"
-    },
-    {
       "file": "lantern-dojo.webp",
       "size": "276x344",
       "alpha": true,
       "use": "Shared left and right scenery"
-    },
-    {
-      "file": "frost-ready.webp",
-      "size": "196x171",
-      "alpha": true,
-      "use": "Run-in and wind-up"
-    },
-    {
-      "file": "frost-leap.webp",
-      "size": "196x169",
-      "alpha": true,
-      "use": "Airborne attack and defeat tumble"
     },
     {
       "file": "frost-dojo.webp",
@@ -60,22 +36,66 @@
       "use": "Shared left and right scenery"
     },
     {
-      "file": "crane-ready.webp",
-      "size": "196x176",
-      "alpha": true,
-      "use": "Run-in and wind-up"
-    },
-    {
-      "file": "crane-leap.webp",
-      "size": "196x178",
-      "alpha": true,
-      "use": "Airborne attack and defeat tumble"
-    },
-    {
       "file": "crane-dojo.webp",
       "size": "264x344",
       "alpha": true,
       "use": "Shared left and right scenery"
+    },
+    {
+      "file": "crane-actions.webp",
+      "size": "744x124",
+      "alpha": true,
+      "use": "Six action frames, left to right"
+    },
+    {
+      "file": "frost-actions.webp",
+      "size": "744x124",
+      "alpha": true,
+      "use": "Six action frames, left to right"
+    },
+    {
+      "file": "lantern-actions.webp",
+      "size": "744x124",
+      "alpha": true,
+      "use": "Six action frames, left to right"
+    },
+    {
+      "file": "leaf-actions.webp",
+      "size": "744x124",
+      "alpha": true,
+      "use": "Six action frames, left to right"
+    },
+    {
+      "file": "violet-actions.webp",
+      "size": "744x124",
+      "alpha": true,
+      "use": "Six action frames, left to right"
+    },
+    {
+      "file": "violet-dojo.webp",
+      "size": "234x344",
+      "alpha": true,
+      "use": "Moon Gate scenery"
     }
+  ],
+  "actionSources": [
+    {
+      "original": "docs/visual-audit/paper-dojo-actions-original.png",
+      "size": "1374x1145 RGBA",
+      "prompt": "Generate one game animation sprite sheet image for the same Paper Dojo. A wide landscape sheet with exactly SIX equal columns and FIVE equal rows, thirty separate centered full-body stickers on flat pure WHITE or transparent. Strict regular matrix, comfortable gutters, each subject entire inside its cell. No writing, lines, labels or UI. One character repeated across each row, facing RIGHT. Each ROW uses one distinct costume: row 1 mint-green Leaf Scout with leaf scarf, row 2 vermilion Lantern Runner with lantern pads, row 3 ice-blue Frost Guard padded shoulders, row 4 gold-winged Golden Crane Master with gold crest and plum hood, row 5 new Violet Shadow with bright PURPLE hood, lavender crescent moon emblem and long purple scarf, no gold. Each COLUMN has a different action shared by all five rows: 1 running stride, 2 preparing crouched low, 3 leaping forward with leg extended, 4 just hit: eyes squeezed shut reeling backwards with hands up, 5 hit harder: tilted backward feet off ground with dizzy eyes and impact stars, 6 defeated: lying on side in a crumpled heap dizzy with stars. Cheerful nonviolent crayon slapstick. Absolutely keep the six columns and five rows. Uneven charcoal outlines, real waxy crayon texture, imperfect color fills, thick readable silhouettes. Render actual image."
+    },
+    {
+      "original": "docs/visual-audit/paper-dojo-moon-gate-original.png",
+      "size": "1024x1536 RGBA",
+      "prompt": "Generate a single isolated sprite of the Violet Shadow ninja's Moon Gate dojo. A freestanding tall whimsical gate tower of dark violet curved tiled roofs with a silver crescent moon ornament, lavender timber and three accessible bamboo projecting platforms at different heights. Full building visible from roof to feet, front view, flat pure white or transparent background, generous margins, no ground, text, shadows, people or framing. Childlike hand colored wax crayons with charcoal outlines, cheerful scribbly lavender and plum. Match the previous Paper Dojo buildings. Render the actual image."
+    }
+  ],
+  "frames": [
+    "run",
+    "ready",
+    "leap",
+    "recoil",
+    "stagger",
+    "defeated"
   ]
 }

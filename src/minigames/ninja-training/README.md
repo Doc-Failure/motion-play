@@ -74,7 +74,7 @@ hold, while the live camera and original tower artwork remain unobstructed.
 
 ## Current arcade levels
 
-Each level runs for up to 40 seconds. The shared camera is framed by a pair of illustrated buildings. The level name and opponent rank appear in the wave cue. Each player’s lane shows a labeled health meter. Each breach or marked obstacle contact costs one of five HP. Depleted players keep their score and sit out until the next round. The tournament uses the first dojo.
+Each level runs for up to 40 seconds. The shared camera is framed by a pair of illustrated buildings. The level name and opponent rank appear in the wave cue. Each score badge shows five heart slots and a health bar. Each breach or marked obstacle contact costs one of five HP. Depleted players keep their score and sit out until the next round. The tournament uses the first dojo.
 
 | Level | Dojo | Opponent | Hits to defeat | Qualifying score |
 |---|---|---|---:|---:|
@@ -82,5 +82,6 @@ Each level runs for up to 40 seconds. The shared camera is framed by a pair of i
 | 2 | Lantern Gate | Lantern Runner | 2 | 55 |
 | 3 | Frost Lookout | Frost Guard | 3 | 75 |
 | 4 | Golden Crane Pagoda | Golden Crane Master | 4 | 95 |
+| 5 | Moon Gate | Violet Shadow | 5 | 115 |
 
-Partial hits remove one armor dot. Hits on one ninja must be separated by at least 210 ms of simulation time. Only a defeat awards points. Enemies accelerate across ranks and waves. Artwork provenance, dimensions and the original prompt are in the [rank sprite manifest](../../../public/assets/minigames/paper-dojo/manifest.json).
+Partial hits remove one armor dot and play a recoil pose. The final swat plays recoil, stagger and defeat on the simulation clock. Reduced motion shows the defeated pose immediately. Hits on one ninja must be separated by at least 210 ms of simulation time. Only a defeat awards points. Enemies accelerate across ranks and waves. Artwork provenance, dimensions and the original prompt are in the [rank sprite manifest](../../../public/assets/minigames/paper-dojo/manifest.json).

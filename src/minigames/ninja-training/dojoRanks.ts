@@ -3,6 +3,7 @@ const ranks = [
   { name: 'Lantern Runner', dojo: 'Lantern Gate', slug: 'lantern', hits: 2, flight: 2220 },
   { name: 'Frost Guard', dojo: 'Frost Lookout', slug: 'frost', hits: 3, flight: 1950 },
   { name: 'Golden Crane Master', dojo: 'Golden Crane Pagoda', slug: 'crane', hits: 4, flight: 1720 },
+  { name: 'Violet Shadow', dojo: 'Moon Gate', slug: 'violet', hits: 5, flight: 1620 },
 ] as const
 
 export const DOJO_LEVELS = ranks.length

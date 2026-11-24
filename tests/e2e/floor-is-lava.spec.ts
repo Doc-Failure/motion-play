@@ -1,4 +1,7 @@
 import { completeReadyGate, expect, hideAndRestoreTab, openApp, test } from './fixtures'
+import { isGameVisible } from '../../src/app/catalog'
+
+test.beforeEach(() => test.skip(!isGameVisible('floor-is-lava'), 'Hidden from public play'))
 
 test('four people can share one HOME anywhere in the mirrored camera', async ({page,installMockCamera}) => {
   test.setTimeout(45000)

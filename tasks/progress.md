@@ -3661,3 +3661,7 @@ Replaced the single arcade opponent with four ranks, each with a new outfit and 
 Kimi WebBridge generated a transparent twelve-cutout atlas in the EyeToy Game Assets conversation. The four sets supply gameplay, the catalog sticker and the movement demonstration. The original sheet and exact prompt are recorded in the asset manifest. Excluding an unused homepage Settings background kept the new art within the release budget.
 
 All 1,485 unit tests, six focused Chromium checks, lint, the production build and release integrity passed. Chromium played through all four levels, checked the loaded artwork, pause and replay, synthetic motion hits, four-player health isolation and narrow layout. Screenshots are linked from the visual audit. Physical webcam play remains pending.
+
+## Paper Dojo action sheets and public catalog
+
+Five ranks now have six generated action frames each. A hit changes the opponent’s pose and remaining armor, while a completed defeat plays through stagger and collapse. Players see their remaining hearts and a health bar beside their scores. Violet Shadow guards Moon Gate in level five. Floor Is Lava and Jenga are hidden from the public catalog, direct game routes, Quick Play and tournaments. Unit checks cover hidden routes, camera swat cadence, reduced-motion defeat and health. Chromium completed the five-level campaign and exercised four-player damage with synthetic input. Physical webcam play remains unverified.

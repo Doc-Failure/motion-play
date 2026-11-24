@@ -61,7 +61,7 @@ export class NinjaTrainingModel {
       while(this.nextSpawn<=elapsed) {
         const at=this.nextSpawn
         this.expire(at)
-        const wave=Math.floor(at/6000), flightMs=this.rank.flight*(1-Math.min(wave,8)*.034-.07*this.pressure)
+        const wave=Math.floor(at/6000), flightMs=this.rank.flight*Math.max(.87, 1-Math.min(wave,8)*.034-.07*this.pressure)
         for(let i=1;i<=this.count;i++) {
           const playerId=i as PlayerId
           if(this.health[playerId]>0 && this.ninjas.filter(n=>n.playerId===playerId).length<5) this.ninjas.push({id:this.nextId++,playerId,side:([ -1,1,-1,1,1,-1,1,-1 ] as const)[this.wave%8],level:Math.floor(this.wave/2)%3,born:at,flightMs,hp:this.rank.hits,lastSwat:-Infinity,x:0,y:0,progress:0,pose:'run'})
