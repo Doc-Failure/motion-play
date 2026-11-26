@@ -4,7 +4,7 @@
 .dojo-board { position:relative; height:65vh; overflow:hidden; container-type:size; touch-action:none; }
 .dojo-player>h2 { font-size:.8rem; }.dojo-player>h2 span { display:block; }
 .dojo-scenery { position:absolute; inset:0; overflow:hidden; pointer-events:none; }
-.dojo-tower { position:absolute; left:-2%; bottom:7%; width:27%; height:79%; object-fit:contain; object-position:left bottom; opacity:.88; pointer-events:none; filter:drop-shadow(3px 0 0 #17252b33); }
+.dojo-tower { position:absolute; left:-2%; bottom:0; width:27%; height:79%; object-fit:contain; object-position:left bottom; opacity:.88; pointer-events:none; filter:drop-shadow(3px 0 0 #17252b33); }
 .dojo-tower--right { left:auto; right:-2%; transform:scaleX(-1); }
 .dojo-ninja { position:absolute; z-index:4; width:min(20cqh,30cqw); height:min(20cqh,30cqw); min-width:24px; min-height:24px; padding:0; border:0; background:transparent; translate:-50% -50%; cursor:crosshair; filter:drop-shadow(2px 4px 0 #12243133); }
 .dojo-ninja:disabled { cursor:default; opacity:1; }

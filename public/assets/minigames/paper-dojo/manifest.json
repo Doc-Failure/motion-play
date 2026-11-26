@@ -13,25 +13,25 @@
     },
     {
       "file": "leaf-dojo.webp",
-      "size": "276x344",
+      "size": "276x319",
       "alpha": true,
       "use": "Shared left and right scenery"
     },
     {
       "file": "lantern-dojo.webp",
-      "size": "276x344",
+      "size": "276x319",
       "alpha": true,
       "use": "Shared left and right scenery"
     },
     {
       "file": "frost-dojo.webp",
-      "size": "276x344",
+      "size": "276x319",
       "alpha": true,
       "use": "Shared left and right scenery"
     },
     {
       "file": "crane-dojo.webp",
-      "size": "264x344",
+      "size": "264x319",
       "alpha": true,
       "use": "Shared left and right scenery"
     },
@@ -87,7 +87,7 @@
     },
     {
       "file": "violet-dojo.webp",
-      "size": "234x344",
+      "size": "234x342",
       "alpha": true,
       "use": "Moon Gate scenery"
     },
@@ -139,6 +139,17 @@
       "alpha": true,
       "use": "Boss launch, tuck and slam",
       "original": "docs/visual-audit/paper-dojo-oni-original.png"
+    },
+    {
+      "file": "src/minigames/ninja-training/frost-poses.webp",
+      "size": "620x124",
+      "alpha": true,
+      "use": "Paper Dojo Frost Guard stride, smiling ready, recoil, stagger and defeat. Uses a content-hashed URL.",
+      "originals": [
+        "docs/visual-audit/moon-gate-sheets/foes.png",
+        "docs/visual-audit/paper-dojo-flight-original.png",
+        "docs/visual-audit/moon-gate-sheets/reactions.png"
+      ]
     }
   ],
   "actionSources": [

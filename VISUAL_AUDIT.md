@@ -264,3 +264,7 @@ Two consecutive gameplay captures show the Leaf Scout smiling during wind-up and
 Thunder Oni’s red body, cloud mane and teal drum distinguish it from the five smaller ninjas. The boss smiles on the roof, scowls during a charge, reels when repelled and falls onto its side on defeat. The gold arc shows the HP remaining across passes.
 
 [Violet Shadow](docs/visual-audit/paper-dojo-violet-hit.webp) · [Thunder Oni at the Moon Gate](docs/visual-audit/paper-dojo-thunder-oni.webp) · [Original boss sheet](docs/visual-audit/paper-dojo-oni-original.png)
+
+## Frost Lookout
+
+The blue guard retains its hood, scarf and snowflake armor during recoil. The remaining two thirds of the gold ring show the damage from the first swat. Both snowy stone bases reach the bottom of the arena. [Frost Guard after one swat](docs/visual-audit/paper-dojo-frost-grounded.webp)

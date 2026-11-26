@@ -167,3 +167,7 @@ Kimi WebBridge generated the four original transparent landscape and platform sp
 ### Moon Gate Run animation sheets
 
 Six Kimi WebBridge sheets provide 127 authored frames for Leaf Scout, the four ninja outfits, their hit reactions, Thunder Oni, scenery and effects. Four derived contact shadows bring the individual sprite export to 131 transparent PNGs. The opening lesson uses the actual player strip. The game selects poses from the same clock as its encounters and collisions. [Master sheets, prompts and individual sprites](moon-gate-sheets/README.md) · [Game manifest](../../public/assets/minigames/moon-gate-run/manifest.json)
+
+### Frost Lookout repair
+
+The 620 × 124 transparent Frost Guard strip has five padded cells for stride, wind-up, recoil, stagger and defeat. It combines the saved Kimi foe and reaction sprites with the smiling Paper Dojo wind-up. All five costumes’ towers and the fallback were trimmed to their painted bases. [Sheet, frame sources and tower dimensions](../../public/assets/minigames/paper-dojo/manifest.json) · [Source prompts for the stride and reactions](moon-gate-sheets/prompts.json)

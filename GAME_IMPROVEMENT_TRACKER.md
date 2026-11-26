@@ -74,6 +74,8 @@ Five score-qualified ranks have distinct ninja costumes, buildings, flight speed
 
 After the five ninja ranks, Thunder Oni guards the Moon Gate. It retains damage across charges and can be repelled by three hits in one pass.
 
+Frost Guard’s five action frames share its snowflake costume. Both painted tower bases touch the playfield floor at each rank. The X obstacle and bump penalty are retired.
+
 ## Moon Gate Run
 
 The standalone catalog game combines automatic side scrolling, raised platforms, camera swats and a Thunder Oni fight at the gate. One to four runners use the same course with individual health and scores. Model tests exercise torso rise, landing and stepping off, same-frame spatial hits, multiplayer isolation, pause, replay and the first and fifth boss fights. Chromium exercised a synthetic torso jump and mirrored camera swat, plus a four-player camera-free boss victory. Physical webcam jump sensitivity, spacing and comfort remain open.
