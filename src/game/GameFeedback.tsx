@@ -12,7 +12,7 @@ interface FeedbackSnapshot {
   countdownRemainingMs: number
   scores: { playerId: number; score: number }[]
 }
-export function GameFeedback({ snapshot, theme, regions, contact, musicPaused = false, scoreFeedback = true }: { snapshot: FeedbackSnapshot; regions?:()=>DebugRegion[]; contact?:()=>string|null|undefined; scoreFeedback?:boolean; theme?: Exclude<AudioTheme,'default'>; musicPaused?: boolean }) {
+export function GameFeedback({ snapshot, theme, regions, contact, musicPaused = false, scoreFeedback = true, showScoreBursts = true }: { snapshot: FeedbackSnapshot; regions?:()=>DebugRegion[]; contact?:()=>string|null|undefined; scoreFeedback?:boolean; showScoreBursts?:boolean; theme?: Exclude<AudioTheme,'default'>; musicPaused?: boolean }) {
   const play=useCallback((cue:Cue)=>{if(theme)gameAudio.play(cue,theme);else gameAudio.play(cue)},[theme])
   const input = useContext(InputFeedbackContext)
   const workshopExit=useRef<HTMLButtonElement>(null)
@@ -59,9 +59,9 @@ export function GameFeedback({ snapshot, theme, regions, contact, musicPaused = 
     })
     if (changes.length) {
       play(changes.some(change => change.amount < 0) ? 'miss' : 'score')
-      setBursts(changes)
+      if (showScoreBursts) setBursts(changes)
     }
-  }, [snapshot, input, play,scoreFeedback])
+  }, [snapshot, input, play,scoreFeedback,showScoreBursts])
   useEffect(() => {
     if (!bursts.length) return
     const timer = window.setTimeout(() => setBursts([]), 850)

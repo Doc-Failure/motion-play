@@ -1,4 +1,5 @@
 import { expect, test as base, type Page } from '@playwright/test'
+import { HAND_HOLD_MS } from '../../src/input/gestureTiming'
 import { readFileSync, readdirSync } from 'node:fs'
 import { resolve } from 'node:path'
 
@@ -71,7 +72,7 @@ export async function openApp(page: Page, hash = '#/camera', beforeNavigate?:()=
   await page.route('http://motion-play.test/**', async route => {
     const pathname = new URL(route.request().url()).pathname
     const file = resolve(releaseDirectory, pathname === '/' ? 'index.html' : pathname.slice(1))
-    const mime = (file.endsWith('.js') || file.endsWith('.mjs')) ? 'text/javascript' : file.endsWith('.css') ? 'text/css' : file.endsWith('.svg') ? 'image/svg+xml' : file.endsWith('.webp') ? 'image/webp' : file.endsWith('.mp4') ? 'video/mp4' : file.endsWith('.woff2') ? 'font/woff2' : file.endsWith('.ttf') ? 'font/ttf' : file.endsWith('.webmanifest') ? 'application/manifest+json' : file.endsWith('.json') ? 'application/json' : file.endsWith('.wasm') ? 'application/wasm' : file.endsWith('.task') ? 'application/octet-stream' : 'text/html'
+    const mime = (file.endsWith('.js') || file.endsWith('.mjs')) ? 'text/javascript' : file.endsWith('.css') ? 'text/css' : file.endsWith('.svg') ? 'image/svg+xml' : file.endsWith('.avif') ? 'image/avif' : file.endsWith('.webp') ? 'image/webp' : file.endsWith('.mp4') ? 'video/mp4' : file.endsWith('.woff2') ? 'font/woff2' : file.endsWith('.ttf') ? 'font/ttf' : file.endsWith('.webmanifest') ? 'application/manifest+json' : file.endsWith('.json') ? 'application/json' : file.endsWith('.wasm') ? 'application/wasm' : file.endsWith('.task') ? 'application/octet-stream' : 'text/html'
     await route.fulfill({body:readFileSync(file),contentType:file.endsWith('.png') ? 'image/png' : mime})
   })
   await beforeNavigate?.()
@@ -100,7 +101,7 @@ export async function completeReadyGate(page:Page) {
         if(state.enabled&&state.pressed==='false')await b.press('Enter',{timeout:3000})
       }catch(error){if(await gate.count()===0)break;throw error}
     }
-    if(virtual)await page.clock.runFor(3150)
+    if(virtual)await page.clock.runFor(HAND_HOLD_MS + 150)
     else await gate.waitFor({state:'detached',timeout:1000}).catch(()=>undefined)
     if(Date.now()>deadline)break
   }

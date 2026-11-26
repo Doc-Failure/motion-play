@@ -1,6 +1,6 @@
 {
-  "name": "Motion Play",
-  "short_name": "Motion Play",
+  "name": "playpop.party",
+  "short_name": "playpop.party",
   "description": "Local motion-controlled party games for one to four players.",
   "start_url": "./#/",
   "scope": "./",

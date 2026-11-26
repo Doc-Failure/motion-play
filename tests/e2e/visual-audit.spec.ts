@@ -62,7 +62,7 @@ test('player selection and camera-opening status stay readable', async ({page}) 
       getUserMedia:()=>new Promise(()=>{}), enumerateDevices:async()=>[]
     }})
   })
-  await openApp(page,'#/')
+  await openApp(page,'#/camera/window-wipe')
   const choice=page.getByRole('button',{name:'1 player',exact:true})
   await expect(choice).toBeVisible()
   const label=choice.locator('span')

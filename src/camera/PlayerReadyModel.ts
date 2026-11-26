@@ -1,6 +1,6 @@
 import {HAND_HOLD_MS} from '../input/gestureTiming'
 import type {StickBody} from './poseTracking'
-/** A simultaneous three-second hold. Stationary measured hands count; pixel motion does not. */
+/** A simultaneous hold. Stationary measured hands count; pixel motion does not. */
 export class PlayerReadyModel {
  private since:number|null=null
  private sampleTime=-Infinity

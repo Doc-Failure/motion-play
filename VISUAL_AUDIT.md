@@ -240,3 +240,27 @@ The four-player capture shows P3 at 2/5 after a bump while the other lanes retai
 A successful swat now changes the ninja drawing immediately. Later ranks display a filled dot for each hit remaining. The last swat plays the recoil, stagger and defeated drawings. Each score badge shows five heart slots and a health bar. The camera-free campaign capture shows Violet Shadow after one swat. The four-player capture uses synthetic camera input.
 
 [Before](docs/visual-audit/paper-dojo-four-levels.webp) · [Violet Shadow at Moon Gate](docs/visual-audit/paper-dojo-violet-hit.webp) · [Four-player health](docs/visual-audit/paper-dojo-player-hearts.webp)
+
+## Paper Dojo health rings
+
+Each ninja has a transparent gold health ring starting at twelve o’clock. The arc shortens on a partial hit, and the defeat sprite is visible through the entire impact. The new flight sheet gives every rank three airborne silhouettes. The four-player layout uses the same ring and keeps player life beside each score.
+
+[Previous hit treatment](docs/visual-audit/paper-dojo-violet-hit.webp) · [Full and half health in play](docs/visual-audit/paper-dojo-ring-comparison.webp) · [Flight artwork](docs/visual-audit/paper-dojo-flight-original.png)
+
+## Paper Dojo attack expression
+
+The Leaf Scout’s brows angle toward the nose and its mouth turns down throughout the leap. The other four costumes use the same expression in all three airborne poses. The solo capture shows the face at its rendered size inside the gold health ring.
+
+[Earlier expression](docs/visual-audit/paper-dojo-ring-comparison.webp) · [Revised in-game face](docs/visual-audit/paper-dojo-attack-face.webp)
+
+## Paper Dojo takeoff
+
+Two consecutive gameplay captures show the Leaf Scout smiling during wind-up and scowling after leaving the roof. The burst expands behind the trailing foot and fades while the face and health ring stay readable.
+
+[Wind-up and takeoff](docs/visual-audit/paper-dojo-launch-sequence.webp)
+
+## Thunder Oni boss
+
+Thunder Oni’s red body, cloud mane and teal drum distinguish it from the five smaller ninjas. The boss smiles on the roof, scowls during a charge, reels when repelled and falls onto its side on defeat. The gold arc shows the HP remaining across passes.
+
+[Violet Shadow](docs/visual-audit/paper-dojo-violet-hit.webp) · [Thunder Oni at the Moon Gate](docs/visual-audit/paper-dojo-thunder-oni.webp) · [Original boss sheet](docs/visual-audit/paper-dojo-oni-original.png)

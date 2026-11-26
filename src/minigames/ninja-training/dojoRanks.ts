@@ -4,10 +4,12 @@ const ranks = [
   { name: 'Frost Guard', dojo: 'Frost Lookout', slug: 'frost', hits: 3, flight: 1950 },
   { name: 'Golden Crane Master', dojo: 'Golden Crane Pagoda', slug: 'crane', hits: 4, flight: 1720 },
   { name: 'Violet Shadow', dojo: 'Moon Gate', slug: 'violet', hits: 5, flight: 1620 },
+  { name: 'Thunder Oni', dojo: 'Moon Gate', slug: 'oni', hits: 12, flight: 2100 },
 ] as const
 
 export const DOJO_LEVELS = ranks.length
 export const PLAYER_HEALTH = 5
+export const ONI_REPEL_HITS = 3
 export function dojoRank(level: number) {
   return ranks[Math.max(0, Math.min(ranks.length - 1, Math.floor(level) - 1))]
 }

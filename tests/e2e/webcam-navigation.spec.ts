@@ -34,18 +34,18 @@ async function choose(page:Page,selector:string){
  // Observe the actual click instead of assuming every camera delivers a frame
  // at a fixed moment. No mouse/keyboard activation is performed here.
  await expect.poll(()=>page.evaluate(()=>(window as typeof window&{__clickedSequence?:number}).__clickedSequence),{timeout:8000,message:'Webcam choice '+selector}).toBe(selection.sequence)
- expect(await page.evaluate(()=>(window as typeof window&{__clickedAt:number}).__clickedAt)-selection.started).toBeGreaterThanOrEqual(3000)
+ expect(await page.evaluate(()=>(window as typeof window&{__clickedAt:number}).__clickedAt)-selection.started).toBeGreaterThanOrEqual(2000)
  await page.evaluate(()=>Object.assign(window,{__menuAim:null}));await page.waitForTimeout(400)
 }
-test('webcam chooses players once, then catalog, ready, pause, resume, exit and home using one stream',async({page,installMockCamera})=>{
+test('webcam chooses a game, player count, ready, pause, resume, exit and home using one stream',async({page,installMockCamera})=>{
  test.setTimeout(90000)
  await installMockCamera({person:true});await openApp(page,'#/',()=>installMenuPose(page))
- await expect(page.getByRole('heading',{name:'How many players?'})).toBeVisible()
+ await expect(page.getByRole('heading',{name:'playpop.party'})).toBeVisible()
  await expect(page.getByLabel('Mirrored navigation camera')).toBeVisible()
  await expect(page.locator('.webcam-navigation__hand')).toHaveCount(1)
- await choose(page,'.welcome-players button[aria-label="2 players"]')
  await choose(page,'a[href="#/catalog"]');await expect(page.getByRole('heading',{name:'Game Catalog',exact:true,level:1})).toBeVisible()
  await choose(page,'a[href="#/camera/window-wipe"]')
+ await choose(page,'.welcome-players button[aria-label="2 players"]')
  await expect(page.getByLabel('Players ready check',{exact:true})).toBeVisible()
  await page.evaluate(()=>Object.assign(window,{__readyAll:true}))
  await expect(page.getByLabel('Players ready check',{exact:true})).toHaveCount(0,{timeout:10000})
@@ -53,7 +53,7 @@ test('webcam chooses players once, then catalog, ready, pause, resume, exit and 
  await hideAndRestoreTab(page);await expect(page.getByRole('dialog',{name:'Window Wipe paused'})).toBeVisible()
  await choose(page,'.battle-results button:first-of-type');await expect(page.getByRole('dialog',{name:'Window Wipe paused'})).toHaveCount(0)
  await choose(page,'.round-hud__exit');await expect(page.getByRole('heading',{name:'Game Catalog',exact:true,level:1})).toBeVisible()
- await choose(page,'.catalog-toolbar .back-link');await expect(page.getByRole('heading',{name:'Motion Play!'})).toBeVisible()
+ await choose(page,'.catalog-toolbar .back-link');await expect(page.getByRole('heading',{name:'playpop.party'})).toBeVisible()
  expect(await page.evaluate(()=>(window as typeof window&{__mockMediaState:{requests:number;stoppedTracks:number}}).__mockMediaState)).toMatchObject({requests:1,stoppedTracks:0})
  await page.screenshot({path:test.info().outputPath('webcam-home.png')})
 })
@@ -63,10 +63,10 @@ test('five-game tournament adds points and advances every round with webcam-read
  await page.clock.install()
  await page.addInitScript(()=>{Math.random=()=>.5})
  await installMockCamera({person:true});await openApp(page,'#/',()=>installMenuPose(page))
- await expect(page.getByRole('heading',{name:'How many players?'})).toBeVisible()
+ await expect(page.getByRole('heading',{name:'playpop.party'})).toBeVisible()
  await expect(page.locator('.webcam-navigation__hand')).toHaveCount(1)
- await choose(page,'.welcome-players button[aria-label="2 players"]')
  await choose(page,'a[href="#/tournament"]')
+ await choose(page,'.welcome-players button[aria-label="2 players"]')
  const titles=['Paper Dojo','Window Wipe','Cardboard Champ','Keep Ups','Ghost Catcher']
  for(let round=0;round<titles.length;round++){
   await expect(page.getByLabel('Players ready check',{exact:true})).toBeVisible()
@@ -97,15 +97,14 @@ test('five-game tournament adds points and advances every round with webcam-read
  await expect(page.getByLabel('Players ready check',{exact:true})).toBeVisible()
  await expect(page.getByRole('button',{name:/^Ready Player /})).toHaveCount(2)
  await choose(page,'.player-ready-gate__tools button')
- await choose(page,'.catalog-toolbar .back-link');await expect(page.getByRole('heading',{name:'Motion Play!'})).toBeVisible()
+ await choose(page,'.catalog-toolbar .back-link');await expect(page.getByRole('heading',{name:'playpop.party'})).toBeVisible()
 })
 
 test('full-camera menus keep all choices inside the visible frame on a narrow screen',async({page,installMockCamera})=>{
  test.setTimeout(60000);await page.setViewportSize({width:390,height:844})
  await installMockCamera({person:true});await openApp(page,'#/',()=>installMenuPose(page))
- await expect(page.getByRole('heading',{name:'How many players?'})).toBeVisible()
+ await expect(page.getByRole('heading',{name:'playpop.party'})).toBeVisible()
  await expect(page.locator('.webcam-navigation__hand')).toHaveCount(1)
- await choose(page,'.welcome-players button[aria-label="2 players"]')
  await expect(page.locator('body')).toHaveClass(/camera-menu-active/)
  await expect(page.locator('.webcam-navigation__dock')).toHaveCount(0)
  await page.screenshot({path:test.info().outputPath('camera-home-390.png')})
@@ -121,8 +120,9 @@ test('full-camera menus keep all choices inside the visible frame on a narrow sc
   await page.screenshot({path:test.info().outputPath(`camera-catalog-${viewport.width}.png`)})
  }
  await choose(page,'.catalog-toolbar .back-link')
- await expect(page.getByRole('heading',{name:'Motion Play!'})).toBeVisible()
+ await expect(page.getByRole('heading',{name:'playpop.party'})).toBeVisible()
  await choose(page,'a[href="#/tournament"]')
+ await choose(page,'.welcome-players button[aria-label="2 players"]')
  await expect(page.getByLabel('Players ready check',{exact:true})).toBeVisible()
  expect(await page.evaluate(()=>(window as typeof window&{__mockMediaState:{requests:number}}).__mockMediaState.requests)).toBe(1)
  await page.screenshot({path:test.info().outputPath('webcam-tournament-mobile.png')})
@@ -132,12 +132,12 @@ test('full-camera menus keep all choices inside the visible frame on a narrow sc
 test('all visible games show a playing movement demo, only ready buttons, then a bare three-second countdown',async({page,installMockCamera})=>{
  test.setTimeout(140000)
  await installMockCamera({person:true});await openApp(page,'#/',()=>installMenuPose(page))
- await page.getByRole('button',{name:'1 player',exact:true}).click()
  await expect(page.getByLabel('Mirrored navigation camera')).toBeVisible()
- const games=[['ninja-training','Paper Dojo'],['window-wipe','Window Wipe'],['punch-arena','Cardboard Champ'],['keep-ups','Keep Ups'],['ghost-catcher','Ghost Catcher'],['ufo-juggler','UFO Juggler'],['six-hoops','Six Hoops'],['goalkeeper','Goalkeeper'],['net-rally','Net Rally'],['kangaroo-race','Kangaroo Race'],['marble-bowling','Marble Bowling'],['shadow-snap','Shadow Snap']]
+ const games=[['ninja-training','Paper Dojo'],['window-wipe','Window Wipe'],['punch-arena','Cardboard Champ'],['keep-ups','Keep Ups'],['ghost-catcher','Ghost Catcher'],['ufo-juggler','UFO Juggler'],['six-hoops','Six Hoops'],['goalkeeper','Goalkeeper'],['net-rally','Net Rally'],['kangaroo-race','Kangaroo Race'],['marble-bowling','Marble Bowling'],['shadow-snap','Shadow Snap'],['moon-gate-run','Moon Gate Run']]
  for(const [slug,title] of games){
   await page.getByRole('link',{name:/Game Catalog/}).click()
   await page.getByRole('link',{name:`Play ${title}`,exact:true}).click()
+  await page.getByRole('button',{name:'1 player',exact:true}).click()
   const gate=page.getByLabel('Players ready check',{exact:true}),video=gate.getByLabel(`${title} movement demonstration`)
   await expect(gate).toBeVisible();await expect(video).toBeVisible()
   await expect.poll(()=>video.evaluate(v=>(v as HTMLVideoElement).currentTime)).toBeGreaterThan(.15)
@@ -152,7 +152,7 @@ test('all visible games show a playing movement demo, only ready buttons, then a
   if(slug==='ninja-training')await page.screenshot({path:test.info().outputPath('minimal-game-intro.png')})
   const started=await page.evaluate(()=>{Object.assign(window,{__readyAll:true});return performance.now()})
   await expect(gate).toHaveCount(0,{timeout:10000})
-  expect(await page.evaluate(()=>performance.now())-started).toBeGreaterThanOrEqual(3000)
+  expect(await page.evaluate(()=>performance.now())-started).toBeGreaterThanOrEqual(2000)
   await page.evaluate(()=>Object.assign(window,{__readyAll:false}))
   await expect(page.locator('.game-curtain strong').first()).toHaveText('3')
   await expect(page.getByRole('button',{name:'Pause',exact:true})).toBeHidden()
@@ -161,36 +161,36 @@ test('all visible games show a playing movement demo, only ready buttons, then a
   await page.getByRole('button',{name:'Exit game',exact:true}).click()
   await expect(page.getByRole('heading',{name:'Game Catalog',level:1})).toBeVisible()
   await page.getByRole('link',{name:'← Back to Home'}).click()
-  await expect(page.getByRole('button',{name:'1 player · change'})).toBeVisible()
+  await expect(page.getByRole('heading',{name:'playpop.party'})).toBeVisible()
  }
  await page.reload()
- await expect(page.getByRole('heading',{name:'Motion Play!'})).toBeVisible()
+ await expect(page.getByRole('heading',{name:'playpop.party'})).toBeVisible()
  await expect(page.getByRole('heading',{name:'How many players?'})).toHaveCount(0)
 })
 
 
-test('small pose tremors keep the pointer steady and select a player button after three seconds',async({page,installMockCamera})=>{
- await installMockCamera({person:true});await openApp(page,'#/',()=>installMenuPose(page))
+test('small pose tremors keep the pointer steady and select a player button after two seconds',async({page,installMockCamera})=>{
+ await installMockCamera({person:true});await openApp(page,'#/camera/window-wipe',()=>installMenuPose(page))
  await expect(page.locator('.webcam-navigation__hand')).toHaveCount(1)
  await page.evaluate(()=>Object.assign(window,{__menuAim:'.welcome-players button[aria-label="4 players"]',__menuJitter:3}))
  await expect(page.locator('.webcam-navigation__hold')).toBeVisible()
  const positions=await page.evaluate(async()=>{
   const samples:{x:number;y:number}[]=[]
-  await new Promise<void>(resolve=>{const timer=setInterval(()=>{const p=document.querySelector<HTMLElement>('.webcam-navigation__hand');if(p)samples.push({x:parseFloat(p.style.left)*innerWidth/100,y:parseFloat(p.style.top)*innerHeight/100})},50);setTimeout(()=>{clearInterval(timer);resolve()},2200)})
+  await new Promise<void>(resolve=>{const timer=setInterval(()=>{const p=document.querySelector<HTMLElement>('.webcam-navigation__hand');if(p)samples.push({x:parseFloat(p.style.left)*innerWidth/100,y:parseFloat(p.style.top)*innerHeight/100})},50);setTimeout(()=>{clearInterval(timer);resolve()},1500)})
   return samples
  })
  expect(positions.length).toBeGreaterThan(20)
  expect(Math.max(...positions.map(p=>p.x))-Math.min(...positions.map(p=>p.x))).toBeLessThan(.5)
  expect(Math.max(...positions.map(p=>p.y))-Math.min(...positions.map(p=>p.y))).toBeLessThan(.5)
- await expect(page.getByRole('heading',{name:'Motion Play!'})).toBeVisible({timeout:2000})
- await expect(page.getByRole('button',{name:'4 players · change'})).toBeVisible()
+ await expect(page.getByLabel('Players ready check',{exact:true})).toBeVisible({timeout:4000})
+ await expect(page.getByRole('button',{name:/^Ready Player /})).toHaveCount(4)
 })
 
 for(const count of [2,3,4])test(`first detected hand selects ${count} players without moving away first`,async({page,installMockCamera})=>{
  await installMockCamera({person:true})
  await page.addInitScript(count=>Object.assign(window,{__menuAim:`.welcome-players button[aria-label="${count} players"]`}),count)
- await openApp(page,'#/',()=>installMenuPose(page))
+ await openApp(page,'#/camera/window-wipe',()=>installMenuPose(page))
  await expect(page.getByRole('heading',{name:'How many players?'})).toBeVisible()
- await expect(page.getByRole('button',{name:`${count} players · change`,exact:true})).toBeVisible({timeout:12000})
+ await expect(page.getByRole('button',{name:/^Ready Player /})).toHaveCount(count,{timeout:12000})
  expect(await page.evaluate(()=>(window as typeof window&{__mockMediaState:{requests:number}}).__mockMediaState.requests)).toBe(1)
 })

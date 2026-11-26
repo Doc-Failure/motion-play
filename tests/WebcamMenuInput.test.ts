@@ -4,15 +4,15 @@ import {containCameraFrame} from '../src/game/cameraGeometry'
 import type {StickBody} from '../src/camera/poseTracking'
 const targets=[{id:'catalog',x:.1,y:.2,width:.3,height:.3},{id:'tournament',x:.6,y:.2,width:.3,height:.3}]
 const sample=(t:number,x=.2,playerId:1|2|3|4=1,pointerId='wrist'):MenuSample=>({time:t,events:[{playerId,kind:'UI_POINTER',confidence:1,timestamp:t,x,y:.3,pointerId}]})
-const hold=(model:WebcamMenuDwell,start=0,x=.2,id:1|2|3|4=1)=>{let result=model.process(sample(start,x,id),targets);for(let t=start+500;t<=start+3000;t+=500)result=model.process(sample(t,x,id),targets);return result}
-describe('physical three-second camera choices',()=>{
- it('requires three full seconds of fresh wrist observations, rather than elapsed wall time alone',()=>{
+const hold=(model:WebcamMenuDwell,start=0,x=.2,id:1|2|3|4=1)=>{let result=model.process(sample(start,x,id),targets);for(let t=start+500;t<=start+2000;t+=500)result=model.process(sample(t,x,id),targets);return result}
+describe('two-second camera choices',()=>{
+ it('requires two full seconds of fresh wrist observations, rather than elapsed wall time alone',()=>{
   const m=new WebcamMenuDwell();m.process(sample(0),targets)
-  for(let t=500;t<=2500;t+=500)expect(m.process(sample(t),targets).activatedId).toBeNull()
-  expect(m.process(sample(2999),targets).progress).toBeCloseTo(2999/3000)
-  expect(m.process(sample(3000),targets).activatedId).toBe('catalog')
+  for(let t=500;t<=1500;t+=500)expect(m.process(sample(t),targets).activatedId).toBeNull()
+  expect(m.process(sample(1999),targets).progress).toBeCloseTo(1999/2000)
+  expect(m.process(sample(2000),targets).activatedId).toBe('catalog')
   const frozen=new WebcamMenuDwell();frozen.process(sample(0),targets)
-  expect(frozen.process(sample(3000),targets).progress).toBe(0)
+  expect(frozen.process(sample(2000),targets).progress).toBe(0)
  })
  it.each([1,2,3,4] as const)('lets player %i hold a real button without stretching their lane',id=>{
   expect(hold(new WebcamMenuDwell(),0,.2,id).activatedId).toBe('catalog')
@@ -21,14 +21,14 @@ describe('physical three-second camera choices',()=>{
   for(const interruption of [{time:1200,events:[]} as MenuSample,sample(1200,.5),{...sample(1200),events:sample(1200).events.map(e=>({...e,confidence:.1}))}]){
    const m=new WebcamMenuDwell();m.process(sample(0),targets);m.process(sample(600),targets);m.process(interruption,targets)
    expect(m.process(sample(1500),targets).progress).toBe(0)
-   expect(m.process(sample(2000),targets).progress).toBeCloseTo(1/6)
+   expect(m.process(sample(2000),targets).progress).toBeCloseTo(1/4)
   }
  })
  it('does not combine different hands into a single hold, but accepts either hand',()=>{
   const m=new WebcamMenuDwell();m.process(sample(0,.2,1,'left'),targets);m.process(sample(500,.2,1,'left'),targets)
   expect(m.process(sample(1000,.2,1,'right'),targets).progress).toBe(0)
-  for(let t=1500;t<=3500;t+=500)expect(m.process(sample(t,.2,1,'right'),targets).activatedId).toBeNull()
-  expect(m.process(sample(4000,.2,1,'right'),targets).activatedId).toBe('catalog')
+  for(let t=1500;t<=2500;t+=500)expect(m.process(sample(t,.2,1,'right'),targets).activatedId).toBeNull()
+  expect(m.process(sample(3000,.2,1,'right'),targets).activatedId).toBe('catalog')
  })
  it('does not repeat while a hand stays on its chosen button and can choose the next button',()=>{
   const m=new WebcamMenuDwell();expect(hold(m).activatedId).toBe('catalog')
@@ -90,6 +90,6 @@ it('a stationary second player cannot block another hand entering a choice after
  // The second hand is the only one initially detected after the scene changes.
  m.process(sample(0,.7,2,'second'),targets)
  m.process(two(100,.5),targets)
- for(let t=200;t<3200;t+=200)expect(m.process(two(t,.2),targets).activatedId).toBeNull()
- expect(m.process(two(3200,.2),targets).activatedId).toBe('catalog')
+ for(let t=200;t<2200;t+=200)expect(m.process(two(t,.2),targets).activatedId).toBeNull()
+ expect(m.process(two(2200,.2),targets).activatedId).toBe('catalog')
 })

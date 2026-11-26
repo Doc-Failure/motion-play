@@ -23,7 +23,7 @@ style, isolated on transparency without people, scenery or text.
 
 | Asset | Use | Dimensions | Transparency | Animation |
 | --- | --- | --- | --- | --- |
-| `public/assets/minigames/paper-dojo/ninja-poses.webp` | Paper Dojo target and hit reaction | 256 × 256 | Alpha | Four cells: running, ready, airborne and surprised hit; procedural rotation and tumble |
+| `docs/visual-audit/paper-dojo-legacy-poses.webp` | Paper Dojo target and hit reaction | 256 × 256 | Alpha | Four cells: running, ready, airborne and surprised hit; procedural rotation and tumble |
 
 The ninja sheet was generated in the same ChatGPT conversation, requesting four
 separate poses of a cheerful teal ninja with yellow scarf in rough wax crayon,
@@ -34,7 +34,7 @@ The recoverable pre-optimization tournament panel is `tournament-panel-original.
 
 | Asset | Use | Dimensions | Transparency | Animation |
 | --- | --- | --- | --- | --- |
-| `public/assets/minigames/paper-dojo/ninja-attack.webp` | Paper Dojo airborne attack | 128 × 128 | Alpha | Determined attack pose, rotated along the simulated leap |
+| `docs/visual-audit/paper-dojo-legacy-attack.webp` | Paper Dojo airborne attack | 128 × 128 | Alpha | Determined attack pose, rotated along the simulated leap |
 
 The attack image was generated in the same ChatGPT conversation: a full-body
 teal ninja with yellow scarf, leaping in a punch with determined eyebrows and a
@@ -132,3 +132,38 @@ ChatGPT Images generated the four-column atlas in the EyeToy Game Assets convers
 Kimi WebBridge generated two transparent PNGs in the EyeToy Game Assets conversation. The first contains five costumes in six poses. Each runtime strip has six 124 × 124 cells for running, crouching, jumping, recoiling, staggering and defeat. The second image supplies the crescent-topped Moon Gate. Its platforms face inward from both edges of the camera.
 
 [Original action sheet](paper-dojo-actions-original.png) · [Original Moon Gate](paper-dojo-moon-gate-original.png) · [Runtime files, dimensions and exact prompts](../../public/assets/minigames/paper-dojo/manifest.json)
+
+## Paper Dojo airborne sprites
+
+The EyeToy Game Assets conversation produced a transparent 1024 × 1536 PNG through Kimi WebBridge. Each of its five costume rows supplies three poses for a single leap. The runtime strips use 124 × 124 cells. The tutorial uses the same Leaf Scout strip as the game.
+
+[Downloaded sheet](paper-dojo-flight-original.png) · [Exact prompt and sprite dimensions](../../public/assets/minigames/paper-dojo/manifest.json)
+
+## Paper Dojo attack expressions
+
+All five airborne strips use the revised 971 × 1619 transparent costume sheet. Every push-off, tuck and reach frame has angled brows, narrowed eyes and a downturned mouth. Each of the five WebP strips contains three 124 × 124 cells. The movement tutorial uses the revised Leaf Scout strip.
+
+[Revised artwork](paper-dojo-attack-scowls-original.png) · [Original flight artwork](paper-dojo-flight-original.png) · [Exact edit prompt and runtime files](../../public/assets/minigames/paper-dojo/manifest.json)
+
+## Paper Dojo approach and attack sequence
+
+Each 620 × 124 action strip now pairs the smiling approach and wind-up from the original flight artwork with the recoil, stagger and defeat frames. The separate scowling attack strip starts at takeoff. The game and movement tutorial share a small orange-and-gold burst drawing positioned behind the trailing foot.
+
+[Smiling source](paper-dojo-flight-original.png) · [Attack source](paper-dojo-attack-scowls-original.png) · [Launch burst](../../src/minigames/ninja-training/launch-burst.svg)
+
+
+## Thunder Oni
+
+Kimi WebBridge generated the transparent 1774 × 887 Thunder Oni sheet. The game uses two strips of 136-pixel cells. The five action frames cover the smiling entrance and crouch, recoil, stagger and defeat. Three scowling frames animate the leap and slam. The boss fights at the Moon Gate after Violet Shadow.
+
+[Original sheet](paper-dojo-oni-original.png) · [Exact prompt and runtime files](../../public/assets/minigames/paper-dojo/manifest.json)
+
+## Moon Gate Run
+
+Kimi WebBridge generated the four original transparent landscape and platform sprites in a single 1254 × 1254 sheet. Bamboo and waterfall cutouts scroll behind the runners. The top edges of the crate and wooden bridge meet their landing surfaces. The exact prompt, runtime dimensions and reuse of the Paper Dojo sprites are recorded in the game manifest. The movement lesson uses the crate and ninja art to demonstrate a jump followed by a swat.
+
+[Downloaded source](moon-gate-run-scenery-original.png) · [Exact prompt and sprite dimensions](../../public/assets/minigames/moon-gate-run/manifest.json) · [Gameplay preview](moon-gate-run-trail.webp)
+
+### Moon Gate Run animation sheets
+
+Six Kimi WebBridge sheets provide 127 authored frames for Leaf Scout, the four ninja outfits, their hit reactions, Thunder Oni, scenery and effects. Four derived contact shadows bring the individual sprite export to 131 transparent PNGs. The opening lesson uses the actual player strip. The game selects poses from the same clock as its encounters and collisions. [Master sheets, prompts and individual sprites](moon-gate-sheets/README.md) · [Game manifest](../../public/assets/minigames/moon-gate-run/manifest.json)

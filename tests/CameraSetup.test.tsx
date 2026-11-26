@@ -390,7 +390,7 @@ it('requests the camera for Quick Play even when Fish Frenzy is randomly chosen'
 })
 
 
-it('adapts Ninja Training camera samples into both concrete MIXED input kinds',async()=>{
+it('forwards Ninja Training camera swats and ignores body movement',async()=>{
   const source=controller()
   render(<CameraSetup readyGateEnabled={false} source={source} initialGame="ninja-training"/>)
   await waitFor(()=>expect(screen.getByRole('button',{name:'Play Paper Dojo'})).toBeEnabled())
@@ -415,6 +415,6 @@ it('adapts Ninja Training camera samples into both concrete MIXED input kinds',a
     })
     act(()=>vi.advanceTimersByTime(100))
     expect(hit).toHaveBeenCalledWith(expect.objectContaining({playerId:1,kind:'MOTION_HIT',x:.3,y:.62}))
-    expect(hit).toHaveBeenCalledWith(expect.objectContaining({playerId:1,kind:'BODY_MOVE',x:.3,y:.62}))
+    expect(hit).not.toHaveBeenCalledWith(expect.objectContaining({playerId:1,kind:'BODY_MOVE',x:.3,y:.62}))
   } finally {hit.mockRestore();process.mockRestore();context.mockRestore();vi.useRealTimers()}
 })

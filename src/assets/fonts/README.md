@@ -1,6 +1,6 @@
 # Local handwriting fonts
 
-Active font: **Motion Scribble revision 02**, an original Motion Play family in
+Active font: **Motion Scribble revision 02**, an original playpop.party family in
 Regular (400) and Bold (700), served locally from `public/fonts` under the CSS
 family alias `Motion Hand`. Headings use the real Bold face with synthetic
 outlining/weights disabled. Handwritten pen pressure, varied lean/width/baselines,
@@ -15,7 +15,7 @@ All active fonts are local; no runtime font-service requests or tracking.
 
 ## Original Motion Scribble family
 
-An original Motion Play family is available at `/font-preview.html`. The editable
+An original playpop.party family is available at `/font-preview.html`. The editable
 specimen covers game titles, player buttons, scores, small instructions and
 accented text. Regular (400) and Bold (700) each contain 223 mapped characters,
 including ASCII, Latin accents, arrows and simple hand-drawn symbols. Revision 02 is now active throughout the application. Ten contextual alternate

@@ -2,7 +2,7 @@ import {expect,openApp,test} from './fixtures'
 
 test('player choices are centered as a group with centered numbers and labels',async({page,installMockCamera})=>{
  await installMockCamera({person:true})
- await openApp(page,'#/',async()=>{await page.route('**/pose/tracker.js',route=>route.fulfill({contentType:'text/javascript',body:'window.createLocalPoseTracker=async()=>({detect:()=>[],close:()=>{}})'}))})
+ await openApp(page,'#/camera/window-wipe',async()=>{await page.route('**/pose/tracker.js',route=>route.fulfill({contentType:'text/javascript',body:'window.createLocalPoseTracker=async()=>({detect:()=>[],close:()=>{}})'}))})
  await expect(page.locator('body')).toHaveClass(/camera-menu-active/)
  for(const size of [{width:1440,height:900},{width:390,height:844}]){
   await page.setViewportSize(size)

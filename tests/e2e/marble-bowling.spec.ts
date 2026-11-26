@@ -11,8 +11,8 @@ for(const players of [1,4]){
       p[13]={x,y:.55,visibility:1};p[15]={x,y,visibility:1};return p
     }),close(){}})`
     await openApp(page,'#/catalog',()=>page.route('**/pose/tracker.js',r=>r.fulfill({contentType:'text/javascript',body:tracker})))
-    await page.getByRole('button',{name:players===1?'1 player':'4 players',exact:true}).click()
     await page.getByRole('link',{name:'Play Marble Bowling'}).click()
+    await page.getByRole('button',{name:players===1?'1 player':'4 players',exact:true}).click()
     await expect(page.getByLabel('Marble Bowling movement demonstration')).toBeVisible()
     await completeReadyGate(page)
     await expect(page.locator('.game-tools[data-phase=playing]')).toBeVisible({timeout:9000})

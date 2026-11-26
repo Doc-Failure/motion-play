@@ -17,11 +17,12 @@ for(const game of games)test(`collection review / ${game.slug}`,async({page,inst
   const archive=previousGames.some(g=>g.slug===game.slug)
   const two=process.env.MP_REVIEW_PLAYERS==='2',players=two?2:1
   await installMockCamera({person:true})
-  await page.addInitScript(count=>sessionStorage.setItem('motion-play:players:v1',String(count)),players)
+  if(archive)await page.addInitScript(count=>sessionStorage.setItem('motion-play:players:v1',String(count)),players)
   await page.route('**/pose/tracker.js',r=>r.fulfill({contentType:'text/javascript',body:'window.createLocalPoseTracker=async()=>({detect:()=>[],close:()=>{}})'}))
   const path=archive?`tests/archive.html#${game.slug}`:`#/${isGameVisible(game.slug)?'camera':'workshop'}/${game.slug}`
   await page.goto(new URL(path,workshopOrigin).href)
   if(!archive){
+    await page.getByRole('button',{name:two?'2 players':'1 player',exact:true}).click()
     const gate=page.getByRole('group',{name:'Players ready check'})
     await expect(gate).toBeVisible()
     const buttons=gate.getByRole('button',{name:/^Ready Player/})
@@ -76,7 +77,6 @@ for(const game of games)test(`collection review / ${game.slug}`,async({page,inst
 
 test('the second player can shoot a basket with a measured wrist',async({page,installMockCamera,workshopOrigin})=>{
   await installMockCamera({person:true})
-  await page.addInitScript(()=>sessionStorage.setItem('motion-play:players:v1','2'))
   await page.route('**/pose/tracker.js',r=>r.fulfill({contentType:'text/javascript',body:`
     window.createLocalPoseTracker=async()=>({detect:()=>[.25,.75].map((x,seat)=>{
       const joints=Array.from({length:33},()=>({x:0,y:0,visibility:0}))
@@ -87,6 +87,7 @@ test('the second player can shoot a basket with a measured wrist',async({page,in
     }),close:()=>{}})
   `}))
   await page.goto(new URL('#/workshop/basketball-blitz',workshopOrigin).href)
+  await page.getByRole('button',{name:'2 players',exact:true}).click()
   const buttons=page.getByRole('button',{name:/^Ready Player/})
   await expect(buttons).toHaveCount(2)
   for(const b of await buttons.all()){await expect(b).toBeEnabled();await b.press('Enter')}

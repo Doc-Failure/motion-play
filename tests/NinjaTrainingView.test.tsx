@@ -22,7 +22,7 @@ describe('original Paper Dojo view',()=>{
     const x=parseFloat(ninja.style.left)/100,y=parseFloat(ninja.style.top)/100
     const event:MotionInputEvent={playerId:1,kind:'MOTION_HIT',x,y,confidence:1,timestamp:4100}
     rerender(<NinjaTraining playerCount={1} onExit={exit} inputEvents={[event]}/>)
-    expect(screen.getByText('POW!')).toBeInTheDocument()
+    expect(document.querySelector('.dojo-effect--hit [data-sprite="recoil"]')).toBeVisible()
     expect(screen.getByText('10')).toBeInTheDocument()
     expect(screen.queryByRole('button',{name:'Pause'})).not.toBeInTheDocument()
     const hidden=vi.spyOn(document,'hidden','get').mockReturnValue(true);fireEvent(document,new Event('visibilitychange'))
@@ -39,6 +39,7 @@ describe('original Paper Dojo view',()=>{
       const tick=clock()
       render(<NinjaTraining playerCount={1} onExit={vi.fn()}/>)
       tick(4100)
+      expect(document.querySelector('.dojo-launch-burst')).toBeNull()
       fireEvent.click(screen.getByRole('button',{name:'Swat Player 1 ninja 1'}))
       expect(document.querySelector('.dojo-effect--hit [data-sprite="defeated"]')).toBeVisible()
       tick(4350)
@@ -46,6 +47,29 @@ describe('original Paper Dojo view',()=>{
     } finally {
       document.documentElement.classList.remove('reduce-motion')
     }
+  })
+  it('changes the wind-up sprite at launch and freezes the burst with the round clock',()=>{
+    const tick=clock(),props={playerCount:1 as const,onExit:vi.fn()}
+    const {rerender}=render(<NinjaTraining {...props}/>)
+    tick(3500)
+    const ninja=screen.getByRole('button',{name:'Swat Player 1 ninja 1'})
+    expect(ninja.querySelector('[data-sprite="ready"]')).toHaveStyle({backgroundImage:'url("/assets/minigames/paper-dojo/leaf-actions.webp")'})
+    expect(ninja.querySelector('.dojo-launch-burst')).toBeNull()
+    tick(3900)
+    expect(ninja.querySelector('[data-sprite="leap"]')).toHaveStyle({backgroundImage:'url("/assets/minigames/paper-dojo/leaf-flight.webp")'})
+    const burst=ninja.querySelector('.dojo-launch-burst')!
+    const start=burst.getAttribute('style')
+    tick(3990)
+    const expanded=burst.getAttribute('style')
+    expect(expanded).not.toBe(start)
+    rerender(<NinjaTraining {...props} externalPauseReason="Camera disconnected"/>)
+    tick(9000)
+    expect(ninja.querySelector('.dojo-launch-burst')).toHaveAttribute('style',expanded!)
+    rerender(<NinjaTraining {...props}/>)
+    fireEvent.click(screen.getByRole('button',{name:'Resume round'}))
+    tick(9350)
+    expect(ninja.querySelector('.dojo-launch-burst')).toBeNull()
+    expect(ninja).toBeEnabled()
   })
   it('supports uninterrupted keyboard/pointer strikes and a clean replay',()=>{
     const tick=clock();render(<NinjaTraining playerCount={1} onExit={vi.fn()}/>)
@@ -60,7 +84,7 @@ describe('original Paper Dojo view',()=>{
     const late=document.querySelector<HTMLButtonElement>('.dojo-ninja--leap')!
     expect(late).toBeEnabled()
     fireEvent.click(late)
-    expect(screen.getByText('POW!')).toBeInTheDocument()
+    expect(document.querySelector('.dojo-effect--hit [data-sprite="recoil"]')).toBeVisible()
     expect(screen.queryByText(/Bamboo burst/i)).not.toBeInTheDocument()
     tick(64000)
     expect(screen.getByRole('dialog',{name:'Paper Dojo results'})).toBeVisible()
@@ -78,27 +102,19 @@ describe('original Paper Dojo view',()=>{
   })
 })
 
-describe('Paper Dojo obstacle simulation',()=>{
-  it('renders warning, normalized BODY_MOVE contact, player isolation and one penalty per obstacle',()=>{
-    const tick=clock(),props={playerCount:4 as const,onExit:vi.fn()}
-    const {rerender}=render(<NinjaTraining {...props}/>);tick(7200)
-    expect(screen.getByRole('button',{name:'Player 3 obstacle: warning'})).toBeDisabled()
-    tick(8000)
-    const event:MotionInputEvent={playerId:3,kind:'BODY_MOVE',x:.3,y:.62,confidence:1,timestamp:8000}
-    rerender(<NinjaTraining {...props} inputEvents={[event]}/>)
-    expect(screen.getByRole('button',{name:'Player 3 obstacle: bumped'})).toBeDisabled()
-    expect(screen.getByRole('button',{name:'Player 1 obstacle: avoid'})).toBeEnabled()
-    expect(screen.getByText('BUMP!')).toBeVisible()
-    const score=document.querySelectorAll('.dojo-game header dd')[2].textContent
-    rerender(<NinjaTraining {...props} inputEvents={[{...event}]}/>)
-    expect(document.querySelectorAll('.dojo-game header dd')[2]).toHaveTextContent(score!)
-  })
-  it('offers keyboard/pointer simulation with a compact action cue',()=>{
-    const tick=clock();render(<NinjaTraining playerCount={1} onExit={vi.fn()}/>);tick(8000)
-    fireEvent.click(screen.getByRole('button',{name:'Player 1 obstacle: avoid'}))
-    expect(screen.getByText('BUMP!')).toBeVisible()
-    expect(screen.getByText(/Leaf Scout · 1 hit/)).toBeVisible()
-    tick(9000)
-    expect(screen.queryByRole('button',{name:/obstacle/})).not.toBeInTheDocument()
-  })
+it('leaves the face clear and keeps player life in the HUD after a miss',()=>{
+  const tick=clock()
+  render(<NinjaTraining playerCount={1} onExit={vi.fn()}/>)
+  tick(4100)
+  const ninja=screen.getByRole('button',{name:'Swat Player 1 ninja 1'})
+  expect(ninja).toHaveAccessibleDescription('1 of 1 health remaining')
+  expect(ninja.querySelector('[data-sprite="leap"]')).toHaveAttribute('data-frame','0')
+  tick(5100)
+  expect(ninja.querySelector('[data-sprite="leap"]')).toHaveAttribute('data-frame','1')
+  tick(5650)
+  expect(ninja.querySelector('[data-sprite="leap"]')).toHaveAttribute('data-frame','2')
+  tick(8050)
+  expect(screen.getByRole('meter',{name:'Player 1 health'})).toHaveAttribute('aria-valuenow','3')
+  expect(screen.queryByRole('button',{name:/obstacle/})).toBeNull()
+  expect(document.querySelector('.score-burst')).toBeNull()
 })

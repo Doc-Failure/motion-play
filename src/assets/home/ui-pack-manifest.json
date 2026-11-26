@@ -48,14 +48,18 @@
       "web": "catalog-panel.webp",
       "width": 768,
       "bytes": 209682,
-      "sourceBytes": 2675819
+      "sourceBytes": 2675819,
+      "delivery": "catalog-panel.avif",
+      "deliveryBytes": 66435
     },
     {
       "source": "left-child.png",
       "web": "left-child.webp",
       "width": 480,
       "bytes": 125088,
-      "sourceBytes": 1950777
+      "sourceBytes": 1950777,
+      "delivery": "left-child.avif",
+      "deliveryBytes": 44133
     },
     {
       "source": "paper-background.png",
@@ -76,7 +80,9 @@
       "web": "rainbow.webp",
       "width": 640,
       "bytes": 110890,
-      "sourceBytes": 2318285
+      "sourceBytes": 2318285,
+      "delivery": "rainbow.avif",
+      "deliveryBytes": 41658
     },
     {
       "source": "right-child.png",
@@ -90,21 +96,27 @@
       "web": "tournament-panel.webp",
       "width": 768,
       "bytes": 200524,
-      "sourceBytes": 2813699
+      "sourceBytes": 2813699,
+      "delivery": "tournament-panel.avif",
+      "deliveryBytes": 72513
     },
     {
       "source": "title-cloud.png",
       "web": "title-cloud.webp",
       "width": 1024,
       "bytes": 100962,
-      "sourceBytes": 2157358
+      "sourceBytes": 2157358,
+      "delivery": "title-cloud.avif",
+      "deliveryBytes": 32851
     },
     {
       "source": "sun-clouds.png",
       "web": "sun-clouds.webp",
       "width": 768,
       "bytes": 95750,
-      "sourceBytes": 2264077
+      "sourceBytes": 2264077,
+      "delivery": "sun-clouds.avif",
+      "deliveryBytes": 29214
     },
     {
       "source": "catalog-icon.png",
@@ -125,7 +137,9 @@
       "web": "garden-border.webp",
       "width": 1600,
       "bytes": 237222,
-      "sourceBytes": 1331156
+      "sourceBytes": 1331156,
+      "delivery": "garden-border.avif",
+      "deliveryBytes": 86938
     }
   ],
   "sourceSha256": "98464a921a1b00f92a662231d682bc76f49bcf30b4b2143d0d44eeb64f6e19c7"

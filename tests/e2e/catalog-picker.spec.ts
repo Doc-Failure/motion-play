@@ -1,18 +1,15 @@
 import { completeReadyGate, expect, openApp, test } from './fixtures'
 import { visibleCatalogGames } from '../../src/app/catalog'
 
-test('home player selector and refreshed catalog controls remain clear',async({page,installMockCamera})=>{
- await installMockCamera({person:true});await openApp(page,'#/')
- await page.getByRole('button',{name:'1 player',exact:true}).click()
- const title=page.getByRole('heading',{name:'Motion Play!'}),change=page.getByRole('button',{name:'1 player · change'})
- await expect(change).toBeVisible()
- await expect(page.locator('.hero-copy')).toHaveCSS('background-color','rgb(255, 255, 255)')
- for(const viewport of [{width:1280,height:720},{width:390,height:844}]){
+test('home displays the full domain at desktop and mobile sizes',async({page,installMockCamera})=>{
+ await installMockCamera({denied:true});await openApp(page,'#/')
+ const title=page.getByRole('heading',{name:'playpop.party'})
+ await expect(title).toHaveText('playpop.party')
+ for(const viewport of [{width:1280,height:720},{width:320,height:640}]){
   await page.setViewportSize(viewport)
-  const a=(await title.boundingBox())!,b=(await change.boundingBox())!
-  expect(b.y).toBeGreaterThan(a.y+a.height)
-  const notice=page.locator('.webcam-navigation__instruction')
-  if(await notice.isVisible()){const n=(await notice.boundingBox())!;expect(b.y+b.height<=n.y||n.y+n.height<=b.y).toBe(true)}
+  const box=(await title.boundingBox())!
+  expect(box.x).toBeGreaterThanOrEqual(0)
+  expect(box.x+box.width).toBeLessThanOrEqual(viewport.width)
  }
  await page.setViewportSize({width:1280,height:720})
  await page.screenshot({path:test.info().outputPath('home-refreshed.png')})
@@ -25,7 +22,6 @@ test('home player selector and refreshed catalog controls remain clear',async({p
 test('keyboard skip link preserves catalog and active camera routes', async ({ page, installMockCamera }) => {
   await installMockCamera({ person: true })
   await openApp(page, '#/catalog')
-  await page.getByRole('button',{name:'1 player',exact:true}).click()
   const skip = page.getByRole('link', { name: 'Skip to main content' })
   await skip.focus()
   await page.keyboard.press('Enter')
@@ -33,6 +29,7 @@ test('keyboard skip link preserves catalog and active camera routes', async ({ p
   await expect(page).toHaveURL(/#\/catalog$/)
   await expect(page.getByRole('heading', { name: 'Game Catalog', exact: true })).toHaveClass('sr-only')
   await page.getByRole('link', { name: 'Play Paper Dojo', exact: true }).click()
+  await page.getByRole('button',{name:'1 player',exact:true}).click()
   await completeReadyGate(page)
   await expect(page.locator('.dojo-game')).toBeVisible()
   await skip.focus()
@@ -48,7 +45,6 @@ test('keyboard skip link preserves catalog and active camera routes', async ({ p
 test('catalog uses compact homepage stickers and Play starts without confirmation',async ({page,installMockCamera}) => {
   await installMockCamera({person:true})
   await openApp(page,'#/catalog')
-  await page.getByRole('button',{name:'1 player',exact:true}).click()
   const games = visibleCatalogGames.filter(game => game.available)
   await expect(page.locator('.catalog-picker .game-doodle')).toHaveCount(visibleCatalogGames.length)
   expect(games.map(game => game.slug)).toContain('marble-bowling')
@@ -68,6 +64,7 @@ test('catalog uses compact homepage stickers and Play starts without confirmatio
   }
   await page.setViewportSize({width:1280,height:720})
   await page.getByRole('link',{name:'Play Window Wipe',exact:true}).click()
+  await page.getByRole('button',{name:'1 player',exact:true}).click()
   await completeReadyGate(page)
   await expect(page.locator('.camera-play')).toHaveAttribute('data-flow','playing')
   await expect(page.getByRole('button',{name:'Start round now'})).toHaveCount(0)
@@ -77,7 +74,6 @@ test('catalog uses compact homepage stickers and Play starts without confirmatio
 
 test('old deferred game links return to the focused catalog',async ({page}) => {
   await openApp(page,'#/camera/meteor-smash')
-  await page.getByRole('button',{name:'1 player',exact:true}).click()
   await expect(page.getByRole('heading',{name:'Game Catalog',exact:true})).toHaveClass('sr-only')
   await expect(page.locator('.game-card')).toHaveCount(visibleCatalogGames.length)
   await expect(page.getByRole('link',{name:'Play Meteor Smash',exact:true})).toHaveCount(0)
@@ -87,7 +83,6 @@ test('enabling the camera preserves the catalog layout and tab order', async ({p
   const viewports = [{width: 1440, height: 900}, {width: 390, height: 844}]
   await installMockCamera({denied:true,person:true})
   await openApp(page, '#/catalog')
-  await page.getByRole('button',{name:'1 player',exact:true}).click()
   const enable = page.getByRole('button',{name:'Enable webcam navigation'})
   await expect(enable).toBeEnabled()
   const catalog = page.getByRole('region',{name:'Game Catalog'})
@@ -150,5 +145,6 @@ test('enabling the camera preserves the catalog layout and tab order', async ({p
     })).toBe(true)
   }
   await catalog.getByRole('link',{name:'Play Shadow Snap'}).press('Enter')
+  await page.getByRole('button',{name:'1 player',exact:true}).click()
   await expect(page.getByLabel('Players ready check',{exact:true})).toBeVisible()
 })

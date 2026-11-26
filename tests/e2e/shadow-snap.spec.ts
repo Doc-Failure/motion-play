@@ -45,8 +45,8 @@ for(const players of [1,4]){
       },close:()=>{}})}
     `
     await openApp(page,'#/catalog',()=>page.route('**/pose/vision_bundle.mjs',r=>r.fulfill({contentType:'text/javascript',body:vision})))
-    await page.getByRole('button',{name:players===1?'1 player':'4 players',exact:true}).click()
     await page.getByRole('link',{name:'Play Shadow Snap'}).click()
+    await page.getByRole('button',{name:players===1?'1 player':'4 players',exact:true}).click()
     await expect(page.getByLabel('Shadow Snap movement demonstration')).toBeVisible()
     await completeReadyGate(page)
     const game=page.locator('.snap-game')

@@ -10,7 +10,7 @@ const goals: Partial<Record<Game, readonly [number, number, number]>> = {
   'tower-builder':[20,10,90], 'air-pong':[10,5,45], 'basketball-blitz':[6,2,20], 'simon-says':[10,10,80],
   'plate-spinner':[30,10,100], 'magic-duel':[20,10,100], 'rocket-rumble':[40,20,160], 'silk-squad':[30,15,130],
   jenga: [3, 1, 9], 'floor-is-lava': [3, 1, 5], 'shadow-snap': [40, 10, 110], 'marble-bowling': [3, 1, 9], 'six-hoops': [10, 5, 50], 'ufo-juggler': [50, 20, 190],
-  'ghost-catcher': [50, 35, 295], 'kangaroo-race': [65, 15, 170],
+  'moon-gate-run': [100, 10, 140], 'ghost-catcher': [50, 35, 295], 'kangaroo-race': [65, 15, 170],
   'window-wipe': [55, 18, 181], 'ninja-training': [35, 20, 175],
   'punch-arena': [40, 25, 215],
   'keep-ups': [20, 10, 90], goalkeeper: [20, 10, 90], 'net-rally': [20, 10, 50],

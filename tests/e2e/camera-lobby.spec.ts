@@ -42,7 +42,6 @@ test('the retained feed resizes from square to wide across catalog and Net Rally
   await page.setViewportSize({width:1280,height:720})
   await installMockCamera({person:true})
   await openApp(page,'#/catalog',()=>emptyRoom(page))
-  await page.getByRole('button',{name:'1 player',exact:true}).click()
   async function changeCameraFormat(width:number,height:number) {
     await page.evaluate(({width,height})=>{
       const canvas=(window as typeof window & {__cameraFixture:HTMLCanvasElement}).__cameraFixture
@@ -64,6 +63,7 @@ test('the retained feed resizes from square to wide across catalog and Net Rally
   await changeCameraFormat(240,240)
   await expectFrame('Mirrored navigation camera',240,720)
   await page.getByRole('link',{name:'Play Net Rally'}).click()
+  await page.getByRole('button',{name:'1 player',exact:true}).click()
   await expect(page.getByLabel('Players ready check',{exact:true})).toBeVisible()
   await expectFrame('Mirrored live camera during gameplay',240,720)
   await changeCameraFormat(640,360)

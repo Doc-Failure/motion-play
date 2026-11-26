@@ -7,9 +7,13 @@ import {resolve} from 'node:path'
 const directory=resolve('src/assets/intros');await mkdir(directory,{recursive:true})
 const browser=await chromium.launch({headless:true}),page=await browser.newPage()
 await page.setContent('<canvas width="320" height="180"></canvas>')
-for(const game of (process.env.INTRO_GAME?[process.env.INTRO_GAME]:['bubble-battle','ninja-training','window-wipe','rocket-rumble','beat-freak','punch-arena','keep-ups','ghost-catcher','ufo-juggler','jump-rush','six-hoops','goalkeeper','net-rally','kangaroo-race','marble-bowling','shadow-snap','jenga'])){
- const dojoArt=game==='ninja-training'?await Promise.all(['leaf-ready','leaf-leap','leaf-dojo'].map(async name=>
+for(const game of (process.env.INTRO_GAME?[process.env.INTRO_GAME]:['bubble-battle','ninja-training','window-wipe','rocket-rumble','beat-freak','punch-arena','keep-ups','ghost-catcher','ufo-juggler','jump-rush','six-hoops','goalkeeper','net-rally','kangaroo-race','marble-bowling','shadow-snap','jenga','moon-gate-run'])){
+ const dojoArt=game==='ninja-training'?await Promise.all(['leaf-actions','leaf-flight','leaf-dojo'].map(async name=>
   'data:image/webp;base64,'+(await readFile(resolve('public/assets/minigames/paper-dojo',name+'.webp'))).toString('base64'))):[]
+ if(game==='ninja-training')dojoArt.push('data:image/svg+xml;base64,'+(await readFile(resolve('src/minigames/ninja-training/launch-burst.svg'))).toString('base64'))
+ if(game==='moon-gate-run')for(const path of ['moon-gate-run/crate','paper-dojo/violet-flight','moon-gate-run/animation/leaf','moon-gate-run/animation/effects']){
+  dojoArt.push('data:image/webp;base64,'+(await readFile(resolve('public/assets/minigames',path+'.webp'))).toString('base64'))
+ }
  const frames=await page.evaluate(async ({game,dojoArt})=>{
   const dojo=await Promise.all(dojoArt.map(async url=>{const img=document.createElement('img');img.src=url;await img.decode();return img}))
   const canvas=document.querySelector('canvas'),c=canvas.getContext('2d'),output=[]
@@ -19,12 +23,46 @@ for(const game of (process.env.INTRO_GAME?[process.env.INTRO_GAME]:['bubble-batt
    const t=frame/72,phase=frame%18/18,beat=Math.floor(frame/18),s=Math.sin(t*Math.PI*4)
    c.fillStyle='#fff';c.fillRect(0,0,320,180)
    let center=160,left=[115,95],right=[205,95]
-   if(game==='ninja-training'){
+   if(game==='moon-gate-run'){
+    center=124;left=[95,99];right=[152,88]
+    line([[12,150],[309,150]],'#846947',3)
+    const actor=dojo[2],cell=actor.width/6
+    const action=t<.18 ? frame%6 : t<.29 ? 7 : t<.44 ? 15 : t<.55 ? 8 : t<.7 ? 12 : t<.82 ? 13 : 14
+    const lift=t<.55?Math.sin(t/.55*Math.PI)*32:0
+    c.drawImage(actor,action%6*cell,Math.floor(action/6)*cell,cell,cell,31,99-lift,51,51)
+    if(t<.55){
+     c.drawImage(dojo[0],230-340*t,130,36,20)
+     c.translate(0,-Math.sin(t/.55*Math.PI)*40)
+    }else{
+     const reach=Math.sin((t-.55)/.45*Math.PI)
+     right=[152+38*reach,88-19*reach]
+     const size=dojo[1].naturalHeight
+     if(t<.79)c.drawImage(dojo[1],size,0,size,size,185,44,45,45)
+     else {
+      const fx=dojo[3],cell=fx.width/4,index=Math.min(3,Math.floor((t-.79)*20))
+      c.drawImage(fx,index*cell,cell,cell,cell,172,45,53,49)
+     }
+    }
+   }else if(game==='ninja-training'){
     center=113;left=[79,106]
     c.drawImage(dojo[2],247,38,69,120)
     const flight=Math.max(0,Math.min(1,(t-.18)/.54)),x=250-flight*90,y=78-26*Math.sin(flight*Math.PI)
     if(t<.74){
-     c.save();c.translate(x,y);c.scale(-1,1);c.drawImage(dojo[flight>0?1:0],-22,-20,44,40);c.restore()
+     c.save();c.translate(x,y);c.scale(-1,1);if(flight>0){
+      const size=dojo[1].naturalHeight,frame=Math.min(2,Math.floor(flight*3))
+      c.drawImage(dojo[1],frame*size,0,size,size,-22,-22,44,44)
+      c.beginPath();c.arc(0,0,22,0,Math.PI*2);c.strokeStyle='#f9d26e';c.lineWidth=2;c.stroke()
+      const burst=flight*4.8
+      if(burst<1){
+       const size=17*(.55+burst*1.05)
+       c.globalAlpha=Math.min(1,(1-burst)*2)
+       c.drawImage(dojo[3],-20-size/2,18-size/2,size,size)
+      }
+     }else{
+      const size=dojo[0].naturalHeight
+      c.drawImage(dojo[0],(t<.08?0:1)*size,0,size,size,-22,-22,44,44)
+     }
+     c.restore()
     }else{
      for(let i=0;i<6;i++){const a=i*Math.PI/3,r=8+(t-.74)*90;line([[x+Math.cos(a)*r,y+Math.sin(a)*r],[x+Math.cos(a)*(r+5),y+Math.sin(a)*(r+5)]],'#e9ad35',3)}
     }
@@ -52,7 +90,8 @@ for(const game of (process.env.INTRO_GAME?[process.env.INTRO_GAME]:['bubble-batt
     figure(1,'#534552')
     figure(lift,lift===1?'#73bcaa':'#bb6654')
     if(lift===1)line([[219,73],[229,84],[247,61]],'#187751',6)
-    output.push(canvas.toDataURL('image/png').split(',')[1]);continue
+    if(game==='moon-gate-run')c.resetTransform()
+   output.push(canvas.toDataURL('image/png').split(',')[1]);continue
    }else if(game==='marble-bowling'){
     center=82;left=[58,107]
     const sweep=Math.max(0,Math.min(1,(t-.18)*4)),roll=Math.max(0,Math.min(1,(t-.40)*2.9))
@@ -132,11 +171,12 @@ for(const game of (process.env.INTRO_GAME?[process.env.INTRO_GAME]:['bubble-batt
    circle(...left,4,'#efb56f');circle(...right,4,'#efb56f')
    if(game==='punch-arena'&&t>=.55)c.translate(0,-25)
    if((game==='jump-rush'||game==='kangaroo-race'))c.resetTransform()
+   if(game==='moon-gate-run')c.resetTransform()
    output.push(canvas.toDataURL('image/png').split(',')[1])
   }
   return output
  },{game,dojoArt})
- const child=spawn(process.env.FFMPEG_PATH??'ffmpeg',['-loglevel','error','-y','-f','image2pipe','-framerate','24','-i','pipe:0','-an',...(['marble-bowling','shadow-snap','jenga'].includes(game)?['-vf','fps=12,scale=192:108']:[]),'-c:v','libx264','-preset','slow','-crf',game==='marble-bowling'?'34':'30','-pix_fmt','yuv420p','-movflags','+faststart',resolve(directory,`${game}.mp4`)],{stdio:['pipe','inherit','inherit']})
+ const child=spawn(process.env.FFMPEG_PATH??'ffmpeg',['-loglevel','error','-y','-f','image2pipe','-framerate','24','-i','pipe:0','-an',...(['marble-bowling','shadow-snap','jenga','moon-gate-run'].includes(game)?['-vf','fps=12,scale=192:108']:[]),'-c:v','libx264','-preset','slow','-crf',game==='marble-bowling'?'34':'30','-pix_fmt','yuv420p','-movflags','+faststart',resolve(directory,`${game}.mp4`)],{stdio:['pipe','inherit','inherit']})
  for(const frame of frames)if(!child.stdin.write(Buffer.from(frame,'base64')))await new Promise(resolve=>child.stdin.once('drain',resolve))
  child.stdin.end();await new Promise((resolve,reject)=>child.once('exit',code=>code===0?resolve():reject(new Error(`ffmpeg ${code}`))))
  process.stdout.write(`${game}: rendered 3 second tutorial\n`)

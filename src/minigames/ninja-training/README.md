@@ -30,33 +30,20 @@ voice samples, code or exact level sequences were imported.
   overlay an uncropped mirrored camera. There is no body-pose recognition claim.
 - Continuous ninja waves throughout the round. The bamboo-breaking interludes,
   their scoring and their result statistics have been removed.
-- Marked paper obstacles warn before becoming active; motion-center contact or
-  explicit pointer/keyboard simulation charges the owning player once. These
-  events are not represented as full-body pose recognition.
-- Tumbles, paper confetti, impact lettering, combo stamps, preparation glows. Pause freezes both simulation and decorative animation. Reduced
-  motion suppresses tumbling/confetti/bounce/limb flourishes, retaining essential
-  attack movement.
+- Five costumes smile during the approach and wind-up. At takeoff they switch to scowling push-off, tuck and reach frames. A small burst behind the trailing foot expands and fades over 340 ms of simulation time. Reduced motion keeps the expression change and omits the burst. A thin gold ring
+  around each ninja shows remaining health. Swats trigger recoil and defeat
+  poses. Player hearts and score feedback stay in the HUD.
 - Original local Web Audio pitch-bent drum/woodblock effects, launch swooshes,
   plucked pentatonic accompaniment and fanfare. Shared persistent mute remains.
 - Pointer targets and keyboard Enter/Space work alongside normalized MOTION_HIT
   input; per-player input, stale capture guards, aspect-correct hit regions and
   score isolation live in the model. Camera/media code stays outside the game.
 
-## Mixed input and obstacle alternative
+## Controls
 
-`MIXED` describes the game's input capability, not a new event kind. The camera
-adapter forwards normalized `MOTION_HIT` samples for strikes and `BODY_MOVE`
-samples from the observed movement center for obstacle contact. The game never
-reads camera frames, landmarks or media APIs. This is a motion-area avoidance
-mechanic, not body-pose tracking: still body occupancy cannot be inferred from
-frame differences. Missing observations never earn dodge points.
-
-Every six-second attack cycle ends with a marked obstacle: 700 ms warning, then
-1100 ms active. Motion in its circle costs 10 points once per player and clears
-their streak. Markers alternate sides throughout the round.
-Pointer/touch or Tab + Enter/Space simulate contact as well as strikes. Collision
-bounds use the same aspect-correct circles as the rendered markers. Pauses freeze
-warnings, and stale/duplicate, invalid and pause-crossing samples cannot score.
+Swat a leaping ninja in your own lane. The camera supplies normalized
+`MOTION_HIT` events. Touch, pointer and keyboard strikes use the same hit test.
+Empty space is safe. Each ninja that gets through costs one heart and five points.
 
 Model tests cover choreography, scoring/debounce, players, geometry, fine/coarse
 clock equivalence, continuous waves, pause, replay and escalating waves. View tests
@@ -65,8 +52,8 @@ use synthetic canvas video to exercise real motion processing and audio scheduli
 Physical webcam feel, camera occlusion and speaker quality still need hardware review.
 
 During play, labels show only player identity. Scores, timer, a single action cue
-and sound/pause/exit controls leave the camera clear. Swats, best streaks
-and obstacle bumps are summarized after the round.
+and sound/pause/exit controls leave the camera clear. Swats, missed ninjas
+and best streaks are summarized after the round.
 
 Paper Dojo hides the body diagnostic and its controls in setup and gameplay.
 Local pose inference stays active for webcam menus and the three-second ready
@@ -74,7 +61,7 @@ hold, while the live camera and original tower artwork remain unobstructed.
 
 ## Current arcade levels
 
-Each level runs for up to 40 seconds. The shared camera is framed by a pair of illustrated buildings. The level name and opponent rank appear in the wave cue. Each score badge shows five heart slots and a health bar. Each breach or marked obstacle contact costs one of five HP. Depleted players keep their score and sit out until the next round. The tournament uses the first dojo.
+Each level runs for up to 40 seconds. The shared camera is framed by a pair of illustrated buildings. The level name and opponent rank appear in the wave cue. Each score badge shows five heart slots and a health bar. Each breach costs one of five HP. Depleted players keep their score and sit out until the next round. The tournament uses the first dojo.
 
 | Level | Dojo | Opponent | Hits to defeat | Qualifying score |
 |---|---|---|---:|---:|
@@ -83,5 +70,9 @@ Each level runs for up to 40 seconds. The shared camera is framed by a pair of i
 | 3 | Frost Lookout | Frost Guard | 3 | 75 |
 | 4 | Golden Crane Pagoda | Golden Crane Master | 4 | 95 |
 | 5 | Moon Gate | Violet Shadow | 5 | 115 |
+| 6 | Moon Gate | Thunder Oni (boss) | 12 | 135 |
 
-Partial hits remove one armor dot and play a recoil pose. The final swat plays recoil, stagger and defeat on the simulation clock. Reduced motion shows the defeated pose immediately. Hits on one ninja must be separated by at least 210 ms of simulation time. Only a defeat awards points. Enemies accelerate across ranks and waves. Artwork provenance, dimensions and the original prompt are in the [rank sprite manifest](../../../public/assets/minigames/paper-dojo/manifest.json).
+Each partial hit shortens the gold ring and plays a recoil pose. The final swat plays recoil, stagger and defeat on the simulation clock. Reduced motion shows the defeated pose immediately. Hits on one ninja must be separated by at least 210 ms of simulation time. Only a defeat awards points. Enemies accelerate across ranks and waves. Artwork provenance, dimensions and the original prompt are in the [rank sprite manifest](../../../public/assets/minigames/paper-dojo/manifest.json).
+
+
+Thunder Oni returns from alternating towers with its remaining HP. Three swats in one charge repel it. A charge that breaks through takes a heart and five points. Defeat earns 160 points. Each player fights one boss in their lane, and the round closes when all lanes finish.

@@ -57,3 +57,17 @@ across game styles. Chromium checks covered tutorial cards and videos for
 Marble Bowling, Shadow Snap and UFO Juggler, plus narrow Paper Dojo and Window
 Wipe cues; this does not constitute a fresh gameplay or real-camera audit of
 every game.
+
+## Moon Gate Run
+
+The new course combines three landmarks with four landable platforms and five ninja encounters before the Thunder Oni arena. Normalized torso samples control jumping and player-local motion hits control swats. The final boss starts with eight health and gains two per arcade level up to sixteen. An uninterrupted boss victory is worth the current level goal, in addition to points earned along the way. The movement tutorial and camera-free controls support the same route.
+
+The side-scrolling mission format takes inspiration from the original Metal Slug. The route, obstacle placements and crayon scenery were made for this game. [SNK game reference](https://www.snk-corp.co.jp/us/games/acaneogeo/metalslug/) · [Scenery manifest](public/assets/minigames/moon-gate-run/manifest.json)
+
+The four-player run cleared the boss and replayed through the ready gate. Chromium also detected a synthetic torso rise and a matching swat on the mirrored video. A 120-frame local synthetic sample measured 39.8 FPS and a 35.3 ms p95 frame interval while the unit suite was running. Real webcam performance remains unmeasured. [Camera run](docs/visual-audit/moon-gate-run-trail.webp) · [Moon Gate boss encounter](docs/visual-audit/moon-gate-run-boss.webp)
+
+## Moon Gate Run animation pass
+
+The Leaf Scout's six-cell running cycle, ground and airborne strikes, push-off and landings now use drawn silhouettes. The four outfits each have separate gait, wind-up and knockback poses. Thunder Oni's finishing sequence keeps its last position as it collapses, the doors open and the runner celebrates. Crate contact, bridge compression, dust, reward stars, heart loss, shadow depth and player badges follow each lane. A late winning strike retains its full finish after the clock reaches zero.
+
+The 623,848-byte runtime animation artwork is included in the offline cache. Seven existing menu images use the same dimensions and artwork in AVIF to keep the complete core under 3 MB. The WebP masters are retained. [Animation artwork, source prompts and individual exports](docs/visual-audit/moon-gate-sheets/README.md)

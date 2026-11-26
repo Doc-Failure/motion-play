@@ -40,9 +40,9 @@ for(const [slug,score] of Object.entries(expectedScore))test(`skill camera inter
   const errors:string[]=[]
   page.on('pageerror',error=>errors.push(error.message))
   await installMockCamera({person:true})
-  await page.addInitScript(()=>sessionStorage.setItem('motion-play:players:v1','1'))
   await page.route('**/pose/tracker.js',r=>r.fulfill({contentType:'text/javascript',body:fixtureTracker}))
   await page.goto(new URL(`#/workshop/${slug}`,workshopOrigin).href)
+  await page.getByRole('button',{name:'1 player',exact:true}).click()
   await page.evaluate(background=>{
     const c=(window as FixtureWindow).__cameraFixture,ctx=c.getContext('2d')!
     ctx.fillStyle=background

@@ -172,6 +172,7 @@ a { color: inherit; }
 .home-doodles .spark { fill: #ffe000; stroke: #ff9d00; stroke-width: 6; stroke-linejoin: round; filter: url(#crayon-wobble); }
 .reference-home .hero { min-height: 20rem; padding: 2.3rem 0 0; }
 .reference-home .hero h1 { padding: .08em .18em; font-size: clamp(4.7rem, 10.5vw, 8.5rem); font-family: var(--font-hand); line-height: .9; transform: rotate(-1deg); filter: url(#crayon-wobble); }
+body:not(.camera-menu-active) #app-title { font-size: clamp(1.75rem, 9vw, 7rem); }
 .reference-home .hero h1 span { -webkit-text-stroke: 1px currentColor; text-shadow: 2px 0 currentColor, -2px 1px currentColor, 0 3px rgb(32 37 43 / .12); }
 .reference-home .intro { padding: .42rem 2rem .55rem; border: 0; border-radius: 0; background: linear-gradient(176deg, transparent 0 12%, #ffe44d 13% 88%, transparent 89%); box-shadow: inset 0 -4px 0 #f39b13; font-family: var(--font-hand); font-size: clamp(1.05rem, 2.2vw, 1.55rem); transform: rotate(-2deg); }
 .reference-home .play-menu { padding: 0 0 1rem; }
@@ -227,7 +228,7 @@ a { color: inherit; }
 .reference-home .action-grid { position: relative; z-index: 2; gap: .2rem; padding-inline: clamp(4rem, 9vw, 8.5rem); }
 .reference-home .action-card { min-height: 0; aspect-ratio: 1.38; padding: 1.8rem 1.5rem 1.25rem; overflow: visible; border: 0; border-radius: 0; box-shadow: none; background-color: transparent; background-position: center; background-repeat: no-repeat; background-size: 100% 100%; }
 .reference-home .action-card::before { display: none; }
-.reference-home .action-card--purple { background-image: url('./assets/home/tournament-panel.webp'); }.reference-home .action-card--blue { background-image: url('./assets/home/catalog-panel.webp'); }
+.reference-home .action-card--purple { background-image: url('./assets/home/tournament-panel.avif'); }.reference-home .action-card--blue { background-image: url('./assets/home/catalog-panel.avif'); }
 .reference-home .action-card[href]:hover { box-shadow: none; transform: translateY(-.35rem) rotate(-1deg) scale(1.02); }
 .reference-home .action-card:nth-child(even) { transform: rotate(1deg); }
 .reference-home .action-card h3 { text-shadow: 0 1px rgb(255 255 255 / .45); }
@@ -291,7 +292,7 @@ a { color: inherit; }
 
 /* Shared paper, pastel crayons and home illustration across the play flow. */
 .catalog-page, .camera-page, .detail-page { position: relative; isolation: isolate; }
-.catalog-page::before, .camera-page::before, .detail-page::before { content: ''; position: absolute; z-index: -1; inset: -2rem calc((min(100vw - 2rem, 75rem) - 100vw) / 2); background: url('./assets/home/sun-clouds.webp') left top / 18rem auto no-repeat, url('./assets/home/rainbow.webp') right top / 16rem auto no-repeat; opacity: .13; pointer-events: none; }
+.catalog-page::before, .camera-page::before, .detail-page::before { content: ''; position: absolute; z-index: -1; inset: -2rem calc((min(100vw - 2rem, 75rem) - 100vw) / 2); background: url('./assets/home/sun-clouds.avif') left top / 18rem auto no-repeat, url('./assets/home/rainbow.avif') right top / 16rem auto no-repeat; opacity: .13; pointer-events: none; }
 .camera-heading h1, .detail-copy h1 { color: #8131ad; text-shadow: 2px 2px #f0d2ff; transform: rotate(-1deg); }
 .game-card { color: var(--ink); text-decoration: none; background: #ffffff; }
 .game-card:nth-child(3n + 2) { background: #e6f4ff; }
@@ -610,7 +611,7 @@ body:not(.camera-menu-active) .home-shell:has(> .catalog-picker) { min-height: 1
 .reference-home .home-callouts p { display: flex; align-items: center; justify-content: center; gap: .5rem; padding: .4rem .8rem; border: 0; border-radius: 0; background: transparent; }
 .reference-home .home-callouts .ui-pack-icon--camera { width: 5rem; height: 4rem; }
 .reference-home .home-callouts .ui-pack-icon--players { width: 7rem; height: 4.5rem; }
-.generated-garden { height: clamp(7rem,15vw,13rem); opacity: 1; clip-path: none; background: url('./assets/home/garden-border.webp') center bottom / auto 100% repeat-x; }
+.generated-garden { height: clamp(7rem,15vw,13rem); opacity: 1; clip-path: none; background: url('./assets/home/garden-border.avif') center bottom / auto 100% repeat-x; }
 .battle-results:has(.battle-results__scores)::before, .tournament-results::before { content: ''; display: block; width: 4rem; height: 3.5rem; margin: 0 auto .2rem; background: url('./assets/home/trophy-icon.webp') center / contain no-repeat; pointer-events: none; }
 @media (max-width: 650px) {
   .reference-home .action-icon { width: 5rem; height: 3.5rem; }

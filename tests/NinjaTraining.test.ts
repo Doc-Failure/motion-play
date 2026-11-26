@@ -88,110 +88,42 @@ describe('Paper Dojo simulation',()=>{
   })
 })
 
-describe('MIXED hit-and-avoid input',()=>{
-  it.each([1,2,3,4] as const)('telegraphs identical obstacles for %i players and charges each only once',count=>{
-    const m=game(count);m.start(0)
-    const warning=m.update(4200).obstacles
-    expect(warning).toHaveLength(count);expect(warning.every(o=>!o.active)).toBe(true)
-    expect(m.hit(input(.3,.62,4500)).contacts[1]).toBe(0)
-    const before=m.update(4900)
-    expect(before.obstacles.every(o=>o.active)).toBe(true)
-    const contact=m.hit({...input(.3,.62,4900,count),kind:'BODY_MOVE'})
-    expect(contact.contacts[count]).toBe(1)
-    expect(contact.scores[count-1].score).toBe(before.scores[count-1].score-10)
-    expect(contact.contacts[1===count?2:1]).toBe(0)
-    expect(m.hit(input(.3,.62,5000,count)).contacts[count]).toBe(1)
-    expect(m.update(6000).obstacles).toEqual([])
-  })
-  it('accepts motion hits on obstacles, with symbol feedback and no reward for absent tracking',()=>{
-    const m=game();m.start(0)
-    const before=m.update(5000),contact=m.hit(input(.3,.62,5000))
-    expect(contact.scores[0].score).toBe(before.scores[0].score-10)
-    expect(contact.effects.at(-1)).toMatchObject({kind:'obstacle',points:-10})
-    const noInput=game();noInput.start(0)
-    expect(noInput.update(6000).contacts[1]).toBe(0)
-    expect(noInput.update(6000).scores[0].score).toBeLessThanOrEqual(0)
-  })
-  it('keeps BODY_MOVE separate from strikes throughout the round',()=>{
-    const m=game();m.start(0);const n=m.update(1100).ninjas[0]
-    expect(m.hit({...input(n.x,n.y,1100),kind:'BODY_MOVE'}).hits[1]).toBe(0)
-    defendUntil(m,18500,1100)
-    const before=m.update(18500).hits[1]
-    const late=m.update(18500).ninjas.find(n=>n.pose==='leap')!
-    expect(m.hit({...input(late.x,late.y,18500),kind:'BODY_MOVE'}).hits[1]).toBe(before)
-  })
-  it('matches obstacle collision bounds to cqmin in tall lanes',()=>{
-    const m=new NinjaTrainingModel({countdownMs:0,aspectRatio:.25});m.start(0)
-    expect(m.hit(input(.3,.67,5000)).contacts[1]).toBe(0)
-    expect(m.hit(input(.3,.63,5000)).contacts[1]).toBe(1)
-  })
-  it.each([NaN,Infinity,-1,1.1])('rejects malformed coordinates/confidence %s before advancing time',value=>{
-    const m=game();m.start(0);m.update(4900)
-    expect(m.hit({...input(.3,.62,5000),x:value}).contacts[1]).toBe(0)
-    expect(m.hit({...input(.3,.62,5000),confidence:value}).contacts[1]).toBe(0)
-    expect(m.update(4900).elapsed).toBe(4900)
-  })
-  it('rejects invalid players and unrelated kinds',()=>{
-    const m=game();m.start(0)
-    expect(m.hit(input(.3,.62,5000,2)).contacts[2]).toBe(0)
-    for(const kind of ['FREEZE','HAND_SWIPE','HAND_POSITION','MOTION_BRUSH'] as const)
-      expect(m.hit({...input(.3,.62,5000),kind}).contacts[1]).toBe(0)
-  })
-  it('rejects stale captures but permits distinct samples from one camera frame',()=>{
-    const m=game();m.start(0);m.update(5200)
-    expect(m.hit(input(.3,.62,4900)).contacts[1]).toBe(0)
-    m.hit(input(.8,.2,5200))
-    expect(m.hit(input(.3,.62,5200)).contacts[1]).toBe(1)
-  })
-  it('freezes hazard warning and rejects pause-crossing captures on recovery',()=>{
-    const m=game();m.start(0);const paused=m.pause(4500)
-    expect(m.update(30000).obstacles).toEqual(paused.obstacles)
-    m.resume(30000)
-    expect(m.hit(input(.3,.62,29500)).contacts[1]).toBe(0)
-    expect(m.update(30400).obstacles[0].active).toBe(true)
-    expect(m.hit(input(.3,.62,30400)).contacts[1]).toBe(1)
-  })
-  it('keeps late-round obstacle warnings, clears results and resets contact state on replay',()=>{
-    const m=game();m.start(0);m.hit(input(.3,.62,5000))
-    defendUntil(m,22500,5000)
-    expect(m.update(22500).obstacles).toHaveLength(1)
-    const final=m.update(60000)
-    expect(final.obstacles).toEqual([])
-    expect(m.hit(input(.3,.62,61000)).scores).toEqual(final.scores)
-    expect(m.start(62000).contacts[1]).toBe(0)
-    expect(m.hit(input(.3,.62,67000)).contacts[1]).toBe(1)
-  })
-  it('keeps obstacle schedules and missed-target totals deterministic across a full round',()=>{
-    const a=game(4),b=game(4);a.start(0);b.start(0)
-    for(let t=50;t<=60000;t+=50)a.update(t)
-    const fine=a.update(60000),coarse=b.update(60000)
-    expect(coarse.scores).toEqual(fine.scores)
-    expect(coarse.misses).toEqual(fine.misses)
-    expect(coarse.contacts).toEqual(fine.contacts)
-  })
-})
-
-
-describe('Ninja Training integration',()=>{
-  it('declares MIXED capability rather than inventing a camera event kind',()=>{
-    expect(getGameBySlug('ninja-training')).toMatchObject({input:'MIXED',available:true,players:[1,2,3,4]})
-  })
-  it.each([1,2,3,4] as const)('maps mirrored synthetic movement only into player %i obstacle contact',count=>{
-    const m=game(count);m.start(0)
+describe('Dojo camera input',()=>{
+  it.each([1,2,3,4] as const)('maps a mirrored swat into player %i’s lane',count=>{
+    const model=game(count);model.start(0)
+    const target=model.update(1100).ninjas.find(n=>n.playerId===count)!
     const zones=defaultCameraZones(count),zone=zones[count-1]
     const processor=new MotionProcessor({smoothing:0,minimumZoneActivity:.0005})
     const width=640,height=180,data=new Uint8ClampedArray(width*height*4)
     processor.process({width,height,data},zones,0)
-    const cx=Math.floor((1-zone.x-zone.width*.3)*width),cy=Math.floor(.62*height)
-    for(let y=cy-5;y<cy+5;y++)for(let x=cx-5;x<cx+5;x++)data.fill(255,(y*width+x)*4,(y*width+x+1)*4)
-    const motion=processor.process({width,height,data},zones,5000)
-    expect(motion.positions).toHaveLength(1)
-    const centroid=motion.zones.find(z=>z.playerId===count)!.centroid!
-    const contact=m.hit({...motion.positions![0],...centroid,kind:'BODY_MOVE'})
-    expect([1,2,3,4].map(id=>contact.contacts[id as 1|2|3|4])).toEqual([1,2,3,4].map(id=>id===count?1:0))
+    const cx=Math.floor((1-zone.x-zone.width*target.x)*width),cy=Math.floor(target.y*height)
+    for(let y=cy-5;y<=cy+5;y++)for(let x=cx-5;x<=cx+5;x++)data.fill(255,(y*width+x)*4,(y*width+x+1)*4)
+    const {events}=processor.process({width,height,data},zones,1100)
+    expect(events).toHaveLength(1)
+    expect(model.hit(events[0]).scores.map(p=>p.score)).toEqual(Array.from({length:count},(_,i)=>i+1===count?10:0))
+  })
+  it('ignores motion and swats in empty space during former obstacle windows',()=>{
+    const model=game(2);model.start(0)
+    for(const time of [4500,5000,5500]){
+      const before=model.update(time)
+      for(const kind of ['BODY_MOVE','MOTION_HIT'] as const){
+        const after=model.hit({...input(.3,.62,time,2),kind})
+        expect(after.health).toEqual(before.health)
+        expect(after.scores).toEqual(before.scores)
+      }
+    }
+    expect(getGameBySlug('ninja-training')?.input).toBe('MOTION_HIT')
+  })
+  it('accepts a second distinct sample from one capture and rejects stale or malformed swats',()=>{
+    const model=game();model.start(0)
+    const n=model.update(1200).ninjas[0],swat=input(n.x,n.y,1200)
+    for(const bad of [{x:NaN},{confidence:Infinity},{confidence:-1},{timestamp:1000},{playerId:2 as const}]){
+      expect(model.hit({...swat,...bad}).hits[1]).toBe(0)
+    }
+    model.hit({...swat,x:.9})
+    expect(model.hit(swat).hits[1]).toBe(1)
   })
 })
-
 
 describe('Dojo ranks and health',()=>{
   it.each([1,2,3,4,5])('takes %i distinct swats, awarding the defeat once',level=>{
@@ -237,17 +169,74 @@ describe('Dojo ranks and health',()=>{
     expect(state.health[2]).toBeGreaterThan(0)
     expect(state.phase).toBe('playing')
     expect(state.ninjas.every(n=>n.playerId===2)).toBe(true)
-    expect(state.obstacles.every(o=>o.playerId===2)).toBe(true)
     expect(m.update(30000).phase).toBe('results')
     expect(m.start(31000).health).toMatchObject({1:5,2:5})
   })
-  it('charges one health for an obstacle, preserves it through pause and restores it on a new round',()=>{
-    const m=game(2);m.start(0);const before=m.update(4900)
-    const event=input(.3,.62,5000,2)
-    const after=m.hit(event)
-    expect(after.health[2]).toBe(before.health[2]-1)
-    expect(after.health[1]).toBe(before.health[1])
-    expect(m.hit({...event,timestamp:5100}).health).toEqual(after.health)
-    expect(m.pause(5150).health).toEqual(m.resume(15000).health)
+  it('charges a breach once and preserves the remaining hearts through pause',()=>{
+    const model=game();model.start(0)
+    expect(model.update(3349).health[1]).toBe(5)
+    expect(model.update(3350).health[1]).toBe(4)
+    expect(model.update(3350).health[1]).toBe(4)
+    expect(model.pause(3500).health).toEqual(model.resume(15000).health)
+  })
+})
+
+describe('Thunder Oni boss encounter',()=>{
+  const boss=(playerCount:1|2=1)=>new NinjaTrainingModel({level:6,playerCount,countdownMs:0})
+  it('returns from the opposite tower with the same wounds and pauses between charges',()=>{
+    const m=boss()
+    const first=m.start(0).ninjas[0]
+    expect(first.hp).toBe(12)
+    const target=m.update(900).ninjas[0]
+    m.hit(input(target.x,target.y,900))
+    const next=m.update(2950)
+    expect(next.ninjas).toHaveLength(1)
+    expect(next.ninjas[0]).toMatchObject({id:first.id,hp:11,side:1,pose:'run'})
+    expect(next.health[1]).toBe(4)
+    const paused=m.pause(3000)
+    expect(m.update(12000).ninjas).toEqual(paused.ninjas)
+    expect(m.resume(12000).ninjas).toEqual(paused.ninjas)
+    expect(m.update(12500).ninjas[0].hp).toBe(11)
+  })
+  it.each([2,3])('repels the charge only after three swats (%i landed)',count=>{
+    const m=boss();m.start(0)
+    for(let i=0;i<count;i++){
+      const time=900+i*280,n=m.update(time).ninjas[0]
+      m.hit(input(n.x,n.y,time))
+    }
+    const after=m.update(2950)
+    expect(after.health[1]).toBe(count===3?5:4)
+    expect(after.ninjas[0]).toMatchObject({hp:12-count,chargeHits:0})
+  })
+  it('awards a single boss defeat and displays the final pose before results and replay',()=>{
+    const m=boss();m.start(0)
+    let time=900
+    for(let i=0;i<12;i++){
+      if(i===6)time=3850
+      const n=m.update(time).ninjas[0]
+      expect(n.hp).toBe(12-i)
+      m.hit(input(n.x,n.y,time))
+      time+=280
+    }
+    const finish=time-280
+    expect(m.update(finish+400)).toMatchObject({phase:'playing',ninjas:[],hits:{1:1},scores:[{score:160}]})
+    expect(m.update(finish+850).phase).toBe('results')
+    expect(m.start(finish+900).ninjas[0].hp).toBe(12)
+  })
+  it('keeps two lanes independent and resolves repeated breaches on a coarse tick',()=>{
+    const m=boss(2);m.start(0)
+    for(let t=900;t<6000;t+=280){
+      const n=m.update(t).ninjas.find(n=>n.playerId===2 && n.pose==='leap')
+      if(n)m.hit(input(n.x,n.y,t,2))
+    }
+    const solo=m.update(7000)
+    expect(solo.phase).toBe('playing')
+    expect(solo.hits[2]).toBe(1)
+    expect(solo.ninjas.map(n=>n.playerId)).toEqual([1])
+    const end=m.update(20000)
+    expect(end.phase).toBe('results')
+    expect(end.health[1]).toBe(0)
+    expect(end.health[2]).toBe(5)
+    expect(end.scores[0].score).toBe(-25)
   })
 })

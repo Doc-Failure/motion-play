@@ -32,7 +32,7 @@ export function projectMenuSample(sample:MenuSample,frame:CameraMenuFrame,width:
 }
 const hits=(point:MotionInputEvent,target:DwellTarget)=>point.x>=target.x&&point.x<=target.x+target.width&&point.y>=target.y&&point.y<=target.y+target.height
 const hand=(point:MotionInputEvent)=>point.pointerId??`${point.playerId}:hand`
-/** A fresh, continuous three-second hold by the same measured wrist. */
+/** A fresh, continuous hold by the same measured wrist. */
 export class WebcamMenuDwell {
  private dwell=new DwellController({dwellMs:MENU_HOLD_MS,continuityMs:1000})
  private selected:string|null=null

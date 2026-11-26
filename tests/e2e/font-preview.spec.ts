@@ -28,7 +28,7 @@ test('original font draft loads both weights, preserves editable text and serves
  })
  expect(Math.abs(widths.plain-widths.handwritten)).toBeGreaterThan(.1)
  const sample=page.getByRole('textbox',{name:'Try the Motion Scribble font'})
- await sample.fill('Motion Play!\nÈ ora di giocare · 0123456789')
+ await sample.fill('playpop.party\nÈ ora di giocare · 0123456789')
  await expect(sample).toContainText('È ora di giocare')
  for(const size of [{width:1280,height:900},{width:390,height:844}]){
   await page.setViewportSize(size)

@@ -1,4 +1,4 @@
-# Motion Play
+# playpop.party
 
 A client-only motion-controlled party game, built with React, TypeScript, Vite,
 and Phaser. Gameplay and camera features are being delivered incrementally from

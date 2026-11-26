@@ -1,4 +1,4 @@
-# Motion Play UI artwork
+# playpop.party UI artwork
 
 Source: the user-supplied `motion-play-ui-pack.zip` (elements directory).
 `ui-pack-manifest.json` maps every supplied PNG element to its local WebP derivative.
@@ -20,3 +20,5 @@ than executable pages or web fonts. Production labels remain HTML text; the
 full-page mockups are not shipped as page screenshots. Previous user decisions
 (camera-first play, player count only, direct starts) take precedence over controls
 pictured in those references.
+
+Seven large menu illustrations also have same-dimension AVIF delivery copies to leave room for the Moon Gate Run animation sheets within the 3 MB offline budget. The manifest records their filenames and sizes. The WebP masters are retained.

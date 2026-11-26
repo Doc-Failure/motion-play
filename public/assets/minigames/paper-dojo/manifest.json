@@ -12,12 +12,6 @@
       "use": "Catalog or movement tutorial"
     },
     {
-      "file": "leaf-leap.webp",
-      "size": "196x169",
-      "alpha": true,
-      "use": "Catalog or movement tutorial"
-    },
-    {
       "file": "leaf-dojo.webp",
       "size": "276x344",
       "alpha": true,
@@ -43,39 +37,108 @@
     },
     {
       "file": "crane-actions.webp",
-      "size": "744x124",
+      "size": "620x124",
       "alpha": true,
-      "use": "Six action frames, left to right"
+      "use": "Smiling approach, smiling wind-up, recoil, stagger and defeat",
+      "originals": [
+        "docs/visual-audit/paper-dojo-flight-original.png",
+        "docs/visual-audit/paper-dojo-actions-original.png"
+      ]
     },
     {
       "file": "frost-actions.webp",
-      "size": "744x124",
+      "size": "620x124",
       "alpha": true,
-      "use": "Six action frames, left to right"
+      "use": "Smiling approach, smiling wind-up, recoil, stagger and defeat",
+      "originals": [
+        "docs/visual-audit/paper-dojo-flight-original.png",
+        "docs/visual-audit/paper-dojo-actions-original.png"
+      ]
     },
     {
       "file": "lantern-actions.webp",
-      "size": "744x124",
+      "size": "620x124",
       "alpha": true,
-      "use": "Six action frames, left to right"
+      "use": "Smiling approach, smiling wind-up, recoil, stagger and defeat",
+      "originals": [
+        "docs/visual-audit/paper-dojo-flight-original.png",
+        "docs/visual-audit/paper-dojo-actions-original.png"
+      ]
     },
     {
       "file": "leaf-actions.webp",
-      "size": "744x124",
+      "size": "620x124",
       "alpha": true,
-      "use": "Six action frames, left to right"
+      "use": "Smiling approach, smiling wind-up, recoil, stagger and defeat",
+      "originals": [
+        "docs/visual-audit/paper-dojo-flight-original.png",
+        "docs/visual-audit/paper-dojo-actions-original.png"
+      ]
     },
     {
       "file": "violet-actions.webp",
-      "size": "744x124",
+      "size": "620x124",
       "alpha": true,
-      "use": "Six action frames, left to right"
+      "use": "Smiling approach, smiling wind-up, recoil, stagger and defeat",
+      "originals": [
+        "docs/visual-audit/paper-dojo-flight-original.png",
+        "docs/visual-audit/paper-dojo-actions-original.png"
+      ]
     },
     {
       "file": "violet-dojo.webp",
       "size": "234x344",
       "alpha": true,
       "use": "Moon Gate scenery"
+    },
+    {
+      "file": "crane-flight.webp",
+      "size": "372x124",
+      "alpha": true,
+      "use": "Scowling airborne attack: push-off, tuck and reach",
+      "original": "docs/visual-audit/paper-dojo-attack-scowls-original.png"
+    },
+    {
+      "file": "frost-flight.webp",
+      "size": "372x124",
+      "alpha": true,
+      "use": "Scowling airborne attack: push-off, tuck and reach",
+      "original": "docs/visual-audit/paper-dojo-attack-scowls-original.png"
+    },
+    {
+      "file": "lantern-flight.webp",
+      "size": "372x124",
+      "alpha": true,
+      "use": "Scowling airborne attack: push-off, tuck and reach",
+      "original": "docs/visual-audit/paper-dojo-attack-scowls-original.png"
+    },
+    {
+      "file": "leaf-flight.webp",
+      "size": "372x124",
+      "alpha": true,
+      "use": "Scowling airborne attack: push-off, tuck and reach",
+      "original": "docs/visual-audit/paper-dojo-attack-scowls-original.png"
+    },
+    {
+      "file": "violet-flight.webp",
+      "size": "372x124",
+      "alpha": true,
+      "use": "Scowling airborne attack: push-off, tuck and reach",
+      "original": "docs/visual-audit/paper-dojo-attack-scowls-original.png"
+    },
+    {
+      "file": "oni-actions.webp",
+      "size": "680x136",
+      "alpha": true,
+      "use": "Boss entrance, wind-up, recoil, stagger and defeat",
+      "original": "docs/visual-audit/paper-dojo-oni-original.png"
+    },
+    {
+      "file": "oni-flight.webp",
+      "size": "408x136",
+      "alpha": true,
+      "use": "Boss launch, tuck and slam",
+      "original": "docs/visual-audit/paper-dojo-oni-original.png"
     }
   ],
   "actionSources": [
@@ -88,12 +151,26 @@
       "original": "docs/visual-audit/paper-dojo-moon-gate-original.png",
       "size": "1024x1536 RGBA",
       "prompt": "Generate a single isolated sprite of the Violet Shadow ninja's Moon Gate dojo. A freestanding tall whimsical gate tower of dark violet curved tiled roofs with a silver crescent moon ornament, lavender timber and three accessible bamboo projecting platforms at different heights. Full building visible from roof to feet, front view, flat pure white or transparent background, generous margins, no ground, text, shadows, people or framing. Childlike hand colored wax crayons with charcoal outlines, cheerful scribbly lavender and plum. Match the previous Paper Dojo buildings. Render the actual image."
+    },
+    {
+      "original": "docs/visual-audit/paper-dojo-flight-original.png",
+      "size": "1024x1536 RGBA",
+      "prompt": "Generate the actual Paper Dojo animation expansion sheet. Precisely THREE columns by FIVE rows, one centered full-body crayon ninja per equal grid cell, fifteen sprites. No outlines around cells, no text, no shadows. Use real transparent background. Frame-to-frame consistent size and face alignment. These are bold chibi characters with a very LARGE visible cheerful FACE and expressive eyes, the face occupying half the body. Three-quarter front facing to the RIGHT, little hands and feet, always clear eyes. Each row is one continuous airborne animation with three distinct readable silhouettes: column 1 push off (back leg stretched, leading arm high), column 2 midair tuck (both knees folded, scarf lifted), column 3 reach forward (front leg extended, scarf streaming). Preserve the five row costumes of the last action sheet in this conversation: row one mint Leaf Scout with leaf hood; row two red Lantern Runner with lantern shoulder pads; row three ice-blue Frost Guard; row four plum Golden Crane Master with unmistakable GOLD wing crest; row five Violet Shadow purple crescent-moon hood. Hand-drawn childlike wax crayon, heavy charcoal contour, visibly rough colored-pencil fill. No bubbles, rings, motion trails, props or scenery. Wide empty gutters around every sprite for slicing. Render as an image."
+    },
+    {
+      "original": "docs/visual-audit/paper-dojo-attack-scowls-original.png",
+      "size": "971x1619 RGBA",
+      "prompt": "Edit the most recent Chibi Ninja Animation Costume Sheet for Paper Dojo. Change ONLY the facial expressions of ALL FIFTEEN airborne attackers. Give them a fierce menacing game-villain glare: large charcoal brows slant steeply DOWN toward the nose in a deep V, narrowed angular eyes directed toward the player, a small emphatically DOWNturned dark scowl. No smiles, happy open mouths, rosy cheeks or charming winks. Make the hostile expression readable even at 32 pixels. Keep the wax-crayon outlines, colors, face sizes and animation silhouettes of the preceding sheet exactly. All ninjas face right in three-quarter view. Precisely 3 columns (push-off, knees tucked, reaching forward) by 5 rows (mint Leaf Scout, red Lantern Runner, icy blue Frost Guard, plum/gold Golden Crane Master, purple crescent Violet Shadow). A genuinely transparent background, clear gutters, every silhouette fully within its own cell. No lettering, props, health rings, shadows or scenery. Render the edited production sprite sheet."
+    },
+    {
+      "original": "docs/visual-audit/paper-dojo-oni-original.png",
+      "size": "1774x887 RGBA",
+      "prompt": "Generate a production sprite sheet for the final boss of the same Paper Dojo game: the Thunder Oni, a chunky brick-red Japanese ogre with two stubby ivory horns, huge expressive face, heavy eyebrows, navy storm-cloud mane, golden lightning-bolt chest sash and a small round teal thunder drum on its back. Friendly bold children's wax crayon on paper, uneven charcoal contour and bright scribbled color. Eight FULL BODY isolated monster stickers in exactly FOUR columns by TWO rows, every sprite centered, same character, same scale facing RIGHT. Top row left to right: 1 smiling stomping entrance, 2 smiling low crouch, 3 scowling leap with a big fist forward, 4 scowling midair tucked knees. Bottom row left to right: 5 scowling reaching slam, 6 knocked back eyes squeezed shut, 7 reeling dizzy, 8 toppled on its side exhausted. Big readable face in all frames. True transparent background, generous gutters with clear air between every object. Absolutely no ground shadows, labels, VFX, UI or grid. Render the actual sprite atlas."
     }
   ],
   "frames": [
     "run",
     "ready",
-    "leap",
     "recoil",
     "stagger",
     "defeated"

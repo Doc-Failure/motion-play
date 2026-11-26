@@ -6,19 +6,12 @@
 .dojo-scenery { position:absolute; inset:0; overflow:hidden; pointer-events:none; }
 .dojo-tower { position:absolute; left:-2%; bottom:7%; width:27%; height:79%; object-fit:contain; object-position:left bottom; opacity:.88; pointer-events:none; filter:drop-shadow(3px 0 0 #17252b33); }
 .dojo-tower--right { left:auto; right:-2%; transform:scaleX(-1); }
-.dojo-ninja { position:absolute; z-index:4; width:20cqmin; height:20cqmin; min-width:24px; min-height:24px; padding:0; border:0; background:transparent; translate:-50% -50%; transform:rotate(var(--tilt,0deg)); cursor:crosshair; filter:drop-shadow(2px 4px 0 #12243133); }
+.dojo-ninja { position:absolute; z-index:4; width:min(20cqh,30cqw); height:min(20cqh,30cqw); min-width:24px; min-height:24px; padding:0; border:0; background:transparent; translate:-50% -50%; cursor:crosshair; filter:drop-shadow(2px 4px 0 #12243133); }
 .dojo-ninja:disabled { cursor:default; opacity:1; }
-.dojo-ninja:focus-visible { outline:4px solid #fff1ab; outline-offset:5px; border-radius:25%; }
-.dojo-ninja--ready { outline:3px dashed #ffe17a; outline-offset:3px; border-radius:50%; filter:drop-shadow(0 0 7px #ffe17ac0); }
-.dojo-warning { position:absolute; right:0; top:-8%; display:grid; place-items:center; width:1.1em; height:1.1em; border:2px solid #29313c; border-radius:50%; background:#ffe17a; color:#29313c; font-size:clamp(1rem,3cqmin,2rem); font-weight:900; }
+.dojo-ninja:focus-visible { outline:4px solid #fff1ab; outline-offset:5px; border-radius:50%; }
 .dojo-wave { position:absolute; z-index:8; top:4rem; left:50%; translate:-50% 0; padding:.3rem 1rem; border:2px solid #43575a; border-radius:1rem .5rem; background:#ffffffed; color:#32484e; text-align:center; font-size:1rem; pointer-events:none; }
 .dojo-wave small { display:block; font-size:.65rem; line-height:1.1; }
-.dojo-combo { position:absolute; z-index:7; right:16%; top:19%; display:grid; place-items:center; width:2.8em; height:2.8em; border:3px solid #29313c; border-radius:45% 55% 42% 56%; background:#fff2b0ee; color:#874ca3; font-size:clamp(1.3rem,4cqmin,2.5rem); line-height:.9; transform:rotate(7deg); pointer-events:none; }
-.dojo-combo small { margin-top:.1rem; font-size:.3em; letter-spacing:.04em; }.dojo-combo>span { position:absolute; bottom:-.7em; right:-.2em; color:#fff6d9; background:#754e93; padding:.1rem .3rem; border-radius:.25rem; font-size:.55em; }
-.dojo-effect { position:absolute; z-index:9; width:24cqmin; height:24cqmin; translate:-50% -50%; pointer-events:none; }
-.dojo-effect>b { position:absolute; right:0; bottom:0; padding:.1em .32em; border:2px solid #40313a; border-radius:.5em .3em; background:#ffe69c; color:#38263a; font-size:clamp(.65rem,2.6cqmin,1.2rem); }
-.dojo-effect b small { margin-left:.25em; }
-.dojo-effect--miss>b { background:#f9dfd2; }
+.dojo-effect { position:absolute; z-index:9; width:min(20cqh,30cqw); height:min(20cqh,30cqw); translate:-50% -50%; pointer-events:none; }
 .dojo-life { display:block; color:#a5254b; font: bold clamp(.72rem,1.4vw,1rem)/1 system-ui; }
 .dojo-life::after { content:''; display:block; height:4px; border:1px solid #754258; border-radius:4px; background:linear-gradient(to right,#a5254b var(--life),#fff var(--life)); }
 .dojo-life[data-hurt="true"] { background:#ffe2a4; border-radius:.25em; }
@@ -26,22 +19,20 @@
 @media (max-width:600px) { .dojo-wave { font-size:.8rem; padding:.2rem .5rem; }.dojo-wave small { font-size:.55rem; } }
 /* Phase information must stay clear of the shared camera HUD/player labels. */
 .camera-play .camera-arena>section.dojo-game>div.dojo-wave[role="status"] { top:auto; bottom:.5rem; left:.5rem; width:max-content; max-width:48%; max-height:none; margin:0; padding:.3rem .6rem; translate:none; z-index:8; overflow:visible; background:#ffffffed; color:#32484e; text-align:left; font-size:.9rem; line-height:1.2; }
-.dojo-combo { animation:dojo-streak .25s ease-out; }
-@keyframes dojo-streak { from { scale:.65; } 70% { scale:1.1; } to { scale:1; } }
-@media (prefers-reduced-motion:reduce) { .dojo-combo { animation:none; } }
-.reduce-motion .dojo-combo { animation:none; }
-
-/* The same cqmin circle drives normalized collision bounds in every camera lane. */
-.dojo-obstacle { position:absolute; z-index:5; width:26cqmin; height:26cqmin; min-width:0; min-height:0; padding:0; border:2px dashed #713d42; border-radius:50%; background:#fff3d466; translate:-50% -50%; color:#713d42; cursor:crosshair; }
-.dojo-obstacle svg { width:100%; height:100%; opacity:.45; }
-.dojo-obstacle--active { border-style:solid; background:#fff3d4aa; }
-.dojo-obstacle--active svg { opacity:1; }
-.dojo-obstacle--struck { opacity:.45; }
-.dojo-obstacle span { position:absolute; left:50%; bottom:-1.4em; translate:-50% 0; white-space:nowrap; padding:0 .25em; border-radius:.3em; background:#ffffff; font-size:clamp(.6rem,2cqmin,1rem); }
-.dojo-obstacle:focus-visible { outline:4px solid #713d42; outline-offset:4px; }
 
 @media (max-width:700px) { .camera-play .camera-arena>section.dojo-game>div.dojo-wave[role="status"] { bottom:.4rem; padding:.25rem .5rem; font-size:.75rem; } .dojo-wave small { font-size:.7rem; } }
 
-.dojo-armor,.dojo-rest { position:absolute; left:50%; translate:-50% 0; padding:.08em .35em; border-radius:.4em; background:#fff5d3; color:#453548; line-height:1.1; white-space:nowrap; }
-.dojo-armor { bottom:-.4em; font-size:clamp(.62rem,2.4cqmin,1.1rem); }
+.dojo-rest { position:absolute; left:50%; translate:-50% 0; padding:.08em .35em; border-radius:.4em; background:#fff5d3; color:#453548; line-height:1.1; white-space:nowrap; }
 .dojo-rest { top:48%; }
+.dojo-hp-ring { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; overflow:visible; fill:none; stroke:#f9d26e; transform:rotate(-90deg); }
+.dojo-hp-ring circle { stroke-width:2.7; stroke-linecap:round; }
+@media (max-width:700px) and (orientation:portrait) {
+  .camera-play .dojo-game .round-hud { position:fixed; inset:.35rem .35rem auto; }
+  .camera-play .dojo-boards > .dojo-player > h2 { top:.2rem; }
+}
+
+.dojo-launch-burst { position:absolute; top:91%; width:38%; aspect-ratio:1; translate:-50% -50%; pointer-events:none; }
+
+.dojo-game[data-rank="oni"] :is(.dojo-ninja,.dojo-effect) { width:min(30cqh,45cqw); height:min(30cqh,45cqw); }
+
+.dojo-launch-burst { background:url('./launch-burst.svg') center / contain no-repeat; }

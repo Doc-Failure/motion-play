@@ -40,7 +40,6 @@ test('opted-in production shell reloads offline with art/fonts and removes only 
     if (!localStorage.getItem('motion-play:settings:v1')) localStorage.setItem('motion-play:settings:v1', JSON.stringify({ soundEnabled: false, reducedMotion: false, offlineCaching: true }))
   })
   await page.goto(origin)
-  await page.getByRole('button',{name:'1 player',exact:true}).click()
   await page.evaluate(async () => {
     await navigator.serviceWorker.ready
     if (!navigator.serviceWorker.controller) await new Promise<void>(resolve => navigator.serviceWorker.addEventListener('controllerchange', () => resolve(), { once: true }))
@@ -68,13 +67,14 @@ test('opted-in production shell reloads offline with art/fonts and removes only 
   })).toBe(true)
   await context.setOffline(true)
   await page.reload()
-  await expect(page.getByRole('heading', { name: 'Motion Play!' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'playpop.party' })).toBeVisible()
   expect(await page.evaluate(async () => {
     await document.fonts.ready
     return document.fonts.check('16px "Motion Hand"') && Array.from(document.images).every(image => image.complete && image.naturalWidth > 0)
   })).toBe(true)
   await page.getByRole('link', { name: /Game Catalog/ }).click()
   await page.getByRole('link', { name: 'Play Paper Dojo', exact: true }).click()
+  await page.getByRole('button',{name:'1 player',exact:true}).click()
   await expect(page.getByRole('alert')).toContainText('Camera permission is blocked')
   await page.getByRole('button', { name: 'Play without camera', exact: true }).click();await completeReadyGate(page)
   await expect(page.locator('.dojo-game')).toBeVisible()
@@ -88,7 +88,6 @@ test('previously used local model runs blank-frame inference after a genuine off
   test.setTimeout(90000)
   await page.addInitScript(() => localStorage.setItem('motion-play:settings:v1', JSON.stringify({ soundEnabled: false, reducedMotion: false, offlineCaching: true })))
   await page.goto(origin)
-  await page.getByRole('button',{name:'1 player',exact:true}).click()
   await page.evaluate(async () => {
     await navigator.serviceWorker.ready
     if (!navigator.serviceWorker.controller) await new Promise<void>(resolve => navigator.serviceWorker.addEventListener('controllerchange', () => resolve(), { once: true }))
@@ -124,7 +123,7 @@ test('previously used local model runs blank-frame inference after a genuine off
   expect(cachedPaths.some(path => path.endsWith('.wasm'))).toBe(true)
   await context.setOffline(true)
   await page.reload()
-  await expect(page.getByRole('heading', { name: 'Motion Play!' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'playpop.party' })).toBeVisible()
   expect(await runBlankInference(true)).toEqual({poses:0,masks:0})
   // This tests local loading/inference, not tracking people or webcam quality.
 })

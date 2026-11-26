@@ -1,5 +1,4 @@
-import jenga from '../assets/intros/jenga.mp4'
-import lava from '../assets/intros/floor-is-lava.mp4'
+import gateRun from '../assets/intros/moon-gate-run.mp4'
 import {GestureDemo} from './GestureDemo'
 import {keeperInstructions,rallyInstructions} from '../minigames/camera-sports/rallyFormation'
 import snap from '../assets/intros/shadow-snap.mp4'
@@ -18,10 +17,11 @@ import wipe from '../assets/intros/window-wipe.mp4'
 import football from '../assets/intros/keep-ups.mp4'
 import boxing from '../assets/intros/punch-arena.mp4'
 const demos:Record<string,{video:string;instruction:string}>={
- jenga:{video:jenga,instruction:'Hold on a lower block, then slide your hand sideways to pull. Hold over a top slot to stack it. Keep the tower balanced!'},
- 'floor-is-lava':{video:lava,instruction:'Keep both feet in view. Step onto the grass before the island disappears and the lava arrives!'},
+ ...(import.meta.env.DEV ? {jenga:{video:'/src/assets/intros/jenga.mp4',instruction:'Hold on a lower block, then slide your hand sideways to pull. Hold over a top slot to stack it. Keep the tower balanced!'},
+ 'floor-is-lava':{video:'/src/assets/intros/floor-is-lava.mp4',instruction:'Keep both feet in view. Step onto the grass before the island disappears and the lava arrives!'}} : {}),
  'shadow-snap':{video:snap,instruction:'Step back until your whole body fits. Fill the cutout and tuck in any red edges before the shutter clicks.'},
  'marble-bowling':{video:marble,instruction:'Sweep one hand up toward the pins to roll. Each pin scores 1. Clear a fresh rack in one roll for a +3 strike!'},
+ 'moon-gate-run':{video:gateRun,instruction:'Your ninja runs automatically. Keep your hips in view and jump onto crates and bridges. Swat the ninjas on screen, then defeat Thunder Oni! You can also use the Jump and Swat buttons.'},
  'kangaroo-race':{video:race,instruction:'Your kangaroo runs automatically. Keep your hips in view and jump over obstacles!'},
  'goalkeeper':{video:keeper,instruction:'Watch the footballer above. React to the shot and block the ball below with your hands or body!'},
  'net-rally':{video:net,instruction:'Stand on your side. Bump the ball over the net. Alone? Play on the left against the robot.'},
@@ -30,7 +30,7 @@ const demos:Record<string,{video:string;instruction:string}>={
  'ufo-juggler':{video:ufos,instruction:'Wave to spin saucers up. Coast when hot. Rescue them into orbit!'},
  'ghost-catcher':{video:ghosts,instruction:'Rub ghosts until they pop. Swat bats. Five escapes and you’re out!'},
  'bubble-battle':{video:bubbles,instruction:'Pop the bubbles. Keep clear of bombs.'},
- 'ninja-training':{video:dojo,instruction:'Swat leaping ninjas until they tumble. A ninja that gets through or a marked obstacle you touch costs 1 HP.'},
+ 'ninja-training':{video:dojo,instruction:'Swat leaping ninjas until they tumble. Watch the gold health ring shrink with each hit. A ninja that gets through costs one heart.'},
  'window-wipe':{video:wipe,instruction:'Sweep away soap. Rub the ink spots.'},
  ...(import.meta.env.DEV?{'rocket-rumble':{video:'/src/assets/intros/rocket-rumble.mp4',instruction:'Tag matching rockets. Hit the switch.'}}:{}),
  'keep-ups':{video:football,instruction:'Keep the ball up. Three lives — watch for wind!'},

@@ -26,9 +26,9 @@ test('browser Back releases game loops, sound and video consumers while retainin
     }
   })
   await openApp(page, '#/catalog')
-  await page.getByRole('button',{name:'4 players',exact:true}).click()
   for (const game of visibleCatalogGames) {
     await page.getByRole('link', { name: `Play ${game.title}`, exact: true }).click()
+    await page.getByRole('button',{name:'4 players',exact:true}).click()
     await completeReadyGate(page)
     const video = page.getByLabel('Mirrored live camera during gameplay')
     await expect.poll(() => video.evaluate(element => (element as HTMLVideoElement).videoWidth)).toBe(320)
@@ -54,8 +54,9 @@ test('browser Back releases game loops, sound and video consumers while retainin
     await page.waitForTimeout(500)
     expect(await page.evaluate(() => (window as LifecycleWindow).__lifecycle.notes)).toBe(after.notes)
   }
-  // Reopening a game restores its intro, retaining the player count and live track.
+  // Reopening a game restores its intro, using a fresh player selection and the retained live track.
   await page.getByRole('link', { name: 'Play Paper Dojo', exact: true }).click()
+  await page.getByRole('button',{name:'4 players',exact:true}).click()
   await expect(page.getByLabel('Players ready check',{exact:true})).toBeVisible()
   await expect(page.getByRole('button',{name:/^Ready Player /})).toHaveCount(4)
   expect(await page.evaluate(() => (window as LifecycleWindow).__mockMediaState.requests)).toBe(1)

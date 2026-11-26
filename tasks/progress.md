@@ -3629,6 +3629,12 @@ Visual-only change; no new hardware gameplay claim or deployment.
 - Kept Kangaroo Race as the single public jumping game: smooth original kangaroo hops, logs/rocks/gaps, three bumps, 45-second distance competition for 1–4 players. Removed Jump Rush from the public catalog (now eleven games) and from the routed production components. Both old Jump Rush URL forms and direct legacy camera initialization resolve to Kangaroo Race. Historical model/view source and tests remain available.
 - Updated catalog expectations, tutorial navigation coverage and legacy-link browser checks. Typecheck/build, lint, 48 focused App/race/input tests and release integrity pass. Artifact a807fbce59221a9dad40 remains within unchanged budgets. All five Chromium checks pass: both legacy links, 1/4-player synthetic-pose gameplay and replay, and desktop/narrow catalog geometry with webcam navigation. No physical webcam validation, commits or deployment.
 
+### playpop.party branding and game launch — 2026-11-21
+
+The home wordmark, browser titles, installable app and package metadata use playpop.party. Home opens directly to the catalog and tournament choices. Launching a game or tournament asks for one shared solo/co-op slot or two to four player slots. A replay or the next tournament round keeps the current group. Returning to the catalog allows a fresh choice while retaining the camera stream.
+
+Lint, the production build, release integrity and all 1,448 unit tests passed. Focused Chromium checks covered keyboard navigation, desktop/mobile layout and choosing players using synthetic camera input.
+
 ### Mobile Bug Stack — 2026-11-22
 
 Device selection runs before the party app starts. Phones and tablets load Bug Stack on every hash route. Desktop browsers retain the catalog and tournament. The mobile camera uses the bundled hand model, and touch play is available with or without camera permission. Verification includes the release build, unit tests and Chromium with an emulated phone, synthetic video and injected hand landmarks. Physical-device gesture validation is pending.
@@ -3665,3 +3671,17 @@ All 1,485 unit tests, six focused Chromium checks, lint, the production build an
 ## Paper Dojo action sheets and public catalog
 
 Five ranks now have six generated action frames each. A hit changes the opponent’s pose and remaining armor, while a completed defeat plays through stagger and collapse. Players see their remaining hearts and a health bar beside their scores. Violet Shadow guards Moon Gate in level five. Floor Is Lava and Jenga are hidden from the public catalog, direct game routes, Quick Play and tournaments. Unit checks cover hidden routes, camera swat cadence, reduced-motion defeat and health. Chromium completed the five-level campaign and exercised four-player damage with synthetic input. Physical webcam play remains unverified.
+
+## Paper Dojo health rings and airborne animation
+
+Removed avoid targets, bump penalties and body-movement input from Paper Dojo. Escaping ninjas still cost the affected player one heart. All five ranks have generated push-off, tuck and reach frames. The gold arc around each opponent shows remaining HP, and the score and streak stay outside the target. The tutorial uses the Leaf Scout flight strip. Model and view tests exercise swats, misses, reduced motion and independent lanes. Chromium exercised the five-level campaign and four-player play with synthetic input.
+
+Revised all fifteen airborne ninja faces with a scowl in the game and tutorial. Inspected the transparent sprites and in-game capture. The production build, release checks, 32 focused tests and five Chromium gameplay checks passed.
+
+All five Paper Dojo ranks now smile on approach and scowl at launch. A small crayon burst expands behind the trailing foot for 340 ms of play time. The movement tutorial shows the same cue. The production build and release checks, 33 focused tests and five Chromium gameplay checks passed.
+
+Added Thunder Oni as the sixth and final Paper Dojo encounter. Each lane gets one 12-HP boss with eight generated poses. Three swats repel a charge, damage persists between passes, and defeating the boss awards 160 points. The production build, release checks, lint, 1,477 unit tests and six Chromium gameplay checks passed. Solo and four-player browser campaigns reached and defeated the boss. Camera checks used synthetic input.
+
+Added Moon Gate Run to the desktop catalog. The course reuses the Paper Dojo actors, combines torso jumps and spatial swats, and ends with Thunder Oni. Kimi WebBridge supplied the original bamboo, waterfall, bridge and crate sheet. The final production build stayed within the existing budgets. Lint, 1,486 unit tests and 17 packaging checks passed. Chromium exercised a synthetic torso jump and camera swat, a four-player boss victory and replay, and the narrow-screen controls. Physical webcam timing and reach remain unverified.
+
+Completed the Moon Gate Run sprite pass. Six Kimi WebBridge sheets supply 127 authored frames, with four derived shadow frames. All 131 individual PNGs are in the sprite archive. The simulation drives the running, swatting, landing, bridge, damage and boss sequences. Chromium verified a six-frame stride, mirrored camera hit, four-player clear, pause/replay and visible boss collapse before results. The final suite passed 1,491 unit tests, eight catalog/game browser checks and 17 packaging checks. Seven same-dimension AVIF menu assets kept the offline core within the existing release budget. Physical camera feel remains unverified.

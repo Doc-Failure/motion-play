@@ -1,6 +1,5 @@
 import {FullscreenButton} from '../design/FullscreenButton'
 import {TOURNAMENT_GAME_COUNT} from '../game/TournamentSession'
-import {loadSessionPlayers,saveSessionPlayers} from './playerSession'
 import type {PlayerCount} from '../input/PlayerZoneMapper'
 import { PackIcon, type PackIconName } from '../design/PackIcon'
 import { GameDoodle } from '../design/GameDoodle'
@@ -35,7 +34,7 @@ const routeFromHash = (): Route => {
 }
 
 function AppHeader() {
-  return <header className="site-header" aria-label="Motion Play"><a className="wordmark" href="#/" aria-label="Motion Play home"><span aria-hidden="true" className="wordmark-spark">✦</span> Motion Play</a><p className="local-note"><span aria-hidden="true">●</span> Play together, right here</p></header>
+  return <header className="site-header" aria-label="playpop.party"><a className="wordmark" href="#/" aria-label="playpop.party home"><span aria-hidden="true" className="wordmark-spark">✦</span> playpop.party</a><p className="local-note"><span aria-hidden="true">●</span> Play together, right here</p></header>
 }
 
 function Home() {
@@ -43,15 +42,28 @@ function Home() {
     { title: 'Game Catalog', description: 'Peek at every game in the toy box.', icon: 'cards', tone: 'blue', href: '#/catalog' },
     { title: `${TOURNAMENT_GAME_COUNT}-Game Tournament`, description: `${TOURNAMENT_GAME_COUNT} games. Highest total points wins.`, icon: 'trophy', tone: 'purple', href: '#/tournament' },
   ]
-  return <div className="reference-home"><GeneratedHomeScene /><section className="hero" id="top" aria-labelledby="app-title"><div className="hero-copy"><h1 id="app-title" aria-label="Motion Play!"><span className="title-red">M</span><span className="title-orange">o</span><span className="title-green">t</span><span className="title-blue">i</span><span className="title-blue-dark">o</span><span className="title-pink">n</span> <span className="title-purple">Play!</span></h1><p className="intro">Camera Party Games for 1–4 Players</p></div></section>
+  return <div className="reference-home"><GeneratedHomeScene /><section className="hero" id="top" aria-labelledby="app-title"><div className="hero-copy"><h1 id="app-title" aria-label="playpop.party"><span className="title-red">p</span><span className="title-orange">l</span><span className="title-green">a</span><span className="title-blue">y</span><span className="title-blue-dark">p</span><span className="title-pink">o</span><span className="title-red">p</span><span className="title-purple">.party</span></h1><p className="intro">Camera Party Games for 1–4 Players</p></div></section>
     <section className="play-menu" id="play-menu" aria-labelledby="play-menu-title"><div className="section-heading"><p className="eyebrow">Pick your path</p><h2 id="play-menu-title">How do you want to play?</h2></div><div className="action-grid">{actions.map((action) => {
       const content = <><div className="action-icon" aria-hidden="true"><PackIcon name={action.icon} /></div><div><h3>{action.title}</h3><span className="sr-only">{action.description}</span>{!action.href && <span className="coming-soon">Coming soon</span>}</div></>
       return action.href ? <a className={`action-card action-card--${action.tone}`} href={action.href} key={action.title}>{content}</a> : <article className={`action-card action-card--${action.tone}${action.featured ? ' action-card--featured' : ''}`} key={action.title}>{action.featured && <span className="sticker">Start here!</span>}{content}</article>
     })}</div></section></div>
 }
 
-function PlayerWelcome({onChoose}:{onChoose:(players:PlayerCount)=>void}){
- return <div className="reference-home player-welcome"><GeneratedHomeScene/><section className="hero"><div className="hero-copy"><h1>How many players?</h1></div></section><div className="welcome-players" role="group" aria-label="Choose players once">{([1,2,3,4] as const).map(count=><button className="action-card action-card--blue" key={count} aria-label={`${count} ${count===1?'player':'players'}`} onClick={()=>onChoose(count)}><strong>{count}</strong><span>{count===1?'player':'players'}</span></button>)}</div></div>
+function PlayerPicker({ tournament, onChoose }: { tournament: boolean; onChoose: (players: PlayerCount) => void }) {
+  return <div className="reference-home player-welcome">
+    <GeneratedHomeScene />
+    <section className="hero"><div className="hero-copy"><h1>How many players?</h1></div></section>
+    <div className="welcome-players" role="group" aria-label="Choose players">
+      {([1, 2, 3, 4] as const).map(count =>
+        <button className="action-card action-card--blue" key={count} onClick={() => onChoose(count)}
+          aria-description={count === 1 ? "Play solo or share one player slot cooperatively." : undefined}
+          aria-label={count === 1 ? '1 player' : `${count} players`}>
+          <strong>{count}</strong><span>{count === 1 ? 'player / co-op' : 'players'}</span>
+        </button>
+      )}
+    </div>
+    <a className="player-picker-back back-link" href={tournament ? '#/' : '#/catalog'}>{tournament ? '← Home' : '← Games'}</a>
+  </div>
 }
 
 function Catalog() {
@@ -67,10 +79,17 @@ function GameDetail({ slug }: { slug: string }) {
 
 export function App() {
   const [route, setRoute] = useState(routeFromHash)
-  const [players,setPlayers]=useState<PlayerCount|null>(loadSessionPlayers)
-  const choosePlayers=(count:PlayerCount)=>{saveSessionPlayers(count);setPlayers(count)}
+  const [players, setPlayers] = useState<PlayerCount | null>(null)
+  const playing = route.page === 'camera' && players !== null
   const [settings] = useState(loadSettings)
-  useEffect(() => { const navigate = () => setRoute(routeFromHash()); window.addEventListener('hashchange', navigate); return () => window.removeEventListener('hashchange', navigate) }, [])
+  useEffect(() => {
+    const navigate = () => {
+      setPlayers(null)
+      setRoute(routeFromHash())
+    }
+    window.addEventListener('hashchange', navigate)
+    return () => window.removeEventListener('hashchange', navigate)
+  }, [])
   useEffect(() => {
     document.documentElement.classList.toggle('reduce-motion', settings.reducedMotion)
     saveSettings(settings)
@@ -78,11 +97,20 @@ export function App() {
   }, [settings])
   useEffect(() => {
     if (route.page === 'catalog') unlockAchievement('catalog-explorer')
-    document.title = `${route.page === 'home' ? '' : `${route.page === 'detail' ? getGameBySlug(route.slug)?.title ?? 'Game' : route.page[0].toUpperCase() + route.page.slice(1)} · `}Motion Play`
+    document.title = `${route.page === 'home' ? '' : `${route.page === 'detail' ? getGameBySlug(route.slug)?.title ?? 'Game' : route.page[0].toUpperCase() + route.page.slice(1)} · `}playpop.party`
     document.getElementById('main-content')?.focus({ preventScroll: true })
   }, [route])
   return <><a className="skip-link" href="#main-content" onClick={(event) => {
     event.preventDefault()
     document.getElementById('main-content')?.focus()
-  }}>Skip to main content</a><main onPointerDown={gameAudio.unlock} onKeyDown={gameAudio.unlock} className="home-shell" id="main-content" tabIndex={-1}>{players!==null&&route.page === 'detail' && <AppHeader />}{players===null?<PlayerWelcome onChoose={choosePlayers}/>:route.page === 'home' ? <Home /> : route.page === 'catalog' ? <Catalog /> : route.page === 'settings' ? <Catalog /> : route.page === 'camera' ? null : <GameDetail slug={route.slug} />}{players!==null&&route.page==='home'&&<button className="change-players" onClick={()=>setPlayers(null)}>{players} {players===1?'player':'players'} · change</button>}<CameraSetup workshop={route.page==='camera'&&route.workshop} webcamNavigation selectedPlayers={players??undefined} navigationKey={`${window.location.hash}|${players??'choose'}`} active={route.page === 'camera'&&players!==null} initialGame={route.page === 'camera' ? route.game : undefined} autoPlay={route.page === 'camera'&&players!==null} tournament={route.page === 'camera' && route.tournament} />{route.page === 'detail' && <footer className="home-footer"><p><span aria-hidden="true">★</span> Made for 1–4 local players <span aria-hidden="true">★</span></p></footer>}</main><FullscreenButton/></>
+  }}>Skip to main content</a><main onPointerDown={gameAudio.unlock} onKeyDown={gameAudio.unlock} className="home-shell" id="main-content" tabIndex={-1}>
+    {route.page === 'detail' && <AppHeader />}
+    {route.page === 'home' && <Home />}
+    {(route.page === 'catalog' || route.page === 'settings') && <Catalog />}
+    {route.page === 'detail' && <GameDetail slug={route.slug} />}
+    {route.page === 'camera' && players === null && <PlayerPicker tournament={!!route.tournament} onChoose={setPlayers} />}
+    <CameraSetup workshop={route.page === 'camera' && route.workshop} webcamNavigation selectedPlayers={players ?? undefined}
+      navigationKey={`${window.location.hash}|${players ?? 'menu'}`} active={playing} autoPlay={playing}
+      initialGame={route.page === 'camera' ? route.game : undefined} tournament={route.page === 'camera' && route.tournament} />
+    {route.page === 'detail' && <footer className="home-footer"><p><span aria-hidden="true">★</span> Made for 1–4 local players <span aria-hidden="true">★</span></p></footer>}</main><FullscreenButton/></>
 }

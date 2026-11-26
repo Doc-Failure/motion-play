@@ -1,7 +1,7 @@
-import sunClouds from '../assets/home/sun-clouds.webp'
-import rainbow from '../assets/home/rainbow.webp'
-import titleCloud from '../assets/home/title-cloud.webp'
-import leftChild from '../assets/home/left-child.webp'
+import sunClouds from '../assets/home/sun-clouds.avif'
+import rainbow from '../assets/home/rainbow.avif'
+import titleCloud from '../assets/home/title-cloud.avif'
+import leftChild from '../assets/home/left-child.avif'
 import rightChild from '../assets/home/right-child.webp'
 
 export function GeneratedHomeScene() {

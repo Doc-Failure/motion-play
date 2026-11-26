@@ -1,6 +1,6 @@
 # Game improvement tracker
 
-The inventory has 45 catalog records and two additional playable component implementations. Twelve desktop titles are public. Thirty-two are available through the development workshop, and three historical components are exercised in a test-only harness, including the retired Paper Jam. The public Jump Rush URL still starts Kangaroo Race.
+The inventory has 46 catalog records and two additional playable component implementations. Thirteen desktop titles are public. Thirty-two are available through the development workshop, and three historical components are exercised in a test-only harness, including the retired Paper Jam. The public Jump Rush URL still starts Kangaroo Race.
 
 PASS records local, repeatable evidence. Levels and balance use deterministic pressure tests, input tests and real-component results. Visual review includes the active screen, collision or reward feedback, and progression or replay. Performance uses the sampled local machine and synthetic input. Webcam response is BLOCKED throughout for physical-camera validation. The synthetic processing, ownership and collision tests are recorded separately. Run details and visual evidence are in [the progress report](GAMEPLAY_PROGRESS.md).
 
@@ -70,4 +70,12 @@ One to four players share a turn-based tower. Model tests cover crossing layers,
 
 ## Paper Dojo campaign
 
-Five score-qualified ranks have distinct ninja costumes, buildings, flight speeds and hit counts. Each lane tracks five HP. A breach or active obstacle removes one HP, and only players with health remaining receive new opponents. Model checks cover multi-hit timing, final-wave camera cadence, scoring, isolated knockouts, pause and replay. Physical webcam timing and reach remain unverified.
+Five score-qualified ranks have distinct ninja costumes, buildings, flight speeds and hit counts. Each rank smiles on approach and scowls at takeoff. A small spark expands behind the launching ninja. Each lane tracks five HP. A ninja that reaches the player removes one HP, and only players with health remaining receive new opponents. Model checks cover multi-hit timing, final-wave camera cadence, scoring, isolated knockouts, pause and replay. Physical webcam timing and reach remain unverified.
+
+After the five ninja ranks, Thunder Oni guards the Moon Gate. It retains damage across charges and can be repelled by three hits in one pass.
+
+## Moon Gate Run
+
+The standalone catalog game combines automatic side scrolling, raised platforms, camera swats and a Thunder Oni fight at the gate. One to four runners use the same course with individual health and scores. Model tests exercise torso rise, landing and stepping off, same-frame spatial hits, multiplayer isolation, pause, replay and the first and fifth boss fights. Chromium exercised a synthetic torso jump and mirrored camera swat, plus a four-player camera-free boss victory. Physical webcam jump sensitivity, spacing and comfort remain open.
+
+The animation pass connects the six-step run, ground and air swats, landings, knockouts, enemy tumbles, boss finish and opening gate to simulation time. The asset inventory includes six source sheets and an individually named PNG for each frame. A last-second winning swat has time to show the collapse at zero on the clock.

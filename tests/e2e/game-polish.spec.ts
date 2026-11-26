@@ -7,9 +7,9 @@ for (const players of [1, 4]) {
     await installMockCamera()
     if (players === 4) await page.setViewportSize({width: 390, height: 844})
     await openApp(page,'#/catalog')
-    await page.getByRole('button',{name:`${players} ${players === 1 ? 'player' : 'players'}`,exact:true}).click()
     for(const game of visibleCatalogGames.filter(game => game.available)) {
       await page.evaluate(slug => {window.location.hash = `#/camera/${slug}`},game.slug)
+      await page.getByRole('button',{name:`${players} ${players === 1 ? 'player' : 'players'}`,exact:true}).click()
       await completeReadyGate(page)
       await page.waitForTimeout(3300)
       await expect(page.getByRole('heading',{name:game.title,exact:true})).toBeVisible()

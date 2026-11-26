@@ -33,14 +33,14 @@ describe('stable measured hand pointers',()=>{
   expect(filter.process(sample(1200,.305,.4,'right'),1000,800).events[0].x).toBe(.305)
   filter.reset();expect(filter.process(sample(1300,.309),1000,800).events[0].x).toBe(.309)
  })
- it('cannot let a deliberately departed hand finish a three-second selection',()=>{
+ it('cannot let a deliberately departed hand finish a two-second selection',()=>{
   const filter=new HandPointerStabilizer(),dwell=new WebcamMenuDwell(),targets=[{id:'play',x:.1,y:.2,width:.3,height:.3}]
   const update=(t:number,x=.3)=>dwell.process(filter.process(sample(t,x),1000,800),targets)
   for(let t=0;t<=1400;t+=100)expect(update(t).activatedId).toBeNull()
   expect(update(1500,.7)).toMatchObject({activeId:null,progress:0})
   expect(update(1600).progress).toBe(0)
-  for(let t=1700;t<4600;t+=100)expect(update(t,.3+Math.sin(t)*.004).activatedId).toBeNull()
-  expect(update(4600).activatedId).toBe('play')
+  for(let t=1700;t<3600;t+=100)expect(update(t,.3+Math.sin(t)*.004).activatedId).toBeNull()
+  expect(update(3600).activatedId).toBe('play')
  })
  it('rejects invalid, replayed and mismatched observations',()=>{
   const filter=new HandPointerStabilizer();filter.process(sample(100),1000,800)
